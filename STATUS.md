@@ -67,7 +67,7 @@ _Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge int
 | 2026-10-12 | ➕ R3 : code de connexion par WhatsApp d'abord, SMS en secours ; −10 % de bienvenue limité par numéro, adresse et carte. | Rhamone |
 | 2026-10-12 | ⛔ R4 : connecté = **seulement son prix**, jamais le prix catalogue à côté (risque de faux prix barré) ; mention « prix personnalisé » en UE. | Rhamone |
 | 2026-10-12 | ➕ R5 : **prix plancher** = coût + marge minimale, jamais dépassé par les remises cumulées. ➕ R6 : lancement = zones + 2-3 groupes + invitations ; parrainage et influenceurs après les premières ventes. | Rhamone |
-| 2026-10-12 | Plus aucun « Co-Authored-By » / « Claude-Session » dans l'historique Git (main réécrit avec accord de Rhamone) ; un garde-fou `.githooks/commit-msg` les retire automatiquement. | Rhamone |
+| 2026-10-12 | Retirer tous les « Co-Authored-By » / « Claude-Session » de l'historique Git (accord de Rhamone pour réécrire main ; à faire, voir LESSONS L-32) ; un garde-fou `.githooks/commit-msg` les retire automatiquement. | Rhamone |
 | 2026-10-12 | **Aucune trace d'IA** dans Git et GitHub : pas de « Co-Authored-By », « Generated with… », lien de session ; auteur des commits = Kelthen. | Rhamone |
 | 2026-10-12 | Pas de vocabulaire « 3D / shopping immersif » ni de chiffres (« 27 marques ») en accueil : on parle vente (authenticité, drops, suivi, paiement sécurisé). | Rhamone |
 | 2026-10-12 | Kit de démarrage = celui de NBW (`playbook/`), branches `feat/<dev>/<sujet>`, modèle de PR avec résumé pour l'équipe. | Rhamone |
