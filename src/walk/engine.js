@@ -51,6 +51,54 @@ export function startWalk(root, o) {
 
   function addToCart(it, size) { o.onAdd(it, size); }
 
+  /* ===== Couches : historique (bouton retour du téléphone) et focus ===== */
+  // Annuaire, boutique, rayon, zoom : chaque couche ouverte ajoute une entrée d'historique (même URL),
+  // si bien que « retour » ferme la couche du dessus. La pile JS fait foi ; l'historique la suit (sync).
+  const stack = [];
+  let depth = 0, pending = false;
+  const hasLayer = (name) => stack.some((L) => L.name === name);
+  function sync() {
+    if (pending || dead) return;                        // un retour lancé par nous est en route
+    while (depth < stack.length) history.pushState({ fw: ++depth }, "");
+    if (depth > stack.length) { pending = true; history.go(stack.length - depth); }
+  }
+  // Ferme les couches au-dessus de i, de haut en bas ; seule la dernière fermée est animée.
+  function shut(i) { stack.splice(i).reverse().forEach((L, k, a) => L.close(k === a.length - 1)); }
+  function openLayer(name, close) { if (!hasLayer(name)) { stack.push({ name, close }); sync(); } }
+  function closeLayer(name) { const i = stack.findIndex((L) => L.name === name); if (i >= 0) { shut(i); sync(); } }
+  function dropLayer(name) { const i = stack.findIndex((L) => L.name === name); if (i >= 0) { stack.splice(i, 1); sync(); } }
+  on(window, "popstate", (e) => {
+    const d = (e.state && e.state.fw) || 0;
+    depth = d;
+    if (pending) pending = false; else if (d < stack.length) shut(d);
+    sync();
+    trapUpdate();
+  });
+  // Arrivée sur une entrée laissée par une visite précédente (retour depuis une fiche produit) : on la nettoie.
+  depth = (history.state && history.state.fw) || 0;
+
+  // Fenêtre modale : fond inerte, Tab bouclé dans la couche du dessus, focus rendu à l'ouverture.
+  const FOCUSABLE = "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
+  const topModal = () => (!$("#dir").hidden ? $("#dir") : !$("#store").hidden ? $("#store") : null);
+  function trapUpdate() {
+    const d = !$("#dir").hidden, s = !$("#store").hidden;
+    $("#walk").inert = d || s;
+    $("#store").inert = d && s;
+  }
+  on(window, "keydown", (e) => {
+    const m = topModal(); if (e.key !== "Tab" || !m) return;
+    const els = [...m.querySelectorAll(FOCUSABLE)].filter((el) => !el.disabled && el.getClientRects().length);
+    if (!els.length) { e.preventDefault(); return; }
+    const first = els[0], last = els[els.length - 1], a = document.activeElement;
+    if (e.shiftKey && (a === first || !m.contains(a))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (a === last || !m.contains(a))) { e.preventDefault(); first.focus(); }
+  });
+  const opener = () => { const a = document.activeElement; return a && a !== document.body && root.contains(a) ? a : null; };
+  function giveBack(el, fallback) {
+    const t = el && el.isConnected && el.getClientRects().length && !el.closest("[inert]") ? el : fallback;
+    if (t && t.getClientRects().length) t.focus({ preventScroll: true });
+  }
+
   /* ===== Annuaire ===== */
   const dir = $("#dir"), dirq = $("#dirq");
   const SHOP_NAMES = o.shops.map((s) => s.name);
@@ -73,8 +121,13 @@ export function startWalk(root, o) {
       out.append(row);
     });
   }
-  const openDir = () => { dir.hidden = false; dirq.value = ""; renderDir(); dirq.focus(); };
-  const closeDir = () => { dir.hidden = true; };
+  let dirFrom = null;
+  function openDir() {
+    dirFrom = opener();
+    dir.hidden = false; dirq.value = ""; renderDir(); trapUpdate(); dirq.focus();
+    openLayer("dir", () => { dir.hidden = true; trapUpdate(); giveBack(dirFrom, $("#dirBtn")); });
+  }
+  const closeDir = () => closeLayer("dir");
   on($("#dirBtn"), "click", openDir);
   on($("#dirClose"), "click", closeDir);
   on(dirq, "input", renderDir);
@@ -83,7 +136,7 @@ export function startWalk(root, o) {
     if (go) { closeDir(); openStore(go.dataset.b, { fromWalk: walkOpen }); }
     if (chip) { closeDir(); openWalk(+chip.dataset.walk); }
   });
-  on(window, "keydown", (e) => { if (e.key === "Escape" && !dir.hidden) closeDir(); });
+  on(window, "keydown", (e) => { if (e.key === "Escape" && !dir.hidden) { e.stopImmediatePropagation(); closeDir(); } });
 
   /* ===== three.js chargé à l'ouverture (bundle du projet, pas de CDN) ===== */
   let threeP = null;
@@ -522,7 +575,7 @@ export function startWalk(root, o) {
 
   const storeEl = $("#store");
   let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false, swiped = false;
-  let sMode = "walk", backLock = 0;
+  let sMode = "walk", backLock = 0, storeFrom = null;
   function sUI(mode) {
     sMode = mode;
     const r = mode === "rayon";
@@ -538,18 +591,29 @@ export function startWalk(root, o) {
       if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); }
     } catch { STORE = null; o.onFallback(slugOf(brand)); return; }
     sBrand = brand; sFromWalk = fromWalk; sCat = null;
-    storeEl.hidden = false; storeOpen = true;
+    if (storeEl.hidden) storeFrom = opener();
+    storeEl.hidden = false; storeOpen = true; trapUpdate();
+    $("#sQuit").focus({ preventScroll: true });
+    openLayer("store", (anim) => { if (anim && STORE) { STORE.setActive(null); sUI("walk"); STORE.walk("door", closeStore); } else closeStore(); });
     $("#sTitle").textContent = `${brand} · Boutique`;
     const cats = $("#sCats"); cats.textContent = ""; CATS.forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     sUI("walk"); STORE.resize(); STORE.setActive(null); STORE.place("door");
     STORE.walk("hub", () => sUI("hub"));
   }
   function closeStore() {
-    storeEl.hidden = true; storeOpen = false;
+    if (storeEl.hidden) return;
+    storeEl.hidden = true; storeOpen = false; trapUpdate();
     if (sFromWalk && walkOpen) { $("#veil").style.opacity = 0; if (MALL) MALL.kick(); }
     else if (!walkOpen) openWalk(Math.max(0, SHOP_NAMES.indexOf(sBrand)));
+    giveBack(storeFrom, $("#enter"));
+  }
+  // Rayon : animé = on marche jusqu'au centre ; sinon on remet juste l'état (la boutique se ferme derrière).
+  function closeRayon(anim) {
+    sCat = null; STORE.setActive(null); sUI("walk");
+    if (anim) STORE.walk("hub", () => sUI("hub"));
   }
   function goZone(cat) {
+    openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
     STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); sUI("rayon"); renderChips(cat); showInfo(cat, STORE.focus(cat)); });
   }
@@ -571,16 +635,15 @@ export function startWalk(root, o) {
   on($("#sCats"), "click", (e) => { const b = e.target.closest(".s-cat"); if (b) goZone(b.dataset.cat); });
   on($("#sChips"), "click", (e) => {
     const b = e.target.closest(".s-cat"); if (!b) return;
-    if (b.dataset.cat === "hub") { sCat = null; STORE.setActive(null); sUI("walk"); STORE.walk("hub", () => sUI("hub")); } else goZone(b.dataset.cat);
+    if (b.dataset.cat === "hub") closeLayer("rayon"); else goZone(b.dataset.cat);
   });
-  on($("#sQuit"), "click", () => { STORE.setActive(null); sUI("walk"); STORE.walk("door", closeStore); });
+  on($("#sQuit"), "click", () => closeLayer("store"));
   // Revenir en arrière en faisant défiler (molette vers le haut, ou glisser vers le bas) :
   // dans un rayon → retour au centre ; au centre → on sort de la boutique. Jamais pour entrer.
   function storeBack() {
     if (!STORE || storeEl.hidden || sMode === "walk") return;
     const now = performance.now(); if (now < backLock) return; backLock = now + 900;
-    STORE.setActive(null); sUI("walk");
-    if (sCat) { sCat = null; STORE.walk("hub", () => sUI("hub")); } else STORE.walk("door", closeStore);
+    closeLayer(hasLayer("rayon") ? "rayon" : "store");
   }
   on(storeEl, "wheel", (e) => { if (e.deltaY < -12) storeBack(); }, { passive: true });
   let tStart = null;
@@ -589,7 +652,10 @@ export function startWalk(root, o) {
     if (!tStart) return; const t = e.changedTouches[0], dx = t.clientX - tStart.x, dy = t.clientY - tStart.y; tStart = null;
     if (dy > 70 && Math.abs(dy) > 1.5 * Math.abs(dx)) storeBack();
   }, { passive: true });
-  on(window, "keydown", (e) => { if (e.key === "Escape" && dir.hidden && !storeEl.hidden) storeBack(); });
+  on(window, "keydown", (e) => {
+    if (e.key !== "Escape" || !dir.hidden || storeEl.hidden) return;
+    if (hasLayer("zoom")) closeLayer("zoom"); else storeBack();
+  });
   on($("#sPrev"), "click", () => STORE.step(-1));
   on($("#sNext"), "click", () => STORE.step(1));
   on($("#iSizes"), "click", (e) => { const b = e.target.closest(".size"); if (!b) return; $("#iSizes").querySelectorAll(".size").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
@@ -786,6 +852,7 @@ export function startWalk(root, o) {
       kick();
     }
     function setClose(v) {
+      if (!v !== !closeT && api.onZoom) api.onZoom(!!v);
       closeT = v; yaw = 0;
       $("#iClose").textContent = v ? "Ranger" : "Zoom";
       $("#sSwipe").textContent = v ? "Glisse pour tourner l'article" : "Glisse pour faire défiler";
@@ -826,24 +893,28 @@ export function startWalk(root, o) {
 
     const api = {
       brand: st.name, place, walk, resize,
-      setActive(cat) { active = cat; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Zoom"; kick(); },
+      setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Zoom"; kick(); },
       focus: (cat) => Math.round(cars[cat].target),
       count: (cat) => cars[cat].items.length,
       item: (cat, k) => cars[cat].items[k],
       step(d) { if (!active) return; if (closeT) setClose(0); const c = cars[active]; c.target = clamp(Math.round(c.target) + d, 0, c.items.length - 1); kick(); },
       toggleClose() { if (active) setClose(closeT ? 0 : 1); },
+      unzoom() { if (closeT) setClose(0); },
       recolor(cat, k, c) {
         const car = cars[cat], it = car.items[k]; it.c = c; it.a = accentFor(c);
         const [f, b] = car.meshes[k].children; [f, b].forEach((m, i) => { m.material.map.dispose(); m.material.dispose(); m.material = prodMat(cat, it.c, it.a, i === 1); });
         car.meshes[k].userData.mats = [f.material, b.material]; kick();
       },
       onFocus: (cat, k) => { if (cat === sCat) showInfo(cat, k); },
+      // Zoom ouvert = une couche (retour = ranger l'article) ; rangé autrement = on retire l'entrée.
+      onZoom: (v) => { if (v) openLayer("zoom", () => STORE && STORE.unzoom()); else dropLayer("zoom"); },
       dispose() { ac.abort(); cancelAnimationFrame(raf); disposeScene(scene); },
     };
     return api;
   }
 
   /* ===== Démarrage ===== */
+  sync();
   if (o.startStore) openStore(o.startStore, { fromWalk: false });
   else openWalk(typeof o.startShop === "number" ? o.startShop : undefined);
 

@@ -552,16 +552,21 @@ $('#dList').addEventListener('click',e=>{ const c=e.target.closest('.card'); if(
 /* ===== Directory ===== */
 const dir = $('#dir'), dirq = $('#dirq');
 function renderDir(){
+  // Construit le DOM sans innerHTML : la saisie de recherche n'est jamais interprétée comme du HTML.
   const q = dirq.value.trim().toLowerCase();
   const list = ALL_BRANDS.filter(b=>b.toLowerCase().includes(q));
-  if (!list.length){ $('#dirList').innerHTML = `<p class="empty">Aucune marque ne correspond à « ${dirq.value} ».</p>`; return; }
-  let html = '', cur = '';
+  const out = $('#dirList'); out.textContent = '';
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
+  if (!list.length){ out.append(el('p', 'empty', `Aucune marque ne correspond à « ${dirq.value} ».`)); return; }
+  let cur = '';
   list.forEach(b=>{
-    const L = b[0].toUpperCase(); if (L!==cur){ cur=L; html += `<p class="letter">${L}</p>`; }
+    const L = b[0].toUpperCase(); if (L!==cur){ cur=L; out.append(el('p', 'letter', L)); }
+    const row = el('div', 'brand'), go = el('button', 'go');
+    go.type = 'button'; go.dataset.b = b; go.append(el('strong', '', b), el('span', '', 'Entrer dans la boutique')); row.append(go);
     const fi = FEATURED.indexOf(b);
-    html += `<div class="brand"><button class="go" type="button" data-b="${b}"><strong>${b}</strong><span>Entrer dans la boutique</span></button>${fi>=0?`<button class="chip" type="button" data-walk="${fi}">Dans Fraul Walk</button>`:''}</div>`;
+    if (fi>=0){ const c = el('button', 'chip', 'Dans Fraul Walk'); c.type = 'button'; c.dataset.walk = String(fi); row.append(c); }
+    out.append(row);
   });
-  $('#dirList').innerHTML = html;
 }
 function openDir(){ dir.hidden=false; dirq.value=''; renderDir(); lock(); }
 function closeDir(){ dir.hidden=true; lock(); }

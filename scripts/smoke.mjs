@@ -119,6 +119,53 @@ await check("fraul walk : sortie du mall", async () => {
   await shot("12c-sortie");
 });
 
+// Bouton retour du téléphone (page.goBack) : chaque retour ferme la couche du dessus, puis quitte le Walk.
+const back = async () => { await page.goBack({ timeout: 10000 }).catch(() => {}); await page.waitForTimeout(400); };
+await check("retour : annuaire, focus piégé, Échap", async () => {
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
+  await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
+  await goShop(1);
+  await page.waitForTimeout(1500);
+  await page.locator("#dirBtn").click();
+  await page.locator("#dir:not([hidden])").waitFor();
+  if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("fond non inerte");
+  for (let i = 0; i < 40; i++) await page.keyboard.press("Tab");
+  if (!(await page.evaluate(() => document.querySelector("#dir").contains(document.activeElement)))) throw new Error("le focus sort de l'annuaire");
+  await back();
+  await page.locator("#dir").waitFor({ state: "hidden", timeout: 5000 });
+  if (!page.url().endsWith("/walk")) throw new Error(`retour a quitté le Walk : ${page.url()}`);
+  await page.locator("#dirBtn").click();
+  await page.locator("#dir:not([hidden])").waitFor();
+  await page.keyboard.press("Escape");
+  await page.locator("#dir").waitFor({ state: "hidden", timeout: 5000 });
+  if (!(await page.evaluate(() => document.activeElement?.id === "dirBtn"))) throw new Error("focus non rendu au bouton d'origine");
+  await page.waitForTimeout(600);
+});
+
+await check("retour : zoom → rayon → boutique → mall → page précédente", async () => {
+  const box = await page.locator("#gl").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous la boutique");
+  await page.locator("#sCats .s-cat").nth(0).click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#iClose").click();
+  if ((await page.locator("#iClose").textContent()) !== "Ranger") throw new Error("zoom non ouvert");
+  await back();
+  if ((await page.locator("#iClose").textContent()) !== "Zoom") throw new Error("retour n'a pas rangé le zoom");
+  if (await page.locator("#sInfo").isHidden()) throw new Error("retour a fermé le rayon au lieu du zoom");
+  await back();
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await shot("14-retour-centre-boutique");
+  await back();
+  await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+  if (!page.url().endsWith("/walk")) throw new Error(`retour a quitté le Walk : ${page.url()}`);
+  await page.waitForTimeout(800);
+  await back();
+  await page.waitForURL((u) => !u.pathname.startsWith("/walk"), { timeout: 10000 });
+});
+
 await check("lien direct vers une boutique du mall", async () => {
   await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });

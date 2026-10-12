@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-12 par rhamon (kit NBW installé)_
+_Dernière mise à jour : 2026-10-12 par rhamon (bouton retour + focus dans le Walk, plan MVC)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -29,6 +29,7 @@ _Dernière mise à jour : 2026-10-12 par rhamon (kit NBW installé)_
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
 - Fraul Walk en T : 27 boutiques, version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
+- Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
 ## 🔄 En cours
 
@@ -38,12 +39,13 @@ _Dernière mise à jour : 2026-10-12 par rhamon (kit NBW installé)_
 
 ## 🆕 À faire (par priorité)
 
-1. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
-2. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
-3. Créer le projet Supabase et appliquer le schéma — rhamon
-4. Paiement Stripe en mode test
-5. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-6. WeChat : lien portail ou robot WeCom — Serge
+1. Rhamone et Serge valident `docs/PLAN-MVC.md` (rangement MVC, 4 questions en fin de document) ; rien n'est codé avant
+2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
+3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
+4. Créer le projet Supabase et appliquer le schéma — rhamon
+5. Paiement Stripe en mode test
+6. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
+7. WeChat : lien portail ou robot WeCom — Serge
 
 ## ⏳ Bloqué — attend le client
 

@@ -17,8 +17,7 @@
 | Suivi colis | Saisie du code par le livreur + **API 17TRACK** | 17TRACK suit les transporteurs chinois et internationaux. |
 | Fraul Walk 3D | Garde la démo actuelle, branchée sur le vrai catalogue | Optionnel, chargé à la demande, **jamais** sur le chemin d'achat. |
 
-**Pays servis** : USA, Canada, Royaume-Uni, France, Belgique (Afrique de
-l'Ouest retirée le 2026-10-12).
+**Pays servis** : USA, Canada, Royaume-Uni, France, Belgique.
 
 ⚠️ **Option à trancher : hybride Shopify.** Si l'entreprise est immatriculée
 aux USA, au Canada ou au Royaume-Uni, Shopify Managed Markets (Global-e) gère

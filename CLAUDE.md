@@ -144,8 +144,7 @@ npm start & npm run smoke -- http://localhost:3000   # test téléphone, 3D comp
 ### Le client et le but
 
 Commerçant (Fraul) qui achète vêtements/chaussures en Chine et revend en ligne
-aux USA, au Canada, au Royaume-Uni, en France et en Belgique (Afrique de l'Ouest
-retirée du projet le 2026-10-12). 100 % en ligne. Voyage souvent → **on ne bloque pas le travail sur lui** (voir plus bas).
+aux USA, au Canada, au Royaume-Uni, en France et en Belgique. 100 % en ligne. Voyage souvent → **on ne bloque pas le travail sur lui** (voir plus bas).
 - **Prix personnalisés par client**, pas de prix fixe. Visiteurs anonymes :
   pays inconnu, prix à adapter.
 - **Fournisseur** a déjà son site : on récupère ses données produits et on les

@@ -131,7 +131,7 @@ export function WalkExperience({ data, startBrand }: Props) {
         </div>
       </div>
 
-      <div className="store" id="store" hidden>
+      <div className="store" id="store" hidden role="dialog" aria-modal="true" aria-labelledby="sTitle">
         <canvas id="sgl" aria-label="Intérieur de la boutique" />
         <div className="s-top">
           <button className="pill ghost" id="sQuit" type="button">
@@ -183,7 +183,7 @@ export function WalkExperience({ data, startBrand }: Props) {
         </section>
       </div>
 
-      <div className="over" id="dir" hidden role="dialog" aria-label="Toutes les marques">
+      <div className="over" id="dir" hidden role="dialog" aria-modal="true" aria-label="Toutes les marques">
         <div className="o-head">
           <div className="r">
             <div>
