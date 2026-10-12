@@ -62,12 +62,9 @@ _Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge int
 
 | Date | Décision | Source |
 |---|---|---|
-| 2026-10-12 | **Stratégie de prix de Serge validée** (CLAUDE.md §9, avis R1 à R6 dans le texte) : prix catalogue calculé par zone, remise par groupe liée au compte (sans code), liens d'invitation à usage unique et liens de parrainage, pas de faux prix barrés. | Serge, validé par Rhamone |
-| 2026-10-12 | ⛔ R1 : **pas de sélecteur « Livrer en »** (contredit « aucun pays affiché ») ; seule la devise est visible. ➕ R2 : ligne « Prix final confirmé selon l'adresse de livraison ». | Rhamone |
-| 2026-10-12 | ➕ R3 : code de connexion par WhatsApp d'abord, SMS en secours ; −10 % de bienvenue limité par numéro, adresse et carte. | Rhamone |
-| 2026-10-12 | ⛔ R4 : connecté = **seulement son prix**, jamais le prix catalogue à côté (risque de faux prix barré) ; mention « prix personnalisé » en UE. | Rhamone |
-| 2026-10-12 | ➕ R5 : **prix plancher** = coût + marge minimale, jamais dépassé par les remises cumulées. ➕ R6 : lancement = zones + 2-3 groupes + invitations ; parrainage et influenceurs après les premières ventes. | Rhamone |
-| 2026-10-12 | Retirer tous les « Co-Authored-By » / « Claude-Session » de l'historique Git (accord de Rhamone pour réécrire main ; à faire, voir LESSONS L-32) ; un garde-fou `.githooks/commit-msg` les retire automatiquement. | Rhamone |
+| 2026-10-12 | **Stratégie de prix de Serge : accord de Rhamone sur l'ensemble** (CLAUDE.md §9). Ses points R1 à R6 sont des **contre-propositions ouvertes** : Serge peut répondre ; Rhamone commence à construire sur cette base en attendant. | Serge + Rhamone, discussion ouverte |
+| 2026-10-12 | Contre-propositions de Rhamone (détail et raisons dans CLAUDE.md §9) : ⛔ R1 pas de sélecteur « Livrer en » (aucun pays affiché) · ➕ R2 ligne « Prix final confirmé selon l'adresse de livraison » · ➕ R3 code WhatsApp d'abord, bienvenue limitée par numéro/adresse/carte · ⛔ R4 connecté = seulement son prix · ➕ R5 prix plancher · ➕ R6 lancement zones + 2-3 groupes + invitations. | Rhamone, en attente de la réponse de Serge |
+| 2026-10-12 | Réécriture de `main` pour retirer les anciens « Co-Authored-By » : **mise de côté** (compliquée, Serge devrait resynchroniser). Les nouveaux commits sont nettoyés automatiquement par `.githooks/commit-msg`. | Rhamone |
 | 2026-10-12 | **Aucune trace d'IA** dans Git et GitHub : pas de « Co-Authored-By », « Generated with… », lien de session ; auteur des commits = Kelthen. | Rhamone |
 | 2026-10-12 | Pas de vocabulaire « 3D / shopping immersif » ni de chiffres (« 27 marques ») en accueil : on parle vente (authenticité, drops, suivi, paiement sécurisé). | Rhamone |
 | 2026-10-12 | Kit de démarrage = celui de NBW (`playbook/`), branches `feat/<dev>/<sujet>`, modèle de PR avec résumé pour l'équipe. | Rhamone |

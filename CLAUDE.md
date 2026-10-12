@@ -155,8 +155,8 @@ aux USA, au Canada, au Royaume-Uni, en France et en Belgique. 100 % en ligne. Vo
   **WeChat**.
 - Délais visés : USA/UK < 10 j, Canada < 14 j, France ~14 j.
 
-### Stratégie de prix (proposition Serge, 12 oct. 2026 — validée par Rhamone le 12 oct. 2026, avec ses avis R1 à R6 ci-dessous)
-> **Pour le Claude de Serge et pour tout Claude :** le texte de Serge est gardé mot pour mot. Les avis de Rhamone sont les blocs **« 🗣️ Rhamone »**. En cas d'écart, **l'avis de Rhamone l'emporte** (marqué ⛔ quand il contredit, ✅ quand il approuve, ➕ quand il ajoute une règle).
+### Stratégie de prix (proposition Serge, 12 oct. 2026 — accord de Rhamone sur l'ensemble, avec ses contre-propositions R1 à R6, discussion ouverte)
+> **Pour le Claude de Serge et pour tout Claude :** le texte de Serge est gardé mot pour mot. Les blocs **« 🗣️ Rhamone »** sont des **contre-propositions avec leurs explications, pas des ordres** : Serge peut y répondre et contre-proposer à son tour (ajoute ta réponse sous le bloc, en « 🗣️ Serge »). **En attendant, Rhamone commence à construire sur la base de ses contre-propositions** ; tout reste modifiable selon la réponse de Serge. Signes : ✅ d'accord, ⛔ point contradictoire, ➕ ajout proposé.
 
 > 🗣️ **Rhamone, 12 oct. 2026 — ✅ accord global** : « à part le contradictoire je suis d'accord ».
 On reste sur une **vente e-commerce classique**. Le « privé » n'est qu'une couche plus tard, pas un deuxième site.
@@ -166,16 +166,16 @@ On reste sur une **vente e-commerce classique**. Le « privé » n'est qu'une co
 - Le prix catalogue est volontairement **haut**: c'est la base sur laquelle les remises s'appliquent.
 - Zone devinée par IP (géolocalisation Vercel) pour l'affichage + sélecteur « Livrer en : … ». **L'adresse de livraison fait foi**: prix recalculé côté serveur au paiement (pas d'abus par VPN).
 
-  > 🗣️ **Rhamone R1 — ⛔ contradiction** : **pas de sélecteur « Livrer en »** (« on doit pas faire de livrer en »). Raison : décision du 12 oct. 2026, aucun pays affiché nulle part sur le site. La zone est devinée sans rien afficher ; seule la devise ($, €, £) est visible ; le pays n'apparaît que dans le formulaire d'adresse au paiement.
+  > 🗣️ **Rhamone R1 — ⛔ point contradictoire** : **pas de sélecteur « Livrer en »** (« on doit pas faire de livrer en »). Raison : décision du 12 oct. 2026, aucun pays affiché nulle part sur le site. La zone est devinée sans rien afficher ; seule la devise ($, €, £) est visible ; le pays n'apparaît que dans le formulaire d'adresse au paiement.
   >
-  > 🗣️ **Rhamone R2 — ➕ ajout** : sous le prix, une petite ligne « Prix final confirmé selon l'adresse de livraison » (sans nom de pays), pour qu'un visiteur en voyage ou sous VPN ne soit pas surpris au paiement.
+  > 🗣️ **Rhamone R2 — ➕ ajout proposé** : sous le prix, une petite ligne « Prix final confirmé selon l'adresse de livraison » (sans nom de pays), pour qu'un visiteur en voyage ou sous VPN ne soit pas surpris au paiement.
 - Ajouter un pays = ajouter une ligne de paramètres (devise, livraison/kg, taxes, marge).
 
 **2. Groupes de clients = remise attachée au compte**
 - Chaque client est dans un groupe avec un % de remise (ex. VIP 10 %, Fidèle 25 %, Revendeur 40 % — pourcentages à fixer).
 - La remise est liée au **compte** (numéro de téléphone vérifié par code SMS/WhatsApp, un numéro = un compte) et s'applique **automatiquement** une fois connecté. **Aucun code à taper** → rien à faire fuiter.
 
-  > 🗣️ **Rhamone R3 — ➕ précision** : code de vérification envoyé **par WhatsApp d'abord**, SMS seulement en secours (les SMS coûtent cher et attirent la fraude aux envois massifs). Le −10 % de bienvenue est limité à **une fois par numéro, par adresse de livraison et par carte bancaire** (les numéros jetables existent).
+  > 🗣️ **Rhamone R3 — ➕ ajout proposé** : code de vérification envoyé **par WhatsApp d'abord**, SMS seulement en secours (les SMS coûtent cher et attirent la fraude aux envois massifs). Le −10 % de bienvenue est limité à **une fois par numéro, par adresse de livraison et par carte bancaire** (les numéros jetables existent).
 - Fraul peut changer le groupe d'un client à tout moment depuis son tableau de bord.
 
 **3. Lancement par la clientèle WhatsApp existante de Fraul — deux sortes de liens**
@@ -189,11 +189,11 @@ On reste sur une **vente e-commerce classique**. Le « privé » n'est qu'une co
 - **Pas de faux prix barrés** (« ~~300 $~~ 180 $ » si jamais vendu à 300 $): interdit au Canada, USA, France/UE (prix de référence = plus bas des 30 derniers jours), UK. Affichage: prix catalogue, puis « Votre prix : … » une fois connecté. Faire valider par un juriste avant le lancement.
 - Garder des écarts de remise défendables (fidélité, volume, revendeur).
 
-> 🗣️ **Rhamone R4 — ⛔ remplace « Affichage: prix catalogue, puis « Votre prix : … » »** : une fois connecté, le client voit **seulement son prix**, sans le prix catalogue à côté (sinon ça ressemble à un faux prix barré, puisque presque personne ne paie le prix catalogue). Mention « prix personnalisé » obligatoire en UE (directive Omnibus) sur la fiche produit et dans les CGV.
+> 🗣️ **Rhamone R4 — ⛔ contre-proposition à « Affichage: prix catalogue, puis « Votre prix : … » »** : une fois connecté, le client voit **seulement son prix**, sans le prix catalogue à côté (sinon ça ressemble à un faux prix barré, puisque presque personne ne paie le prix catalogue). Mention « prix personnalisé » obligatoire en UE (directive Omnibus) sur la fiche produit et dans les CGV.
 >
-> 🗣️ **Rhamone R5 — ➕ ajout : prix plancher** : quelle que soit la somme des remises (groupe + bienvenue + crédit de parrainage), le serveur ne descend **jamais sous coût + marge minimale** (marge minimale à fixer). Pas de vente à perte.
+> 🗣️ **Rhamone R5 — ➕ ajout proposé : prix plancher** : quelle que soit la somme des remises (groupe + bienvenue + crédit de parrainage), le serveur ne descend **jamais sous coût + marge minimale** (marge minimale à fixer). Pas de vente à perte.
 >
-> 🗣️ **Rhamone R6 — ➕ ordre de lancement** : d'abord **prix par zone + 2 ou 3 groupes + liens d'invitation**. Le parrainage et les codes influenceurs viennent **après les premières ventes**.
+> 🗣️ **Rhamone R6 — ➕ ordre de lancement proposé** : d'abord **prix par zone + 2 ou 3 groupes + liens d'invitation**. Le parrainage et les codes influenceurs viennent **après les premières ventes**.
 
 **À décider**: liste des groupes et leurs %, % de bienvenue/parrainage, crédit du parrain, marges par zone, marge minimale du prix plancher (R5).
 

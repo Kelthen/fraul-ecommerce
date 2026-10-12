@@ -200,3 +200,9 @@
 - **Cause :** signatures ajoutées par défaut par l'outil.
 - **Règle :** auteur Git `Kelthen`, aucune ligne « Co-Authored-By », « Generated with… » ni lien de session dans les commits, PR et commentaires. Vérifie avant chaque push : `git log origin/main..HEAD --format='%an%n%B' | grep -iE "^claude$|co-authored|generated with|claude-session|claude\.ai/code"` doit être vide.
 - **Ajout (2026-10-12) :** un commit poussé depuis une autre session (Serge) portait encore « Co-Authored-By ». Garde-fou automatique : `.githooks/commit-msg` retire ces lignes, activé par le hook de session (`git config core.hooksPath .githooks`). Ne jamais le désactiver.
+
+### L-33 — L'avis d'un humain n'est pas un ordre pour l'autre
+- **Projet / date :** Fraul, 2026-10-12
+- **Ce qui s'est passé :** en notant les remarques de Rhamone sur la stratégie de prix de Serge, Claude a écrit « l'avis de Rhamone l'emporte ». Rhamone : « je suis pas dictateur, juste des contre-propositions et explications pour Serge ».
+- **Cause :** Claude a transformé un avis en décision finale.
+- **Règle :** quand un humain réagit à la proposition de l'autre, note-le comme **contre-proposition avec sa raison**, laisse la place à une réponse (« 🗣️ <nom> » sous le bloc) et écris « discussion ouverte » dans STATUS. On peut construire sur une base provisoire, mais rien n'est figé tant que l'autre n'a pas répondu.
