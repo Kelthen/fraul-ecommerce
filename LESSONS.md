@@ -199,3 +199,4 @@
 - **Ce qui s'est passé :** les commits de la PR #1 étaient signés « Claude » avec « Co-Authored-By » et un lien de session, et la PR finissait par « Generated with Claude Code ». Rhamone a demandé de tout retirer avant le merge.
 - **Cause :** signatures ajoutées par défaut par l'outil.
 - **Règle :** auteur Git `Kelthen`, aucune ligne « Co-Authored-By », « Generated with… » ni lien de session dans les commits, PR et commentaires. Vérifie avant chaque push : `git log origin/main..HEAD --format='%an%n%B' | grep -iE "^claude$|co-authored|generated with|claude-session|claude\.ai/code"` doit être vide.
+- **Ajout (2026-10-12) :** un commit poussé depuis une autre session (Serge) portait encore « Co-Authored-By ». Garde-fou automatique : `.githooks/commit-msg` retire ces lignes, activé par le hook de session (`git config core.hooksPath .githooks`). Ne jamais le désactiver.

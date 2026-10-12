@@ -56,13 +56,18 @@ _Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge int
 | Factures fournisseur des marques (à archiver, non bloquant) | — | — |
 | Pays de l'entreprise (avant lancement ; Stripe Atlas possible) | — | — |
 | Qui paie les droits de douane (DDP ou client) — avant lancement | — | — |
-| Prix : liste des groupes et leurs %, % de bienvenue/parrainage, crédit du parrain, marges par zone | 2026-10-12 | — |
+| Prix : liste des groupes et leurs %, % de bienvenue/parrainage, crédit du parrain, marges par zone, marge minimale (R5) | 2026-10-12 | — |
 
 ## 🧭 Décisions (ne pas revenir dessus sans accord)
 
 | Date | Décision | Source |
 |---|---|---|
-| 2026-10-12 | **Stratégie de prix de Serge validée** (CLAUDE.md §9) : prix catalogue calculé par zone, remise par groupe liée au compte (sans code), liens d'invitation à usage unique et liens de parrainage, pas de faux prix barrés. **Sauf** le sélecteur « Livrer en » : retiré (aucun pays affiché), seule la devise est visible, l'adresse fait foi au paiement. | Serge, validé par Rhamone |
+| 2026-10-12 | **Stratégie de prix de Serge validée** (CLAUDE.md §9, avis R1 à R6 dans le texte) : prix catalogue calculé par zone, remise par groupe liée au compte (sans code), liens d'invitation à usage unique et liens de parrainage, pas de faux prix barrés. | Serge, validé par Rhamone |
+| 2026-10-12 | ⛔ R1 : **pas de sélecteur « Livrer en »** (contredit « aucun pays affiché ») ; seule la devise est visible. ➕ R2 : ligne « Prix final confirmé selon l'adresse de livraison ». | Rhamone |
+| 2026-10-12 | ➕ R3 : code de connexion par WhatsApp d'abord, SMS en secours ; −10 % de bienvenue limité par numéro, adresse et carte. | Rhamone |
+| 2026-10-12 | ⛔ R4 : connecté = **seulement son prix**, jamais le prix catalogue à côté (risque de faux prix barré) ; mention « prix personnalisé » en UE. | Rhamone |
+| 2026-10-12 | ➕ R5 : **prix plancher** = coût + marge minimale, jamais dépassé par les remises cumulées. ➕ R6 : lancement = zones + 2-3 groupes + invitations ; parrainage et influenceurs après les premières ventes. | Rhamone |
+| 2026-10-12 | Plus aucun « Co-Authored-By » / « Claude-Session » dans l'historique Git (main réécrit avec accord de Rhamone) ; un garde-fou `.githooks/commit-msg` les retire automatiquement. | Rhamone |
 | 2026-10-12 | **Aucune trace d'IA** dans Git et GitHub : pas de « Co-Authored-By », « Generated with… », lien de session ; auteur des commits = Kelthen. | Rhamone |
 | 2026-10-12 | Pas de vocabulaire « 3D / shopping immersif » ni de chiffres (« 27 marques ») en accueil : on parle vente (authenticité, drops, suivi, paiement sécurisé). | Rhamone |
 | 2026-10-12 | Kit de démarrage = celui de NBW (`playbook/`), branches `feat/<dev>/<sujet>`, modèle de PR avec résumé pour l'équipe. | Rhamone |

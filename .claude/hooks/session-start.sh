@@ -15,6 +15,9 @@ if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] && [ -f package.json ] && [ ! -d node_
     || echo "⚠️ npm install a échoué (voir /tmp/session-start-npm.log)."
 fi
 
+# Garde-fou L-32 : retire tout « Co-Authored-By: Claude » des messages de commit.
+[ -d .githooks ] && git config core.hooksPath .githooks 2>/dev/null
+
 git fetch origin --prune --quiet 2>/dev/null || echo "⚠️ git fetch impossible : le briefing peut être en retard."
 
 ME="$(git config user.name 2>/dev/null || echo '?')"
