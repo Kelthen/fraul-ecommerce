@@ -4,10 +4,37 @@ Langue de travail: **français**. Responsable: Rhamone (travaille souvent depuis
 
 ## Le client et le but
 Commerçant (Fraul) qui achète vêtements/chaussures en Chine et revend en Afrique de l'Ouest + diaspora (USA, Canada, UK, France, Belgique). Focus 100 % en ligne (boutiques physiques laissées de côté).
-- **Prix personnalisés par client**, pas de prix fixe. Visiteurs anonymes: pays inconnu, prix à adapter plus tard.
+- **Prix personnalisés par client** via des groupes de remise (voir « Stratégie de prix » plus bas).
 - **Fournisseur** a déjà son site: on récupère ses données produits et on les republie avec nos prix (flux fournisseur, plus tard).
 - **Logistique**: une personne sur place expédie/reçoit et donne le code de tracking. À la commande, le fournisseur et le livreur voient la commande directement; le client suit via le code de tracking avec un suivi animé. Contrainte: fournisseur et livreur utilisent **WeChat**.
 - Délais visés: USA/UK <10 j, Canada <14 j, France ~14 j.
+
+## Stratégie de prix (proposition Serge, 12 oct. 2026 — à valider par Rhamone)
+On reste sur une **vente e-commerce classique**. Le « privé » n'est qu'une couche plus tard, pas un deuxième site.
+
+**1. Prix catalogue par zone (calculé, pas saisi à la main)**
+- Prix = coût fournisseur (¥) × taux du jour + livraison au poids de la zone + droits/taxes estimés + marge de la zone, arrondi « propre » en devise locale (89 $, pas 87,43 $).
+- Le prix catalogue est volontairement **haut**: c'est la base sur laquelle les remises s'appliquent.
+- Zone devinée par IP (géolocalisation Vercel) pour l'affichage + sélecteur « Livrer en : … ». **L'adresse de livraison fait foi**: prix recalculé côté serveur au paiement (pas d'abus par VPN).
+- Ajouter un pays = ajouter une ligne de paramètres (devise, livraison/kg, taxes, marge).
+
+**2. Groupes de clients = remise attachée au compte**
+- Chaque client est dans un groupe avec un % de remise (ex. VIP 10 %, Fidèle 25 %, Revendeur 40 % — pourcentages à fixer).
+- La remise est liée au **compte** (numéro de téléphone vérifié par code SMS/WhatsApp, un numéro = un compte) et s'applique **automatiquement** une fois connecté. **Aucun code à taper** → rien à faire fuiter.
+- Fraul peut changer le groupe d'un client à tout moment depuis son tableau de bord.
+
+**3. Lancement par la clientèle WhatsApp existante de Fraul — deux sortes de liens**
+- **Lien d'invitation personnel** (distribué par Fraul): le client contacte Fraul sur WhatsApp → Fraul touche « Inviter » dans le tableau de bord, choisit le groupe → lien unique (`fraul.com/i/K7P2Q`) collé dans la conversation → le client crée son compte → groupe attaché pour toujours. **Usage unique**: partagé, il ne sert à rien.
+- **Lien de parrainage** (pour faire propager le site): chaque client a le sien. Le filleul a une **petite remise fixe** (ex. −10 % sur la 1re commande), le parrain gagne du crédit. Les grosses remises restent dans les mains de Fraul, qui peut faire monter un filleul de groupe plus tard.
+- **Visiteur sans lien**: prix catalogue de sa zone + « −10 % sur ta 1re commande en créant un compte » (même remise que le parrainage).
+- **Pas de code promo public ni de code par zone affiché sur le site.** Exception: codes influenceurs (petite remise, durée limitée, commission).
+- Plus tard: génération des liens automatisée via l'API WhatsApp Business.
+
+**Règles**
+- **Pas de faux prix barrés** (« ~~300 $~~ 180 $ » si jamais vendu à 300 $): interdit au Canada, USA, France/UE (prix de référence = plus bas des 30 derniers jours), UK. Affichage: prix catalogue, puis « Votre prix : … » une fois connecté. Faire valider par un juriste avant le lancement.
+- Garder des écarts de remise défendables (fidélité, volume, revendeur).
+
+**À décider**: liste des groupes et leurs %, % de bienvenue/parrainage, crédit du parrain, marges par zone.
 
 ## Direction visuelle
 Palette "old money": ink #0A0A0C, wine #420A0D, bordeaux #680209, ivory #FFFEF7, pearl #EAE0C8, stone #8F8880. Polices: Bodoni Moda (titres) + Montserrat. Référence: LuisaViaRoma. Haut de gamme, **beau mais léger** (performance mobile d'abord).
@@ -33,5 +60,5 @@ Palette "old money": ink #0A0A0C, wine #420A0D, bordeaux #680209, ivory #FFFEF7,
 1. Retours de Rhamone/Serge sur la démo, traités en un seul lot.
 2. Vraies photos produit détourées.
 3. Passer d'un fichier unique à un vrai projet (catalogue en données, panier/commande réels).
-4. Flux fournisseur + prix par client + suivi de commande (WeChat à trancher avec Serge).
+4. Flux fournisseur + prix par zone et groupes de clients (voir « Stratégie de prix ») + suivi de commande (WeChat à trancher avec Serge).
 5. Plan final versionné ici (Word/PDF), comme pour Network of Black Women.
