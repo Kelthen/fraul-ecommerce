@@ -1,0 +1,134 @@
+// Test de fumée sur viewport téléphone (règle 7 de CLAUDE.md).
+// Usage : npm run build && npm start (dans un autre terminal), puis
+//         node scripts/smoke.mjs [url] [dossier-captures]
+import { mkdirSync } from "node:fs";
+import { chromium } from "playwright";
+
+const BASE = process.argv[2] ?? "http://localhost:3000";
+const OUT = process.argv[3] ?? "smoke-shots";
+mkdirSync(OUT, { recursive: true });
+
+const browser = await chromium.launch({ args: ["--use-gl=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+const page = await ctx.newPage();
+const errors = [];
+page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
+page.on("console", (m) => { if (m.type() === "error") errors.push(`console: ${m.text()}`); });
+
+const shot = (name) => page.screenshot({ path: `${OUT}/${name}.png` });
+const results = [];
+async function check(name, fn) {
+  try { await fn(); results.push(`OK   ${name}`); } catch (e) { results.push(`FAIL ${name} — ${e.message.split("\n")[0]}`); }
+}
+
+await check("accueil", async () => {
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByRole("heading", { level: 1 }).waitFor();
+  await shot("01-accueil");
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await page.waitForTimeout(400);
+  await shot("02-accueil-nouveautes");
+});
+
+await check("aucun pays affiché", async () => {
+  const text = await page.locator("body").innerText();
+  const found = ["Canada", "USA", "Royaume-Uni", "France", "Belgique", "Afrique", "CA$"].filter((w) => text.includes(w));
+  if (found.length) throw new Error(`mots trouvés : ${found.join(", ")}`);
+});
+
+await check("fiche produit + panier", async () => {
+  await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
+  await shot("03-marque");
+  await page.locator(".card").first().click();
+  await page.getByRole("button", { name: "Au panier" }).waitFor();
+  await shot("04-produit");
+  await page.getByRole("button", { name: "Tourner l'article" }).first().click();
+  await page.waitForTimeout(700);
+  await shot("05-produit-dos");
+  await page.getByRole("button", { name: "Au panier" }).click();
+  await page.goto(BASE + "/panier", { waitUntil: "networkidle" });
+  await page.locator(".cart-item").first().waitFor();
+  await shot("06-panier");
+});
+
+await check("crée ta tenue", async () => {
+  await page.goto(BASE + "/tenue", { waitUntil: "networkidle" });
+  await page.getByRole("tab", { name: "Bas" }).click();
+  await page.locator(".piece").nth(2).click();
+  await shot("07-tenue");
+});
+
+await check("suivi", async () => {
+  await page.goto(BASE + "/suivi", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Suivre" }).click();
+  await page.waitForTimeout(1800);
+  await shot("08-suivi");
+});
+
+// Va à la boutique k (0 = première) en faisant défiler le mall comme un visiteur.
+const goShop = (k, n = 27) => page.locator("#walk").evaluate((el, [k, n]) => {
+  const track = el.querySelector("#walkTrack");
+  el.scrollTop = ((k + 1 + 0.1) / (n + 1)) * (track.offsetHeight - el.clientHeight);
+}, [k, n]);
+
+await check("fraul walk : mall en T", async () => {
+  await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
+  await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(2500);
+  await shot("09-walk-entree");
+  if (await page.locator("#walk.nogl").count()) throw new Error("WebGL indisponible (mode de secours)");
+  for (const [k, name] of [[0, "10-walk-boutique-01"], [5, "10b-walk-boutique-06"], [13, "10c-walk-mur-du-haut"], [24, "10d-walk-retour-tronc"]]) {
+    await goShop(k);
+    await page.waitForTimeout(1800);
+    await shot(name);
+  }
+  const shown = await page.locator("#bname").innerText();
+  if (!shown) throw new Error("nom de boutique vide");
+});
+
+await check("fraul walk : toucher la vitrine pour entrer", async () => {
+  await goShop(1);
+  await page.waitForTimeout(1800);
+  const box = await page.locator("#gl").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(800);
+  await shot("11-boutique");
+});
+
+await check("fraul walk : rayon puis retour en arrière", async () => {
+  await page.locator("#sCats .s-cat").nth(1).click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1200);
+  await shot("12-rayon");
+  await page.locator("#iAdd").click();
+  await page.mouse.move(195, 400);
+  await page.mouse.wheel(0, -300);                 // arrière : retour au centre
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1000);
+  await page.mouse.wheel(0, -300);                 // arrière au centre : on sort
+  await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+  await page.waitForTimeout(1500);
+  await shot("12b-sorti-de-la-boutique");
+});
+
+await check("fraul walk : sortie du mall", async () => {
+  await page.locator("#walk").evaluate((el) => (el.scrollTop = el.scrollHeight));
+  await page.locator("#outro:not([hidden])").waitFor({ timeout: 10000 });
+  await page.waitForTimeout(1500);
+  await shot("12c-sortie");
+});
+
+await check("lien direct vers une boutique du mall", async () => {
+  await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1800);
+  const name = await page.locator("#bname").innerText();
+  if (name !== "Amiri") throw new Error(`boutique affichée : ${name}`);
+  await shot("13-devant-amiri");
+});
+
+await browser.close();
+console.log(results.join("\n"));
+console.log(errors.length ? `\nErreurs navigateur :\n${[...new Set(errors)].join("\n")}` : "\nAucune erreur navigateur.");
+process.exit(results.some((r) => r.startsWith("FAIL")) ? 1 : 0);

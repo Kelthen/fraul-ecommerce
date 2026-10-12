@@ -1,0 +1,34 @@
+{
+  "name": "fraul-ecommerce",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "three": "^0.128.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.128.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "playwright": "^1.56.1",
+    "sharp": "^0.35.5",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

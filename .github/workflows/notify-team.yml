@@ -1,0 +1,178 @@
+name: notify-team
+
+# Prévient automatiquement l'autre humain (Slack et/ou email) quand une PR est ouverte,
+# mise à jour ou mergée, et quand sa preview Vercel est prête (avec le vrai lien).
+# Le lien de preview est aussi posté (et mis à jour) en commentaire sur la PR.
+#
+# Configuration (Settings → Secrets and variables → Actions) — tout est optionnel :
+#   secrets.SLACK_WEBHOOK_URL   Webhook entrant Slack (canal du projet)
+#   secrets.RESEND_API_KEY      Clé API Resend (domaine d'envoi vérifié)
+#   vars.NOTIFY_EMAILS          Destinataires séparés par des virgules
+#   vars.NOTIFY_FROM            Expéditeur sur le domaine vérifié, ex. "Kelthen Bot <bot@kelthen.ca>"
+#   vars.PROJECT_NAME           Nom court affiché dans les messages (défaut : nom du repo)
+# Sans Slack ni email configurés, seul le commentaire « Preview prête » est posté sur la PR.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize, closed]
+    branches: [main]
+  deployment_status:
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event.deployment_status.state == 'success'
+    steps:
+      - name: Préparer le message
+        id: msg
+        uses: actions/github-script@v7
+        env:
+          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+        with:
+          script: |
+            const project = process.env.PROJECT_NAME || context.repo.repo;
+            const done = (o) => {
+              core.setOutput('skip', o.skip ? 'true' : 'false');
+              core.setOutput('subject', o.subject || '');
+              core.setOutput('text', o.text || '');
+            };
+
+            // Extrait une section « ## Titre » du corps de la PR, sans commentaires HTML ni puces vides.
+            const section = (body, title) => {
+              if (!body) return '';
+              const start = body.search(new RegExp('^##\\s*' + title, 'im'));
+              if (start < 0) return '';
+              const rest = body.slice(start).split('\n').slice(1).join('\n');
+              const end = rest.search(/^##\s/m);
+              return (end < 0 ? rest : rest.slice(0, end))
+                .replace(/<!--[\s\S]*?-->/g, '')
+                .split('\n')
+                .map((l) => l.trimEnd())
+                .filter((l) => l.trim() && !/^[-*]\s*$/.test(l.trim()) && !/^\*\*[^*]+:\*\*\s*$/.test(l.trim()))
+                .join('\n')
+                .trim();
+            };
+
+            const filesSummary = async (number) => {
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                ...context.repo, pull_number: number, per_page: 100,
+              });
+              const pages = new Set();
+              for (const f of files) {
+                const m = f.filename.match(/^app\/(?:\([^)]+\)\/)?(.*?)\/?page\.tsx$/);
+                if (m) pages.add('/' + m[1]);
+              }
+              return { count: files.length, pages: [...pages] };
+            };
+
+            if (context.eventName === 'pull_request') {
+              const pr = context.payload.pull_request;
+              const action = context.payload.action;
+              if (pr.draft && action !== 'ready_for_review') return done({ skip: true });
+              if (action === 'closed' && !pr.merged) return done({ skip: true });
+
+              const actor = context.actor;
+              let head;
+              if (action === 'closed') head = `✅ ${actor} a mergé la PR #${pr.number} : ${pr.title}`;
+              else if (action === 'synchronize') head = `🔁 ${actor} a mis à jour la PR #${pr.number} : ${pr.title}`;
+              else head = `🆕 ${pr.user.login} a ouvert la PR #${pr.number} : ${pr.title}`;
+
+              const lines = [`[${project}] ${head}`, ''];
+              const resume = section(pr.body, "Résumé pour l'équipe");
+
+              if (action === 'synchronize') {
+                const commits = await github.paginate(github.rest.pulls.listCommits, {
+                  ...context.repo, pull_number: pr.number, per_page: 100,
+                });
+                const last = commits[commits.length - 1];
+                if (last) lines.push('Dernier changement : ' + last.commit.message.split('\n')[0], '');
+              } else if (resume) {
+                lines.push('Résumé :', resume, '');
+              } else if (action !== 'closed') {
+                lines.push("⚠️ La PR n'a pas de section « Résumé pour l'équipe ».", '');
+              }
+
+              const f = await filesSummary(pr.number);
+              if (f.pages.length) lines.push('Pages touchées : ' + f.pages.join(', '));
+              lines.push(`Fichiers modifiés : ${f.count}`);
+              if (action === 'closed') lines.push('Mise en production en cours. Message « En ligne » dès que Vercel a fini.');
+              else lines.push('Lien de preview : envoyé dès que Vercel a fini (1 à 3 min).');
+              lines.push('PR : ' + pr.html_url);
+
+              return done({ subject: `[${project}] ${head}`.slice(0, 150), text: lines.join('\n') });
+            }
+
+            // deployment_status (envoyé par Vercel)
+            const ds = context.payload.deployment_status;
+            const dep = context.payload.deployment;
+            const url = ds.environment_url || ds.target_url;
+            const env = (dep.environment || '').toLowerCase();
+
+            if (env.includes('production')) {
+              const merged = await github.rest.repos.listPullRequestsAssociatedWithCommit({ ...context.repo, commit_sha: dep.sha });
+              const src = merged.data.find((p) => p.merged_at);
+              let title;
+              if (src) {
+                title = `PR #${src.number} de ${src.user.login} : ${src.title}`;
+              } else {
+                const commit = await github.rest.repos.getCommit({ ...context.repo, ref: dep.sha });
+                title = commit.data.commit.message.split('\n')[0];
+              }
+              const text = [`🚀 [${project}] Nouvelle version en ligne en production.`, '', `Dernier changement : ${title}`, url].join('\n');
+              return done({ subject: `[${project}] 🚀 En ligne : ${title}`.slice(0, 150), text });
+            }
+
+            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({ ...context.repo, commit_sha: dep.sha });
+            const pr = prs.data.find((p) => p.state === 'open');
+            if (!pr) return done({ skip: true });
+
+            const marker = '<!-- notify-team:preview -->';
+            const body = `${marker}\n👀 **Preview prête** : ${url}\n\n_Mis à jour automatiquement à chaque push (commit \`${dep.sha.slice(0, 7)}\`)._`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo, issue_number: pr.number, per_page: 100,
+            });
+            const mine = comments.find((c) => c.body && c.body.includes(marker));
+            if (mine) await github.rest.issues.updateComment({ ...context.repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ ...context.repo, issue_number: pr.number, body });
+
+            const text = [
+              `👀 [${project}] Preview prête pour la PR #${pr.number} : ${pr.title}`,
+              '',
+              url,
+              '',
+              'À faire : ouvrir le lien et vérifier sur ordinateur et téléphone.',
+              'PR : ' + pr.html_url,
+            ].join('\n');
+            return done({ subject: `[${project}] 👀 Preview prête : PR #${pr.number}`, text });
+
+      - name: Envoyer sur Slack
+        if: steps.msg.outputs.skip != 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEXT: ${{ steps.msg.outputs.text }}
+        run: |
+          if [ -z "${SLACK_WEBHOOK_URL}" ]; then echo "Slack non configuré (secret SLACK_WEBHOOK_URL absent)."; exit 0; fi
+          jq -n --arg t "$TEXT" '{text: $t}' \
+            | curl -fsS -X POST -H 'Content-Type: application/json' --data @- "$SLACK_WEBHOOK_URL"
+
+      - name: Envoyer par email (Resend)
+        if: steps.msg.outputs.skip != 'true'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_EMAILS: ${{ vars.NOTIFY_EMAILS }}
+          NOTIFY_FROM: ${{ vars.NOTIFY_FROM }}
+          SUBJECT: ${{ steps.msg.outputs.subject }}
+          TEXT: ${{ steps.msg.outputs.text }}
+        run: |
+          if [ -z "${RESEND_API_KEY}" ] || [ -z "${NOTIFY_EMAILS}" ] || [ -z "${NOTIFY_FROM}" ]; then
+            echo "Email non configuré (RESEND_API_KEY, NOTIFY_EMAILS ou NOTIFY_FROM absent)."; exit 0
+          fi
+          jq -n --arg from "$NOTIFY_FROM" --arg to "$NOTIFY_EMAILS" --arg s "$SUBJECT" --arg t "$TEXT" \
+            '{from: $from, to: ($to | split(",") | map(gsub("^\\s+|\\s+$"; ""))), subject: $s, text: $t}' \
+            | curl -fsS -X POST https://api.resend.com/emails \
+                -H "Authorization: Bearer ${RESEND_API_KEY}" -H 'Content-Type: application/json' --data @-
