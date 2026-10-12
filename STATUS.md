@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-12 par rhamon (bouton retour + focus dans le Walk, plan MVC)_
+_Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge intégrée)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -56,11 +56,13 @@ _Dernière mise à jour : 2026-10-12 par rhamon (bouton retour + focus dans le W
 | Factures fournisseur des marques (à archiver, non bloquant) | — | — |
 | Pays de l'entreprise (avant lancement ; Stripe Atlas possible) | — | — |
 | Qui paie les droits de douane (DDP ou client) — avant lancement | — | — |
+| Prix : liste des groupes et leurs %, % de bienvenue/parrainage, crédit du parrain, marges par zone | 2026-10-12 | — |
 
 ## 🧭 Décisions (ne pas revenir dessus sans accord)
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-12 | **Stratégie de prix de Serge validée** (CLAUDE.md §9) : prix catalogue calculé par zone, remise par groupe liée au compte (sans code), liens d'invitation à usage unique et liens de parrainage, pas de faux prix barrés. **Sauf** le sélecteur « Livrer en » : retiré (aucun pays affiché), seule la devise est visible, l'adresse fait foi au paiement. | Serge, validé par Rhamone |
 | 2026-10-12 | **Aucune trace d'IA** dans Git et GitHub : pas de « Co-Authored-By », « Generated with… », lien de session ; auteur des commits = Kelthen. | Rhamone |
 | 2026-10-12 | Pas de vocabulaire « 3D / shopping immersif » ni de chiffres (« 27 marques ») en accueil : on parle vente (authenticité, drops, suivi, paiement sécurisé). | Rhamone |
 | 2026-10-12 | Kit de démarrage = celui de NBW (`playbook/`), branches `feat/<dev>/<sujet>`, modèle de PR avec résumé pour l'équipe. | Rhamone |

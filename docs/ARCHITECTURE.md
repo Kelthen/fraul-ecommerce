@@ -93,7 +93,9 @@ supprimé : les anciennes commandes y font référence).
 
 Calcul : `prix = arrondi( coût_CNY × taux × coefficient + marge_fixe )`, en
 appliquant la règle de plus haute priorité. **Visiteur anonyme** : prix
-« public » de la région détectée (pays via l'IP, modifiable par le client).
+« public » de la zone détectée (pays via l'IP, jamais affiché ; pas de sélecteur
+de pays). L'adresse de livraison fait foi au paiement. Stratégie complète
+(groupes de remise, liens d'invitation et de parrainage) : CLAUDE.md §9.
 
 ⚠️ **Obligation légale UE** (France, Belgique) : si un prix est personnalisé
 par décision automatisée, il faut **l'indiquer au client** (directive
