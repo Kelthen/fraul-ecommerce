@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useCart } from "@/components/CartProvider";
 import type { BrandStyle, Category, CategoryId } from "@/lib/catalog/types";
-import { formatPrice } from "@/lib/format";
+import { usePricing } from "@/components/PricingProvider";
+import type { Cost } from "@/models/pricing/price";
 import { startWalk } from "./engine";
 import "./walk.css";
 
-/** Article compact transmis au navigateur : [slug, nom, prix, couleur, couleurs]. */
-export type WalkItem = [string, string, number, string, string[]];
+/** Article compact transmis au navigateur : [slug, nom, coût, couleur, couleurs]. */
+export type WalkItem = [string, string, Cost, string, string[]];
 
 export type WalkData = {
   shops: { name: string; slug: string; style: BrandStyle }[];
@@ -29,9 +30,12 @@ export function WalkExperience({ data, startBrand }: Props) {
   const router = useRouter();
   const { add, count } = useCart();
   const addRef = useRef(add);
+  const { price, format } = usePricing();
+  const priceRef = useRef((c: Cost) => format(price(c)));
   useEffect(() => {
     addRef.current = add;
-  }, [add]);
+    priceRef.current = (c: Cost) => format(price(c));
+  }, [add, price, format]);
 
   useEffect(() => {
     const el = root.current;
@@ -54,7 +58,7 @@ export function WalkExperience({ data, startBrand }: Props) {
       allBrands: data.allBrands,
       categories: data.categories,
       fonts,
-      formatPrice,
+      formatPrice: (c: Cost) => priceRef.current(c),
       // Copies : la boutique peut changer la couleur d'un article sans toucher au catalogue.
       getItems: (brandName: string, cat: CategoryId) => {
         const b = brandOf(brandName);
@@ -62,8 +66,8 @@ export function WalkExperience({ data, startBrand }: Props) {
           slug, n, p, c, a: ACCENT_DARK.includes(c) ? "#EAE0C8" : "#420A0D", vars, sizes: sizesOf(cat), brand: brandName, cat,
         }));
       },
-      onAdd: (it: { slug: string; n: string; p: number; c: string; a: string; brand: string; cat: string; sizes: string[] }, size?: string) =>
-        addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, price: it.p, size, sizes: it.sizes }),
+      onAdd: (it: { slug: string; n: string; p: Cost; c: string; a: string; brand: string; cat: string; sizes: string[] }, size?: string) =>
+        addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, cost: it.p, size, sizes: it.sizes }),
       onExit: () => router.push("/"),
       onFallback: (slug: string) => router.push(`/marques/${slug}`),
       onOpenProduct: (it: { slug: string }) => router.push(`/produit/${it.slug}`),

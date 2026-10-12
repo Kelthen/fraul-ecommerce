@@ -1,6 +1,4 @@
-// Prix de démonstration. Le vrai prix (personnalisé par client) sera calculé
-// côté serveur ; aucune devise ni aucun pays n'est affiché pour l'instant.
-export const formatPrice = (amount: number) => `${amount.toLocaleString("fr-FR")} $`;
+// Les prix s'affichent via <Price> (src/components/Price.tsx), calculés par src/models/pricing.
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 

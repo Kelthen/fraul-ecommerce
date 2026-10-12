@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge intégrée)_
+_Dernière mise à jour : 2026-10-12 par rhamon (prix par zone et par groupe, mode test)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -29,13 +29,14 @@ _Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge int
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
 - Fraul Walk en T : 27 boutiques, version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
+- PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
 ## 🔄 En cours
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| PR de fondation (tout le travail ci-dessus) | rhamon | PR #1 | 2026-10-12 |
+| Prix par zone et par groupe (mode test) : calcul, devise, page /test/prix | rhamon | feat/rhamon/prix | 2026-10-12 |
 
 ## 🆕 À faire (par priorité)
 
