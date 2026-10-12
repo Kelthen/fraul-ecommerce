@@ -1,18 +1,28 @@
-# fraul-ecommerce
+# Fraul — e-commerce
 
-Démo e-commerce Fraul (Kelthen) : page unique, légère, en HTML + three.js.
+Site Next.js (App Router, TypeScript). Le **Fraul Walk** (mall en 3D, une boutique par marque) est l'expérience principale.
 
-- **Accueil classique** : Nouveautés, marques, catégories, suivi de commande.
-- **Fraul Walk** : visite 3D optionnelle du mall, une vitrine par marque.
-- **Boutique par marque** : un seul gabarit piloté par une ligne de données (couleurs, enseigne, mannequins). Une nouvelle marque se génère automatiquement.
-- **Annuaire** : 27 marques, A–Z, avec recherche.
+- Règles de l'équipe : `CLAUDE.md` · état : `STATUS.md` · leçons : `LESSONS.md` · architecture : `docs/ARCHITECTURE.md`
+- Kit de démarrage Kelthen (repris de NBW) : `playbook/` — briefing `.claude/hooks/session-start.sh`, modèle de PR, notifications `.github/workflows/notify-team.yml`, photos `scripts/optimize-images.mjs`
+- Démo d'origine (une seule page) : `demo/fraul-demo-v2.html`
 
-## Lancer
+## Commandes
 
-Ouvrir `index.html` dans un navigateur (three.js r128 est chargé depuis cdnjs à la demande).
+```bash
+npm install
+npm run dev          # http://localhost:3000
+npm run check        # lint + types + build (avant chaque merge)
+npm start & npm run smoke -- http://localhost:3000   # test sur écran de téléphone, 3D comprise
+```
 
-## À venir
+## Où est quoi
 
-- Vraies photos produit détourées (face/dos).
-- Logos de marques : ne pas copier les logos (marques déposées), on utilise des enseignes en texte.
-- Flux fournisseur et suivi de commande.
+| Dossier | Contenu |
+|---|---|
+| `src/app/` | Pages : accueil, `walk`, `marques`, `categorie`, `produit`, `tenue`, `panier`, `suivi`, pages légales |
+| `src/walk/` | Moteur 3D du Fraul Walk (three.js, chargé seulement à l'ouverture du mall) |
+| `src/lib/catalog/` | Accès au catalogue. **Données de démonstration** aujourd'hui, base de données demain |
+| `src/components/` | Composants partagés (cartes, panier, en-tête…) |
+| `supabase/migrations/` | Schéma de la base de données |
+
+Variables d'environnement : `NEXT_PUBLIC_SITE_URL` (domaine), `NEXT_PUBLIC_SITE_LIVE=true` pour autoriser l'indexation au lancement.

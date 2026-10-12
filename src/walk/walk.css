@@ -1,0 +1,97 @@
+/* Fraul Walk — styles du mall et des boutiques, version claire, limités au conteneur .fw */
+.fw { position: fixed; inset: 0; z-index: 60; background: var(--bg); color: var(--ink); }
+.fw .pill { min-height: 44px; padding: 0 16px; font-size: 11px; letter-spacing: 0.2em; }
+.fw .pill.ghost { background: rgba(255, 254, 247, 0.85); border: 1.5px solid rgba(10, 10, 12, 0.7); color: var(--ink); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+@keyframes fw-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fw-up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Le mall */
+.fw .walk { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; background: var(--bg); overscroll-behavior: contain; animation: fw-fade .4s ease; }
+.fw .walk-track { position: relative; }
+.fw .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #f3efe8; }
+.fw #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fw .stage::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,254,247,.85) 0%, rgba(255,254,247,0) 16%, rgba(255,254,247,0) 68%, rgba(255,254,247,.78) 100%); }
+.fw .walk.nogl #gl { display: none; }
+.fw .walk.nogl .stage { background: radial-gradient(80% 60% at 50% 40%, #fff, var(--pearl)); }
+.fw .w-top { position: absolute; inset: 0 0 auto 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 14px; }
+.fw .w-name { font: 700 11px/1 var(--body); letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+.fw .hud { position: absolute; inset: 0; z-index: 2; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + 80px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px); }
+@media (min-width: 900px) { .fw .hud { padding-inline: 40px; } .fw .w-top { padding-inline: 40px; } }
+.fw .intro { max-width: 620px; }
+.fw .intro h1 { font-size: clamp(56px, 16vw, 150px); line-height: .88; margin: 10px 0 14px; color: var(--ink); }
+.fw .intro p { max-width: 34ch; }
+.fw .scroll-hint, .fw .tap-hint { font: 700 10px/1 var(--body); letter-spacing: .22em; text-transform: uppercase; color: var(--bordeaux); margin-top: 14px; }
+.fw .tap-hint { margin: 2px 0 2px; }
+.fw .aisle, .fw .outro { display: grid; gap: 6px; max-width: 640px; margin-top: auto; }
+.fw .outro h2 { font-size: clamp(40px, 10vw, 80px); line-height: 1; }
+.fw .outro .acts .pill { pointer-events: auto; }
+.fw .count { font: 700 11px/1 var(--body); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fw .bname { font: italic 400 clamp(44px, 12vw, 96px)/1 var(--display); color: var(--ink); }
+.fw .bname.swap { animation: fw-swap .5s cubic-bezier(.2,.7,.2,1); }
+@keyframes fw-swap { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.fw .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.fw .acts .pill { pointer-events: auto; }
+.fw .prog { display: flex; gap: 4px; margin-top: 14px; }
+.fw .prog i { flex: 1; height: 2px; border-radius: 2px; background: rgba(10,10,12,.15); overflow: hidden; position: relative; }
+.fw .prog i b { position: absolute; inset: 0; width: 0; background: var(--bordeaux); }
+.fw .veil { position: absolute; inset: 0; z-index: 4; background: var(--bg); opacity: 0; pointer-events: none; }
+/* La boutique */
+.fw .store { position: absolute; inset: 0; z-index: 5; background: #f3efe8; overflow: hidden; animation: fw-fade .45s ease; }
+.fw #sgl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.fw .s-top { position: absolute; inset: 0 0 auto 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 22px; background: linear-gradient(rgba(255,254,247,.85), transparent); pointer-events: none; }
+.fw .s-top > * { pointer-events: auto; }
+.fw .s-title { font: 700 11px/1.3 var(--body); letter-spacing: .3em; text-transform: uppercase; color: var(--ink); text-align: right; }
+.fw .s-bottom { position: absolute; inset: auto 0 0 0; z-index: 2; padding: 56px 0 calc(env(safe-area-inset-bottom, 0px) + 18px); background: linear-gradient(transparent, rgba(255,254,247,.94) 45%); animation: fw-up .45s cubic-bezier(.2,.7,.2,1); }
+.fw .s-hint { margin: 0 16px 12px; font: italic 400 26px/1.15 var(--display); color: var(--ink); }
+.fw .s-back { margin: 12px 16px 0; font: 700 10px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.fw .s-cats, .fw .s-chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
+.fw .s-cats::-webkit-scrollbar, .fw .s-chips::-webkit-scrollbar { display: none; }
+.fw .s-cat { flex: none; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(10,10,12,.6); background: rgba(255,254,247,.9);
+  font: 700 11px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+.fw .s-cat.sm { min-height: 38px; padding: 0 13px; font-size: 10px; }
+.fw .s-arrow { position: absolute; top: 30%; z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(10,10,12,.25); background: rgba(255,254,247,.85); color: var(--ink); font: 400 26px/1 var(--display); display: grid; place-items: center; }
+.fw .s-arrow.l { left: 10px; } .fw .s-arrow.r { right: 10px; }
+.fw .s-swipe { position: absolute; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + 120px); z-index: 2; text-align: center; margin: 0; font: 700 11px/1 var(--body); letter-spacing: .24em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(255,255,255,.9); pointer-events: none; animation: fw-pulse 2s ease-in-out infinite; }
+@keyframes fw-pulse { 50% { opacity: .35; } }
+.fw .s-info { position: absolute; inset: auto 0 0 0; z-index: 2; display: grid; gap: 10px; padding: 36px 0 calc(env(safe-area-inset-bottom, 0px) + 14px);
+  background: linear-gradient(transparent, rgba(255,254,247,.96) 15%); animation: fw-up .45s cubic-bezier(.2,.7,.2,1); }
+.fw .s-in { padding-inline: 16px; max-width: 760px; margin-inline: auto; width: 100%; }
+.fw .s-ir { display: flex; justify-content: space-between; align-items: end; gap: 12px; }
+.fw .s-ir h3 { margin: 4px 0 0; font: 400 clamp(26px, 7vw, 40px)/1.05 var(--display); color: var(--ink); }
+.fw .s-price { font: 700 18px/1 var(--body); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fw .dots { display: flex; gap: 10px; }
+.fw .dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(10,10,12,.2); }
+.fw .dot[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px #fff inset; }
+.fw .i-count { font: 700 11px/1 var(--body); letter-spacing: .2em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fw .s-act { display: flex; gap: 8px; }
+.fw .add { flex: 1; min-height: 48px; padding: 0 14px; border-radius: 999px; background: var(--bordeaux); color: var(--ivory); font: 700 12px/1 var(--body); letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
+.fw .sizes { display: flex; gap: 8px; flex-wrap: wrap; }
+.fw .size { min-width: 44px; min-height: 40px; padding: 0 8px; border: 1.5px solid rgba(10,10,12,.2); border-radius: 8px; font: 600 13px/1 var(--body); text-align: center; background: #fff; color: var(--ink); }
+.fw .size[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--ivory); }
+
+/* Annuaire, chargement */
+.fw .over { position: absolute; inset: 0; z-index: 8; background: var(--bg); display: flex; flex-direction: column; animation: fw-fade .3s ease; }
+.fw .o-head { padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px 14px; border-bottom: 1px solid var(--line); display: grid; gap: 14px; }
+.fw .o-head .r { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.fw .o-head h2 { font-size: clamp(32px, 8vw, 52px); line-height: 1; }
+.fw .o-body { flex: 1; overflow-y: auto; padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 32px); }
+.fw .o-inner { max-width: 760px; margin-inline: auto; }
+.fw .q { width: 100%; min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+.fw .q::placeholder { color: var(--muted); }
+.fw .letter { font: 400 28px/1 var(--display); color: var(--bordeaux); margin: 22px 0 6px; }
+.fw .brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.fw .brand .go { flex: 1; min-width: 0; text-align: left; display: grid; gap: 2px; min-height: 44px; }
+.fw .brand .go strong { font: 400 22px/1.15 var(--display); color: var(--ink); font-weight: 400; }
+.fw .brand .go span { font-size: 12px; color: var(--muted); }
+.fw .chip { flex: none; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(104,2,9,.5); background: rgba(104,2,9,.06); font: 700 10px/1 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--bordeaux); }
+.fw .empty { color: var(--muted); padding: 24px 0; }
+.fw .close { min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; font: 700 11px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.fw .loader { position: absolute; inset: 0; z-index: 9; background: var(--bg); display: grid; place-items: center; align-content: center; gap: 14px; animation: fw-fade .3s; }
+.fw .loader b { font: italic 400 clamp(40px, 11vw, 72px)/1 var(--display); color: var(--ink); font-weight: 400; }
+.fw .loader .bar { width: 160px; height: 2px; background: var(--line); overflow: hidden; border-radius: 2px; }
+.fw .loader .bar i { display: block; height: 100%; width: 40%; background: var(--bordeaux); animation: fw-load 1.1s ease-in-out infinite; }
+@keyframes fw-load { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+.fw .cart-chip { pointer-events: auto; }

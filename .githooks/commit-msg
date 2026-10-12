@@ -1,0 +1,9 @@
+#!/bin/sh
+# Règle L-32 : aucune trace d'IA dans les commits. Retire automatiquement les lignes
+# « Co-Authored-By: Claude… », « Claude-Session: … » et « Generated with Claude Code ».
+# Activé par .claude/hooks/session-start.sh (git config core.hooksPath .githooks).
+f="$1"
+grep -viE '^(co-authored-by:.*(claude|anthropic)|claude-session:|.*generated with \[?claude code)' "$f" > "$f.tmp" || true
+# Enlève les lignes vides en fin de message.
+sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$f.tmp" > "$f"
+rm -f "$f.tmp"
