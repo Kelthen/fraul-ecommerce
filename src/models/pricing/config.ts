@@ -10,7 +10,7 @@ export type Zone = {
   fx: number;
   /** Livraison, en devise, par kilo. */
   shippingPerKg: number;
-  /** Droits et taxes estimés, en % de (marchandise + livraison). */
+  /** Droits et taxes estimés, en % de (marchandise + livraison). Inclus dans le prix affiché (DDP, Serge 13 oct.). */
   dutiesPct: number;
   /** Marge de la zone, en % du coût rendu (prix catalogue volontairement haut). */
   marginPct: number;

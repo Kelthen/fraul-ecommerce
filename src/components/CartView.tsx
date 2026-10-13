@@ -59,7 +59,7 @@ export function CartView() {
       </ul>
       <div className="summary">
         <div className="line"><span>Sous-total</span><b style={{ color: "var(--ink)" }}><Price costs={lines} /></b></div>
-        <div className="line muted"><span>Livraison et droits estimés</span><span>inclus dans les prix</span></div>
+        <div className="line muted"><span>Livraison, droits et taxes</span><span>inclus, rien à payer à la livraison</span></div>
         <div className="line"><span>Total estimé</span><span className="total"><Price costs={lines} /></span></div>
         <PriceNote />
         {missingSize && <p className="todo">Choisis une taille pour chaque article.</p>}

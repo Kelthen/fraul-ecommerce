@@ -10,12 +10,12 @@ export function Price({ cost, costs, qty = 1 }: { cost?: Cost; costs?: { cost: C
   return <>{format(total)}</>;
 }
 
-/** Petite ligne sous le prix (R2), plus la mention « prix personnalisé » quand une remise s'applique (R4). */
+/** Petite ligne sous le prix : droits inclus (DDP, Serge 13 oct.), confirmation à l'adresse (R2), plus la mention « prix personnalisé » quand une remise s'applique (R4). */
 export function PriceNote() {
   const { personalised } = usePricing();
   return (
     <p className="price-note">
-      {personalised ? "Prix personnalisé pour ton compte. " : ""}Prix final confirmé selon l&apos;adresse de livraison.
+      {personalised ? "Prix personnalisé pour ton compte. " : ""}Droits et taxes inclus. Prix final confirmé selon l&apos;adresse de livraison.
     </p>
   );
 }

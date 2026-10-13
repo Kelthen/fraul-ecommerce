@@ -13,6 +13,7 @@ type PricingCtx = {
   group: GroupId;
   /** Prix du client pour ce coût, en unités de la devise de sa zone. */
   price: (cost: Cost) => number;
+  /** « 89 USD » : code de devise, car « $ » seul confond USD et CAD (Serge, 13 oct.). */
   format: (amount: number) => string;
   /** Remise de groupe active : on l'indique au client (mention « prix personnalisé », R4). */
   personalised: boolean;
@@ -63,7 +64,7 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<PricingCtx>(() => {
     const currency = ZONES[zone].currency;
     let f = fmtCache.get(currency);
-    if (!f) fmtCache.set(currency, (f = new Intl.NumberFormat("fr-FR", { style: "currency", currency, currencyDisplay: "narrowSymbol", maximumFractionDigits: 0 })));
+    if (!f) fmtCache.set(currency, (f = new Intl.NumberFormat("fr-FR", { style: "currency", currency, currencyDisplay: "code", maximumFractionDigits: 0 })));
     return {
       zone,
       group,

@@ -68,16 +68,16 @@ await check("suivi", async () => {
 await check("prix : devise de la zone, groupe de test, ligne de confirmation", async () => {
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
   const usd = await page.locator(".card .pr").first().innerText();
-  if (!/\d.*\$$/.test(usd.trim())) throw new Error(`prix par défaut inattendu : ${usd}`);
+  if (!/\d.*USD$/.test(usd.trim())) throw new Error(`prix par défaut inattendu : ${usd}`);
   await page.goto(BASE + "/test/prix", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "EUR", exact: true }).click();
   await page.getByRole("button", { name: /VIP/ }).click();
   await shot("15-test-prix");
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
-  await page.waitForFunction(() => document.querySelector(".card .pr")?.textContent?.includes("€"), null, { timeout: 5000 });
+  await page.waitForFunction(() => document.querySelector(".card .pr")?.textContent?.includes("EUR"), null, { timeout: 5000 });
   await page.locator(".card").first().click();
   await page.getByText("Prix personnalisé pour ton compte.").waitFor({ timeout: 5000 });
-  await page.getByText("Prix final confirmé selon l'adresse de livraison.").first().waitFor();
+  await page.getByText(/Droits et taxes inclus\. Prix final confirmé selon l'adresse de livraison\./).first().waitFor();
   await shot("16-produit-prix-eur-vip");
   const text = await page.locator("body").innerText();
   const found = ["Canada", "USA", "Royaume-Uni", "France", "Belgique", "CA$", "$CA", "US$"].filter((w) => text.includes(w));
