@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Product } from "@/lib/catalog";
-import { formatPrice } from "@/lib/format";
+import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { GarmentArt } from "./GarmentArt";
 
@@ -19,7 +19,6 @@ export function OutfitBuilder({ pieces }: { pieces: Record<Slot, Product[]> }) {
   const [tab, setTab] = useState<Slot>("top");
   const [pick, setPick] = useState<Record<Slot, number>>({ top: 0, bottom: 0, shoes: 0 });
   const t = pieces.top[pick.top], b = pieces.bottom[pick.bottom], s = pieces.shoes[pick.shoes];
-  const total = t.price + b.price + s.price;
 
   return (
     <div className="outfit">
@@ -61,15 +60,16 @@ export function OutfitBuilder({ pieces }: { pieces: Record<Slot, Product[]> }) {
         <div className="outfit-total">
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }} className="muted">
             <span>3 pièces · tailles à choisir au panier</span>
-            <span>{formatPrice(total)}</span>
+            <span><Price costs={[t, b, s]} /></span>
           </div>
           <button
             className="pill ink"
             type="button"
-            onClick={() => [t, b, s].forEach((p) => add({ slug: p.slug, name: p.name, brandName: p.brandName, category: p.category, color: p.color, accent: p.accent, price: p.price, sizes: p.sizes }))}
+            onClick={() => [t, b, s].forEach((p) => add({ slug: p.slug, name: p.name, brandName: p.brandName, category: p.category, color: p.color, accent: p.accent, cost: p.cost, sizes: p.sizes }))}
           >
             Ajouter la tenue au panier
           </button>
+          <PriceNote />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Product } from "@/lib/catalog";
-import { formatPrice } from "@/lib/format";
+import { Price } from "./Price";
 import { GarmentArt } from "./GarmentArt";
 
 export function ProductCard({ product }: { product: Product }) {
@@ -16,7 +16,7 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <span className="br">{product.brandName}</span>
       <span className="nm">{product.name}</span>
-      <span className="pr">{formatPrice(product.price)}</span>
+      <span className="pr"><Price cost={product.cost} /></span>
     </Link>
   );
 }
