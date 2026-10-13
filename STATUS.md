@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge intégrée)_
+_Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, plan fournisseur)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -39,13 +39,13 @@ _Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge int
 
 ## 🆕 À faire (par priorité)
 
-1. Rhamone et Serge valident `docs/PLAN-MVC.md` (rangement MVC, 4 questions en fin de document) ; rien n'est codé avant
+1. Plan MVC validé par Serge le 13 oct. (réponses en fin de `docs/PLAN-MVC.md`) → Rhamone peut démarrer l'étape 1
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Créer le projet Supabase et appliquer le schéma — rhamon
 5. Paiement Stripe en mode test
 6. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-7. WeChat : lien portail ou robot WeCom — Serge
+7. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
 
 ## ⏳ Bloqué — attend le client
 
@@ -55,13 +55,17 @@ _Dernière mise à jour : 2026-10-12 par rhamon (stratégie de prix de Serge int
 | Photos produits | — | — |
 | Factures fournisseur des marques (à archiver, non bloquant) | — | — |
 | Pays de l'entreprise (avant lancement ; Stripe Atlas possible) | — | — |
-| Qui paie les droits de douane (DDP ou client) — avant lancement | — | — |
+| Lien du site du fournisseur (ou plateforme : Yupoo, 1688…), son accord pour reprendre fiches et photos, fichier Excel s'il en a un | 2026-10-13 | — |
+| Ligne de livraison DDP (droits payés) chez le livreur/transitaire ; IOSS (UE) et TVA UK avec un comptable — avant lancement | 2026-10-13 | — |
 | Prix : liste des groupes et leurs %, % de bienvenue/parrainage, crédit du parrain, marges par zone, marge minimale (R5) | 2026-10-12 | — |
 
 ## 🧭 Décisions (ne pas revenir dessus sans accord)
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-13 | **Plan MVC validé** : on garde Next.js, rangement MVC, Walk = cœur du site avec liste en repli, `/marques/:slug`, on démarre par l'étape 1. | Serge |
+| 2026-10-13 | **Droits de douane payés par le client mais inclus dans le prix affiché (DDP)** : « Droits et taxes inclus », rien à payer à la livraison. | Serge |
+| 2026-10-13 | **WeChat : lien portail maintenant** (lien personnel épinglé dans WeChat, interface en chinois, bouton « Copier pour WeChat »), **robot WeCom plus tard**. Détail : `docs/FOURNISSEUR-COMMANDES.md`. | Serge |
 | 2026-10-12 | **Stratégie de prix de Serge : accord de Rhamone sur l'ensemble** (CLAUDE.md §9). Ses points R1 à R6 sont des **contre-propositions ouvertes** : Serge peut répondre ; Rhamone commence à construire sur cette base en attendant. | Serge + Rhamone, discussion ouverte |
 | 2026-10-12 | Contre-propositions de Rhamone (détail et raisons dans CLAUDE.md §9) : ⛔ R1 pas de sélecteur « Livrer en » (aucun pays affiché) · ➕ R2 ligne « Prix final confirmé selon l'adresse de livraison » · ➕ R3 code WhatsApp d'abord, bienvenue limitée par numéro/adresse/carte · ⛔ R4 connecté = seulement son prix · ➕ R5 prix plancher · ➕ R6 lancement zones + 2-3 groupes + invitations. | Rhamone, en attente de la réponse de Serge |
 | 2026-10-12 | Réécriture de `main` pour retirer les anciens « Co-Authored-By » : **mise de côté** (compliquée, Serge devrait resynchroniser). Les nouveaux commits sont nettoyés automatiquement par `.githooks/commit-msg`. | Rhamone |
