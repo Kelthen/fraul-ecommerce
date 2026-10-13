@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { CategoryId } from "@/lib/catalog";
-import { formatPrice } from "@/lib/format";
+import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { GarmentArt } from "./GarmentArt";
 
@@ -19,7 +19,6 @@ export function CartView() {
       </div>
     );
   }
-  const subtotal = lines.reduce((a, l) => a + l.price * l.qty, 0);
   const missingSize = lines.some((l) => l.sizes.length > 1 && !l.size);
   return (
     <>
@@ -52,16 +51,17 @@ export function CartView() {
               </div>
             </div>
             <div style={{ display: "grid", justifyItems: "end", gap: 8 }}>
-              <b style={{ color: "var(--ink)", fontVariantNumeric: "tabular-nums" }}>{formatPrice(l.price * l.qty)}</b>
+              <b style={{ color: "var(--ink)", fontVariantNumeric: "tabular-nums" }}><Price cost={l.cost} qty={l.qty} /></b>
               <button type="button" className="link" onClick={() => remove(i)}>Retirer</button>
             </div>
           </li>
         ))}
       </ul>
       <div className="summary">
-        <div className="line"><span>Sous-total</span><b style={{ color: "var(--ink)" }}>{formatPrice(subtotal)}</b></div>
-        <div className="line muted"><span>Livraison et taxes</span><span>calculées à l&apos;étape suivante</span></div>
-        <div className="line"><span>Total estimé</span><span className="total">{formatPrice(subtotal)}</span></div>
+        <div className="line"><span>Sous-total</span><b style={{ color: "var(--ink)" }}><Price costs={lines} /></b></div>
+        <div className="line muted"><span>Livraison, droits et taxes</span><span>inclus, rien à payer à la livraison</span></div>
+        <div className="line"><span>Total estimé</span><span className="total"><Price costs={lines} /></span></div>
+        <PriceNote />
         {missingSize && <p className="todo">Choisis une taille pour chaque article.</p>}
         <button className="pill solid" type="button" disabled>
           Paiement bientôt disponible

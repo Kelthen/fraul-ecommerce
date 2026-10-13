@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Product } from "@/lib/catalog";
 import { accentFor } from "@/lib/catalog/demo";
-import { formatPrice } from "@/lib/format";
+import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { GarmentArt } from "./GarmentArt";
 
@@ -24,7 +24,7 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
   const [front, setFront] = useState(true);
   const accent = accentFor(color);
   const colorName = COLOR_NAMES[color] ?? "Couleur";
-  const line = { slug: product.slug, name: product.name, brandName: product.brandName, category: product.category, color, accent, price: product.price, size, sizes: product.sizes };
+  const line = { slug: product.slug, name: product.name, brandName: product.brandName, category: product.category, color, accent, cost: product.cost, size, sizes: product.sizes };
 
   return (
     <div className="pdp">
@@ -82,7 +82,8 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
         <div className="price-box">
           <div>
             <span className="eyebrow">Ton prix</span>
-            <b>{formatPrice(product.price)}</b>
+            <b><Price cost={product.cost} /></b>
+            <PriceNote />
           </div>
           <span className="muted" style={{ fontSize: 12, textAlign: "right", lineHeight: 1.5 }}>
             Délai de livraison

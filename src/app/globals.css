@@ -303,3 +303,12 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
 }
+
+/* Prix : ligne de confirmation (R2) et tableau de la page de test */
+.price-note { margin-top: 6px; font-size: 11px; line-height: 1.4; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; border: 0; padding: 0; margin: 0; }
+.chips legend { width: 100%; margin-bottom: 8px; }
+.chips [aria-pressed="true"] { background: var(--ink); color: var(--ivory); border-color: var(--ink); }
+.price-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.price-table th, .price-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.price-table th { font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
