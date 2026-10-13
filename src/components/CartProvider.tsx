@@ -1,5 +1,6 @@
 "use client";
 
+import type { Cost } from "@/models/pricing/price";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // Panier côté navigateur (démo). Le vrai panier sera recalculé côté serveur :
@@ -12,8 +13,8 @@ export type CartLine = {
   category: string;
   color: string;
   accent: string;
-  /** Prix de démonstration affiché, jamais utilisé pour encaisser. */
-  price: number;
+  /** Coût de l'article : le prix affiché en est recalculé (zone, groupe). Jamais utilisé pour encaisser. */
+  cost: Cost;
   size?: string;
   sizes: string[];
   qty: number;
@@ -30,7 +31,7 @@ type CartCtx = {
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "fraul.cart.v1";
+const KEY = "fraul.cart.v2"; // v2 : les lignes gardent le coût, plus un prix figé
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);

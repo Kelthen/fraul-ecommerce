@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bodoni_Moda, Montserrat } from "next/font/google";
 import { CartProvider } from "@/components/CartProvider";
+import { PricingProvider } from "@/components/PricingProvider";
 import { FooterGate, SiteHeader, TabBar } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_LIVE, SITE_URL } from "@/lib/format";
@@ -39,14 +40,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a className="skip" href="#contenu">
           Aller au contenu
         </a>
-        <CartProvider>
-          <SiteHeader />
-          <main id="contenu">{children}</main>
-          <FooterGate>
-            <SiteFooter />
-          </FooterGate>
-          <TabBar />
-        </CartProvider>
+        <PricingProvider>
+          <CartProvider>
+            <SiteHeader />
+            <main id="contenu">{children}</main>
+            <FooterGate>
+              <SiteFooter />
+            </FooterGate>
+            <TabBar />
+          </CartProvider>
+        </PricingProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd).replace(/</g, "\\u003c") }} />
       </body>
     </html>

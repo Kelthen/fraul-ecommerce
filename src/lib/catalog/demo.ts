@@ -25,9 +25,11 @@ const NAMES: Record<CategoryId, string[]> = {
   cap: ["Casquette brodée", "Casquette 5 panneaux", "Bob", "Casquette délavée", "Casquette logo"],
   bag: ["Sacoche bandoulière", "Sac banane", "Tote bag", "Pochette", "Sac à dos"],
 };
-const PRICE: Record<CategoryId, [number, number]> = {
-  tee: [65, 95], hoodie: [140, 220], pants: [120, 180], sneaker: [120, 240], cap: [35, 70], bag: [45, 160],
+/** Coût fournisseur de démo, en ¥ (fourchette par catégorie), et poids moyen en grammes. */
+const COST_CNY: Record<CategoryId, [number, number]> = {
+  tee: [150, 230], hoodie: [340, 530], pants: [290, 430], sneaker: [290, 580], cap: [85, 170], bag: [110, 390],
 };
+const WEIGHT_G: Record<CategoryId, number> = { tee: 250, hoodie: 700, pants: 600, sneaker: 1300, cap: 150, bag: 600 };
 
 /** Nombre d'articles par rayon et par marque (démo). */
 export const PER_RAYON = 6;
@@ -41,7 +43,7 @@ export const BRANDS: Brand[] = ALL_BRANDS.map((name) => ({
 
 function makeProducts(brand: Brand, cat: Category): Product[] {
   const names = NAMES[cat.id];
-  const [lo, hi] = PRICE[cat.id];
+  const [lo, hi] = COST_CNY[cat.id];
   const seed = hash(`${brand.name}|${cat.id}`);
   return Array.from({ length: PER_RAYON }, (_, i) => {
     const ci = (i * 3 + seed) % COLORS.length;
@@ -53,7 +55,7 @@ function makeProducts(brand: Brand, cat: Category): Product[] {
       brandName: brand.name,
       category: cat.id,
       name,
-      price: Math.round((lo + ((i * 37 + seed) % (hi - lo))) / 5) * 5,
+      cost: { cny: Math.round((lo + ((i * 37 + seed) % (hi - lo))) / 5) * 5, g: WEIGHT_G[cat.id] },
       color,
       accent: accentFor(color),
       colors: [color, COLORS[(ci + 3) % COLORS.length], COLORS[(ci + 6) % COLORS.length]],
