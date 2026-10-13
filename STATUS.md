@@ -62,6 +62,7 @@ _Dernière mise à jour : 2026-10-13 par serge (R1 à R6 validés)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-13 | **Lancement sur USA, Canada, Royaume-Uni, France, Belgique seulement.** L'Afrique (dont l'Afrique de l'Ouest) est mise de côté pour le moment, à revoir plus tard. | Serge |
 | 2026-10-13 | **Serge valide R1 à R6.** Précisions : devise affichée en code (USD/CAD/GBP/EUR) car « $ » est ambigu ; marge minimale de test 20 %. **À corriger dans la PR #2 avant merge :** l'arrondi toujours vers le bas fausse les remises sur les petits prix (VIP = Fidèle à 29 sur un article à 39) → arrondi au plus proche. Détail dans CLAUDE.md §9. | Serge |
 | 2026-10-12 | **Stratégie de prix de Serge : accord de Rhamone sur l'ensemble** (CLAUDE.md §9). Ses points R1 à R6 sont des **contre-propositions ouvertes** : Serge peut répondre ; Rhamone commence à construire sur cette base en attendant. | Serge + Rhamone, discussion ouverte |
 | 2026-10-12 | Contre-propositions de Rhamone (détail et raisons dans CLAUDE.md §9) : ⛔ R1 pas de sélecteur « Livrer en » (aucun pays affiché) · ➕ R2 ligne « Prix final confirmé selon l'adresse de livraison » · ➕ R3 code WhatsApp d'abord, bienvenue limitée par numéro/adresse/carte · ⛔ R4 connecté = seulement son prix · ➕ R5 prix plancher · ➕ R6 lancement zones + 2-3 groupes + invitations. | Rhamone |
