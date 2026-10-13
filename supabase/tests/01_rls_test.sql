@@ -53,3 +53,25 @@ set role authenticated; set request.jwt.claim.sub = '33333333-3333-3333-3333-333
 select 'admin voit produits (brouillon compris): '||count(*) from products; -- attendu 2
 select 'admin voit commandes: '||count(*) from orders;           -- attendu 1
 reset role;
+
+-- Fonctions internes hors de l'API (migration 0002)
+select 'fonctions internes dans public: '||count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.proname in ('staff_role_of', 'my_supplier_id'); -- attendu 0
+
+-- Livreur et fournisseur (les règles passent par private.staff_role_of / private.my_supplier_id)
+insert into auth.users values ('44444444-4444-4444-4444-444444444444'), ('55555555-5555-5555-5555-555555555555');
+insert into suppliers (id, name) values ('eeeeeeee-0000-0000-0000-000000000001', 'Fournisseur test');
+insert into staff (user_id, role) values ('44444444-4444-4444-4444-444444444444', 'courier');
+insert into staff (user_id, role, supplier_id) values ('55555555-5555-5555-5555-555555555555', 'supplier', 'eeeeeeee-0000-0000-0000-000000000001');
+insert into product_variants (id, product_id, sku, color_name, size, supplier_cost)
+  select 'ffffffff-0000-0000-0000-000000000001', id, 'SKU-1', 'Noir', 'M', 6000 from products where slug = 'p-actif';
+insert into order_items (order_id, variant_id, supplier_id, title, color_name, size, qty, unit_price, unit_cost)
+  values ('dddddddd-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000001', 'A', 'Noir', 'M', 1, 1000, 6000);
+set role authenticated; set request.jwt.claim.sub = '44444444-4444-4444-4444-444444444444';
+select 'livreur voit expéditions: '||count(*) from shipments;     -- attendu 1
+select 'livreur voit commandes: '||count(*) from orders;          -- attendu 0
+reset role;
+set role authenticated; set request.jwt.claim.sub = '55555555-5555-5555-5555-555555555555';
+select 'fournisseur voit ses lignes: '||count(*) from order_items; -- attendu 1
+select 'fournisseur voit commandes: '||count(*) from orders;      -- attendu 0
+reset role;

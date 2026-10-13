@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, plan fournisseur)_
+_Dernière mise à jour : 2026-10-13 par rhamon (projet Supabase créé, schéma appliqué)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -20,7 +20,8 @@ _Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, pla
 | Langue du site | Français (anglais prévu) | 2026-10-12 |
 | Email / téléphone publics | [À FOURNIR] | |
 | Domaine | [À FOURNIR] | |
-| Source des données | Catalogue de démo dans `src/lib/catalog/` ; base Supabase prête mais vide | 2026-10-12 |
+| Source des données | Catalogue de démo dans `src/lib/catalog/` ; base Supabase créée (schéma appliqué) mais vide et pas encore branchée au site | 2026-10-13 |
+| Base de données | Supabase, projet `fraul` (`rqrdccsxyyufqlenmpct`, USA Est), plan gratuit, organisation « kelthenrift-prog's Org » — Serge pas encore membre | 2026-10-13 |
 
 ## ✅ En ligne (preview, pas encore en production)
 
@@ -29,6 +30,7 @@ _Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, pla
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
 - Fraul Walk en T : 27 boutiques, version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
+- Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
@@ -43,7 +45,7 @@ _Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, pla
 1. Plan MVC validé par Serge le 13 oct. (réponses en fin de `docs/PLAN-MVC.md`) → étape 1 faite par Rhamone (PR #5)
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
-4. Créer le projet Supabase et appliquer le schéma — rhamon
+4. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
 5. Paiement Stripe en mode test
 6. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
 7. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
@@ -64,6 +66,7 @@ _Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, pla
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-13 | **Supabase en plan gratuit** (2 projets actifs max) : le projet `kelthen-social-publishing` est **mis en pause** pour faire place à `fraul`. Le relancer obligera à en mettre un autre en pause. | Rhamone |
 | 2026-10-13 | **Plan MVC validé** : on garde Next.js, rangement MVC, Walk = cœur du site avec liste en repli, `/marques/:slug`, on démarre par l'étape 1. | Serge |
 | 2026-10-13 | **Droits de douane payés par le client mais inclus dans le prix affiché (DDP)** : « Droits et taxes inclus », rien à payer à la livraison. | Serge |
 | 2026-10-13 | **WeChat : lien portail maintenant** (lien personnel épinglé dans WeChat, interface en chinois, bouton « Copier pour WeChat »), **robot WeCom plus tard**. Détail : `docs/FOURNISSEUR-COMMANDES.md`. | Serge |
