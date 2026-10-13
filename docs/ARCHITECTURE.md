@@ -252,12 +252,14 @@ Pages prévues, en fr et en en :
    et UE : TVA à collecter dès le premier article (IOSS côté UE). À valider
    avec un comptable : livraison **droits payés (DDP)** ou à la charge du
    client.
+   → **Décidé le 13 oct. 2026 (Serge) : DDP, droits inclus dans le prix affiché.** Voir `docs/FOURNISSEUR-COMMANDES.md` §3.
 3. **Entité juridique et pays** de l'entreprise : nécessaire pour Stripe, les
    CGV et la fiscalité, et **décide Shopify hybride ou sur mesure** `[À FOURNIR]`.
 4. **WeChat** : il n'existe pas d'API simple pour écrire à un compte WeChat
    personnel. Options : (a) lien vers le portail que le livreur ouvre dans
    WeChat, avec message prêt à copier ; (b) robot de groupe **WeCom**
    (WeChat Work), si fournisseur et livreur acceptent. À trancher avec Serge.
+   → **Décidé le 13 oct. 2026 (Serge) : (a) maintenant, (b) plus tard.** Voir `docs/FOURNISSEUR-COMMANDES.md` §2.
 
 ## 9. Ordre de construction
 

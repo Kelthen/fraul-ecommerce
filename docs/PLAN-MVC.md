@@ -214,3 +214,9 @@ Le choix se fait à un seul endroit : `hooks/useFallbackMode.ts`.
 2. **Walk = cœur du site**, avec la liste seulement en repli (décision du 2026-10-12) ? Ou le Walk devient optionnel ?
 3. Garder `/marques/:slug` (avec redirection depuis `/marque/:slug`) ?
 4. On démarre par l'**étape 1** ?
+
+> 🗣️ **Serge, 13 oct. 2026 — ✅ plan validé.**
+> 1. ✅ On garde Next.js et on range en MVC (pas de réécriture en Vite).
+> 2. ✅ Walk = cœur du site, liste classique en repli (téléphone sans 3D, économie de données, mouvement réduit).
+> 3. ✅ On garde `/marques/:slug`, avec redirection depuis `/marque/:slug`.
+> 4. ✅ On démarre par l'étape 1.
