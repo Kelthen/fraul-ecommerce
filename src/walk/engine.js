@@ -5,14 +5,13 @@
 // quand on quitte la page.
 import { GARMENT_PATHS as P } from "@/lib/catalog/art";
 import { DARK, accentFor } from "@/lib/catalog/demo";
+import { createLayerStack } from "./models/layers";
+import { BAR_X, BAR_Z, CEIL, SLOT, SLOTS, STEM_END, STEM_X } from "./models/mall-layout";
+import { clamp, dist2, ease, lerp, smooth } from "./models/math";
+import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
+import { ENTRY, EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
 
 let THREE = null;
-
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
-const dist2 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 /**
  * Démarre le Fraul Walk dans `root`.
@@ -54,23 +53,21 @@ export function startWalk(root, o) {
   /* ===== Couches : historique (bouton retour du téléphone) et focus ===== */
   // Annuaire, boutique, rayon, zoom : chaque couche ouverte ajoute une entrée d'historique (même URL),
   // si bien que « retour » ferme la couche du dessus. La pile JS fait foi ; l'historique la suit (sync).
-  const stack = [];
+  const layers = createLayerStack();
   let depth = 0, pending = false;
-  const hasLayer = (name) => stack.some((L) => L.name === name);
+  const hasLayer = layers.has;
   function sync() {
     if (pending || dead) return;                        // un retour lancé par nous est en route
-    while (depth < stack.length) history.pushState({ fw: ++depth }, "");
-    if (depth > stack.length) { pending = true; history.go(stack.length - depth); }
+    while (depth < layers.size) history.pushState({ fw: ++depth }, "");
+    if (depth > layers.size) { pending = true; history.go(layers.size - depth); }
   }
-  // Ferme les couches au-dessus de i, de haut en bas ; seule la dernière fermée est animée.
-  function shut(i) { stack.splice(i).reverse().forEach((L, k, a) => L.close(k === a.length - 1)); }
-  function openLayer(name, close) { if (!hasLayer(name)) { stack.push({ name, close }); sync(); } }
-  function closeLayer(name) { const i = stack.findIndex((L) => L.name === name); if (i >= 0) { shut(i); sync(); } }
-  function dropLayer(name) { const i = stack.findIndex((L) => L.name === name); if (i >= 0) { stack.splice(i, 1); sync(); } }
+  function openLayer(name, close) { if (layers.open(name, close)) sync(); }
+  function closeLayer(name) { if (layers.close(name)) sync(); }
+  function dropLayer(name) { if (layers.drop(name)) sync(); }
   on(window, "popstate", (e) => {
     const d = (e.state && e.state.fw) || 0;
     depth = d;
-    if (pending) pending = false; else if (d < stack.length) shut(d);
+    if (pending) pending = false; else layers.shutTo(d);
     sync();
     trapUpdate();
   });
@@ -269,36 +266,11 @@ export function startWalk(root, o) {
      boutique à la fois (vitrines toujours à droite), on fait le tour de la barre du T
      autour de la pièce centrale, puis on redescend vers la sortie. */
   const SHOPS = o.shops.map((s) => s.style);
-  const SLOT = 8.5, STEM_X = 7, STEM_END = 50, BAR_X = 33, BAR_Z = -32, CEIL = 6.4;
-  const SLOTS = (() => {
-    const s = [], put = (x, z, nx, nz) => s.push({ x, z, nx, nz });
-    [37.75, 29.25, 20.75, 12.25].forEach((z) => put(STEM_X, z, -1, 0));          // 1-4 : on monte le tronc
-    [11.5, 20, 28.5].forEach((x) => put(x, 0, 0, -1));                            // 5-7 : barre, mur du bas à droite
-    [-7.5, -16, -24.5].forEach((z) => put(BAR_X, z, -1, 0));                      // 8-10 : bout droit
-    [25.5, 17, 8.5, 0, -8.5, -17, -25.5].forEach((x) => put(x, BAR_Z, 0, 1));     // 11-17 : mur du haut
-    [-24.5, -16, -7.5].forEach((z) => put(-BAR_X, z, 1, 0));                      // 18-20 : bout gauche
-    [-28.5, -20, -11.5].forEach((x) => put(x, 0, 0, -1));                         // 21-23 : barre, mur du bas à gauche
-    [12.25, 20.75, 29.25, 37.75].forEach((z) => put(-STEM_X, z, 1, 0));           // 24-27 : on redescend
-    return s;
-  })();
   const N = Math.min(SHOPS.length, SLOTS.length);
 
-  // Parcours : entrée → 27 arrêts face aux vitrines → sortie. Chaque arrêt marque une pause (DW).
-  const EYE = 1.75, LOOK_Y = 2.3, DW = 0.45;
-  const ENTRY = { p: [0, STEM_END + 9], l: [0, 2.2, 18] };
-  const EXIT = { p: [0, STEM_END + 9], l: [0, 2.2, STEM_END + 40] };
+  // Parcours : entrée → 27 arrêts face aux vitrines → sortie (src/walk/models/walk-path.ts).
   let dist = 10;
-  const stopNode = (k) => { const s = SLOTS[k]; return { p: [s.x + s.nx * dist, s.z + s.nz * dist], l: [s.x, LOOK_Y, s.z] }; };
-  const node = (j) => (j === 0 ? ENTRY : j === N + 1 ? EXIT : stopNode(j - 1));
-  function pathAt(p) {
-    const u = clamp(p, 0, 1) * (N + 1);
-    const i = Math.min(Math.floor(u), N), t = Math.min(u - i, 1);
-    const a = node(i), b = node(i + 1), dw = i === 0 ? 0 : DW;
-    const m = t <= dw ? 0 : ease((t - dw) / (1 - dw));
-    // boutique regardée : -1 = entrée, -2 = sortie
-    const shop = i === 0 ? (t > 0.55 ? 0 : -1) : m < 0.5 ? i - 1 : i < N ? i : -2;
-    return { x: lerp(a.p[0], b.p[0], m), z: lerp(a.p[1], b.p[1], m), lx: lerp(a.l[0], b.l[0], m), ly: lerp(a.l[1], b.l[1], m), lz: lerp(a.l[2], b.l[2], m), shop, intro: i === 0 ? 1 - t : 0 };
-  }
+  const pathAt = (p) => pathAtFor(p, N, dist);
 
   let MALL = null, progress = 0, curShop = 0, curKey = null, walkOpen = false, storeOpen = false;
   const walkEl = $("#walk"), track = $("#walkTrack");
@@ -326,7 +298,7 @@ export function startWalk(root, o) {
   }
   on(walkEl, "scroll", onWalkScroll, { passive: true });
   function jumpToShop(k) {
-    const p = (k + 1 + 0.1) / (N + 1);
+    const p = progressForShop(k, N);
     walkEl.scrollTop = p * (track.offsetHeight - walkEl.clientHeight);
     if (MALL) MALL.snap(); onWalkScroll();
   }
@@ -550,28 +522,7 @@ export function startWalk(root, o) {
   }
 
   /* ===== La boutique (un seul gabarit pour toutes les marques) ===== */
-  const ZONES = {
-    door: { p: [0, 2.8], look: [0, 1.5, -16] }, hub: { p: [0, -3.2], look: [0, 1.45, -16] },
-    tee: { p: [-2.2, -6.4], look: [-6, 0.75, -6.4] }, hoodie: { p: [-2.2, -12.4], look: [-6, 0.75, -12.4] },
-    pants: { p: [2.2, -11.9], look: [6, 0.6, -11.9] }, cap: { p: [2.5, -4.8], look: [6, 0.85, -4.8] },
-    sneaker: { p: [-2.9, -12.9], look: [-3.75, 0.95, -16] }, bag: { p: [0, -6.3], look: [0, 0.35, -8.8] },
-  };
-  const CAR = {
-    tee: { o: [-5.5, 1.375, -6.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 0.75, rise: 0.05, close: 1.0 },
-    hoodie: { o: [-5.5, 1.375, -12.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 0.75, rise: 0.05, close: 1.0 },
-    pants: { o: [5.5, 1.3, -11.9], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.62, size: [0.8, 1.0], pull: 0.75, rise: 0.05, close: 0.85 },
-    cap: { o: [5.8, 1.52, -4.8], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.5, size: [0.46, 0.5], pull: 0.6, rise: 0.04, close: 1.5 },
-    sneaker: { o: [-3.75, 1.53, -15.7], d: [1, 0, 0], out: [0, 0, 1], sp: 0.62, size: [0.58, 0.32], pull: 0.6, rise: 0.1, close: 2.0 },
-    bag: { o: [0, 1.12, -8.8], d: [1, 0, 0], out: [0, 0, 1], sp: 0.42, size: [0.38, 0.42], pull: 0.45, rise: 0.42, close: 1.7 },
-  };
-  const ISL = { x0: -1.9, x1: 1.9, z0: -10.2, z1: -7.4 };
-  function segHits(a, b) { for (let k = 0; k <= 24; k++) { const t = k / 24, x = lerp(a[0], b[0], t), z = lerp(a[1], b[1], t); if (x > ISL.x0 && x < ISL.x1 && z > ISL.z0 && z < ISL.z1) return true; } return false; }
-  function route(a, b) {
-    if (!segHits(a, b)) return [a, b];
-    let best = null;
-    [[2.7, -8.8], [-2.7, -8.8], [2.7, -6.6], [-2.7, -6.6], [2.7, -11], [-2.7, -11]].forEach((c) => { if (segHits(a, c) || segHits(c, b)) return; const L = dist2(a, c) + dist2(c, b); if (!best || L < best.L) best = { c, L }; });
-    return [a, best ? best.c : [2.7, -8.8], b];
-  }
+  // Plan de la boutique (zones, portants, contournement de l'îlot) : src/walk/models/store-layout.ts.
 
   const storeEl = $("#store");
   let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false, swiped = false;
