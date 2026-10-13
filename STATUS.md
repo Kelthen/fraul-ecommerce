@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, plan fournisseur)_
+_Dernière mise à jour : 2026-10-13 par rhamon (MVC étape 2)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -29,6 +29,7 @@ _Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, pla
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
 - Fraul Walk en T : 27 boutiques, version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
+- Prix par zone et par groupe, mode test, page /test/prix (PR #2) ; MVC étape 1 : modèles du Walk (PR #5)
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
@@ -36,11 +37,11 @@ _Dernière mise à jour : 2026-10-13 par serge (MVC validé, douane, WeChat, pla
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| Prix par zone et par groupe (mode test) : calcul, devise, page /test/prix | rhamon | feat/rhamon/prix | 2026-10-12 |
+| MVC étape 2 : bouton retour et focus du Walk sortis du moteur (aucun changement visible) | rhamon | feat/rhamon/mvc-etape-2 | 2026-10-13 |
 
 ## 🆕 À faire (par priorité)
 
-1. Plan MVC validé par Serge le 13 oct. (réponses en fin de `docs/PLAN-MVC.md`) → étape 1 faite par Rhamone (PR #5)
+1. Plan MVC validé par Serge le 13 oct. (`docs/PLAN-MVC.md`) → étape 1 en ligne (PR #5), étape 2 en cours ; ensuite étapes 3 et 4 (vues 3D, contrôleurs du mall)
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Créer le projet Supabase et appliquer le schéma — rhamon
