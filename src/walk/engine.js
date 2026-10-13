@@ -5,7 +5,8 @@
 // quand on quitte la page.
 import { GARMENT_PATHS as P } from "@/lib/catalog/art";
 import { DARK, accentFor } from "@/lib/catalog/demo";
-import { createLayerStack } from "./models/layers";
+import { createFocusController } from "./controllers/focus";
+import { connectHistory } from "./controllers/history";
 import { BAR_X, BAR_Z, CEIL, SLOT, SLOTS, STEM_END, STEM_X } from "./models/mall-layout";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
@@ -50,51 +51,11 @@ export function startWalk(root, o) {
 
   function addToCart(it, size) { o.onAdd(it, size); }
 
-  /* ===== Couches : historique (bouton retour du téléphone) et focus ===== */
-  // Annuaire, boutique, rayon, zoom : chaque couche ouverte ajoute une entrée d'historique (même URL),
-  // si bien que « retour » ferme la couche du dessus. La pile JS fait foi ; l'historique la suit (sync).
-  const layers = createLayerStack();
-  let depth = 0, pending = false;
-  const hasLayer = layers.has;
-  function sync() {
-    if (pending || dead) return;                        // un retour lancé par nous est en route
-    while (depth < layers.size) history.pushState({ fw: ++depth }, "");
-    if (depth > layers.size) { pending = true; history.go(layers.size - depth); }
-  }
-  function openLayer(name, close) { if (layers.open(name, close)) sync(); }
-  function closeLayer(name) { if (layers.close(name)) sync(); }
-  function dropLayer(name) { if (layers.drop(name)) sync(); }
-  on(window, "popstate", (e) => {
-    const d = (e.state && e.state.fw) || 0;
-    depth = d;
-    if (pending) pending = false; else layers.shutTo(d);
-    sync();
-    trapUpdate();
-  });
-  // Arrivée sur une entrée laissée par une visite précédente (retour depuis une fiche produit) : on la nettoie.
-  depth = (history.state && history.state.fw) || 0;
-
-  // Fenêtre modale : fond inerte, Tab bouclé dans la couche du dessus, focus rendu à l'ouverture.
-  const FOCUSABLE = "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
-  const topModal = () => (!$("#dir").hidden ? $("#dir") : !$("#store").hidden ? $("#store") : null);
-  function trapUpdate() {
-    const d = !$("#dir").hidden, s = !$("#store").hidden;
-    $("#walk").inert = d || s;
-    $("#store").inert = d && s;
-  }
-  on(window, "keydown", (e) => {
-    const m = topModal(); if (e.key !== "Tab" || !m) return;
-    const els = [...m.querySelectorAll(FOCUSABLE)].filter((el) => !el.disabled && el.getClientRects().length);
-    if (!els.length) { e.preventDefault(); return; }
-    const first = els[0], last = els[els.length - 1], a = document.activeElement;
-    if (e.shiftKey && (a === first || !m.contains(a))) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && (a === last || !m.contains(a))) { e.preventDefault(); first.focus(); }
-  });
-  const opener = () => { const a = document.activeElement; return a && a !== document.body && root.contains(a) ? a : null; };
-  function giveBack(el, fallback) {
-    const t = el && el.isConnected && el.getClientRects().length && !el.closest("[inert]") ? el : fallback;
-    if (t && t.getClientRects().length) t.focus({ preventScroll: true });
-  }
+  /* ===== Couches : bouton retour du téléphone (controllers/history.ts) et focus (controllers/focus.ts) ===== */
+  const focus = createFocusController({ root, walk: $("#walk"), store: $("#store"), dir: $("#dir"), signal: life.signal });
+  const trapUpdate = focus.update, opener = focus.opener, giveBack = focus.giveBack;
+  const nav = connectHistory({ isDead: () => dead, onBack: trapUpdate, signal: life.signal });
+  const hasLayer = nav.has, openLayer = nav.open, closeLayer = nav.close, dropLayer = nav.drop, sync = nav.sync;
 
   /* ===== Annuaire ===== */
   const dir = $("#dir"), dirq = $("#dirq");
