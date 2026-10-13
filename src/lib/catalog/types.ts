@@ -2,6 +2,8 @@
 // (supabase/migrations/0001_initial_schema.sql) pour qu'on puisse remplacer
 // les données de démonstration par la vraie base sans toucher aux pages.
 
+import type { Cost } from "@/models/pricing/price";
+
 export type FontKey = "sansX" | "sansXi" | "sansL" | "serif" | "serifI" | "serifIB";
 
 /** Style d'une marque : pilote la vitrine, l'enseigne, l'intérieur de la boutique et les mannequins. */
@@ -43,8 +45,8 @@ export type Product = {
   brandName: string;
   category: CategoryId;
   name: string;
-  /** Prix affiché, en unités entières (démo). Le vrai prix sera calculé côté serveur. */
-  price: number;
+  /** Coût fournisseur (¥) et poids (g) : le prix affiché en est calculé par zone et par groupe (src/models/pricing). */
+  cost: Cost;
   /** Couleur principale et couleur d'accent du dessin provisoire. */
   color: string;
   accent: string;
