@@ -6,6 +6,7 @@ Vérifie la migration et la sécurité ligne par ligne (RLS) sur un Postgres loc
 createdb fraul_test
 psql -d fraul_test -f supabase/tests/00_supabase_stub.sql        # imite auth.users, auth.uid(), rôles anon/authenticated
 psql -d fraul_test -f supabase/migrations/0001_initial_schema.sql
+psql -d fraul_test -f supabase/migrations/0002_securite_fonctions.sql
 psql -d fraul_test -tAq -f supabase/tests/01_rls_test.sql         # chaque ligne dit ce qui est attendu
 ```
 
