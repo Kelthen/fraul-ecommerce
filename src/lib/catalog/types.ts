@@ -26,10 +26,17 @@ export type Brand = {
   inWalk: boolean;
 };
 
-export type CategoryId = "tee" | "hoodie" | "pants" | "sneaker" | "cap" | "bag";
+export type CategoryId =
+  | "tee" | "hoodie" | "jacket" | "pants" | "shorts" | "socks" | "sneaker"
+  | "cap" | "glasses" | "watch" | "jewelry" | "bag";
 
-/** Emplacement d'une pièce dans « Crée ta tenue ». */
-export type OutfitSlot = "top" | "bottom" | "shoes" | "accessory";
+/**
+ * Emplacement d'une pièce dans « Crée ta tenue ». Une seule pièce par emplacement :
+ * pantalon et short partagent `bottom`, donc ils s'excluent. `accessory` (sacs) reste hors tenue.
+ * Doit rester aligné sur l'enum SQL `outfit_slot` (migration proposée à Serge).
+ */
+export type OutfitSlot =
+  | "cap" | "glasses" | "neck" | "watch" | "top" | "layer" | "bottom" | "socks" | "shoes" | "accessory";
 
 export type Category = {
   id: CategoryId;

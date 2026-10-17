@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  async redirects() {
+    // « Chapeaux » est devenu « Casquettes » (oct. 2026) : les anciens liens restent valables.
+    return [{ source: "/categorie/chapeaux", destination: "/categorie/casquettes", permanent: true }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -4,12 +4,21 @@
 import { ALL_BRANDS, WALK_BRANDS, brandStyle, hash, slugify } from "./brands";
 import type { Brand, Category, CategoryId, Product } from "./types";
 
+/** Catégories du site, dans l'ordre d'affichage. Ajouter une catégorie : une ligne ici + NAMES, COST_CNY,
+ *  WEIGHT_G ci-dessous + son dessin (art.ts). Dans le Walk, elle n'apparaît qu'une fois son portant placé
+ *  (src/walk/models/store-layout.ts). */
 export const CATEGORIES: Category[] = [
   { id: "tee", slug: "t-shirts", label: "T-shirts", slot: "top", sizes: ["XS", "S", "M", "L", "XL"] },
-  { id: "hoodie", slug: "hoodies", label: "Hoodies", slot: "top", sizes: ["S", "M", "L", "XL", "XXL"] },
+  { id: "hoodie", slug: "hoodies", label: "Hoodies et sweats", slot: "layer", sizes: ["S", "M", "L", "XL", "XXL"] },
+  { id: "jacket", slug: "vestes-manteaux", label: "Vestes et manteaux", slot: "layer", sizes: ["S", "M", "L", "XL", "XXL"] },
   { id: "pants", slug: "pantalons", label: "Pantalons", slot: "bottom", sizes: ["28", "30", "32", "34", "36"] },
+  { id: "shorts", slug: "shorts", label: "Shorts", slot: "bottom", sizes: ["S", "M", "L", "XL"] },
+  { id: "socks", slug: "chaussettes", label: "Chaussettes", slot: "socks", sizes: ["36-40", "41-46"] },
   { id: "sneaker", slug: "sneakers", label: "Sneakers", slot: "shoes", sizes: ["40", "41", "42", "43", "44", "45"] },
-  { id: "cap", slug: "chapeaux", label: "Chapeaux", slot: "accessory", sizes: ["Unique"] },
+  { id: "cap", slug: "casquettes", label: "Casquettes", slot: "cap", sizes: ["Unique"] },
+  { id: "glasses", slug: "lunettes", label: "Lunettes", slot: "glasses", sizes: ["Unique"] },
+  { id: "watch", slug: "montres", label: "Montres", slot: "watch", sizes: ["Unique"] },
+  { id: "jewelry", slug: "bijoux", label: "Bijoux", slot: "neck", sizes: ["Unique"] },
   { id: "bag", slug: "accessoires", label: "Accessoires", slot: "accessory", sizes: ["Unique"] },
 ];
 
@@ -24,12 +33,22 @@ const NAMES: Record<CategoryId, string[]> = {
   sneaker: ["Sneaker basse cuir", "Sneaker montante", "Runner mesh", "Sneaker rétro", "Sneaker plateforme"],
   cap: ["Casquette brodée", "Casquette 5 panneaux", "Bob", "Casquette délavée", "Casquette logo"],
   bag: ["Sacoche bandoulière", "Sac banane", "Tote bag", "Pochette", "Sac à dos"],
+  jacket: ["Veste workwear", "Doudoune", "Veste coach", "Bomber", "Parka"],
+  shorts: ["Short molleton", "Short cargo", "Short de bain", "Short en jean", "Short mesh"],
+  socks: ["Chaussettes logo", "Chaussettes côtelées", "Lot de 3 paires", "Chaussettes hautes", "Chaussettes sport"],
+  glasses: ["Lunettes de soleil", "Lunettes ovales", "Lunettes rectangulaires", "Masque solaire", "Lunettes aviateur"],
+  watch: ["Montre acier", "Montre chronographe", "Montre plongée", "Montre cuir", "Montre digitale"],
+  jewelry: ["Collier chaîne", "Pendentif", "Chaîne cubaine", "Collier perles", "Ras-du-cou"],
 };
 /** Coût fournisseur de démo, en ¥ (fourchette par catégorie), et poids moyen en grammes. */
 const COST_CNY: Record<CategoryId, [number, number]> = {
   tee: [150, 230], hoodie: [340, 530], pants: [290, 430], sneaker: [290, 580], cap: [85, 170], bag: [110, 390],
+  jacket: [480, 900], shorts: [130, 230], socks: [30, 70], glasses: [120, 300], watch: [200, 600], jewelry: [80, 250],
 };
-const WEIGHT_G: Record<CategoryId, number> = { tee: 250, hoodie: 700, pants: 600, sneaker: 1300, cap: 150, bag: 600 };
+const WEIGHT_G: Record<CategoryId, number> = {
+  tee: 250, hoodie: 700, pants: 600, sneaker: 1300, cap: 150, bag: 600,
+  jacket: 1200, shorts: 350, socks: 100, glasses: 150, watch: 200, jewelry: 80,
+};
 
 /** Nombre d'articles par rayon et par marque (démo). */
 export const PER_RAYON = 6;

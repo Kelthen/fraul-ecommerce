@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-13 par rhamon (projet Supabase créé, schéma appliqué)_
+_Dernière mise à jour : 2026-10-17 par rhamon (nouvelles catégories, décisions du plan en 6 chantiers)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -31,6 +31,7 @@ _Dernière mise à jour : 2026-10-13 par rhamon (projet Supabase créé, schéma
 - Fraul Walk en T : 27 boutiques, version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
+- Catégories : 12 au lieu de 6 (ajout Vestes et manteaux, Shorts, Chaussettes, Lunettes, Montres, Bijoux ; « Chapeaux » → « Casquettes », ancien lien redirigé ; « Hoodies » → « Hoodies et sweats »). Dessins provisoires, coûts de démo. Dans le Walk, seuls les rayons qui ont un portant s'affichent (nouveaux portants : plus tard) — rhamon
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
@@ -45,10 +46,13 @@ _Dernière mise à jour : 2026-10-13 par rhamon (projet Supabase créé, schéma
 1. Plan MVC validé par Serge le 13 oct. (réponses en fin de `docs/PLAN-MVC.md`) → étape 1 faite par Rhamone (PR #5)
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
-4. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
-5. Paiement Stripe en mode test
-6. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-7. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
+4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → modes de mall + 4 marques (Travis Scott, Saint Michael, ERD, Polo Ralph Lauren ; après merge de #6) → portes vitrées d'entrée → page Marques en pastilles → photos du fournisseur (dossier à recevoir) → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
+5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
+6. **Serge** : valider la migration des emplacements de tenue (`outfit_slot` : ajouter `cap`, `glasses`, `neck`, `watch`, `layer`, `socks`) proposée dans la PR des catégories ; plus tard retirer `customers.whatsapp` et le canal `whatsapp`
+7. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
+8. Paiement Stripe en mode test
+9. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
+10. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
 
 ## ⏳ Bloqué — attend le client
 
@@ -66,6 +70,13 @@ _Dernière mise à jour : 2026-10-13 par rhamon (projet Supabase créé, schéma
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-17 | **Plus de WhatsApp sur le site** (connexion, vérification, relances) : tout passe par e-mail. Bienvenue limitée par e-mail, adresse et carte. Les liens d'invitation de Fraul partent par e-mail depuis son tableau de bord. **Remplace R3, validé par Serge le 13 oct. : discussion ouverte**, Serge peut répondre. | Rhamone |
+| 2026-10-17 | **Connexion : e-mail + mot de passe, avec code par e-mail** (vérification de l'e-mail, mot de passe oublié). Sécurité partout : RLS, captcha (Turnstile) et limitation des essais, protection contre l'injection de prompt si un assistant IA est ajouté (ARCHITECTURE §4-5). | Rhamone |
+| 2026-10-17 | Pas de logos de marques : nom en texte avec le style d'enseigne (inchangé). | Rhamone |
+| 2026-10-17 | **Crée ta tenue en 3D**, avec une liste 2D toujours utilisable (3D chargée à la demande). Zoom automatique sur la pièce choisie (montre → poignet, lunettes → visage, collier → cou…), puis le client choisit : « Vue d'ensemble », pincer, tourner. | Rhamone |
+| 2026-10-17 | Catégorie **Bijoux** ajoutée (emplacement cou dans la tenue). | Rhamone |
+| 2026-10-17 | Le mall devra accueillir **plusieurs modes** (formes) ; le T est le premier. Le nombre de boutiques vient de la liste des marques. | Rhamone |
+| 2026-10-17 | **Entrée du mall : portes en verre qui coulissent en deux**, avec « Welcome to Fraul Center » gravé sur les portes (le texte s'ouvre avec elles). | Rhamone |
 | 2026-10-13 | **Supabase en plan gratuit** (2 projets actifs max) : le projet `kelthen-social-publishing` est **mis en pause** pour faire place à `fraul`. Le relancer obligera à en mettre un autre en pause. | Rhamone |
 | 2026-10-13 | **Plan MVC validé** : on garde Next.js, rangement MVC, Walk = cœur du site avec liste en repli, `/marques/:slug`, on démarre par l'étape 1. | Serge |
 | 2026-10-13 | **Droits de douane payés par le client mais inclus dans le prix affiché (DDP)** : « Droits et taxes inclus », rien à payer à la livraison. | Serge |
