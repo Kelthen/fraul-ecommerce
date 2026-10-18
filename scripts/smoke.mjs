@@ -36,7 +36,7 @@ await check("aucun pays affiché", async () => {
   if (found.length) throw new Error(`mots trouvés : ${found.join(", ")}`);
 });
 
-await check("page marques : pastilles rondes, recherche", async () => {
+await check("page marques : pastilles, recherche", async () => {
   await page.goto(BASE + "/marques", { waitUntil: "networkidle" });
   const n = await page.locator(".bround").count();
   if (n < 30) throw new Error(`${n} pastilles seulement`);

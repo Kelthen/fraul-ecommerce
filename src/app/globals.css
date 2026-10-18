@@ -172,16 +172,16 @@ p { margin: 0; }
 /* Annuaire */
 .dir-search { width: 100%; max-width: 520px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
 .dir-search::placeholder { color: var(--muted); }
-/* Page Marques : grille de pastilles rondes (3 par ligne sur téléphone). */
+/* Page Marques : grille de pastilles rectangulaires, coins légèrement arrondis (3 par ligne sur téléphone). */
 .bround-grid { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 14px; }
 @media (min-width: 600px) { .bround-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (min-width: 1000px) { .bround-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 30px 22px; } }
 .bround-grid li { display: grid; justify-items: center; gap: 6px; text-align: center; min-width: 0; }
-.bround { container-type: inline-size; width: 100%; min-width: 0; box-sizing: border-box; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; padding: 14%; text-decoration: none; box-shadow: 0 10px 24px rgba(40, 30, 20, 0.14); border: 1px solid rgba(10, 10, 12, 0.12); transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.bround { container-type: inline-size; width: 100%; min-width: 0; box-sizing: border-box; aspect-ratio: 4 / 3; border-radius: 10px; display: grid; place-items: center; padding: 10%; text-decoration: none; box-shadow: 0 10px 24px rgba(40, 30, 20, 0.14); border: 1px solid rgba(10, 10, 12, 0.12); transition: transform .35s cubic-bezier(.16,1,.3,1); }
 .bround:hover, .bround:focus-visible { transform: translateY(-3px) scale(1.03); }
 .bround .wm { line-height: 1.05; text-align: center; overflow-wrap: normal; }
 .bround-name { font-size: 12px; font-weight: 600; color: var(--ink); }
-.bround-walk { font: 700 9px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--bordeaux); text-decoration: none; }
+.bround-walk { font: 700 9px/1.3 var(--body); letter-spacing: .06em; white-space: nowrap; text-transform: uppercase; color: var(--bordeaux); text-decoration: none; }
 .chip { flex: none; display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(104, 2, 9, 0.5); background: rgba(104, 2, 9, 0.06); font: 700 10px/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--bordeaux); text-decoration: none; }
 .chip[aria-current="page"] { background: var(--bordeaux); color: var(--ivory); }
 

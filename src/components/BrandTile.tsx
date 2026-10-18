@@ -5,13 +5,13 @@ import { signCss, signWord } from "@/lib/catalog/brands";
 // Pastille d'une marque : son nom en texte, avec le style de son enseigne (jamais le logo déposé).
 // Changer l'apparence des pastilles, c'est ici (et .btile / .bround dans globals.css).
 //   variant="card"  : pavé rectangulaire (accueil)
-//   variant="round" : pastille ronde (page Marques, comme la grille du fournisseur)
+//   variant="grid"  : pastille rectangulaire aux coins légèrement arrondis (page Marques)
 
-export function BrandTile({ brand, variant = "card" }: { brand: Brand; variant?: "card" | "round" }) {
+export function BrandTile({ brand, variant = "card" }: { brand: Brand; variant?: "card" | "grid" }) {
   const st = brand.style;
   const word = signWord(st);
-  if (variant === "round") {
-    // Taille du texte relative au diamètre (unités cqi) : au plus 2 lignes, les noms longs rétrécissent.
+  if (variant === "grid") {
+    // Taille du texte relative à la largeur de la pastille (unités cqi) : au plus 2 lignes, les noms longs rétrécissent.
     const longest = Math.max(...word.split(" ").map((w) => w.length));
     const fitLen = Math.max(longest, Math.ceil(word.length / 2), 4);
     const size = 78 / (fitLen * (0.66 + st.sp));

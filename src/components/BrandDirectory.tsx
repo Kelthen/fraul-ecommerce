@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { Brand } from "@/lib/catalog";
 import { BrandTile } from "./BrandTile";
 
-/** Annuaire des marques : recherche + grille de pastilles rondes (de A à Z). */
+/** Annuaire des marques : recherche + grille de pastilles (de A à Z). */
 export function BrandDirectory({ brands }: { brands: Brand[] }) {
   const [q, setQ] = useState("");
   const list = brands.filter((b) => b.name.toLowerCase().includes(q.trim().toLowerCase()));
@@ -19,13 +19,11 @@ export function BrandDirectory({ brands }: { brands: Brand[] }) {
       <ul className="bround-grid">
         {list.map((b) => (
           <li key={b.slug}>
-            <BrandTile brand={b} variant="round" />
+            <BrandTile brand={b} variant="grid" />
             <span className="bround-name">{b.name}</span>
-            {b.inWalk && (
-              <Link className="bround-walk" href={`/walk/${b.slug}`}>
-                Dans le mall
-              </Link>
-            )}
+            <Link className="bround-walk" href={`/walk/${b.slug}`}>
+              Voir la boutique
+            </Link>
           </li>
         ))}
       </ul>
