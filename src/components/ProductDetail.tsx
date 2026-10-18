@@ -8,6 +8,7 @@ import { accentFor } from "@/lib/catalog/demo";
 import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { GarmentArt } from "./GarmentArt";
+import { ProductPhotos } from "./ProductPhotos";
 
 const COLOR_NAMES: Record<string, string> = {
   "#F1ECE0": "Écru", "#141416": "Noir", "#680209": "Bordeaux", "#420A0D": "Vin", "#6B6766": "Gris anthracite",
@@ -28,6 +29,9 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
 
   return (
     <div className="pdp">
+      {product.image ? (
+        <ProductPhotos name={product.name} image={product.image} />
+      ) : (
       <div className="pdp-stage">
         <span className="ghost-word" aria-hidden="true">Fraul</span>
         <GarmentArt
@@ -46,11 +50,12 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
           <button className="round" type="button" aria-label="Tourner l'article" onClick={() => setFront((f) => !f)}>›</button>
         </div>
       </div>
+      )}
 
       <div className="pdp-info">
         <p className="eyebrow">{product.brandName} · {categoryLabel}</p>
         <h1 style={{ marginTop: 10 }}>{product.name}</h1>
-        <p className="sub muted">{colorName} · Vue {front ? "de face" : "de dos"}</p>
+        <p className="sub muted">{colorName}{product.image ? "" : ` · Vue ${front ? "de face" : "de dos"}`}</p>
 
         <div className="opt">
           <div className="opt-head">

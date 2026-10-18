@@ -60,6 +60,6 @@ export type Product = {
   /** Variantes de couleur proposées. */
   colors: string[];
   sizes: string[];
-  /** Photo détourée (face / dos) quand elle existe ; sinon on dessine. */
-  image?: { front: string; back?: string };
+  /** Photos (face, dos, détails) quand elles existent ; sinon on dessine. Chemins du registre src/lib/images.ts. */
+  image?: { front: string; back?: string; details?: string[] };
 };
