@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (page Marques en pastilles rectangulaires)_
+_Dernière mise à jour : 2026-10-18 par rhamon (MVC étape 2 mise à jour avec main ; page Marques en pastilles rectangulaires)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -35,6 +35,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (page Marques en pastilles recta
 - Photos réelles (test de rendu, pas pour la mise en ligne) : 35 captures du fournisseur classées par Rhamone → 23 produits (les ensembles Tech Fleece et Polo Ralph Lauren sont séparés en veste + pantalon, la photo « ensemble » sert de détail). Fiche produit : face / dos / détail, toucher pour agrandir. En tête des Nouveautés de l'accueil. Le Walk garde les dessins (photos non détourées) — rhamon
 - 4 nouvelles marques dans l'annuaire : Travis Scott, Saint Michael, ERD, Polo Ralph Lauren (style d'enseigne, seulement leurs vrais produits). **Pas encore dans le mall** (le T est prévu pour 27 vitrines : chantier modes de mall). Une boutique 3D n'affiche que les rayons qui ont des articles — rhamon
 - Catégories : 12 au lieu de 6 (ajout Vestes et manteaux, Shorts, Chaussettes, Lunettes, Montres, Bijoux ; « Chapeaux » → « Casquettes », ancien lien redirigé ; « Hoodies » → « Hoodies et sweats »). Dessins provisoires, coûts de démo. Dans le Walk, seuls les rayons qui ont un portant s'affichent (nouveaux portants : plus tard) — rhamon
+- Prix par zone et par groupe, mode test, page /test/prix (PR #2) ; MVC étape 1 : modèles du Walk (PR #5)
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
@@ -42,11 +43,11 @@ _Dernière mise à jour : 2026-10-18 par rhamon (page Marques en pastilles recta
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| Prix par zone et par groupe (mode test) : calcul, devise, page /test/prix | rhamon | feat/rhamon/prix | 2026-10-12 |
+| MVC étape 2 : bouton retour et focus du Walk sortis du moteur (aucun changement visible) | rhamon | feat/rhamon/mvc-etape-2 | 2026-10-13 |
 
 ## 🆕 À faire (par priorité)
 
-1. Plan MVC validé par Serge le 13 oct. (réponses en fin de `docs/PLAN-MVC.md`) → étape 1 faite par Rhamone (PR #5)
+1. Plan MVC validé par Serge le 13 oct. (`docs/PLAN-MVC.md`) → étape 1 en ligne (PR #5), étape 2 en cours ; ensuite étapes 3 et 4 (vues 3D, contrôleurs du mall)
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → modes de mall (31 boutiques ; après merge de #6) → portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
