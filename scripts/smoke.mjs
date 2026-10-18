@@ -121,12 +121,16 @@ await check("prix : devise de la zone, groupe de test, ligne de confirmation", a
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
   const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 31;
   const track = el.querySelector("#walkTrack");
-  el.scrollTop = ((k + 1 + 0.1) / (n + 2)) * (track.offsetHeight - el.clientHeight); // n boutiques + la Caisse (walk-path.ts)
+  const stops = Number(el.dataset.stops) || n + 1; // n boutiques + la sortie (+ la Caisse si le sac n'est pas vide)
+  el.scrollTop = ((k + 1 + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
 }, k);
 
 await check("fraul walk : mall en T, 31 boutiques", async () => {
+  await page.evaluate(() => localStorage.removeItem("fraul.cart.v2")); // sac vide : pas de Caisse
   await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
   await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
+  const stops = await page.locator("#walk").evaluate((el) => Number(el.dataset.stops));
+  if (stops !== 32) throw new Error(`sac vide : ${stops} étapes (attendu 31 boutiques + la sortie, sans Caisse)`);
   await page.waitForTimeout(2500);
   await shot("09-walk-entree");
   if (await page.locator("#walk.nogl").count()) throw new Error("WebGL indisponible (mode de secours)");
@@ -175,6 +179,7 @@ await check("fraul walk : la Caisse avant la sortie, le sac rempli", async () =>
   const n = Number((await page.locator("#count").textContent()).split("/")[1]);
   await page.locator("#walk").evaluate((el, n) => {
     const track = el.querySelector("#walkTrack");
+    if (Number(el.dataset.stops) !== n + 2) throw new Error("sac rempli mais pas d'arrêt Caisse");
     el.scrollTop = ((n + 1.1) / (n + 2)) * (track.offsetHeight - el.clientHeight);
   }, n);
   await page.locator("#caisse:not([hidden])").waitFor({ timeout: 10000 });

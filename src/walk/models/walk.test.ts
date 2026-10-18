@@ -41,6 +41,13 @@ test("parcours : entrée à 0 %, sortie à 100 %", () => {
   assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], AT_EXIT]);
 });
 
+test("sac vide : pas de Caisse, on va droit aux portes", () => {
+  for (let p = 0; p <= 1; p += 0.001) assert.notEqual(pathAt(p, N, 10, MALL, false).shop, AT_CAISSE, `${p}`);
+  const end = pathAt(1, N, 10, MALL, false);
+  assert.deepEqual([end.x, end.z, end.shop], [EXIT.p[0], EXIT.p[1], AT_EXIT]);
+  assert.equal(pathAt(progressForShop(N - 1, N, false), N, 10, MALL, false).shop, N - 1);
+});
+
 test("la Caisse : dernier arrêt, après la dernière boutique et avant la sortie, face au comptoir", () => {
   const pt = pathAt(progressForCaisse(N), N, 10, MALL), c = MALL.caisse;
   assert.equal(pt.shop, AT_CAISSE);

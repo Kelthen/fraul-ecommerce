@@ -105,6 +105,9 @@ export function WalkExperience({ data, startBrand }: Props) {
     };
   }, [data, startBrand, router]);
 
+  // La Caisse n'apparaît dans le mall que si le sac contient au moins un article.
+  useEffect(() => { walkRef.current?.setCaisse(count > 0); }, [count, data, startBrand]);
+
   return (
     <div className="fw" ref={root}>
       <div className="walk" id="walk" hidden>
@@ -128,37 +131,24 @@ export function WalkExperience({ data, startBrand }: Props) {
               <div className="outro caisse" id="caisse" hidden>
                 <p className="eyebrow">Dernier arrêt avant la sortie</p>
                 <h2>La Caisse</h2>
-                {count ? (
-                  <>
-                    <p className="c-sum">
-                      Ton sac : {count} article{count > 1 ? "s" : ""} · <b><Price costs={lines} /></b>
-                    </p>
-                    <ul className="c-lines">
-                      {lines.slice(0, 4).map((l, i) => (
-                        <li key={`${l.slug}-${l.size}-${i}`}>
-                          <i style={{ background: l.color }} aria-hidden="true" />
-                          <span>{l.brandName} · {l.name}{l.size ? ` · ${l.size}` : ""}{l.qty > 1 ? ` × ${l.qty}` : ""}</span>
-                        </li>
-                      ))}
-                      {lines.length > 4 && <li className="more">+ {lines.length - 4} autre{lines.length - 4 > 1 ? "s" : ""}</li>}
-                    </ul>
-                    <PriceNote />
-                    <div className="acts">
-                      <Link className="pill solid" href="/panier">
-                        Passer à la caisse
-                      </Link>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="c-sum">Ton sac est vide. Entre dans une boutique : « Au panier » le remplit.</p>
-                    <div className="acts">
-                      <button className="pill ghost" type="button" onClick={() => root.current?.querySelector("#walk")?.scrollTo({ top: 0, behavior: "smooth" })}>
-                        Refaire un tour
-                      </button>
-                    </div>
-                  </>
-                )}
+                <p className="c-sum">
+                  Ton sac : {count} article{count > 1 ? "s" : ""} · <b><Price costs={lines} /></b>
+                </p>
+                <ul className="c-lines">
+                  {lines.slice(0, 4).map((l, i) => (
+                    <li key={`${l.slug}-${l.size}-${i}`}>
+                      <i style={{ background: l.color }} aria-hidden="true" />
+                      <span>{l.brandName} · {l.name}{l.size ? ` · ${l.size}` : ""}{l.qty > 1 ? ` × ${l.qty}` : ""}</span>
+                    </li>
+                  ))}
+                  {lines.length > 4 && <li className="more">+ {lines.length - 4} autre{lines.length - 4 > 1 ? "s" : ""}</li>}
+                </ul>
+                <PriceNote />
+                <div className="acts">
+                  <Link className="pill solid" href="/panier">
+                    Passer à la caisse
+                  </Link>
+                </div>
                 <p className="scroll-hint">↓ Continue pour sortir</p>
               </div>
               <div className="outro" id="outro" hidden>
