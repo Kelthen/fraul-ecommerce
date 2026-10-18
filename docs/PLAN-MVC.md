@@ -64,7 +64,8 @@ src/
     useCart.ts  useCartDrawer.ts  useFallbackMode.ts
   walk/
     models/
-      mall-layout.ts           plan du T : emplacements des 27 vitrines (SLOTS), dimensions
+      mall-layout.ts           mesures communes (largeur d'une vitrine, plafond), forme d'une vitrine
+    modes/                     ← formes de mall (« t.ts » : le T, une vitrine par marque) — 18 oct.
       walk-path.ts             parcours caméra : arrêts, pauses, entrée et sortie
       store-layout.ts          plan de la boutique : zones, rayons (ZONES, CAR), contournement de l'îlot
       layers.ts                pile des couches ouvertes (annuaire, boutique, rayon, zoom)
@@ -122,7 +123,8 @@ src/
 | Le texte « Touche la vitrine pour entrer » | `src/content/walk.ts` |
 | Une couleur de la charte | `src/styles/tokens.css` |
 | L'ordre ou le nombre de boutiques du mall | `src/models/catalog/brands.ts` (`WALK_BRANDS`) |
-| La forme du T, l'écart entre vitrines | `src/walk/models/mall-layout.ts` |
+| La forme du T, l'écart entre vitrines | `src/walk/modes/t.ts` (forme) · `src/walk/models/mall-layout.ts` (largeur d'une vitrine) |
+| Changer de mode de mall | `src/walk/modes/index.ts` (`DEFAULT_MODE`) |
 | La vitesse ou les pauses de la promenade | `src/walk/models/walk-path.ts` |
 | L'allure d'une vitrine | `src/walk/views/shopfront.ts` |
 | Le mannequin | `src/walk/views/mannequin.ts` |

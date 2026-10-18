@@ -242,7 +242,7 @@ Pages prévues, en fr et en en :
 
 ## 8. Risques à trancher avant de coder ⚠️
 
-1. **Authenticité des marques.** Si les 27 marques sont vendues sans être
+1. **Authenticité des marques.** Si les marques sont vendues sans être
    des produits authentiques/autorisés, Stripe et les autres prestataires
    **bloquent le compte et gèlent les fonds**, et c'est illégal dans les pays
    visés. Il faut confirmer avec le client la provenance (factures,

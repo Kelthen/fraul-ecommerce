@@ -1,7 +1,7 @@
 // DONNÉES DE DÉMONSTRATION — aucune vraie donnée pour l'instant.
 // Générées de façon déterministe (mêmes produits à chaque build). Elles seront
 // remplacées par la base de données ; seules les fonctions de ./index.ts changent.
-import { ALL_BRANDS, NOT_IN_MALL_YET, WALK_BRANDS, brandStyle, hash, slugify } from "./brands";
+import { ALL_BRANDS, REAL_PRODUCTS_ONLY, WALK_BRANDS, brandStyle, hash, slugify } from "./brands";
 import { IMAGES, type ImageId } from "../images";
 import { SUPPLIER_PRODUCTS } from "./supplier";
 import { COLORS } from "./palette";
@@ -112,7 +112,7 @@ function supplierProducts(): Product[] {
 /** Vrais produits en premier, puis la démo (pas de démo pour les marques qui n'ont que de vrais produits). */
 export const PRODUCTS: Product[] = [
   ...supplierProducts(),
-  ...BRANDS.filter((b) => !NOT_IN_MALL_YET.includes(b.name)).flatMap((b) => CATEGORIES.flatMap((c) => makeProducts(b, c))),
+  ...BRANDS.filter((b) => !REAL_PRODUCTS_ONLY.includes(b.name)).flatMap((b) => CATEGORIES.flatMap((c) => makeProducts(b, c))),
 ];
 
 /** Nouveautés mises en avant (démo). */
