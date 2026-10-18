@@ -20,9 +20,9 @@ let THREE = null;
  * Démarre le Fraul Walk dans `root`.
  * @param {HTMLElement} root
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
- *                    onAdd, onExit, onFallback, onOpenProduct, startShop, startStore,
+ *                    onAdd, onExit, onFallback, onFiche, startShop, startStore,
  *                    mode (forme du mall, src/walk/modes ; « t » par défaut)
- * @returns {{ destroy(): void }}
+ * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void }}
  */
 export function startWalk(root, o) {
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -55,7 +55,7 @@ export function startWalk(root, o) {
   function addToCart(it, size) { o.onAdd(it, size); }
 
   /* ===== Couches : bouton retour du téléphone (controllers/history.ts) et focus (controllers/focus.ts) ===== */
-  const focus = createFocusController({ root, walk: $("#walk"), store: $("#store"), dir: $("#dir"), signal: life.signal });
+  const focus = createFocusController({ root, walk: $("#walk"), store: $("#store"), dir: $("#dir"), sheet: $("#fiche"), signal: life.signal });
   const trapUpdate = focus.update, opener = focus.opener, giveBack = focus.giveBack;
   const nav = connectHistory({ isDead: () => dead, onBack: trapUpdate, signal: life.signal });
   const hasLayer = nav.has, openLayer = nav.open, closeLayer = nav.close, dropLayer = nav.drop, sync = nav.sync;
@@ -520,6 +520,7 @@ export function startWalk(root, o) {
   // Plan de la boutique (zones, portants, contournement de l'îlot) : src/walk/models/store-layout.ts.
 
   const storeEl = $("#store");
+  const SWIPE_HINT = "Glisse pour défiler, touche pour voir en grand";
   let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false, swiped = false;
   let sMode = "walk", backLock = 0, storeFrom = null;
   function sUI(mode) {
@@ -602,7 +603,7 @@ export function startWalk(root, o) {
   }, { passive: true });
   on(window, "keydown", (e) => {
     if (e.key !== "Escape" || !dir.hidden || storeEl.hidden) return;
-    if (hasLayer("zoom")) closeLayer("zoom"); else storeBack();
+    if (hasLayer("fiche")) closeLayer("fiche"); else if (hasLayer("zoom")) closeLayer("zoom"); else storeBack();
   });
   on($("#sPrev"), "click", () => STORE.step(-1));
   on($("#sNext"), "click", () => STORE.step(1));
@@ -610,7 +611,15 @@ export function startWalk(root, o) {
   on($("#iDots"), "click", (e) => { const d = e.target.closest(".dot"); if (!d || !sCat) return; const k = STORE.focus(sCat); STORE.recolor(sCat, k, d.dataset.c); showInfo(sCat, k); });
   on($("#iAdd"), "click", () => { if (!sCat) return; addToCart(STORE.item(sCat, STORE.focus(sCat)), $("#iSizes [aria-pressed=\"true\"]")?.textContent); });
   on($("#iClose"), "click", () => STORE.toggleClose());
-  on($("#iPage"), "click", () => { if (sCat) o.onOpenProduct(STORE.item(sCat, STORE.focus(sCat))); });
+  on($("#iPage"), "click", () => { if (sCat) openFiche(STORE.item(sCat, STORE.focus(sCat))); });
+
+  // Fiche en grand (src/walk/QuickView.tsx, dessinée par React) : une couche, le retour du téléphone la ferme.
+  let ficheFrom = null;
+  function openFiche(it) {
+    if (STORE) STORE.unzoom();
+    if (!hasLayer("fiche")) { ficheFrom = opener(); openLayer("fiche", () => { o.onFiche(null); giveBack(ficheFrom, $("#iPage")); }); }
+    o.onFiche(it);
+  }
 
   function buildStore(st) {
     const U = G();
@@ -812,12 +821,12 @@ export function startWalk(root, o) {
     function setClose(v) {
       if (!v !== !closeT && api.onZoom) api.onZoom(!!v);
       closeT = v; yaw = 0;
-      $("#iClose").textContent = v ? "Ranger" : "Zoom";
-      $("#sSwipe").textContent = v ? "Glisse pour tourner l'article" : "Glisse pour faire défiler";
+      $("#iClose").textContent = v ? "Ranger" : "Tourner";
+      $("#sSwipe").textContent = v ? "Glisse pour tourner l'article" : SWIPE_HINT;
       if (v) $("#sSwipe").hidden = false; kick();
     }
 
-    // Glisser : faire défiler le rayon, ou tourner l'article en gros plan. Toucher : avancer un article / gros plan.
+    // Glisser : faire défiler le rayon, ou tourner l'article en gros plan. Toucher : avancer un article / fiche en grand.
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
     let drag = null;
     canvas.addEventListener("pointerdown", (e) => { if (!active) return; drag = { x: e.clientX, f0: cars[active].f, y0: yaw, moved: 0 }; try { canvas.setPointerCapture(e.pointerId); } catch { /* ignoré */ } }, sig);
@@ -836,7 +845,7 @@ export function startWalk(root, o) {
         const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
         ray.setFromCamera(ndc, camera);
         const hit = ray.intersectObjects(c.meshes.filter((m) => m.visible), true)[0];
-        if (hit) { const k = c.meshes.findIndex((m) => m === hit.object.parent); if (k === Math.round(c.f)) setClose(closeT ? 0 : 1); else if (!closeT) { c.target = k; } }
+        if (hit) { const k = c.meshes.findIndex((m) => m === hit.object.parent); if (k === Math.round(c.f)) { if (closeT) setClose(0); else openFiche(c.items[k]); } else if (!closeT) { c.target = k; } }
       } else if (!closeT) { c.target = clamp(Math.round(c.f), 0, c.items.length - 1); swiped = true; $("#sSwipe").hidden = true; }
       drag = null; dragging = false; kick();
     };
@@ -851,12 +860,14 @@ export function startWalk(root, o) {
 
     const api = {
       brand: st.name, place, walk, resize,
-      setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Zoom"; kick(); },
+      setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
       focus: (cat) => Math.round(cars[cat].target),
       count: (cat) => cars[cat].items.length,
       item: (cat, k) => cars[cat].items[k],
       step(d) { if (!active) return; if (closeT) setClose(0); const c = cars[active]; c.target = clamp(Math.round(c.target) + d, 0, c.items.length - 1); kick(); },
       toggleClose() { if (active) setClose(closeT ? 0 : 1); },
+      /** Amène l'article `slug` devant soi s'il est dans le rayon ouvert (la fiche en grand change d'article). */
+      show(slug) { if (!active) return; const c = cars[active], k = c.items.findIndex((x) => x.slug === slug); if (k >= 0) { c.target = k; kick(); } },
       unzoom() { if (closeT) setClose(0); },
       recolor(cat, k, c) {
         const car = cars[cat], it = car.items[k]; it.c = c; it.a = accentFor(c);
@@ -877,6 +888,9 @@ export function startWalk(root, o) {
   else openWalk(typeof o.startShop === "number" ? o.startShop : undefined);
 
   return {
+    closeFiche: () => closeLayer("fiche"),
+    showItem: (slug) => { if (STORE) STORE.show(slug); },
+    refocus: () => trapUpdate(),
     destroy() {
       dead = true;
       life.abort();

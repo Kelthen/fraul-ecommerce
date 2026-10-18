@@ -49,13 +49,21 @@ await check("page marques : pastilles, recherche", async () => {
   await page.waitForURL("**/marques/travis-scott");
 });
 
-await check("fiche produit avec photos (face, dos, détail)", async () => {
+await check("fiche produit avec photos (face, dos, détail) et propositions", async () => {
   await page.goto(BASE + "/produit/nike-techfleece-noir-gris-veste", { waitUntil: "networkidle" });
-  const img = page.locator(".pdp-stage.photo img");
+  const img = page.locator(".gal-slide img").first();
   if (!(await img.evaluate((el) => el.complete && el.naturalWidth > 0))) throw new Error("photo de face non chargée");
-  await page.getByRole("button", { name: "Dos" }).click();
-  await page.getByRole("button", { name: "Détail" }).click();
-  await shot("04b-produit-photos");
+  await page.getByRole("button", { name: "Dos", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector(".gal-count")?.textContent === "2 / 3");
+  await page.getByRole("button", { name: "Détail", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector(".gal-count")?.textContent === "3 / 3");
+  await page.locator(".gal-slide").nth(2).locator(".gal-zoom").click();
+  if (!(await page.locator(".gal-track.zoomed").count())) throw new Error("toucher la photo ne zoome pas");
+  await shot("04b-produit-photos-zoom");
+  const n = await page.locator(".grid.rel .card").count();
+  if (n < 6 || n > 12) throw new Error(`${n} propositions sous la fiche`);
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("la fiche déborde en largeur");
 });
 
 await check("fiche produit + panier", async () => {
@@ -193,17 +201,24 @@ await check("retour : annuaire, focus piégé, Échap", async () => {
   await page.waitForTimeout(600);
 });
 
-await check("retour : zoom → rayon → boutique → mall → page précédente", async () => {
+await check("retour : fiche en grand → zoom → rayon → boutique → mall → page précédente", async () => {
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
   await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
   if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous la boutique");
   await page.locator("#sCats .s-cat").nth(0).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#iPage").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  if (!(await page.locator("#store").evaluate((el) => el.inert))) throw new Error("boutique non inerte sous la fiche");
+  if ((await page.locator("#fiche .f-rel li").count()) < 6) throw new Error("pas assez de propositions sous la fiche");
+  await back();
+  await page.locator("#fiche").waitFor({ state: "hidden", timeout: 5000 });
+  if (await page.locator("#sInfo").isHidden()) throw new Error("retour a fermé le rayon au lieu de la fiche");
   await page.locator("#iClose").click();
   if ((await page.locator("#iClose").textContent()) !== "Ranger") throw new Error("zoom non ouvert");
   await back();
-  if ((await page.locator("#iClose").textContent()) !== "Zoom") throw new Error("retour n'a pas rangé le zoom");
+  if ((await page.locator("#iClose").textContent()) !== "Tourner") throw new Error("retour n'a pas rangé le zoom");
   if (await page.locator("#sInfo").isHidden()) throw new Error("retour a fermé le rayon au lieu du zoom");
   await back();
   await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
@@ -238,7 +253,24 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   if (rayons.join() !== "Hoodies et sweats") throw new Error(`rayons affichés : ${rayons.join(", ")}`);
   await page.locator("#sCats .s-cat").first().click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1200);
   await shot("14-boutique-travis-scott");
+  const cut = await page.evaluate(() => [...document.querySelectorAll("#sInfo .s-act > *, #iPrice")].some((el) => el.getBoundingClientRect().right > innerWidth + 1));
+  if (cut) throw new Error("un bouton ou le prix sort de l'écran");
+  // Toucher l'article devant soi = la fiche en grand, avec toutes ses photos.
+  const b2 = await page.locator("#sgl").boundingBox();
+  await page.mouse.click(b2.x + b2.width / 2, b2.y + b2.height * 0.4);
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  if ((await page.locator("#fiche .gal-slide img").count()) < 2) throw new Error("la fiche n'a pas face et dos");
+  await page.waitForTimeout(500); // fin de l'animation d'ouverture
+  await shot("15-fiche-en-grand");
+  await page.locator("#fiche .thumbs button").nth(1).click();
+  await page.waitForFunction(() => document.querySelector("#fiche .gal-count")?.textContent?.startsWith("2 /"));
+  await page.locator("#fiche .f-body").evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
+  await shot("16-fiche-propositions");
+  const first = await page.locator("#fName").textContent();
+  await page.locator("#fiche .f-rel li button").first().click();
+  await page.waitForFunction((t) => document.querySelector("#fName")?.textContent !== t, first);
 });
 
 await browser.close();

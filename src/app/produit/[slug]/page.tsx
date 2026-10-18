@@ -3,9 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductDetail } from "@/components/ProductDetail";
-import { getBrand, getCategory, getProduct, getProducts, getProductsByBrand } from "@/lib/catalog";
+import { getBrand, getCategory, getProduct, getProducts } from "@/lib/catalog";
 import { signWord } from "@/lib/catalog/brands";
 import { SITE_URL } from "@/lib/format";
+import { related } from "@/models/catalog/related";
 
 export async function generateStaticParams() {
   return (await getProducts()).map((p) => ({ slug: p.slug }));
@@ -26,9 +27,16 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();
-  const [brand, sameBrand] = await Promise.all([getBrand(product.brandSlug), getProductsByBrand(product.brandSlug)]);
+  const [brand, all] = await Promise.all([getBrand(product.brandSlug), getProducts()]);
   const cat = getCategory(product.category);
-  const more = sameBrand.filter((p) => p.slug !== product.slug && p.category === product.category).slice(0, 4);
+  // Mêmes propositions que la fiche en grand du Walk (src/models/catalog/related.ts).
+  const tag = (p: (typeof all)[number]) => ({ slug: p.slug, brand: p.brandName, cat: p.category, photo: !!p.image, p });
+  const sections = related(all.map(tag), tag(product));
+  const titles = {
+    same: `Autres ${cat.label.toLowerCase()} ${product.brandName}`,
+    outfit: "Complète la tenue",
+    others: `${cat.label} des autres boutiques`,
+  };
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -50,18 +58,18 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
           categoryLabel={cat.label}
           brandWord={brand ? signWord(brand.style) : product.brandName}
         />
-        {more.length > 0 && (
-          <section style={{ paddingBottom: 72 }} aria-labelledby="more-title">
-            <h2 id="more-title" style={{ fontSize: "clamp(30px, 5vw, 44px)", marginBottom: 18 }}>
-              Dans le même rayon
+        {sections.map((s, i) => (
+          <section key={s.key} style={{ paddingBottom: i === sections.length - 1 ? 72 : 40 }} aria-labelledby={`more-${s.key}`}>
+            <h2 id={`more-${s.key}`} style={{ fontSize: "clamp(26px, 5vw, 40px)", marginBottom: 18 }}>
+              {titles[s.key]}
             </h2>
-            <div className="grid">
-              {more.map((p) => (
+            <div className="grid rel">
+              {s.items.map(({ p }) => (
                 <ProductCard key={p.slug} product={p} />
               ))}
             </div>
           </section>
-        )}
+        ))}
       </div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </div>
