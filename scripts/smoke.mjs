@@ -109,12 +109,14 @@ await check("prix : devise de la zone, groupe de test, ligne de confirmation", a
 });
 
 // Va à la boutique k (0 = première) en faisant défiler le mall comme un visiteur.
-const goShop = (k, n = 27) => page.locator("#walk").evaluate((el, [k, n]) => {
+// Le nombre de boutiques est lu dans le compteur « Boutique 01 / 31 » (il suit la liste des marques).
+const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
+  const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 31;
   const track = el.querySelector("#walkTrack");
   el.scrollTop = ((k + 1 + 0.1) / (n + 1)) * (track.offsetHeight - el.clientHeight);
-}, [k, n]);
+}, k);
 
-await check("fraul walk : mall en T", async () => {
+await check("fraul walk : mall en T, 31 boutiques", async () => {
   await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
   await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(2500);
@@ -127,6 +129,11 @@ await check("fraul walk : mall en T", async () => {
   }
   const shown = await page.locator("#bname").innerText();
   if (!shown) throw new Error("nom de boutique vide");
+  await goShop(30);                                       // 31e et dernière boutique : une des 4 nouvelles marques
+  await page.waitForTimeout(1800);
+  const last = await page.locator("#bname").innerText(), count = await page.locator("#count").innerText();
+  if (!/31/.test(count) || last.toLowerCase() !== "travis scott") throw new Error(`dernière boutique : ${last} (${count})`);
+  await shot("10e-walk-31e-boutique");
 });
 
 await check("fraul walk : toucher la vitrine pour entrer", async () => {
@@ -218,8 +225,14 @@ await check("lien direct vers une boutique du mall", async () => {
   await shot("13-devant-amiri");
 });
 
-await check("boutique d'une marque hors du mall, avec peu d'articles", async () => {
-  await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });
+await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles", async () => {
+  await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });   // devant sa vitrine
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1800);
+  const name = await page.locator("#bname").innerText();
+  if (name.toLowerCase() !== "travis scott") throw new Error(`vitrine affichée : ${name}`);
+  const box = await page.locator("#gl").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);    // toucher la vitrine = entrer
   await page.locator("#sCats .s-cat").first().waitFor({ state: "visible", timeout: 20000 });
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
   if (rayons.join() !== "Hoodies et sweats") throw new Error(`rayons affichés : ${rayons.join(", ")}`);

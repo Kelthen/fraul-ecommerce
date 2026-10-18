@@ -1,25 +1,24 @@
 // Parcours de la caméra dans le mall : entrée → un arrêt face à chaque vitrine → sortie.
 // Changer la vitesse ressentie, les pauses ou la hauteur du regard, c'est ici.
 import { clamp, ease, lerp } from "./math.ts";
-import { STEM_END, SLOTS } from "./mall-layout.ts";
+import type { MallLayout, PathNode } from "./mall-layout.ts";
 
 /** Hauteur des yeux, hauteur du point regardé, part de chaque étape passée à l'arrêt (pause). */
 export const EYE = 1.75;
 export const LOOK_Y = 2.3;
 export const DWELL = 0.45;
 
-type Node = { p: [number, number]; l: [number, number, number] };
-export const ENTRY: Node = { p: [0, STEM_END + 9], l: [0, 2.2, 18] };
-export const EXIT: Node = { p: [0, STEM_END + 9], l: [0, 2.2, STEM_END + 40] };
+type Node = PathNode;
 
 /** Boutique regardée : index de 0 à n-1, ou -1 = entrée, -2 = sortie. */
 export type PathPoint = { x: number; z: number; lx: number; ly: number; lz: number; shop: number; intro: number };
 
 /**
- * Position de la caméra pour un avancement p (0 = entrée, 1 = sortie), avec n boutiques
- * et la caméra à `dist` mètres de la vitrine (dépend de la taille de l'écran).
+ * Position de la caméra pour un avancement p (0 = entrée, 1 = sortie), avec n boutiques,
+ * la caméra à `dist` mètres de la vitrine (dépend de la taille de l'écran), dans le plan `mall` (src/walk/modes).
  */
-export function pathAt(p: number, n: number, dist: number): PathPoint {
+export function pathAt(p: number, n: number, dist: number, mall: MallLayout): PathPoint {
+  const { slots: SLOTS, entry: ENTRY, exit: EXIT } = mall;
   const stop = (k: number): Node => {
     const s = SLOTS[k];
     return { p: [s.x + s.nx * dist, s.z + s.nz * dist], l: [s.x, LOOK_Y, s.z] };
