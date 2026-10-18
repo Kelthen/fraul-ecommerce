@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import type { BrandStyle, Category, CategoryId } from "@/lib/catalog/types";
+import { Price, PriceNote } from "@/components/Price";
 import { usePricing } from "@/components/PricingProvider";
 import type { Cost } from "@/models/pricing/price";
+import { Bag } from "./Bag";
 import { startWalk } from "./engine";
 import { QuickView, type FicheItem } from "./QuickView";
 import "./walk.css";
@@ -39,7 +41,7 @@ function toItem(data: WalkData, brand: string, cat: CategoryId, [slug, n, p, c, 
 export function WalkExperience({ data, startBrand }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { add, count } = useCart();
+  const { add, count, lines } = useCart();
   const addRef = useRef(add);
   const { price, format } = usePricing();
   const walkRef = useRef<ReturnType<typeof startWalk> | null>(null);
@@ -114,9 +116,7 @@ export function WalkExperience({ data, startBrand }: Props) {
                 Quitter
               </button>
               <span className="w-name">Fraul Walk</span>
-              <Link className="pill ghost cart-chip" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
-                Panier {count}
-              </Link>
+              <Bag count={count} />
             </div>
             <div className="hud">
               <div className="intro" id="intro">
@@ -124,6 +124,42 @@ export function WalkExperience({ data, startBrand }: Props) {
                 <h1>Le mall</h1>
                 <p>Fais défiler pour avancer d&apos;une boutique à l&apos;autre. Touche une vitrine pour entrer.</p>
                 <p className="scroll-hint">↓ Fais défiler pour entrer dans le mall</p>
+              </div>
+              <div className="outro caisse" id="caisse" hidden>
+                <p className="eyebrow">Dernier arrêt avant la sortie</p>
+                <h2>La Caisse</h2>
+                {count ? (
+                  <>
+                    <p className="c-sum">
+                      Ton sac : {count} article{count > 1 ? "s" : ""} · <b><Price costs={lines} /></b>
+                    </p>
+                    <ul className="c-lines">
+                      {lines.slice(0, 4).map((l, i) => (
+                        <li key={`${l.slug}-${l.size}-${i}`}>
+                          <i style={{ background: l.color }} aria-hidden="true" />
+                          <span>{l.brandName} · {l.name}{l.size ? ` · ${l.size}` : ""}{l.qty > 1 ? ` × ${l.qty}` : ""}</span>
+                        </li>
+                      ))}
+                      {lines.length > 4 && <li className="more">+ {lines.length - 4} autre{lines.length - 4 > 1 ? "s" : ""}</li>}
+                    </ul>
+                    <PriceNote />
+                    <div className="acts">
+                      <Link className="pill solid" href="/panier">
+                        Passer à la caisse
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="c-sum">Ton sac est vide. Entre dans une boutique : « Au panier » le remplit.</p>
+                    <div className="acts">
+                      <button className="pill ghost" type="button" onClick={() => root.current?.querySelector("#walk")?.scrollTo({ top: 0, behavior: "smooth" })}>
+                        Refaire un tour
+                      </button>
+                    </div>
+                  </>
+                )}
+                <p className="scroll-hint">↓ Continue pour sortir</p>
               </div>
               <div className="outro" id="outro" hidden>
                 <p className="eyebrow">Sortie</p>
@@ -166,6 +202,7 @@ export function WalkExperience({ data, startBrand }: Props) {
           <span className="s-title" id="sTitle">
             Boutique
           </span>
+          <Bag count={count} />
         </div>
         <div className="s-bottom" id="sBottom" hidden>
           <p className="s-hint">Choisis un rayon, on t&apos;y emmène.</p>

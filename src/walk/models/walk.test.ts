@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createLayerStack } from "./layers.ts";
 import { route } from "./store-layout.ts";
-import { pathAt, progressForShop } from "./walk-path.ts";
+import { AT_CAISSE, AT_EXIT, pathAt, progressForCaisse, progressForShop } from "./walk-path.ts";
 import { layoutT } from "../modes/t.ts";
 import type { Slot } from "./mall-layout.ts";
 
@@ -38,7 +38,16 @@ test("deux vitrines ne se chevauchent jamais, même à 35 boutiques", () => {
 test("parcours : entrée à 0 %, sortie à 100 %", () => {
   const a = pathAt(0, N, 10, MALL), b = pathAt(1, N, 10, MALL);
   assert.deepEqual([a.x, a.z, a.shop], [ENTRY.p[0], ENTRY.p[1], -1]);
-  assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], -2]);
+  assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], AT_EXIT]);
+});
+
+test("la Caisse : dernier arrêt, après la dernière boutique et avant la sortie, face au comptoir", () => {
+  const pt = pathAt(progressForCaisse(N), N, 10, MALL), c = MALL.caisse;
+  assert.equal(pt.shop, AT_CAISSE);
+  assert.ok(Math.abs(pt.x - (c.x + c.nx * 6)) < 1e-9 && Math.abs(pt.z - (c.z + c.nz * 6)) < 1e-9);
+  assert.equal(pathAt(progressForShop(N - 1, N), N, 10, MALL).shop, N - 1);
+  // Le comptoir est dans le tronc, entre la dernière vitrine du mur gauche et les portes.
+  assert.ok(c.z < MALL.dims.STEM_END && c.z > Math.max(...SLOTS.filter((s) => s.x === c.x - 0.9).map((s) => s.z)) + 4.25);
 });
 
 test("sauter à une boutique la met face à la caméra", () => {

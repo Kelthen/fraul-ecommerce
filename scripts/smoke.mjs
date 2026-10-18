@@ -121,7 +121,7 @@ await check("prix : devise de la zone, groupe de test, ligne de confirmation", a
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
   const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 31;
   const track = el.querySelector("#walkTrack");
-  el.scrollTop = ((k + 1 + 0.1) / (n + 1)) * (track.offsetHeight - el.clientHeight);
+  el.scrollTop = ((k + 1 + 0.1) / (n + 2)) * (track.offsetHeight - el.clientHeight); // n boutiques + la Caisse (walk-path.ts)
 }, k);
 
 await check("fraul walk : mall en T, 31 boutiques", async () => {
@@ -170,11 +170,24 @@ await check("fraul walk : rayon puis retour en arrière", async () => {
   await shot("12b-sorti-de-la-boutique");
 });
 
+await check("fraul walk : la Caisse avant la sortie, le sac rempli", async () => {
+  if ((await page.locator(".w-top .bag-n").textContent()) === "0") throw new Error("le sac ne s'est pas rempli");
+  const n = Number((await page.locator("#count").textContent()).split("/")[1]);
+  await page.locator("#walk").evaluate((el, n) => {
+    const track = el.querySelector("#walkTrack");
+    el.scrollTop = ((n + 1.1) / (n + 2)) * (track.offsetHeight - el.clientHeight);
+  }, n);
+  await page.locator("#caisse:not([hidden])").waitFor({ timeout: 10000 });
+  if (!(await page.locator("#caisse .c-lines li").count())) throw new Error("la Caisse n'affiche pas le contenu du sac");
+  await page.waitForTimeout(2500);
+  await shot("12c-caisse");
+});
+
 await check("fraul walk : sortie du mall", async () => {
   await page.locator("#walk").evaluate((el) => (el.scrollTop = el.scrollHeight));
   await page.locator("#outro:not([hidden])").waitFor({ timeout: 10000 });
   await page.waitForTimeout(1500);
-  await shot("12c-sortie");
+  await shot("12d-sortie");
 });
 
 // Bouton retour du téléphone (page.goBack) : chaque retour ferme la couche du dessus, puis quitte le Walk.
