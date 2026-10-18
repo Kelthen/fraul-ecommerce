@@ -104,9 +104,10 @@ export function startWalk(root, o) {
   function ensureThree() {
     if (THREE) return Promise.resolve(true);
     if (!threeP) threeP = new Promise((res) => {
-      const L = $("#loader"); L.hidden = false; const t0 = performance.now();
-      const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 2500))])
-        .then(() => setTimeout(() => { L.hidden = true; res(ok); }, Math.max(0, 650 - (performance.now() - t0))));
+      // L'écran de chargement n'apparaît que si ça dure (plus de 200 ms) ; polices attendues 800 ms au plus.
+      const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
+      const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
+        .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
       import("three").then((m) => { THREE = m; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
@@ -278,7 +279,23 @@ export function startWalk(root, o) {
     curShop = i;
     $("#count").textContent = `Boutique ${String(i + 1).padStart(2, "0")} / ${String(N).padStart(2, "0")}`;
     const b = $("#bname"); b.textContent = SHOPS[i].name; b.classList.remove("swap"); void b.offsetWidth; b.classList.add("swap");
+    prepareStore(i);
   }
+  // Pendant qu'on regarde une vitrine, sa boutique se prépare en coulisse : en touchant, on y est tout de suite.
+  let prepT = 0;
+  function prepareStore(i) {
+    clearTimeout(prepT);
+    prepT = setTimeout(() => {
+      const brand = SHOP_NAMES[i];
+      if (dead || !THREE || storeOpen || curShop !== i || (STORE && STORE.brand === brand)) return;
+      const idle = window.requestIdleCallback || ((f) => setTimeout(f, 0));
+      idle(() => {
+        if (dead || storeOpen || curShop !== i || (STORE && STORE.brand === brand)) return;
+        try { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); STORE.warm(); } catch { STORE = null; }
+      });
+    }, 600);
+  }
+  life.signal.addEventListener("abort", () => clearTimeout(prepT));
   function onWalkScroll() {
     progress = clamp(walkEl.scrollTop / Math.max(1, track.offsetHeight - walkEl.clientHeight), 0, 1);
     bars.forEach((b, k) => (b.style.width = clamp(progress * 9 - k, 0, 1) * 100 + "%"));
@@ -545,7 +562,7 @@ export function startWalk(root, o) {
     STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
   }
   /** Durée du fondu à l'entrée et à la sortie d'une boutique (ms). */
-  const FADE_MS = 220;
+  const FADE_MS = 150;
   function closeStore() {
     if (storeEl.hidden) return;
     storeEl.hidden = true; storeOpen = false; trapUpdate();
@@ -785,7 +802,7 @@ export function startWalk(root, o) {
       });
     }
     function frame(now) {
-      raf = 0; if (dead) return; let more = false; const w = cam.walk;
+      raf = 0; if (dead || storeEl.hidden) return; let more = false; const w = cam.walk; // boutique préparée en coulisse : rien à dessiner
       if (w) {
         const u = clamp((now - w.t0) / w.dur, 0, 1), e = ease(u);
         const p = w.curve.getPointAt(e), tan = w.curve.getTangentAt(Math.min(e, 0.999));
@@ -814,8 +831,8 @@ export function startWalk(root, o) {
       const Z = ZONES[zone], a = [cam.pos.x, cam.pos.z];
       if (RM || dist2(a, Z.p) < 0.05) { place(zone); cb(); return; }
       const curve = new THREE.CatmullRomCurve3(route(a, Z.p).map(([x, z]) => V(x, 1.65, z)), false, "centripetal"), len = curve.getLength();
-      // Trajets vers un rayon courts (moins d'une seconde) : on veut voir les produits vite.
-      cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 6, 0.45, 0.85) * 1000, fromLook: cam.look.clone(), toLook: V(...Z.look), cb };
+      // Trajets vers un rayon très courts (0,5 s au plus, Rhamone) : on veut voir les produits vite.
+      cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 12, 0.25, 0.5) * 1000, fromLook: cam.look.clone(), toLook: V(...Z.look), cb };
       kick();
     }
     function setClose(v) {
@@ -860,6 +877,8 @@ export function startWalk(root, o) {
 
     const api = {
       brand: st.name, place, walk, resize,
+      /** Prépare l'affichage (shaders) en coulisse, pour que la première image soit immédiate à l'entrée. */
+      warm() { try { place("hub"); renderer.compile(scene, camera); } catch { /* ignoré */ } },
       setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
       focus: (cat) => Math.round(cars[cat].target),
       count: (cat) => cars[cat].items.length,

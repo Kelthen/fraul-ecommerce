@@ -251,7 +251,7 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
   const after = await page.locator("#bname").innerText();
   if (after !== before) throw new Error(`en sortant : vitrine ${after}, attendu ${before}`);
   // Seuils larges : le navigateur de test dessine la 3D sans carte graphique (bien plus lent qu'un téléphone).
-  if (tIn > 2500 || tRayon > 2500 || tOut > 1500) throw new Error(`trop lent : entrer ${tIn} ms, rayon ${tRayon} ms, sortir ${tOut} ms`);
+  if (tIn > 1200 || tRayon > 1500 || tOut > 800) throw new Error(`trop lent : entrer ${tIn} ms, rayon ${tRayon} ms, sortir ${tOut} ms`);
   console.log(`     entrer ${tIn} ms · rayon ${tRayon} ms · sortir ${tOut} ms`);
 });
 
