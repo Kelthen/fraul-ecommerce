@@ -57,7 +57,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → ✅ modes de mall (31 boutiques) → ✅ portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
 5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
-6. **Serge** : valider la migration des emplacements de tenue (`outfit_slot` : ajouter `cap`, `glasses`, `neck`, `watch`, `layer`, `socks`) proposée dans la PR des catégories ; plus tard retirer `customers.whatsapp` et le canal `whatsapp`
+6. Migration `outfit_slot` validée par Serge le 18 oct. → à appliquer (Rhamone) ; plus tard retirer `customers.whatsapp` et le canal `whatsapp` (validé)
 7. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
 8. Paiement Stripe en mode test
 9. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
@@ -80,6 +80,8 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-18 | **Serge valide** : emplacements de tenue (`outfit_slot` + cap, glasses, neck, watch, layer, socks) à appliquer par Rhamone ; **plus de WhatsApp, tout par e-mail** (remplace R3), avec un lien d'invitation **copiable** pour que Fraul puisse aussi le coller dans WhatsApp, `phone` reste facultatif ; e-mails : service Supabase en test, **Resend** au lancement. | Serge |
+| 2026-10-18 | **Plusieurs fournisseurs (#18) : ✅ sur le principe.** Offre proposée par le site, **confirmée par Fraul** au début ; prix affiché sur le **fournisseur de référence** ; expédition via le lien WeChat qui ouvre un compte `courier` sans mot de passe. **Avant d'appliquer la 0003 :** le fournisseur ne doit pas voir `unit_price`/`unit_cost` (vue limitée) et chaque livreur ne voit que ses envois (remplacer les politiques « livreur » de 0001). Détail : commentaire de Serge sur la #18. | Serge |
 | 2026-10-18 | **Plusieurs fournisseurs** (ex. 10 pour Nike) et **une personne à part pour l'expédition**. Pour chaque article, on doit retrouver en interne quel fournisseur le vend ; le client ne voit jamais les fournisseurs. Proposition à écrire pour Serge (zone fournisseur / SQL). | Rhamone |
 | 2026-10-18 | **« Super centre »** : on fait la **Caisse à la sortie** (près des portes) + **sac qui se remplit**, la **Conciergerie au centre = « Demande un article »** (on va le chercher chez les fournisseurs), les **vitrines vivantes** (photo du produit phare), l'**heure du jour** (lumière selon l'heure locale du visiteur : à 19 h, plus sombre et éclairé, jamais noir). Plus tard : drop au centre, Penderie, « devenir partenaire ». Non : musique automatique, passants animés, faux compteurs (« 12 personnes regardent »), mini-plan. | Rhamone |
 | 2026-10-18 | Ordre des prochains chantiers : A photos nettes → B fiche en grand dans la boutique → C Caisse + sac → D Conciergerie « Demande un article » (+ proposition fournisseurs multiples pour Serge) → E envies puis comptes → F vitrines vivantes ; heure du jour à placer. | Rhamone |
