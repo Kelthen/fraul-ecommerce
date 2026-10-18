@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (portes vitrées à l'entrée du mall)_
+_Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiques du Walk, vitrine des sacs ; portes vitrées)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -32,7 +32,8 @@ _Dernière mise à jour : 2026-10-18 par rhamon (portes vitrées à l'entrée du
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
-- Photos réelles (test de rendu, pas pour la mise en ligne) : 35 captures du fournisseur classées par Rhamone → 23 produits (les ensembles Tech Fleece et Polo Ralph Lauren sont séparés en veste + pantalon, la photo « ensemble » sert de détail). Fiche produit : face / dos / détail, toucher pour agrandir. En tête des Nouveautés de l'accueil. Le Walk garde les dessins (photos non détourées) — rhamon
+- Boutiques du Walk : les vrais produits s'affichent avec leur photo sur le cintre (carte produit, face / dos), en premier dans le rayon et en grand avec « Zoom » ; vitrine à accessoires rehaussée, les sacs sont bien dans le verre — rhamon
+- Photos réelles (test de rendu, pas pour la mise en ligne) : 35 captures du fournisseur classées par Rhamone → 23 produits (les ensembles Tech Fleece et Polo Ralph Lauren sont séparés en veste + pantalon, la photo « ensemble » sert de détail). Fiche produit : face / dos / détail, toucher pour agrandir. En tête des Nouveautés de l'accueil. Dans le Walk, la photo s'affiche dans une carte sur le cintre (pas encore détourée) — rhamon
 - Entrée du mall : deux portes en verre « WELCOME TO / FRAUL CENTER » qui s'écartent à l'approche (le texte se coupe en deux), en entrant comme en sortant — `src/walk/views/entrance.ts`, texte dans `src/content/walk.ts` — rhamon
 - 4 nouvelles marques : Travis Scott, Saint Michael, ERD, Polo Ralph Lauren (style d'enseigne, seulement leurs vrais produits), **dans l'annuaire et dans le mall** (boutiques 28 à 31). Une boutique 3D n'affiche que les rayons qui ont des articles — rhamon
 - Catégories : 12 au lieu de 6 (ajout Vestes et manteaux, Shorts, Chaussettes, Lunettes, Montres, Bijoux ; « Chapeaux » → « Casquettes », ancien lien redirigé ; « Hoodies » → « Hoodies et sweats »). Dessins provisoires, coûts de démo. Dans le Walk, seuls les rayons qui ont un portant s'affichent (nouveaux portants : plus tard) — rhamon

@@ -230,3 +230,9 @@
 - **Ce qui s'est passé :** le mall, ses tests et le test téléphone supposaient 27 boutiques. Avec 31 marques, les boutiques 28 à 31 n'avaient pas de vitrine et le Walk aurait planté.
 - **Cause :** le plan du T (`SLOTS`) et le test (`n = 27`) étaient écrits pour un nombre fixe.
 - **Règle :** le nombre de boutiques vient toujours de la liste des marques ; le plan est calculé par le mode de mall (`src/walk/modes/`), et les tests lisent le compteur affiché. Après tout ajout de marque : `npm test` puis `npm run smoke` (la dernière boutique est testée).
+
+### L-40 — Une vraie photo doit apparaître partout où le produit apparaît
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** les photos du fournisseur s'affichaient sur les fiches et les cartes, mais pas dans les boutiques 3D du Walk, qui dessinaient tous les articles. Rhamone : « dans les boutiques, je vois pas les vrais produits que je t'ai envoyés ». Les sacs semblaient aussi sortir de leur vitrine en verre, trop basse.
+- **Cause :** les données envoyées au Walk ne contenaient pas les photos ; et on avait décidé seul de garder les dessins dans le Walk.
+- **Règle :** quand un produit a une photo, elle s'affiche partout où il apparaît (cartes, fiche, tenue, Walk, panier à terme). Si on choisit de ne pas l'afficher quelque part, on le dit à l'humain et on attend son avis. Vérifier chaque vue 3D sous l'angle de la caméra du visiteur, pas seulement en plan.
