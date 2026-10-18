@@ -117,7 +117,7 @@ export function startWalk(root, o) {
   function G() {
     if (GH) return GH;
     const cv = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; };
-    const T = (c) => { const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t; };
+    const T = (c) => { const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
     function spaced(x, txt, cx, cy, sp) {
       const ws = [...txt].map((ch) => x.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1);
       let px = cx - tot / 2; [...txt].forEach((ch, i) => { x.fillText(ch, px, cy); px += ws[i] + sp; });
@@ -177,10 +177,14 @@ export function startWalk(root, o) {
     }
     // Vrai produit : sa photo dans une carte (bords blancs arrondis), sur le même cintre que les dessins.
     // La photo arrive en différé : on redessine la scène quand elle est chargée (onLoad).
-    function photoTexture(type, src, onLoad) {
+    // `k` = finesse : 2 (512 px) sur le portant, 4 (1024 px) pour l'article regardé de près (Zoom).
+    // Les mesures ci-dessous sont en « points » sur 256 de large, multipliés par k.
+    function photoTexture(type, src, onLoad, k = 2) {
       const sneaker = type === "sneaker", hang = type === "tee" || type === "hoodie" || type === "jacket", clip = type === "pants" || type === "shorts";
-      const [cn, x] = cv(256, sneaker ? 140 : hang || clip ? 320 : 282), tex = T(cn);
-      const top = hang || clip ? 64 : 4, card = { x: 10, y: top, w: 236, h: cn.height - top - 6 };
+      const H = sneaker ? 140 : hang || clip ? 320 : 282;
+      const [cn, x] = cv(256 * k, H * k), tex = T(cn);
+      x.scale(k, k); x.imageSmoothingQuality = "high";
+      const top = hang || clip ? 64 : 4, card = { x: 10, y: top, w: 236, h: H - top - 6 };
       const rr = (p) => { const r = 14; x.beginPath(); x.moveTo(p.x + r, p.y); x.arcTo(p.x + p.w, p.y, p.x + p.w, p.y + p.h, r); x.arcTo(p.x + p.w, p.y + p.h, p.x, p.y + p.h, r); x.arcTo(p.x, p.y + p.h, p.x, p.y, r); x.arcTo(p.x, p.y, p.x + p.w, p.y, r); x.closePath(); };
       if (hang || clip) { x.save(); x.strokeStyle = "#cfc9c0"; x.lineWidth = 5; x.lineCap = "round"; x.stroke(new Path2D("M128 66 V44 C128 32 146 32 146 20 C146 8 124 6 121 18")); x.restore(); }
       x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore();
@@ -725,12 +729,17 @@ export function startWalk(root, o) {
     const prodMat = (type, c, a, back, img) => new THREE.MeshLambertMaterial({
       map: img ? U.photoTexture(type, img[back ? 1 : 0], () => kick()) : U.itemTexture(type, c, a, back, st), transparent: true, alphaTest: 0.04,
     });
+    // Article regardé de près : sa photo passe en haute définition (une seule fois, à la demande, pour ménager la mémoire).
+    function sharpen(m) {
+      const { it, cat } = m.userData; if (!it || !it.img || m.userData.hi) return; m.userData.hi = true;
+      m.children.forEach((mesh, i) => { const old = mesh.material.map; mesh.material.map = U.photoTexture(cat, it.img[i], () => kick(), 4); mesh.material.needsUpdate = true; old.dispose(); });
+    }
     const cars = {};
     Object.entries(CAR).forEach(([cat, cfg]) => {
       const items = products(st.name, cat), geo = new THREE.PlaneGeometry(...cfg.size);
       const meshes = items.map((it) => {
         const g = new THREE.Group(), f = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, false, it.img)), b = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, true, it.img));
-        b.rotation.y = Math.PI; g.add(f, b); g.userData.mats = [f.material, b.material]; scene.add(g); return g;
+        b.rotation.y = Math.PI; g.add(f, b); g.userData.mats = [f.material, b.material]; g.userData.it = it; g.userData.cat = cat; scene.add(g); return g;
       });
       const real = items.findIndex((it) => it.img), start = real >= 0 ? real : Math.min(4, items.length - 1); // les vrais produits d'abord
       cars[cat] = { cat, items, meshes, cfg, f: start, target: start, last: null, swingT: -1e9, o: V(...cfg.o), d: V(...cfg.d), out: V(...cfg.out) };
@@ -750,6 +759,7 @@ export function startWalk(root, o) {
         m.position.copy(car.o).addScaledVector(car.d, d * cfg.sp).addScaledVector(car.out, w * cfg.pull - Math.min(ad, 3) * 0.03).addScaledVector(UP, w * cfg.rise);
         let s = 1 + 0.12 * w;
         if (isF && closeAmt > 0) {
+          sharpen(m);
           tmp2.subVectors(cam.look, cam.pos).normalize();
           tmp.copy(cam.pos).addScaledVector(tmp2, 1.3).add(V(0, 0.16, 0));
           m.position.lerp(tmp, closeAmt); s = lerp(s, cfg.close, closeAmt);

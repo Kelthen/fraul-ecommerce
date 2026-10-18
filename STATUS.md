@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiques du Walk, vitrine des sacs ; portes vitrées)_
+_Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutiques ; décisions « super centre » et fournisseurs multiples)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -32,6 +32,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiqu
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
+- Boutiques du Walk : photos des vrais produits nettes (512 px sur le portant, 1024 px quand on zoome ; la finesse reste limitée par la photo d'origine) — rhamon
 - Boutiques du Walk : les vrais produits s'affichent avec leur photo sur le cintre (carte produit, face / dos), en premier dans le rayon et en grand avec « Zoom » ; vitrine à accessoires rehaussée, les sacs sont bien dans le verre — rhamon
 - Photos réelles (test de rendu, pas pour la mise en ligne) : 35 captures du fournisseur classées par Rhamone → 23 produits (les ensembles Tech Fleece et Polo Ralph Lauren sont séparés en veste + pantalon, la photo « ensemble » sert de détail). Fiche produit : face / dos / détail, toucher pour agrandir. En tête des Nouveautés de l'accueil. Dans le Walk, la photo s'affiche dans une carte sur le cintre (pas encore détourée) — rhamon
 - Entrée du mall : deux portes en verre « WELCOME TO / FRAUL CENTER » qui s'écartent à l'approche (le texte se coupe en deux), en entrant comme en sortant — `src/walk/views/entrance.ts`, texte dans `src/content/walk.ts` — rhamon
@@ -76,6 +77,9 @@ _Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiqu
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-18 | **Plusieurs fournisseurs** (ex. 10 pour Nike) et **une personne à part pour l'expédition**. Pour chaque article, on doit retrouver en interne quel fournisseur le vend ; le client ne voit jamais les fournisseurs. Proposition à écrire pour Serge (zone fournisseur / SQL). | Rhamone |
+| 2026-10-18 | **« Super centre »** : on fait la **Caisse à la sortie** (près des portes) + **sac qui se remplit**, la **Conciergerie au centre = « Demande un article »** (on va le chercher chez les fournisseurs), les **vitrines vivantes** (photo du produit phare), l'**heure du jour** (lumière selon l'heure locale du visiteur : à 19 h, plus sombre et éclairé, jamais noir). Plus tard : drop au centre, Penderie, « devenir partenaire ». Non : musique automatique, passants animés, faux compteurs (« 12 personnes regardent »), mini-plan. | Rhamone |
+| 2026-10-18 | Ordre des prochains chantiers : A photos nettes → B fiche en grand dans la boutique → C Caisse + sac → D Conciergerie « Demande un article » (+ proposition fournisseurs multiples pour Serge) → E envies puis comptes → F vitrines vivantes ; heure du jour à placer. | Rhamone |
 | 2026-10-18 | Page Marques : pastilles **rectangulaires**, coins légèrement arrondis (pas de cercles) ; le lien sous chaque marque s'appelle **« Voir la boutique »** (au lieu de « Dans le mall »). | Rhamone |
 | 2026-10-17 | **Plus de WhatsApp sur le site** (connexion, vérification, relances) : tout passe par e-mail. Bienvenue limitée par e-mail, adresse et carte. Les liens d'invitation de Fraul partent par e-mail depuis son tableau de bord. **Remplace R3, validé par Serge le 13 oct. : discussion ouverte**, Serge peut répondre. | Rhamone |
 | 2026-10-17 | **Connexion : e-mail + mot de passe, avec code par e-mail** (vérification de l'e-mail, mot de passe oublié). Sécurité partout : RLS, captcha (Turnstile) et limitation des essais, protection contre l'injection de prompt si un assistant IA est ajouté (ARCHITECTURE §4-5). | Rhamone |
