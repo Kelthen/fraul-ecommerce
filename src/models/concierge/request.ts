@@ -1,4 +1,4 @@
-// Conciergerie « Demande un article » : le visiteur décrit une pièce introuvable sur le site,
+// Fraul Finds (pièces sur demande, ex-« Conciergerie ») : le visiteur décrit une pièce introuvable sur le site,
 // l'équipe la cherche chez les fournisseurs et répond par e-mail (décision de Rhamone, 18 oct. 2026).
 // Ce module ne fait que vérifier et nettoyer la demande. Le texte reste une donnée : il ne sera
 // jamais exécuté ni donné tel quel comme consigne à un outil ou à une IA (règle anti-injection).

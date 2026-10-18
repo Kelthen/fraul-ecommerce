@@ -8,7 +8,7 @@ export type TDims = { SLOT: number; CEIL: number; STEM_X: number; STEM_END: numb
 const BASE = { stem: 4, low: 3, end: 3, top: 7 };
 const STEM_X = 7;
 const BAR_Z = -32;
-/** Comptoir de la Conciergerie (src/walk/views/concierge.ts), devant le « F » du centre. */
+/** Comptoir Fraul Finds (src/walk/views/concierge.ts), devant le « F » du centre. */
 export const CONCIERGE_Z = -16 + 3.6;
 
 /**

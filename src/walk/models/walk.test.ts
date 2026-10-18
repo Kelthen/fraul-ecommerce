@@ -41,7 +41,7 @@ test("parcours : entrée à 0 %, sortie à 100 %", () => {
   assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], AT_EXIT]);
 });
 
-test("la Conciergerie : un arrêt en haut du tronc, face au comptoir, entre deux boutiques", () => {
+test("Fraul Finds : un arrêt en haut du tronc, face au comptoir, entre deux boutiques", () => {
   const { after, slot } = MALL.concierge;
   const pt = pathAt(progressForConcierge(N, MALL), N, 10, MALL);
   assert.equal(pt.shop, AT_CONCIERGE);

@@ -1,4 +1,4 @@
-# Plusieurs fournisseurs par article + Conciergerie : proposition pour Serge
+# Plusieurs fournisseurs par article + Fraul Finds (pièces sur demande) : proposition pour Serge
 
 > **Zone de Serge** (fournisseur, commandes, SQL). Proposition écrite par Rhamone (avec son Claude) le 18 oct. 2026.
 > **Rien n'est appliqué** : le SQL ci-dessous est une proposition à relire, modifier ou refuser. Réponds sous chaque partie en « 🗣️ Serge ».
@@ -9,7 +9,7 @@
 - **Une personne à part** s'occupe de l'expédition (réception, colis, code de suivi).
 - Pour chaque article vendu, **on doit retrouver en interne quel fournisseur le vend** (et à quel prix).
 - **Le client ne voit jamais les fournisseurs.**
-- La **Conciergerie** (« Demande un article ») : un visiteur décrit une pièce introuvable, l'équipe la cherche chez les fournisseurs et lui répond par e-mail.
+- **Fraul Finds** (« Sur demande », ex-Conciergerie) : un visiteur décrit une pièce introuvable, l'équipe la cherche chez les fournisseurs et lui répond par e-mail.
 
 ## Ce qui existe aujourd'hui (schéma 0001)
 
@@ -59,12 +59,12 @@ Nouvelle table `supplier_offers` : une ligne par **variante × fournisseur**.
 | Expédition | les envois qui lui sont attribués. |
 | Fraul / équipe | tout. |
 
-### 5. Conciergerie : les demandes d'articles
+### 5. Fraul Finds : les demandes de pièces
 
 Nouvelle table `concierge_requests` : `email`, `item`, `brand`, `size`, `link`, `note`, `status` (`new` → `searching` → `found` / `not_found` → `answered`), `assigned_to`, `found_offer_id`, `customer_id` (si connecté).
 - **Écriture uniquement côté serveur** (clé service), après captcha Turnstile et limite de débit (ex. 5 demandes / heure / adresse IP). Aucune politique d'insertion pour `anon`.
 - Le texte de la demande reste une **donnée** : jamais exécuté, jamais donné tel quel comme consigne à un outil ou une IA (règle anti-injection).
-- Côté site, le formulaire existe déjà en démo (`/conciergerie` et le comptoir au centre du mall), avec la même vérification que le serveur fera (`src/models/concierge/request.ts`).
+- Côté site, le formulaire existe déjà en démo (`/sur-demande` et le comptoir au centre du mall), avec la même vérification que le serveur fera (`src/models/concierge/request.ts`).
 
 ## SQL proposé (migration `0003`, **à valider par Serge, non appliquée**)
 
@@ -100,7 +100,7 @@ create policy "équipe gère"          on supplier_offers for all    using (publ
 create policy "fournisseur voit les siennes" on supplier_offers for select using (supplier_id = private.my_supplier_id());
 create policy "expédition voit ses envois" on shipments for select using (handled_by = auth.uid());
 
--- Conciergerie : demandes d'articles (insertion par le serveur uniquement, après captcha et limite de débit).
+-- Fraul Finds : demandes de pièces (insertion par le serveur uniquement, après captcha et limite de débit).
 create type concierge_status as enum ('new', 'searching', 'found', 'not_found', 'answered');
 create table concierge_requests (
   id             uuid primary key default gen_random_uuid(),

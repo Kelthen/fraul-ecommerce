@@ -248,3 +248,9 @@
 - **Ce qui s'est passé :** en ajoutant « En grand » à la barre d'un article dans la boutique 3D, le bouton « Tourner » sortait de l'écran à 390 px, et le prix était coupé, parce que la rangée trop large élargissait toute la barre.
 - **Cause :** libellés longs en majuscules espacées, sans `min-width: 0` sur les enfants de la grille (même piège que L-38).
 - **Règle :** après tout ajout de bouton ou de libellé, regarder la capture téléphone (390 px) ; libellés courts (« Au panier ») ; `min-width: 0` sur les enfants d'une grille. `npm run smoke` vérifie que les boutons et le prix restent dans l'écran.
+
+### L-43 — Le vocabulaire du site : cool, classe, posé
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** le comptoir « Demande un article » s'appelait « Conciergerie ». Rhamone : « trop normal ; pour le vocabulaire du site on doit être cool, classe et posé, pas trop archaïque ». Renommé « Fraul Finds » (sous-titre « Sur demande »).
+- **Cause :** nom choisi seul, dans un registre hôtelier vieillot.
+- **Règle :** tout nom ou libellé visible (comptoir, bouton, rubrique) est court, moderne et posé ; un mot anglais de la culture streetwear est permis s'il reste clair. Pour un nouveau nom, proposer 3 ou 4 choix à Rhamone avant de l'écrire partout.

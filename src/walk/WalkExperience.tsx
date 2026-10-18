@@ -130,11 +130,11 @@ export function WalkExperience({ data, startBrand }: Props) {
               </div>
               <div className="outro con-stop" id="conStop" hidden>
                 <p className="eyebrow">Au centre du mall</p>
-                <h2>La Conciergerie</h2>
-                <p className="c-sum">Une pièce introuvable dans les boutiques ? Décris-la : on la cherche pour toi chez nos fournisseurs.</p>
+                <h2>Fraul Finds</h2>
+                <p className="c-sum">Une pièce introuvable dans les boutiques ? Décris-la, on te la trouve chez nos fournisseurs.</p>
                 <div className="acts">
                   <button className="pill solid" id="conStopBtn" type="button">
-                    Demande un article
+                    Demande une pièce
                   </button>
                 </div>
                 <p className="scroll-hint">↓ Continue vers les boutiques</p>
@@ -164,7 +164,7 @@ export function WalkExperience({ data, startBrand }: Props) {
                   </button>
                 </div>
                 <button className="con-link" id="conBtn" type="button">
-                  Une pièce introuvable ? <b>La Conciergerie →</b>
+                  Une pièce introuvable ? <b>Fraul Finds →</b>
                 </button>
                 <div className="prog" id="prog" />
               </div>
@@ -188,7 +188,7 @@ export function WalkExperience({ data, startBrand }: Props) {
           <p className="s-hint">Choisis un rayon, on t&apos;y emmène.</p>
           <div className="s-cats" id="sCats" />
           <button className="con-link" id="sCon" type="button">
-            Pas trouvé ? <b>Demande-le à la Conciergerie →</b>
+            Pas trouvé ? <b>Fraul Finds te le trouve →</b>
           </button>
           <p className="s-back">↑ Fais défiler vers l&apos;arrière pour sortir</p>
         </div>
@@ -242,8 +242,8 @@ export function WalkExperience({ data, startBrand }: Props) {
         <div className="o-head">
           <div className="r">
             <div>
-              <p className="eyebrow">La Conciergerie</p>
-              <h2 id="conTitle">Demande un article</h2>
+              <p className="eyebrow">Fraul Finds · Sur demande</p>
+              <h2 id="conTitle">Demande une pièce</h2>
             </div>
             <button className="close" type="button" onClick={() => walkRef.current?.closeConcierge()}>
               Fermer

@@ -5,7 +5,7 @@ import { LIMITS, validateRequest, type ConciergeField, type ConciergeRequest } f
 
 type Props = {
   brand?: string;
-  /** Page /conciergerie : préremplir la marque avec ?marque=… (lien « Demande-le » d'une boutique). */
+  /** Page /sur-demande : préremplir la marque avec ?marque=… (lien « Demande-le » d'une boutique). */
   brandFromUrl?: boolean;
   className?: string;
 };
@@ -21,7 +21,7 @@ const FIELDS: { k: ConciergeField; label: string; hint?: string; type?: string; 
 ];
 
 /**
- * Formulaire « Demande un article » de la Conciergerie (page /conciergerie et comptoir du Walk).
+ * Formulaire « Fraul Finds » : une pièce sur demande (page /sur-demande et comptoir du Walk).
  * Démo : la demande est vérifiée mais pas envoyée (pas d'e-mail réel avant le branchement de Supabase).
  */
 export function ConciergeForm({ brand = "", brandFromUrl = false, className }: Props) {

@@ -100,7 +100,7 @@ export function startWalk(root, o) {
   });
   on(window, "keydown", (e) => { if (e.key === "Escape" && !dir.hidden) { e.stopImmediatePropagation(); closeDir(); } });
 
-  /* ===== Conciergerie « Demande un article » (formulaire dessiné par React) : une couche, retour = fermer ===== */
+  /* ===== Fraul Finds, pièces sur demande (formulaire dessiné par React) : une couche, retour = fermer ===== */
   let conFrom = null;
   function openConcierge(brand) {
     if (hasLayer("concierge")) return;
@@ -111,7 +111,7 @@ export function startWalk(root, o) {
   on($("#conBtn"), "click", () => openConcierge(null));
   on($("#conStopBtn"), "click", () => openConcierge(null));
   on($("#sCon"), "click", () => openConcierge(sBrand));
-  // Écouteur posé avant ceux de la boutique : Échap ferme d'abord la conciergerie.
+  // Écouteur posé avant ceux de la boutique : Échap ferme d'abord Fraul Finds.
   on(window, "keydown", (e) => { if (e.key === "Escape" && hasLayer("concierge")) { e.stopImmediatePropagation(); closeLayer("concierge"); } });
 
   /* ===== three.js chargé à l'ouverture (bundle du projet, pas de CDN) ===== */
@@ -280,8 +280,8 @@ export function startWalk(root, o) {
 
   let MALL = null, progress = 0, curShop = 0, curKey = null, walkOpen = false, storeOpen = false;
   const walkEl = $("#walk"), track = $("#walkTrack");
-  track.style.height = ((N + 2) * 90 + 100) + "vh"; // + l'arrêt Conciergerie
-  // Pour le test téléphone : nombre d'étapes et place de la Conciergerie dans le parcours.
+  track.style.height = ((N + 2) * 90 + 100) + "vh"; // + l'arrêt Fraul Finds
+  // Pour le test téléphone : nombre d'étapes et place de Fraul Finds dans le parcours.
   walkEl.dataset.stops = String(N + 2); walkEl.dataset.conAfter = String(LAYOUT.concierge.after);
   const prog = $("#prog");
   for (let k = 0; k < 9; k++) { const i = document.createElement("i"); i.append(document.createElement("b")); prog.append(i); }
@@ -405,7 +405,7 @@ export function startWalk(root, o) {
 
     // Pièce centrale : grand « F » Fraul sur un socle, entouré d'arbres en pot
     const C = new THREE.Group(); C.position.set(0, 0, -16); scene.add(C);
-    // Comptoir de la Conciergerie au pied du « F », tourné vers l'entrée (src/walk/views/concierge.ts), placé par le mode
+    // Comptoir Fraul Finds au pied du « F », tourné vers l'entrée (src/walk/views/concierge.ts), placé par le mode
     scene.add(createConciergeDesk(THREE, { ...LAYOUT.concierge.slot, ...CONCIERGE_TEXT, serif: o.fonts.serif, sans: o.fonts.sans }).group);
     add(C, new THREE.CylinderGeometry(3.1, 3.3, 0.6, 48), std(0xe8e1d4, 0.35), 0, 0.3, 0);
     add(C, new THREE.CylinderGeometry(2.6, 2.6, 0.04, 48), std(0x680209, 0.4), 0, 0.62, 0);

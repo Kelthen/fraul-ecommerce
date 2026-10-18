@@ -1,4 +1,4 @@
-// Tests de la Conciergerie : node --test src/models/concierge/request.test.ts
+// Tests de Fraul Finds (pièces sur demande) : node --test src/models/concierge/request.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { LIMITS, validateRequest } from "./request.ts";

@@ -1,4 +1,4 @@
-// Parcours de la caméra dans le mall : entrée → un arrêt face à chaque vitrine (avec la Conciergerie en route) → sortie.
+// Parcours de la caméra dans le mall : entrée → un arrêt face à chaque vitrine (avec Fraul Finds en route) → sortie.
 // Changer la vitesse ressentie, les pauses ou la hauteur du regard, c'est ici.
 import { clamp, ease, lerp } from "./math.ts";
 import type { MallLayout, PathNode } from "./mall-layout.ts";
@@ -12,7 +12,7 @@ type Node = PathNode;
 
 /** Arrêts qui ne sont pas des boutiques. */
 export const AT_ENTRY = -1, AT_EXIT = -2, AT_CONCIERGE = -4;
-/** On s'arrête plus près du comptoir de la Conciergerie que d'une vitrine. */
+/** On s'arrête plus près du comptoir Fraul Finds que d'une vitrine. */
 const CONCIERGE_DIST = 0.7;
 
 /** Boutique regardée : index de 0 à n-1, ou AT_ENTRY, AT_CONCIERGE, AT_EXIT. */
@@ -30,7 +30,7 @@ export function pathAt(p: number, n: number, dist: number, mall: MallLayout): Pa
   };
   const c = CON.slot, cd = dist * CONCIERGE_DIST;
   const concierge: Node = { p: [c.x + c.nx * cd, c.z + c.nz * cd], l: [c.x, LOOK_Y - 1, c.z] }; // regard plus bas : le comptoir et le « F » montent au-dessus du panneau
-  // Étapes : 0 entrée, puis les boutiques avec la Conciergerie après les `after` premières, puis la sortie (n + 2).
+  // Étapes : 0 entrée, puis les boutiques avec Fraul Finds après les `after` premières, puis la sortie (n + 2).
   const node = (j: number): Node => (j === 0 ? ENTRY : j === n + 2 ? EXIT : j - 1 < CON.after ? stop(j - 1) : j - 1 === CON.after ? concierge : stop(j - 2));
   const at = (j: number) => (j === 0 ? AT_ENTRY : j === n + 2 ? AT_EXIT : j - 1 < CON.after ? j - 1 : j - 1 === CON.after ? AT_CONCIERGE : j - 2);
   const u = clamp(p, 0, 1) * (n + 2);
@@ -43,5 +43,5 @@ export function pathAt(p: number, n: number, dist: number, mall: MallLayout): Pa
 
 /** Avancement qui place la caméra juste devant la boutique k (utilisé pour « sauter » à une boutique). */
 export const progressForShop = (k: number, n: number, mall: MallLayout) => (k + 1 + (k >= mall.concierge.after ? 1 : 0) + 0.1) / (n + 2);
-/** Avancement qui place la caméra face au comptoir de la Conciergerie. */
+/** Avancement qui place la caméra face au comptoir Fraul Finds. */
 export const progressForConcierge = (n: number, mall: MallLayout) => (mall.concierge.after + 1 + 0.1) / (n + 2);

@@ -353,7 +353,7 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .grid.rel .nm { font-size: 12px; }
 @media (min-width: 900px) { .grid.rel { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 22px 14px; } }
 
-/* Conciergerie « Demande un article » (page /conciergerie et comptoir du Walk) */
+/* Fraul Finds : une pièce sur demande (page /sur-demande et comptoir du Walk) */
 .concierge-page { display: grid; gap: 32px; padding-top: 48px; }
 @media (min-width: 900px) { .concierge-page { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; } }
 .concierge-intro h1 { font-size: clamp(42px, 8vw, 72px); line-height: 1; margin-top: 8px; }
