@@ -328,3 +328,27 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .price-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
 .price-table th, .price-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
 .price-table th { font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+
+/* Galerie d'un article (fiche produit et fiche en grand du Walk) : glisser, compteur, toucher pour zoomer */
+.gal { display: grid; gap: 10px; min-width: 0; }
+.gal-frame { position: relative; border-radius: 16px; overflow: hidden; background: #fff; border: 1px solid var(--line); }
+.gal-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.gal-track::-webkit-scrollbar { display: none; }
+.gal-track.zoomed { overflow: hidden; touch-action: none; }
+.gal-slide { flex: 0 0 100%; aspect-ratio: 1; scroll-snap-align: center; scroll-snap-stop: always; display: grid; place-items: center; overflow: hidden; background: #fff; }
+.gal-slide svg.art { width: 62%; height: auto; filter: drop-shadow(0 24px 30px rgba(40, 30, 20, 0.16)); }
+.gal-zoom { width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; overflow: hidden; }
+.gal-track.zoomed .gal-zoom { cursor: zoom-out; }
+.gal-zoom img { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .25s ease; user-select: none; -webkit-user-drag: none; }
+.gal-count { position: absolute; top: 10px; right: 10px; padding: 6px 10px; border-radius: 999px; background: rgba(10, 10, 12, 0.72); color: var(--ivory); font: 600 11px/1 var(--body); font-variant-numeric: tabular-nums; pointer-events: none; }
+.gal-hint { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); padding: 6px 10px; border-radius: 999px; background: rgba(255, 254, 247, 0.85); font: 600 10px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); pointer-events: none; white-space: nowrap; }
+.gal-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 254, 247, 0.9); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.gal-arrow.l { left: 8px; } .gal-arrow.r { right: 8px; }
+.gal-arrow:disabled { opacity: 0; pointer-events: none; }
+@media (hover: none) { .gal-arrow { display: none; } }
+.thumb-art { display: grid; place-items: center; aspect-ratio: 1; padding: 6px; background: var(--surface); }
+.thumb-art svg { width: 100%; height: auto; }
+/* Propositions sous la fiche produit : 3 par rangée sur téléphone, comme dans le Walk */
+.grid.rel { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 10px; }
+.grid.rel .nm { font-size: 12px; }
+@media (min-width: 900px) { .grid.rel { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 22px 14px; } }

@@ -32,6 +32,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
+- **Fiche en grand** (chantier B) : dans une boutique du Walk, toucher l'article devant soi (ou « En grand ») ouvre sa fiche par-dessus la boutique : toutes ses photos (face, dos, autant de détails qu'il y en a), on glisse de l'une à l'autre, compteur « 2 / 6 », miniatures, toucher pour zoomer ; taille, « Au panier », « Fiche complète ». En dessous, **12 propositions au plus, 3 par rangée** : autres articles du même rayon de la marque, « Complète la tenue » (autres rayons de la marque), puis les autres boutiques. Toucher une proposition l'affiche et le portant suit. Le retour du téléphone ferme la fiche. Mêmes galerie et propositions sur la fiche produit. « Zoom » s'appelle maintenant « Tourner » (gros plan 3D) — rhamon
 - Boutiques du Walk : photos des vrais produits nettes (512 px sur le portant, 1024 px quand on zoome ; la finesse reste limitée par la photo d'origine) — rhamon
 - Boutiques du Walk : les vrais produits s'affichent avec leur photo sur le cintre (carte produit, face / dos), en premier dans le rayon et en grand avec « Zoom » ; vitrine à accessoires rehaussée, les sacs sont bien dans le verre — rhamon
 - Photos réelles (test de rendu, pas pour la mise en ligne) : 35 captures du fournisseur classées par Rhamone → 23 produits (les ensembles Tech Fleece et Polo Ralph Lauren sont séparés en veste + pantalon, la photo « ensemble » sert de détail). Fiche produit : face / dos / détail, toucher pour agrandir. En tête des Nouveautés de l'accueil. Dans le Walk, la photo s'affiche dans une carte sur le cintre (pas encore détourée) — rhamon
@@ -46,6 +47,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
+| Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Conciergerie « Demande un article » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
 

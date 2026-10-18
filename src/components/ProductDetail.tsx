@@ -8,7 +8,7 @@ import { accentFor } from "@/lib/catalog/demo";
 import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { GarmentArt } from "./GarmentArt";
-import { ProductPhotos } from "./ProductPhotos";
+import { ProductGallery, photoViews } from "./product/ProductGallery";
 
 const COLOR_NAMES: Record<string, string> = {
   "#F1ECE0": "Écru", "#141416": "Noir", "#680209": "Bordeaux", "#420A0D": "Vin", "#6B6766": "Gris anthracite",
@@ -30,7 +30,7 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
   return (
     <div className="pdp">
       {product.image ? (
-        <ProductPhotos name={product.name} image={product.image} />
+        <ProductGallery name={product.name} views={photoViews(product.image)} />
       ) : (
       <div className="pdp-stage">
         <span className="ghost-word" aria-hidden="true">Fraul</span>
