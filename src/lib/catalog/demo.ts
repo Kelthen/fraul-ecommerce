@@ -1,7 +1,10 @@
 // DONNÉES DE DÉMONSTRATION — aucune vraie donnée pour l'instant.
 // Générées de façon déterministe (mêmes produits à chaque build). Elles seront
 // remplacées par la base de données ; seules les fonctions de ./index.ts changent.
-import { ALL_BRANDS, WALK_BRANDS, brandStyle, hash, slugify } from "./brands";
+import { ALL_BRANDS, NOT_IN_MALL_YET, WALK_BRANDS, brandStyle, hash, slugify } from "./brands";
+import { IMAGES, type ImageId } from "../images";
+import { SUPPLIER_PRODUCTS } from "./supplier";
+import { COLORS } from "./palette";
 import type { Brand, Category, CategoryId, Product } from "./types";
 
 /** Catégories du site, dans l'ordre d'affichage. Ajouter une catégorie : une ligne ici + NAMES, COST_CNY,
@@ -22,7 +25,7 @@ export const CATEGORIES: Category[] = [
   { id: "bag", slug: "accessoires", label: "Accessoires", slot: "accessory", sizes: ["Unique"] },
 ];
 
-export const COLORS = ["#F1ECE0", "#141416", "#680209", "#420A0D", "#6B6766", "#EAE0C8", "#202833", "#9A938A", "#2B2A2C", "#C9BFAA"];
+export { COLORS };
 export const DARK = ["#141416", "#202833", "#2B2A2C", "#420A0D", "#680209", "#6B6766", "#0A0A0C"];
 export const accentFor = (c: string) => (DARK.includes(c) ? "#EAE0C8" : "#420A0D");
 
@@ -83,7 +86,34 @@ function makeProducts(brand: Brand, cat: Category): Product[] {
   });
 }
 
-export const PRODUCTS: Product[] = BRANDS.flatMap((b) => CATEGORIES.flatMap((c) => makeProducts(b, c)));
+/** Vrais produits du fournisseur (photos), avec un coût FICTIF : milieu de la fourchette de démo de leur catégorie. */
+function supplierProducts(): Product[] {
+  const src = (id: ImageId) => IMAGES[id].src;
+  return SUPPLIER_PRODUCTS.map((p) => {
+    const brand = BRANDS.find((b) => b.name === p.brand)!;
+    const cat = CATEGORIES.find((c) => c.id === p.category)!;
+    const [lo, hi] = COST_CNY[p.category];
+    return {
+      slug: p.slug,
+      brandSlug: brand.slug,
+      brandName: brand.name,
+      category: p.category,
+      name: p.name,
+      cost: { cny: Math.round((lo + hi) / 10) * 5, g: WEIGHT_G[p.category] },
+      color: p.color,
+      accent: accentFor(p.color),
+      colors: [p.color],
+      sizes: cat.sizes,
+      image: { front: src(p.image.front), back: p.image.back && src(p.image.back), details: p.image.details.map(src) },
+    };
+  });
+}
+
+/** Vrais produits en premier, puis la démo (pas de démo pour les marques qui n'ont que de vrais produits). */
+export const PRODUCTS: Product[] = [
+  ...supplierProducts(),
+  ...BRANDS.filter((b) => !NOT_IN_MALL_YET.includes(b.name)).flatMap((b) => CATEGORIES.flatMap((c) => makeProducts(b, c))),
+];
 
 /** Nouveautés mises en avant (démo). */
 export const NEW_ARRIVALS: [string, CategoryId, number][] = [
