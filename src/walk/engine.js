@@ -13,6 +13,7 @@ import { ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
 import { EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
+import { matchCategories } from "./models/search";
 
 let THREE = null;
 
@@ -60,7 +61,22 @@ export function startWalk(root, o) {
   const nav = connectHistory({ isDead: () => dead, onBack: trapUpdate, signal: life.signal });
   const hasLayer = nav.has, openLayer = nav.open, closeLayer = nav.close, dropLayer = nav.drop, sync = nav.sync;
 
-  /* ===== Annuaire ===== */
+  /* ===== Mémoire légère (ce téléphone) : gestes déjà faits, dernière boutique regardée ===== */
+  // Un texte d'aide disparaît dès que le geste a été fait une fois (Rhamone : « moins de texte »).
+  const MEM = "fraul.walk.v1";
+  const mem = (() => { try { const m = JSON.parse(localStorage.getItem(MEM) || "{}"); return m && typeof m === "object" ? m : {}; } catch { return {}; } })();
+  if (!Array.isArray(mem.seen)) mem.seen = [];
+  const remember = (patch) => { Object.assign(mem, patch); try { localStorage.setItem(MEM, JSON.stringify(mem)); } catch { /* ignoré */ } };
+  const seen = (g) => mem.seen.includes(g);
+  function gesture(g) { root.classList.add(`seen-${g}`); if (!seen(g)) remember({ seen: [...mem.seen, g] }); }
+  mem.seen.forEach((g) => root.classList.add(`seen-${g}`));
+  /** Boutique où reprendre la visite (regardée il y a moins de 14 jours), sinon l'entrée du mall. */
+  function resumeShop() {
+    const k = typeof mem.last === "string" ? o.shops.findIndex((s) => s.name === mem.last) : -1;
+    return k >= 0 && Date.now() - (Number(mem.at) || 0) < 14 * 864e5 ? k : undefined;
+  }
+
+  /* ===== Annuaire et recherche (une marque ou une pièce) ===== */
   const dir = $("#dir"), dirq = $("#dirq");
   const SHOP_NAMES = o.shops.map((s) => s.name);
   function renderDir() {
@@ -68,6 +84,20 @@ export function startWalk(root, o) {
     const list = o.allBrands.map((b) => b.name).filter((b) => b.toLowerCase().includes(q));
     const out = $("#dirList");
     out.textContent = "";
+    // Une pièce tapée (« hoodie », « basket »…) : on propose d'aller droit au rayon dans chaque boutique qui en a.
+    const withPhoto = (b, cat) => products(b, cat).some((it) => it.img);
+    const rayons = matchCategories(q, CATS)
+      .flatMap((cat) => o.allBrands.map((b) => b.name).filter((b) => products(b, cat).length).map((b) => [b, cat]))
+      .sort((x, y) => Number(withPhoto(...y)) - Number(withPhoto(...x))); // les boutiques avec de vraies photos d'abord
+    if (rayons.length) {
+      const p = document.createElement("p"); p.className = "letter"; p.textContent = "Aller au rayon"; out.append(p);
+      rayons.slice(0, 12).forEach(([b, cat]) => {
+        const go = document.createElement("button"); go.type = "button"; go.className = "go"; go.dataset.b = b; go.dataset.cat = cat;
+        const st = document.createElement("strong"); st.textContent = b; const sp = document.createElement("span"); sp.textContent = catLabel(cat);
+        go.append(st, sp); const row = document.createElement("div"); row.className = "brand"; row.append(go); out.append(row);
+      });
+      if (!list.length) return;
+    }
     if (!list.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = `Aucune marque ne correspond à « ${dirq.value} ».`; out.append(p); return; }
     let cur = "";
     list.forEach((b) => {
@@ -90,11 +120,12 @@ export function startWalk(root, o) {
   }
   const closeDir = () => closeLayer("dir");
   on($("#dirBtn"), "click", openDir);
+  on($("#wSearch"), "click", openDir);
   on($("#dirClose"), "click", closeDir);
   on(dirq, "input", renderDir);
   on($("#dirList"), "click", (e) => {
     const go = e.target.closest(".go"), chip = e.target.closest(".chip");
-    if (go) { closeDir(); openStore(go.dataset.b, { fromWalk: walkOpen }); }
+    if (go) { const cat = go.dataset.cat; closeDir(); openStore(go.dataset.b, { fromWalk: walkOpen }).then(() => { if (cat && !storeEl.hidden) goZone(cat); }); }
     if (chip) { closeDir(); openWalk(+chip.dataset.walk); }
   });
   on(window, "keydown", (e) => { if (e.key === "Escape" && !dir.hidden) { e.stopImmediatePropagation(); closeDir(); } });
@@ -278,10 +309,12 @@ export function startWalk(root, o) {
     curShop = i;
     $("#count").textContent = `Boutique ${String(i + 1).padStart(2, "0")} / ${String(N).padStart(2, "0")}`;
     const b = $("#bname"); b.textContent = SHOPS[i].name; b.classList.remove("swap"); void b.offsetWidth; b.classList.add("swap");
+    remember({ last: SHOP_NAMES[i], at: Date.now() }); // on reprendra ici au prochain passage
   }
   function onWalkScroll() {
     progress = clamp(walkEl.scrollTop / Math.max(1, track.offsetHeight - walkEl.clientHeight), 0, 1);
     bars.forEach((b, k) => (b.style.width = clamp(progress * 9 - k, 0, 1) * 100 + "%"));
+    if (progress > 0.02 && !root.classList.contains("seen-scroll")) gesture("scroll");
     const st = pathAt(progress);
     $("#intro").style.opacity = st.intro ? clamp(st.intro * 1.8 - 0.4, 0, 1) : 0;
     setHud(st.shop);
@@ -303,6 +336,7 @@ export function startWalk(root, o) {
     if (typeof i === "number") jumpToShop(i); else { walkEl.scrollTop = 0; if (MALL) MALL.snap(); onWalkScroll(); }
   }
   const enterShop = (k) => {
+    gesture("tap");
     const brand = SHOP_NAMES[k];
     if (MALL) MALL.enter(k, () => openStore(brand, { fromWalk: true })); else openStore(brand, { fromWalk: true });
   };
@@ -521,7 +555,7 @@ export function startWalk(root, o) {
 
   const storeEl = $("#store");
   const SWIPE_HINT = "Glisse pour défiler, touche pour voir en grand";
-  let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false, swiped = false;
+  let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false, swiped = seen("swipe");
   let sMode = "walk", backLock = 0, storeFrom = null;
   function sUI(mode) {
     sMode = mode;
@@ -560,6 +594,7 @@ export function startWalk(root, o) {
     if (anim) STORE.walk("hub", () => sUI("hub"));
   }
   function goZone(cat) {
+    gesture("rayon");
     openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
     STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); sUI("rayon"); renderChips(cat); showInfo(cat, STORE.focus(cat)); });
@@ -592,6 +627,7 @@ export function startWalk(root, o) {
   function storeBack() {
     if (!STORE || storeEl.hidden || sMode === "walk") return;
     const now = performance.now(); if (now < backLock) return; backLock = now + 900;
+    gesture("back");
     closeLayer(hasLayer("rayon") ? "rayon" : "store");
   }
   on(storeEl, "wheel", (e) => { if (e.deltaY < -12) storeBack(); }, { passive: true });
@@ -846,7 +882,7 @@ export function startWalk(root, o) {
         ray.setFromCamera(ndc, camera);
         const hit = ray.intersectObjects(c.meshes.filter((m) => m.visible), true)[0];
         if (hit) { const k = c.meshes.findIndex((m) => m === hit.object.parent); if (k === Math.round(c.f)) { if (closeT) setClose(0); else openFiche(c.items[k]); } else if (!closeT) { c.target = k; } }
-      } else if (!closeT) { c.target = clamp(Math.round(c.f), 0, c.items.length - 1); swiped = true; $("#sSwipe").hidden = true; }
+      } else if (!closeT) { c.target = clamp(Math.round(c.f), 0, c.items.length - 1); swiped = true; gesture("swipe"); $("#sSwipe").hidden = true; }
       drag = null; dragging = false; kick();
     };
     canvas.addEventListener("pointerup", endDrag, sig);
@@ -885,7 +921,7 @@ export function startWalk(root, o) {
   /* ===== Démarrage ===== */
   sync();
   if (o.startStore) openStore(o.startStore, { fromWalk: false });
-  else openWalk(typeof o.startShop === "number" ? o.startShop : undefined);
+  else openWalk(typeof o.startShop === "number" ? o.startShop : resumeShop()); // revenir : pas besoin de refaire le tour
 
   return {
     closeFiche: () => closeLayer("fiche"),
