@@ -252,8 +252,15 @@ await check("Fraul Finds : une pièce sur demande (page, puis dans le mall)", as
     el.scrollTop = ((after + 1 + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
   });
   await page.locator("#conStop:not([hidden])").waitFor({ timeout: 10000 });
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(7000); // saut long (vers la 10e boutique) : la caméra glisse jusqu'au comptoir
   await shot("18a-fraul-finds-comptoir");
+  // Toucher le comptoir ouvre Fraul Finds, jamais la boutique cachée derrière (retour de Rhamone, 18 oct.)
+  const gl = await page.locator("#gl").boundingBox();
+  await page.mouse.click(gl.x + gl.width / 2, gl.y + gl.height * 0.41);
+  await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
+  if (await page.locator("#store").isVisible()) throw new Error("le comptoir a ouvert une boutique");
+  await back();
+  await page.locator("#concierge").waitFor({ state: "hidden", timeout: 5000 });
   await page.locator("#conStopBtn").click();
   await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
   if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous Fraul Finds");

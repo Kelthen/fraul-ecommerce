@@ -2,12 +2,13 @@
 // introuvable dans les boutiques (décision de Rhamone, 18 oct. 2026). Texte : src/content/walk.ts.
 import type * as T from "three";
 
-type Opts = { x: number; z: number; title: string; sub: string; serif: string; sans: string };
+type Opts = { x: number; z: number; nx: number; nz: number; title: string; sub: string; serif: string; sans: string };
 
-/** Comptoir en arc (perle, bandeau bordeaux) tourné vers l'entrée du mall (+z), enseigne sur pied. */
-export function createConciergeDesk(THREE: typeof T, { x, z, title, sub, serif, sans }: Opts) {
+/** Comptoir en arc (perle, bandeau bordeaux) tourné vers l'allée (nx, nz), enseigne sur pied. */
+export function createConciergeDesk(THREE: typeof T, { x, z, nx, nz, title, sub, serif, sans }: Opts) {
   const g = new THREE.Group();
   g.position.set(x, 0, z);
+  g.rotation.y = Math.atan2(nx, nz);
   // Couleurs de la charte en sRGB, converties pour le rendu (sinon le bordeaux sort rouge vif).
   const std = (c: number, r = 0.6, m = 0) => new THREE.MeshStandardMaterial({ color: new THREE.Color(c).convertSRGBToLinear(), roughness: r, metalness: m });
   const pearl = std(0xeae0c8, 0.3), wine = std(0x680209, 0.45), brass = std(0xc8a96a, 0.3, 0.8);

@@ -46,7 +46,7 @@ Avec les 31 marques d'aujourd'hui :
 
 ## Fraul Finds, pièces sur demande (2026-10-18)
 
-- Arrêt du parcours **en haut du tronc**, face au comptoir « Fraul Finds · Sur demande » au pied du grand « F » (`concierge` dans le plan du mode ; `AT_CONCIERGE` dans `src/walk/models/walk-path.ts`). Comptoir 3D : `src/walk/views/concierge.ts` ; enseigne : `CONCIERGE_TEXT` dans `src/content/walk.ts`.
+- Arrêt du parcours **vers la 10e boutique** (après le 2e arrêt du bout droit de la barre), face au comptoir « Fraul Finds · Sur demande » posé à droite du grand « F » ; le toucher ouvre le formulaire (il passe devant les vitrines cachées derrière) (`concierge` dans le plan du mode ; `AT_CONCIERGE` dans `src/walk/models/walk-path.ts`). Comptoir 3D : `src/walk/views/concierge.ts` ; enseigne : `CONCIERGE_TEXT` dans `src/content/walk.ts`.
 - « Demande une pièce » ouvre le formulaire par-dessus le mall (couche « concierge » : le retour du téléphone la ferme). Même formulaire sur `/sur-demande`.
 
 ## Comment on s'y déplace

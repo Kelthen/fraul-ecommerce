@@ -8,8 +8,9 @@ export type TDims = { SLOT: number; CEIL: number; STEM_X: number; STEM_END: numb
 const BASE = { stem: 4, low: 3, end: 3, top: 7 };
 const STEM_X = 7;
 const BAR_Z = -32;
-/** Comptoir Fraul Finds (src/walk/views/concierge.ts), devant le « F » du centre. */
-export const CONCIERGE_Z = -16 + 3.6;
+/** Centre du mall (grand « F ») et distance du comptoir Fraul Finds (src/walk/views/concierge.ts) à ce centre. */
+export const CENTER_Z = -16;
+export const CONCIERGE_R = 3.6;
 
 /**
  * Répartit n boutiques sur le T. Au-delà de 27, on ajoute à tour de rôle une vitrine de chaque côté
@@ -45,8 +46,9 @@ export function layoutT(n: number): MallLayout<TDims> {
 
   return {
     slots: s,
-    // En haut du tronc, face au comptoir au pied du « F » (centre à z = -16), avant de tourner vers la barre.
-    concierge: { after: c.stem, slot: { x: 0, z: CONCIERGE_Z, nx: 0, nz: 1 } },
+    // Vers la 10e boutique (Rhamone, 18 oct. 2026 : « quand tu commences à être fatigué ») : au bout droit de la barre,
+    // on se retourne vers le centre, face au comptoir posé à droite du « F ».
+    concierge: { after: c.stem + c.low + 2, slot: { x: CONCIERGE_R, z: CENTER_Z, nx: 1, nz: 0 } },
     entry: { p: [0, STEM_END + 9], l: [0, 2.2, 18] },
     exit: { p: [0, STEM_END + 9], l: [0, 2.2, STEM_END + 40] },
     dims: { SLOT, CEIL, STEM_X, STEM_END, BAR_X, BAR_Z },

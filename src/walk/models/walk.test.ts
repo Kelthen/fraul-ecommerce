@@ -41,15 +41,16 @@ test("parcours : entrée à 0 %, sortie à 100 %", () => {
   assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], AT_EXIT]);
 });
 
-test("Fraul Finds : un arrêt en haut du tronc, face au comptoir, entre deux boutiques", () => {
+test("Fraul Finds : un arrêt vers la 10e boutique, face au comptoir, entre deux boutiques", () => {
   const { after, slot } = MALL.concierge;
   const pt = pathAt(progressForConcierge(N, MALL), N, 10, MALL);
   assert.equal(pt.shop, AT_CONCIERGE);
-  assert.ok(Math.abs(pt.x - slot.x) < 1e-9 && Math.abs(pt.z - (slot.z + 7)) < 1e-9);
+  assert.ok(Math.abs(pt.x - (slot.x + slot.nx * 7)) < 1e-9 && Math.abs(pt.z - (slot.z + slot.nz * 7)) < 1e-9);
   assert.equal(pathAt(progressForShop(after - 1, N, MALL), N, 10, MALL).shop, after - 1);
   assert.equal(pathAt(progressForShop(after, N, MALL), N, 10, MALL).shop, after);
-  // Le comptoir est dans l'axe du tronc, entre le bas de la barre (z = 0) et le « F » (z = -16).
-  assert.ok(slot.x === 0 && slot.z < 0 && slot.z > -16);
+  assert.ok(after >= 9 && after <= 11, `arrêt après ${after} boutiques`);
+  // Le comptoir est au pied du « F » (centre du mall, z = -16), tourné vers la caméra.
+  assert.ok(Math.hypot(slot.x, slot.z + 16) < 4.5);
 });
 
 test("sauter à une boutique la met face à la caméra", () => {

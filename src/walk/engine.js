@@ -406,7 +406,10 @@ export function startWalk(root, o) {
     // Pièce centrale : grand « F » Fraul sur un socle, entouré d'arbres en pot
     const C = new THREE.Group(); C.position.set(0, 0, -16); scene.add(C);
     // Comptoir Fraul Finds au pied du « F », tourné vers l'entrée (src/walk/views/concierge.ts), placé par le mode
-    scene.add(createConciergeDesk(THREE, { ...LAYOUT.concierge.slot, ...CONCIERGE_TEXT, serif: o.fonts.serif, sans: o.fonts.sans }).group);
+    const desk = createConciergeDesk(THREE, { ...LAYOUT.concierge.slot, ...CONCIERGE_TEXT, serif: o.fonts.serif, sans: o.fonts.sans }).group;
+    scene.add(desk);
+    // Le comptoir cache les vitrines derrière lui : le toucher ouvre Fraul Finds, jamais la boutique cachée.
+    const deskHits = []; desk.traverse((m) => { if (m.isMesh) { m.userData.desk = true; deskHits.push(m); } });
     add(C, new THREE.CylinderGeometry(3.1, 3.3, 0.6, 48), std(0xe8e1d4, 0.35), 0, 0.3, 0);
     add(C, new THREE.CylinderGeometry(2.6, 2.6, 0.04, 48), std(0x680209, 0.4), 0, 0.62, 0);
     const fM = std(0x680209, 0.22, 0.35);
@@ -485,18 +488,19 @@ export function startWalk(root, o) {
 
     // Toucher une vitrine = entrer dans la boutique (le défilement ne fait jamais entrer)
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-    const pick = (e) => { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); const h = ray.intersectObjects(hits, false)[0]; return h && h.distance < 40 ? h.object.userData.shop : -1; };
+    const pick = (e) => { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); const h = ray.intersectObjects([...hits, ...deskHits], false)[0]; return !h || h.distance >= 40 ? -1 : h.object.userData.desk ? DESK : h.object.userData.shop; };
+    const DESK = -9;
     let down = null, px = 0, py = 0;
     on(canvas, "pointerdown", (e) => { down = { x: e.clientX, y: e.clientY }; });
     on(canvas, "pointerup", (e) => {
       if (!down || entering) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
       if (moved > 8) return;
-      const k = pick(e); if (k >= 0) enterShop(k);
+      const k = pick(e); if (k === DESK) openConcierge(null); else if (k >= 0) enterShop(k);
     });
     on(canvas, "pointercancel", () => { down = null; });
     on(stage, "pointermove", (e) => {
       if (e.pointerType !== "mouse") return; const r = stage.getBoundingClientRect(); px = (e.clientX - r.left) / r.width - 0.5; py = (e.clientY - r.top) / r.height - 0.5;
-      canvas.style.cursor = pick(e) >= 0 ? "pointer" : "default"; kick();
+      const k = pick(e); canvas.style.cursor = k >= 0 || k === DESK ? "pointer" : "default"; kick();
     });
 
     const cam = { x: ENTRY.p[0], z: ENTRY.p[1] + 6, lx: ENTRY.l[0], ly: ENTRY.l[1], lz: ENTRY.l[2] };

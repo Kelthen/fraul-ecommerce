@@ -254,3 +254,9 @@
 - **Ce qui s'est passé :** le comptoir « Demande un article » s'appelait « Conciergerie ». Rhamone : « trop normal ; pour le vocabulaire du site on doit être cool, classe et posé, pas trop archaïque ». Renommé « Fraul Finds » (sous-titre « Sur demande »).
 - **Cause :** nom choisi seul, dans un registre hôtelier vieillot.
 - **Règle :** tout nom ou libellé visible (comptoir, bouton, rubrique) est court, moderne et posé ; un mot anglais de la culture streetwear est permis s'il reste clair. Pour un nouveau nom, proposer 3 ou 4 choix à Rhamone avant de l'écrire partout.
+
+### L-44 — Ce qui cache une vitrine doit aussi « attraper » le toucher
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** à l'arrêt Fraul Finds, toucher le comptoir faisait entrer dans la boutique ERD, cachée derrière lui. Rhamone : « ça n'a pas de sens, c'est pas ergonomique ». L'arrêt était aussi trop tôt (5e place au lieu de 10e).
+- **Cause :** le toucher ne testait que les façades des boutiques, pas les objets posés devant.
+- **Règle :** tout objet 3D placé devant une zone touchable fait partie du test de toucher et a sa propre action. Le test téléphone touche le comptoir et vérifie qu'aucune boutique ne s'ouvre. Placer un arrêt là où le visiteur en a besoin (Fraul Finds : quand il commence à fatiguer, vers la 10e boutique).
