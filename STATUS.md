@@ -78,10 +78,9 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 
 ## 🧭 Décisions (ne pas revenir dessus sans accord)
 
-- **2026-10-18 · Rhamone** : la Caisse ne s'affiche que si le sac contient au moins un article ; sac vide ou rien choisi → pas de Caisse. La Caisse sera **remodelée plus tard** : PR #17 à ne pas merger avant.
-
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-18 | La **Caisse** ne s'affiche que si le sac contient **au moins un article** ; sac vide ou rien choisi → pas de Caisse. La Caisse sera **remodelée plus tard** : PR #17 à ne pas merger avant. | Rhamone |
 | 2026-10-18 | **Plusieurs fournisseurs** (ex. 10 pour Nike) et **une personne à part pour l'expédition**. Pour chaque article, on doit retrouver en interne quel fournisseur le vend ; le client ne voit jamais les fournisseurs. Proposition à écrire pour Serge (zone fournisseur / SQL). | Rhamone |
 | 2026-10-18 | **« Super centre »** : on fait la **Caisse à la sortie** (près des portes) + **sac qui se remplit**, la **Conciergerie au centre = « Demande un article »** (on va le chercher chez les fournisseurs), les **vitrines vivantes** (photo du produit phare), l'**heure du jour** (lumière selon l'heure locale du visiteur : à 19 h, plus sombre et éclairé, jamais noir). Plus tard : drop au centre, Penderie, « devenir partenaire ». Non : musique automatique, passants animés, faux compteurs (« 12 personnes regardent »), mini-plan. | Rhamone |
 | 2026-10-18 | Ordre des prochains chantiers : A photos nettes → B fiche en grand dans la boutique → C Caisse + sac → D Conciergerie « Demande un article » (+ proposition fournisseurs multiples pour Serge) → E envies puis comptes → F vitrines vivantes ; heure du jour à placer. | Rhamone |
