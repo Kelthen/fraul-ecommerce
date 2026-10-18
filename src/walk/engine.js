@@ -8,6 +8,8 @@ import { DARK, accentFor } from "@/lib/catalog/demo";
 import { createFocusController } from "./controllers/focus";
 import { connectHistory } from "./controllers/history";
 import { getMode } from "./modes";
+import { createEntrance } from "./views/entrance";
+import { ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
 import { EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
@@ -351,6 +353,9 @@ export function startWalk(root, o) {
     add(scene, new THREE.BoxGeometry(STEM_X - 2.6, CEIL, 0.4), wallM, -(STEM_X + 2.6) / 2, CEIL / 2, STEM_END);
     add(scene, new THREE.BoxGeometry(STEM_X - 2.6, CEIL, 0.4), wallM, (STEM_X + 2.6) / 2, CEIL / 2, STEM_END);
     add(scene, new THREE.BoxGeometry(5.2, CEIL - 3.6, 0.4), wallM, 0, 3.6 + (CEIL - 3.6) / 2, STEM_END);
+    // Portes en verre « Welcome to Fraul Center » qui s'écartent à l'approche (src/walk/views/entrance.ts)
+    const entrance = createEntrance(THREE, { z: STEM_END, width: 5.2, height: 3.6, lines: ENTRANCE_TEXT, serif: o.fonts.serif });
+    scene.add(entrance.group);
     add(scene, new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }), 0, 5, STEM_END + 14, Math.PI);
     flat(scene, 30, 16, std(0xe2dccf, 0.5), 0, -0.01, STEM_END + 7);
     const sign = (txt, x, z, rot) => { const m = flat(scene, 4.6, 0.86, new THREE.MeshBasicMaterial({ map: U.labelTex(txt, "#680209"), transparent: true }), x, 0.006, z); if (rot) m.rotation.z = Math.PI; };
@@ -469,6 +474,7 @@ export function startWalk(root, o) {
         if (diff > 0.004) more = true;
       }
       updateDetails(cam.x, cam.z);
+      entrance.update(cam.z);
       camera.position.set(cam.x + px * 0.35, EYE - py * 0.12, cam.z);
       camera.lookAt(cam.lx - px * 0.6, cam.ly - py * 0.3, cam.lz);
       renderer.render(scene, camera);
