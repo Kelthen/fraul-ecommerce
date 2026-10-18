@@ -36,6 +36,19 @@ await check("aucun pays affiché", async () => {
   if (found.length) throw new Error(`mots trouvés : ${found.join(", ")}`);
 });
 
+await check("page marques : pastilles rondes, recherche", async () => {
+  await page.goto(BASE + "/marques", { waitUntil: "networkidle" });
+  const n = await page.locator(".bround").count();
+  if (n < 30) throw new Error(`${n} pastilles seulement`);
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("la page déborde en largeur");
+  await shot("02b-marques");
+  await page.locator("#brand-q").fill("trav");
+  if ((await page.locator(".bround").count()) !== 1) throw new Error("la recherche ne filtre pas");
+  await page.locator(".bround").first().click();
+  await page.waitForURL("**/marques/travis-scott");
+});
+
 await check("fiche produit avec photos (face, dos, détail)", async () => {
   await page.goto(BASE + "/produit/nike-techfleece-noir-gris-veste", { waitUntil: "networkidle" });
   const img = page.locator(".pdp-stage.photo img");

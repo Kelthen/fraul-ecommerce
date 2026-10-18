@@ -19,7 +19,7 @@ export default async function BrandsPage() {
         </div>
         <p className="muted">{brands.length} marques, de A à Z.</p>
       </div>
-      <BrandDirectory brands={brands.map((b) => ({ name: b.name, slug: b.slug, inWalk: b.inWalk }))} />
+      <BrandDirectory brands={[...brands].sort((a, b) => a.name.localeCompare(b.name, "fr"))} />
     </section>
   );
 }
