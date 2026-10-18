@@ -44,6 +44,11 @@ Avec les 31 marques d'aujourd'hui :
   s'écartent quand on approche (le texte se coupe en deux), en entrant comme en sortant.
 - Fichiers : `src/walk/views/entrance.ts` (portes, distance d'ouverture) et `src/content/walk.ts` (texte).
 
+## La Conciergerie (2026-10-18)
+
+- Arrêt du parcours **en haut du tronc**, face au comptoir « Conciergerie · Demande un article » au pied du grand « F » (`concierge` dans le plan du mode ; `AT_CONCIERGE` dans `src/walk/models/walk-path.ts`). Comptoir 3D : `src/walk/views/concierge.ts` ; enseigne : `CONCIERGE_TEXT` dans `src/content/walk.ts`.
+- « Demande un article » ouvre le formulaire par-dessus le mall (couche « concierge » : le retour du téléphone la ferme). Même formulaire sur `/conciergerie`.
+
 ## Comment on s'y déplace
 
 - **Glisser / faire défiler** = avancer ou reculer le long du parcours. La

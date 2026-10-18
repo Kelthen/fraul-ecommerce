@@ -32,6 +32,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
+- **La Conciergerie « Demande un article »** (chantier D) : nouvel arrêt du mall **en haut du couloir d'entrée**, face à un comptoir au pied du grand « F » (« Conciergerie · Demande un article ») ; bouton « Demande un article » → formulaire par-dessus le mall (le retour du téléphone le ferme). Aussi : lien « Une pièce introuvable ? » sous chaque vitrine, « Pas trouvé ? Demande-le » au centre de chaque boutique (marque préremplie), page `/conciergerie` (lien dans le pied de page). Formulaire : article, marque, taille, lien, e-mail, précisions ; vérifié (champ piège anti-robot, longueurs, liens https) ; **démo : rien n'est envoyé**. Proposition pour Serge : `docs/FOURNISSEURS-MULTIPLES.md` (plusieurs fournisseurs par article, personne de l'expédition, table des demandes ; SQL proposé, non appliqué) — rhamon
 - **Fiche en grand** (chantier B) : dans une boutique du Walk, toucher l'article devant soi (ou « En grand ») ouvre sa fiche par-dessus la boutique : toutes ses photos (face, dos, autant de détails qu'il y en a), on glisse de l'une à l'autre, compteur « 2 / 6 », miniatures, toucher pour zoomer ; taille, « Au panier », « Fiche complète ». En dessous, **12 propositions au plus, 3 par rangée** : autres articles du même rayon de la marque, « Complète la tenue » (autres rayons de la marque), puis les autres boutiques. Toucher une proposition l'affiche et le portant suit. Le retour du téléphone ferme la fiche. Mêmes galerie et propositions sur la fiche produit. « Zoom » s'appelle maintenant « Tourner » (gros plan 3D) — rhamon
 - Boutiques du Walk : photos des vrais produits nettes (512 px sur le portant, 1024 px quand on zoome ; la finesse reste limitée par la photo d'origine) — rhamon
 - Boutiques du Walk : les vrais produits s'affichent avec leur photo sur le cintre (carte produit, face / dos), en premier dans le rayon et en grand avec « Zoom » ; vitrine à accessoires rehaussée, les sacs sont bien dans le verre — rhamon
@@ -56,11 +57,12 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → ✅ modes de mall (31 boutiques) → ✅ portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
 5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
-6. **Serge** : valider la migration des emplacements de tenue (`outfit_slot` : ajouter `cap`, `glasses`, `neck`, `watch`, `layer`, `socks`) proposée dans la PR des catégories ; plus tard retirer `customers.whatsapp` et le canal `whatsapp`
-7. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
-8. Paiement Stripe en mode test
-9. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-10. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
+6. **Serge** : lire `docs/FOURNISSEURS-MULTIPLES.md` (plusieurs fournisseurs par article, expédition, demandes de la Conciergerie ; 3 questions en fin) et valider ou modifier le SQL proposé (migration 0003, non appliquée)
+7. **Serge** : valider la migration des emplacements de tenue (`outfit_slot` : ajouter `cap`, `glasses`, `neck`, `watch`, `layer`, `socks`) proposée dans la PR des catégories ; plus tard retirer `customers.whatsapp` et le canal `whatsapp`
+8. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
+9. Paiement Stripe en mode test
+10. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
+11. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
 
 ## ⏳ Bloqué — attend le client
 
