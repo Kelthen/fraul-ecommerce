@@ -223,15 +223,8 @@ p { margin: 0; }
 
 /* Crée ta tenue */
 .outfit { display: grid; gap: 24px; }
+.outfit > * { min-width: 0; } /* la barre des emplacements défile sans élargir la page */
 @media (min-width: 900px) { .outfit { grid-template-columns: 1fr 1.1fr; gap: 48px; align-items: start; } }
-.outfit-stage { display: grid; grid-template-columns: 1fr 140px; gap: 10px; min-height: 360px; }
-.outfit-model { border-radius: 22px; background: #e0d5bc; display: grid; place-items: center; padding: 18px; }
-.outfit-model svg { width: min(200px, 70%); height: auto; }
-.outfit-model path { transition: fill .45s ease; }
-.outfit-slots { display: grid; gap: 8px; }
-.outfit-slots div { border-radius: 16px; background: var(--ivory); padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; }
-.outfit-slots span { font: 700 9px/1 var(--body); letter-spacing: 0.16em; color: var(--muted); }
-.outfit-slots b { font-size: 12px; font-weight: 600; margin-top: 4px; }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .tab { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(10, 10, 12, 0.25); font: 700 12px/1 var(--body); }
 .tab[aria-selected="true"] { background: var(--ink); color: var(--ivory); border-color: var(--ink); }
@@ -240,6 +233,28 @@ p { margin: 0; }
 .piece[aria-pressed="true"] { border: 2px solid var(--ink); }
 .piece svg { width: 80%; height: auto; }
 .outfit-total { margin-top: 20px; display: grid; gap: 10px; }
+.outfit-total .pill:disabled { opacity: .45; }
+/* Crée ta tenue : vue 3D, silhouette 2D de repli, carte de la pièce, barre des emplacements. */
+.outfit-left { display: grid; gap: 12px; }
+.outfit-3d, .outfit-flat { position: relative; height: min(68svh, 135vw, 620px); border-radius: 22px; background: radial-gradient(120% 80% at 50% 20%, #fffdf8, #e6dccd); overflow: hidden; }
+.outfit-3d canvas { display: block; }
+.outfit-3d-wait { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; color: var(--muted); }
+.outfit-3d-bar { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; pointer-events: none; }
+.outfit-3d-bar span { font: 700 9px/1.3 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.outfit-3d-bar .pill { pointer-events: auto; background: var(--ivory); }
+.pill.sm { min-height: 38px; padding: 0 16px; font-size: 10px; }
+.outfit-flat { display: grid; place-items: center; align-content: center; gap: 16px; padding: 18px; }
+.outfit-sil { width: min(170px, 50%); height: auto; }
+.outfit-sil path, .outfit-sil ellipse { transition: fill .45s ease; }
+.outfit-card { display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; background: var(--ivory); border-radius: 16px; padding: 10px; }
+.outfit-card .pic { margin: 0; aspect-ratio: 1; }
+.outfit-card > div:last-child { display: grid; gap: 4px; font-size: 13px; }
+.outfit-slotbar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
+.oslot { flex: 0 0 auto; min-width: 104px; text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--ivory); padding: 10px 12px; display: grid; gap: 4px; cursor: pointer; }
+.oslot[aria-selected="true"] { border-color: var(--ink); background: var(--ink); color: var(--ivory); }
+.oslot span { font: 700 9px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+.oslot b { font-size: 12px; font-weight: 600; }
+.piece img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .outfit-total .pill { min-height: 56px; }
 
 /* Panier */

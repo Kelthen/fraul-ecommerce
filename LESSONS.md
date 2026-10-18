@@ -218,3 +218,9 @@
 - **Ce qui s'est passé :** avec les vrais produits du fournisseur, Travis Scott n'a qu'un hoodie et un short. Sa boutique 3D proposait quand même tous les rayons ; ouvrir un rayon vide faisait planter le panneau article.
 - **Cause :** la démo donnait 6 articles à chaque marque dans chaque rayon ; le moteur supposait qu'un rayon n'est jamais vide.
 - **Règle :** la boutique n'affiche que les rayons qui ont au moins un article (`stocked()` dans `src/walk/engine.js`) ; `npm run smoke` ouvre la boutique d'une marque qui a peu d'articles. Pour importer de nouvelles photos : `node scripts/import-catalogue.mjs <dossier>`, jamais d'édition à la main des fichiers générés.
+
+### L-36 — Une rangée qui défile de côté peut élargir toute la page
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** dans « Crée ta tenue », la barre des emplacements (qui défile de côté) a élargi la grille à 888 px sur un écran de 390 px. Le mannequin débordait par-dessus les boutons, impossibles à toucher sur téléphone. Trouvé par `npm run smoke`.
+- **Cause :** un élément de grille prend par défaut la largeur de son contenu le plus large (`min-width: auto`).
+- **Règle :** toute rangée qui défile horizontalement dans une grille : `min-width: 0` sur l'élément de grille parent. Toute nouvelle page interactive a son étape dans `npm run smoke` (les clics bloqués y apparaissent).

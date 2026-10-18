@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { OutfitBuilder } from "@/components/OutfitBuilder";
+import { OutfitBuilder } from "@/components/outfit/OutfitBuilder";
 import { getOutfitPieces } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Crée ta tenue",
-  description: "Assemble un haut, un bas et une paire sur le mannequin, puis ajoute la tenue entière au panier.",
+  description: "Compose ta tenue de la casquette aux chaussures, essaie-la sur le mannequin, puis ajoute tout au panier.",
   alternates: { canonical: "/tenue" },
 };
 
