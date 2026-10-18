@@ -224,3 +224,9 @@
 - **Ce qui s'est passé :** dans « Crée ta tenue », la barre des emplacements (qui défile de côté) a élargi la grille à 888 px sur un écran de 390 px. Le mannequin débordait par-dessus les boutons, impossibles à toucher sur téléphone. Trouvé par `npm run smoke`.
 - **Cause :** un élément de grille prend par défaut la largeur de son contenu le plus large (`min-width: auto`).
 - **Règle :** toute rangée qui défile horizontalement dans une grille : `min-width: 0` sur l'élément de grille parent. Toute nouvelle page interactive a son étape dans `npm run smoke` (les clics bloqués y apparaissent).
+
+### L-37 — Le client doit voir le produit, pas une forme
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** dans la première version de « Crée ta tenue », toucher le pantalon Tech Fleece montrait seulement une forme noire sur le mannequin ; la vraie photo était petite, sous le mannequin. Rhamone : « il y a juste une couleur noire, je vois pas ». En plus, retoucher une pièce déjà portée la retirait.
+- **Cause :** on a mis la 3D au premier plan alors que nos photos ne peuvent pas encore s'y poser (pas détourées).
+- **Règle :** quand on choisit un produit, sa vraie photo s'affiche en grand d'abord ; la 3D est un complément (« Mannequin 3D »). Un geste qui retire quelque chose a son propre bouton, jamais le même geste que « voir ».

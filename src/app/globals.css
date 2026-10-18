@@ -248,7 +248,15 @@ p { margin: 0; }
 .outfit-sil path, .outfit-sil ellipse { transition: fill .45s ease; }
 .outfit-card { display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; background: var(--ivory); border-radius: 16px; padding: 10px; }
 .outfit-card .pic { margin: 0; aspect-ratio: 1; }
-.outfit-card > div:last-child { display: grid; gap: 4px; font-size: 13px; }
+.outfit-card { position: relative; }
+.outfit-card.text { grid-template-columns: 1fr; }
+.outfit-remove { position: absolute; top: 12px; right: 14px; background: none; border: 0; font-size: 12px; cursor: pointer; }
+.outfit-switch { display: inline-flex; justify-self: start; gap: 4px; padding: 4px; border-radius: 999px; background: var(--ivory); border: 1px solid var(--line); }
+.outfit-switch button { min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; font: 700 10px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); cursor: pointer; }
+.outfit-switch button[aria-pressed="true"] { background: var(--ink); color: var(--ivory); }
+.outfit-switch button:disabled { opacity: .4; }
+.outfit-art { width: min(260px, 70%); height: auto; }
+.outfit-card > div:not(.pic) { display: grid; gap: 4px; font-size: 13px; padding-right: 84px; }
 .outfit-slotbar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
 .oslot { flex: 0 0 auto; min-width: 104px; text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--ivory); padding: 10px 12px; display: grid; gap: 4px; cursor: pointer; }
 .oslot[aria-selected="true"] { border-color: var(--ink); background: var(--ink); color: var(--ivory); }

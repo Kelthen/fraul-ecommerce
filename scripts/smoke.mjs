@@ -68,11 +68,14 @@ await check("crée ta tenue : liste sans 3D, montre, short + chaussettes", async
   await page.getByRole("tab", { name: /Pantalon ou short/ }).click();
   await page.getByRole("button", { name: /Short/ }).first().click();
   await page.getByRole("tab", { name: /Chaussettes/ }).waitFor();          // le short active les chaussettes
+  const photo = page.locator(".outfit-left .pdp-stage.photo img");         // la vraie photo du short, en grand
+  await photo.waitFor();
+  if (!(await photo.evaluate((el) => el.complete && el.naturalWidth > 0))) throw new Error("photo du short non chargée");
   await shot("07-tenue-liste");
 });
 
 await check("crée ta tenue : mannequin 3D et zoom sur la montre", async () => {
-  await page.getByRole("button", { name: "Voir sur le mannequin 3D" }).click();
+  await page.getByRole("button", { name: "Mannequin 3D" }).click();
   await page.locator(".outfit-3d[data-ready]").waitFor({ timeout: 20000 });
   await page.getByRole("tab", { name: /Montre/ }).click();
   await page.waitForTimeout(1500);

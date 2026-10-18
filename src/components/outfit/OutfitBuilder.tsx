@@ -10,6 +10,7 @@ import type { Worn } from "@/outfit3d/mannequin";
 import { Price, PriceNote } from "../Price";
 import { useCart } from "../CartProvider";
 import { GarmentArt } from "../GarmentArt";
+import { ProductPhotos } from "../ProductPhotos";
 
 const OutfitViewer = dynamic(() => import("@/outfit3d/OutfitViewer"), { ssr: false });
 
@@ -23,11 +24,13 @@ export function OutfitBuilder({ pieces }: { pieces: Pieces }) {
   const all = useMemo(() => new Map(Object.values(pieces).flat().map((p) => [p.slug, p])), [pieces]);
   const catOf = useCallback((slug: string) => all.get(slug)?.category, [all]);
   const [outfit, setOutfit] = useState<Outfit>(() => Object.fromEntries(START.map((s) => [s, pieces[s][0]?.slug])));
-  const [tab, setTab] = useState<WearSlot>("watch");
+  const [tab, setTab] = useState<WearSlot>("top");
+  /** Grande zone : la vraie photo de la pièce (par défaut) ou le mannequin 3D (chargé au premier clic). */
+  const [stage, setStage] = useState<"photo" | "3d">("photo");
   const [view3d, setView3d] = useState<"off" | "on" | "unavailable">("off");
   const [focus, setFocus] = useState<{ slot: WearSlot | null; key: number }>({ slot: null, key: 0 });
   const zoomTo = (slot: WearSlot | null) => setFocus((f) => ({ slot, key: f.key + 1 }));
-  const unavailable = useCallback(() => setView3d("unavailable"), []);
+  const unavailable = useCallback(() => { setView3d("unavailable"); setStage("photo"); }, []);
 
   const slots = visibleSlots(outfit, catOf);
   const chosen = slots.map((s) => ({ slot: s, product: outfit[s.id] ? all.get(outfit[s.id]!) : undefined }));
@@ -38,8 +41,16 @@ export function OutfitBuilder({ pieces }: { pieces: Pieces }) {
   );
   const current = outfit[tab] ? all.get(outfit[tab]!) : undefined;
 
+  // Toucher une pièce montre sa vraie photo en grand ; « Mannequin 3D » montre la tenue, cadrée sur cette pièce.
+  // Toucher une pièce déjà portée la montre seulement ; on la retire avec « Retirer ».
   function choose(slug: string) {
-    setOutfit((o) => pick(o, tab, slug, catOf));
+    if (outfit[tab] !== slug) setOutfit((o) => pick(o, tab, slug, catOf));
+    setStage("photo");
+    zoomTo(tab);
+  }
+  function show3d() {
+    setView3d((v) => (v === "off" ? "on" : v));
+    setStage("3d");
     zoomTo(tab);
   }
   function openTab(slot: WearSlot) {
@@ -50,35 +61,47 @@ export function OutfitBuilder({ pieces }: { pieces: Pieces }) {
   return (
     <div className="outfit">
       <div className="outfit-left">
-        {view3d === "on" ? (
-          <OutfitViewer worn={worn} focus={focus.slot} focusKey={focus.key} onOverview={() => zoomTo(null)} onUnavailable={unavailable} />
-        ) : (
-          <div className="outfit-flat">
-            <Silhouette outfit={outfit} all={all} />
-            {view3d === "off" ? (
-              <button type="button" className="pill solid" onClick={() => { setView3d("on"); zoomTo(tab); }}>
-                Voir sur le mannequin 3D
-              </button>
-            ) : (
-              <p className="muted" style={{ fontSize: 13 }}>La 3D n&apos;est pas disponible sur cet appareil : la liste suffit pour composer et acheter.</p>
-            )}
+        <div className="outfit-switch" role="group" aria-label="Affichage">
+          <button type="button" aria-pressed={stage === "photo"} onClick={() => setStage("photo")}>Photo</button>
+          <button type="button" aria-pressed={stage === "3d"} disabled={view3d === "unavailable"} onClick={show3d}>Mannequin 3D</button>
+        </div>
+        {view3d === "on" && (
+          <div hidden={stage !== "3d"}>
+            <OutfitViewer worn={worn} focus={focus.slot} focusKey={focus.key} onOverview={() => zoomTo(null)} onUnavailable={unavailable} />
           </div>
         )}
-        {current && (
-          <div className="outfit-card">
-            <div className={current.image ? "pic photo" : "pic"}>
-              {current.image ? (
-                // eslint-disable-next-line @next/next/no-img-element -- captures du fournisseur, test de rendu
-                <img src={current.image.front} alt="" />
-              ) : (
-                <GarmentArt type={current.category} color={current.color} accent={current.accent} />
-              )}
+        {stage === "photo" &&
+          (current?.image ? (
+            <ProductPhotos key={current.slug} name={current.name} image={current.image} />
+          ) : (
+            <div className="outfit-flat">
+              {current ? <GarmentArt type={current.category} color={current.color} accent={current.accent} className="outfit-art" /> : <Silhouette outfit={outfit} all={all} />}
+              {!current && <p className="muted" style={{ fontSize: 13 }}>Choisis une pièce pour la voir ici.</p>}
             </div>
+          ))}
+        {view3d === "unavailable" && (
+          <p className="muted" style={{ fontSize: 13 }}>La 3D n&apos;est pas disponible sur cet appareil : les photos et la liste suffisent pour composer et acheter.</p>
+        )}
+        {current && (
+          <div className={stage === "3d" ? "outfit-card" : "outfit-card text"}>
+            {stage === "3d" && (
+              <div className={current.image ? "pic photo" : "pic"}>
+                {current.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- captures du fournisseur, test de rendu
+                  <img src={current.image.front} alt="" />
+                ) : (
+                  <GarmentArt type={current.category} color={current.color} accent={current.accent} />
+                )}
+              </div>
+            )}
             <div>
               <span className="eyebrow">{slots.find((s) => s.id === tab)?.label}</span>
               <b>{current.brandName} · {current.name}</b>
               <Price cost={current.cost} />
             </div>
+            <button type="button" className="link outfit-remove" onClick={() => setOutfit((o) => pick(o, tab, current.slug, catOf))}>
+              Retirer
+            </button>
           </div>
         )}
       </div>
@@ -108,7 +131,7 @@ export function OutfitBuilder({ pieces }: { pieces: Pieces }) {
           ))}
         </div>
         <p className="muted" style={{ marginTop: 10, fontSize: 13 }}>
-          Touche une pièce pour l&apos;essayer ; touche-la encore pour la retirer.{tab === "bottom" ? " Avec un short, les chaussettes apparaissent." : ""}
+          Touche une pièce pour la voir en photo et l&apos;ajouter à ta tenue.{tab === "bottom" ? " Avec un short, les chaussettes apparaissent." : ""}
         </p>
 
         <div className="outfit-total">
