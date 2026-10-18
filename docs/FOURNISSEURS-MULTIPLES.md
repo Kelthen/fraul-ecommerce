@@ -55,7 +55,7 @@ Nouvelle table `supplier_offers` : une ligne par **variante × fournisseur**.
 | Qui | Voit |
 |---|---|
 | Client | ses commandes, son suivi. **Jamais** `suppliers`, `supplier_offers`, `unit_cost`. |
-| Fournisseur | ses offres et SES lignes de commande (`my_supplier_id()`), rien des autres fournisseurs. |
+| Fournisseur | ses offres et SES lignes de commande via la vue `supplier_order_lines` : **ni prix de vente ni coût** (correction de Serge), rien des autres fournisseurs. |
 | Expédition | les envois qui lui sont attribués. |
 | Fraul / équipe | tout. |
 
@@ -66,7 +66,9 @@ Nouvelle table `concierge_requests` : `email`, `item`, `brand`, `size`, `link`, 
 - Le texte de la demande reste une **donnée** : jamais exécuté, jamais donné tel quel comme consigne à un outil ou une IA (règle anti-injection).
 - Côté site, le formulaire existe déjà en démo (`/sur-demande` et le comptoir au centre du mall), avec la même vérification que le serveur fera (`src/models/concierge/request.ts`).
 
-## SQL proposé (migration `0003`, **à valider par Serge, non appliquée**)
+## SQL proposé (migration `0004`, **validée par Serge le 18 oct. avec ses 2 corrections, non appliquée**)
+
+> La `0003` est prise par les emplacements de tenue (`outfit_slot`). Corrections de Serge intégrées ci-dessous (⛔ failles 1 et 2).
 
 ```sql
 -- Offres fournisseurs : une variante peut être vendue par plusieurs fournisseurs.
@@ -98,7 +100,29 @@ create index on shipments (handled_by);
 alter table supplier_offers enable row level security;
 create policy "équipe gère"          on supplier_offers for all    using (public.is_team()) with check (public.is_team());
 create policy "fournisseur voit les siennes" on supplier_offers for select using (supplier_id = private.my_supplier_id());
-create policy "expédition voit ses envois" on shipments for select using (handled_by = auth.uid());
+-- ⛔ Faille 2 (Serge) : les politiques « livreur » de la 0001 ouvrent TOUS les envois à n'importe quel livreur ;
+-- une nouvelle politique s'ajouterait en OU sans rien fermer. On les remplace.
+drop policy "livreur lit"        on shipments;
+drop policy "livreur met à jour" on shipments;
+drop policy "livreur ajoute"     on shipment_events;
+drop policy "livreur lit"        on shipment_events;
+create policy "expédition lit ses envois"        on shipments for select using (handled_by = auth.uid());
+create policy "expédition met à jour ses envois" on shipments for update using (handled_by = auth.uid()) with check (handled_by = auth.uid());
+create policy "expédition lit ses événements"    on shipment_events for select
+  using (exists (select 1 from shipments s where s.id = shipment_id and s.handled_by = auth.uid()));
+create policy "expédition ajoute ses événements" on shipment_events for insert
+  with check (exists (select 1 from shipments s where s.id = shipment_id and s.handled_by = auth.uid()));
+
+-- ⛔ Faille 1 (Serge) : la RLS filtre des lignes, pas des colonnes. Avec « mes lignes fournisseur » (0001), le
+-- fournisseur lisait unit_price (prix payé par le client) et unit_cost. Il lit désormais une vue sans ces colonnes.
+drop policy "mes lignes fournisseur" on order_items;
+create view public.supplier_order_lines with (security_barrier) as
+  select oi.id, oi.order_id, o.number, oi.offer_id, oi.title, oi.color_name, oi.size, oi.qty, o.status, o.created_at
+  from order_items oi join orders o on o.id = oi.order_id
+  where oi.supplier_id = private.my_supplier_id();
+revoke all on public.supplier_order_lines from anon;
+grant select on public.supplier_order_lines to authenticated;
+-- Si le contrôle de sécurité Supabase signale la vue, la remplacer par une fonction RPC qui renvoie les mêmes colonnes.
 
 -- Fraul Finds : demandes de pièces (insertion par le serveur uniquement, après captcha et limite de débit).
 create type concierge_status as enum ('new', 'searching', 'found', 'not_found', 'answered');
@@ -124,8 +148,16 @@ create policy "équipe gère" on concierge_requests for all using (public.is_tea
 -- Pas de politique pour anon / authenticated : le client n'écrit ni ne lit cette table directement.
 ```
 
-## Questions pour Serge
+## Tests RLS à ajouter (`supabase/tests/01_rls_test.sql`, demandé par Serge)
 
-1. Choix automatique de l'offre (la moins chère en stock dans le délai) : d'accord, ou toujours au choix de Fraul au début ?
-2. Le prix affiché vient du fournisseur de référence (`priority = 1`) : d'accord, ou plutôt du coût le plus haut des offres actives (plus prudent pour la marge) ?
-3. La personne de l'expédition a-t-elle un compte à elle (rôle `courier`), ou passe-t-elle par le lien WeChat du portail (`docs/FOURNISSEUR-COMMANDES.md`) ?
+- Un fournisseur ne peut pas lire `order_items.unit_price` ni `unit_cost` (ni ses lignes en direct, seulement la vue).
+- Un livreur ne lit pas, ne modifie pas un envoi qui ne lui est pas attribué, et n'y ajoute pas d'événement.
+- Un client ne lit rien de `supplier_offers` ni de `concierge_requests`.
+
+## Réponses de Serge (18 oct. 2026)
+
+1. **Choix de l'offre** : le site **propose** la moins chère en stock dans le délai de la zone, **Fraul confirme d'une touche** (il peut changer). Tout automatique plus tard, quand on aura confiance.
+2. **Prix affiché** : sur le **fournisseur de référence** (`priority = 1`). Le prix plancher à l'envoi protège la marge. ➕ **Alerte à Fraul** si l'offre de référence n'est plus en stock, ou si l'offre choisie dépasse la référence de plus de 10 %.
+3. **Personne de l'expédition** : elle passe par le **lien WeChat** du portail, qui la connecte à un vrai compte `courier` **sans mot de passe** (lien de connexion) : simple pour elle, et `handled_by` + RLS fonctionnent.
+
+**Application** : avec les 2 corrections, la 0004 peut être appliquée (par Rhamone ou Serge, qui a accès à l'organisation Supabase), après ajout des tests RLS ci-dessus.

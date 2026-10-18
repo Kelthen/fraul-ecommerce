@@ -57,7 +57,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutique
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → ✅ modes de mall (31 boutiques) → ✅ portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
 5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
-6. **Serge** : lire `docs/FOURNISSEURS-MULTIPLES.md` (plusieurs fournisseurs par article, expédition, demandes de Fraul Finds, ex-Conciergerie ; 3 questions en fin) et valider ou modifier le SQL proposé (migration 0003, non appliquée)
+6. Plusieurs fournisseurs + Fraul Finds : **Serge a validé le 18 oct.** avec 2 corrections de sécurité, intégrées dans `docs/FOURNISSEURS-MULTIPLES.md` (migration **0004**). Reste : écrire les tests RLS listés, puis appliquer la 0004 (Rhamone ou Serge)
 7. **Serge** : valider la migration des emplacements de tenue (`outfit_slot` : ajouter `cap`, `glasses`, `neck`, `watch`, `layer`, `socks`) proposée dans la PR des catégories ; plus tard retirer `customers.whatsapp` et le canal `whatsapp`
 8. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
 9. Paiement Stripe en mode test
