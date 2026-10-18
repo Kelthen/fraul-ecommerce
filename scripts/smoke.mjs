@@ -231,6 +231,30 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   await page.waitForURL((u) => !u.pathname.startsWith("/walk"), { timeout: 10000 });
 });
 
+await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court vers un rayon", async () => {
+  await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1500);
+  const before = await page.locator("#bname").innerText();
+  let t = Date.now();
+  await page.locator("#enter").click();
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  const tIn = Date.now() - t;
+  t = Date.now();
+  await page.locator("#sCats .s-cat").first().click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  const tRayon = Date.now() - t;
+  await page.locator("#sQuit").click();
+  t = Date.now();
+  await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+  const tOut = Date.now() - t;
+  const after = await page.locator("#bname").innerText();
+  if (after !== before) throw new Error(`en sortant : vitrine ${after}, attendu ${before}`);
+  // Seuils larges : le navigateur de test dessine la 3D sans carte graphique (bien plus lent qu'un téléphone).
+  if (tIn > 2500 || tRayon > 2500 || tOut > 1500) throw new Error(`trop lent : entrer ${tIn} ms, rayon ${tRayon} ms, sortir ${tOut} ms`);
+  console.log(`     entrer ${tIn} ms · rayon ${tRayon} ms · sortir ${tOut} ms`);
+});
+
 await check("lien direct vers une boutique du mall", async () => {
   await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });

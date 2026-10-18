@@ -248,3 +248,9 @@
 - **Ce qui s'est passé :** en ajoutant « En grand » à la barre d'un article dans la boutique 3D, le bouton « Tourner » sortait de l'écran à 390 px, et le prix était coupé, parce que la rangée trop large élargissait toute la barre.
 - **Cause :** libellés longs en majuscules espacées, sans `min-width: 0` sur les enfants de la grille (même piège que L-38).
 - **Règle :** après tout ajout de bouton ou de libellé, regarder la capture téléphone (390 px) ; libellés courts (« Au panier ») ; `min-width: 0` sur les enfants d'une grille. `npm run smoke` vérifie que les boutons et le prix restent dans l'écran.
+
+### L-45 — Épater sans saouler : jamais plus d'une seconde entre un toucher et les produits
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
+- **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
+- **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.

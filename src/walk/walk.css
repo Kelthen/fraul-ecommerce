@@ -36,9 +36,9 @@
 .fw .prog { display: flex; gap: 4px; margin-top: 14px; }
 .fw .prog i { flex: 1; height: 2px; border-radius: 2px; background: rgba(10,10,12,.15); overflow: hidden; position: relative; }
 .fw .prog i b { position: absolute; inset: 0; width: 0; background: var(--bordeaux); }
-.fw .veil { position: absolute; inset: 0; z-index: 4; background: var(--bg); opacity: 0; pointer-events: none; }
+.fw .veil { position: absolute; inset: 0; z-index: 4; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity .22s ease; }
 /* La boutique */
-.fw .store { position: absolute; inset: 0; z-index: 5; background: #f3efe8; overflow: hidden; animation: fw-fade .45s ease; }
+.fw .store { position: absolute; inset: 0; z-index: 5; background: #f3efe8; overflow: hidden; animation: fw-fade .22s ease; }
 .fw #sgl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 .fw .s-top { position: absolute; inset: 0 0 auto 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 22px; background: linear-gradient(rgba(255,254,247,.85), transparent); pointer-events: none; }
@@ -123,3 +123,4 @@
   .fw .f-rel { grid-column: 1 / -1; }
   .fw .f-rel ul { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
+@media (prefers-reduced-motion: reduce) { .fw .veil { transition: none; } }
