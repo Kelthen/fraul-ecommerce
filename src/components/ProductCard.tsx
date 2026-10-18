@@ -6,9 +6,9 @@ import { GarmentArt } from "./GarmentArt";
 export function ProductCard({ product }: { product: Product }) {
   return (
     <Link className="card" href={`/produit/${product.slug}`}>
-      <div className="pic">
+      <div className={product.image ? "pic photo" : "pic"}>
         {product.image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- photos détourées à venir
+          // eslint-disable-next-line @next/next/no-img-element -- captures du fournisseur, test de rendu avant détourage
           <img src={product.image.front} alt="" loading="lazy" />
         ) : (
           <GarmentArt type={product.category} color={product.color} accent={product.accent} />

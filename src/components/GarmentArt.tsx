@@ -89,6 +89,29 @@ export function GarmentArt({ type, color, accent, back = false, word, className,
             {back ? <rect x={42} y={66} width={16} height={5} fill={a} /> : <rect x={40} y={52} width={16} height={7} rx={1} fill={a} opacity={0.85} />}
           </>
         )}
+        {type === "jacket" && (
+          <>
+            <path d="M50 16 V106" stroke={a} strokeWidth={1.6} />
+            {!back && <path d="M32 70 H44 M56 70 H68" stroke={a} strokeWidth={1.4} opacity={0.6} />}
+            {back && word && <BackWord word={word} color={a} y={50} />}
+          </>
+        )}
+        {type === "shorts" && (
+          <>
+            <path d="M24 27 H76" stroke={a} strokeWidth={2} />
+            {!back && <path d="M50 27 V40" stroke={a} strokeWidth={1.2} opacity={0.6} />}
+          </>
+        )}
+        {type === "socks" && <path d="M38 16 H62 M38 22 H62" stroke={a} strokeWidth={2} />}
+        {type === "glasses" && (
+          <path d="M44 54 Q50 48 56 54 M8 52 L2 46 M92 52 L98 46" fill="none" stroke={a} strokeWidth={2} strokeLinecap="round" />
+        )}
+        {type === "watch" && (
+          <>
+            <circle cx={50} cy={55} r={15} fill="none" stroke={a} strokeWidth={1.4} />
+            <path d="M50 55 V45 M50 55 L57 59" stroke={a} strokeWidth={1.8} strokeLinecap="round" />
+          </>
+        )}
         {type === "bag" && (
           <>
             <path d="M26 48 C26 18 74 18 74 48" fill="none" stroke={a} strokeWidth={3} />

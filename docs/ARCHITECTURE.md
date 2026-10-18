@@ -68,7 +68,7 @@ Argent : toujours en **entiers** (centimes) + code devise. Toutes les tables ont
 | Table | Champs principaux | Notes |
 |---|---|---|
 | `brands` | slug, name, style (jsonb = le `PRESET` de la démo), active | Une ligne = une boutique Fraul Walk générée. |
-| `categories` | slug, parent_id, name (jsonb fr/en), position | T-shirts, Hoodies, Pantalons, Sneakers, Chapeaux, Accessoires. |
+| `categories` | slug, parent_id, name (jsonb fr/en), slot, position | T-shirts, Hoodies et sweats, Vestes et manteaux, Pantalons, Shorts, Chaussettes, Sneakers, Casquettes, Lunettes, Montres, Bijoux, Accessoires (liste du site : `src/lib/catalog/demo.ts`). |
 | `products` | brand_id, category_id, supplier_id, supplier_ref, slug, title / description (jsonb fr/en), status (`draft`/`active`/`archived`), seo_title, seo_description | Descriptions **réécrites** (voir SEO). |
 | `product_images` | product_id, path, view (`front`/`back`/`detail`), position, alt (jsonb) | Photos détourées, versions AVIF/WebP générées. |
 | `product_variants` | product_id, sku, color, size, supplier_cost, cost_currency (CNY), weight_g, availability | Une ligne = une taille × une couleur. |

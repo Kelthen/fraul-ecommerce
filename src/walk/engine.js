@@ -508,7 +508,7 @@ export function startWalk(root, o) {
     $("#sQuit").focus({ preventScroll: true });
     openLayer("store", (anim) => { if (anim && STORE) { STORE.setActive(null); sUI("walk"); STORE.walk("door", closeStore); } else closeStore(); });
     $("#sTitle").textContent = `${brand} · Boutique`;
-    const cats = $("#sCats"); cats.textContent = ""; CATS.forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
+    const cats = $("#sCats"); cats.textContent = ""; stocked().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     sUI("walk"); STORE.resize(); STORE.setActive(null); STORE.place("door");
     STORE.walk("hub", () => sUI("hub"));
   }
@@ -532,8 +532,10 @@ export function startWalk(root, o) {
   function renderChips(cat) {
     const c = $("#sChips"); c.textContent = "";
     c.append(btn("s-cat sm", "‹ Centre", { cat: "hub" }));
-    CATS.filter((x) => x[0] !== cat).forEach(([id, l]) => c.append(btn("s-cat sm", l, { cat: id })));
+    stocked().filter((x) => x[0] !== cat).forEach(([id, l]) => c.append(btn("s-cat sm", l, { cat: id })));
   }
+  // Rayons qui ont au moins un article pour la marque ouverte (une marque peut n'avoir que 2 vrais produits).
+  const stocked = () => CATS.filter(([id]) => products(sBrand, id).length > 0);
   function showInfo(cat, k) {
     const it = STORE.item(cat, k);
     $("#iBrand").textContent = `${sBrand} · ${catLabel(cat)}`;

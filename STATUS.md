@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-13 par rhamon (MVC étape 2)_
+_Dernière mise à jour : 2026-10-18 par rhamon (MVC étape 2 mise à jour avec main ; page Marques en pastilles rectangulaires)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -20,7 +20,8 @@ _Dernière mise à jour : 2026-10-13 par rhamon (MVC étape 2)_
 | Langue du site | Français (anglais prévu) | 2026-10-12 |
 | Email / téléphone publics | [À FOURNIR] | |
 | Domaine | [À FOURNIR] | |
-| Source des données | Catalogue de démo dans `src/lib/catalog/` ; base Supabase prête mais vide | 2026-10-12 |
+| Source des données | Code : 23 vrais produits avec photos (`src/lib/catalog/supplier.ts`, généré par `scripts/import-catalogue.mjs` depuis le classement de Rhamone, coûts **fictifs**) + catalogue de démo (`src/lib/catalog/demo.ts`). Base Supabase créée mais vide et pas encore branchée | 2026-10-18 |
+| Base de données | Supabase, projet `fraul` (`rqrdccsxyyufqlenmpct`, USA Est), plan gratuit, organisation « kelthenrift-prog's Org » — Serge pas encore membre | 2026-10-13 |
 
 ## ✅ En ligne (preview, pas encore en production)
 
@@ -29,6 +30,11 @@ _Dernière mise à jour : 2026-10-13 par rhamon (MVC étape 2)_
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
 - Fraul Walk en T : 27 boutiques, version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
+- Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
+- Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
+- Photos réelles (test de rendu, pas pour la mise en ligne) : 35 captures du fournisseur classées par Rhamone → 23 produits (les ensembles Tech Fleece et Polo Ralph Lauren sont séparés en veste + pantalon, la photo « ensemble » sert de détail). Fiche produit : face / dos / détail, toucher pour agrandir. En tête des Nouveautés de l'accueil. Le Walk garde les dessins (photos non détourées) — rhamon
+- 4 nouvelles marques dans l'annuaire : Travis Scott, Saint Michael, ERD, Polo Ralph Lauren (style d'enseigne, seulement leurs vrais produits). **Pas encore dans le mall** (le T est prévu pour 27 vitrines : chantier modes de mall). Une boutique 3D n'affiche que les rayons qui ont des articles — rhamon
+- Catégories : 12 au lieu de 6 (ajout Vestes et manteaux, Shorts, Chaussettes, Lunettes, Montres, Bijoux ; « Chapeaux » → « Casquettes », ancien lien redirigé ; « Hoodies » → « Hoodies et sweats »). Dessins provisoires, coûts de démo. Dans le Walk, seuls les rayons qui ont un portant s'affichent (nouveaux portants : plus tard) — rhamon
 - Prix par zone et par groupe, mode test, page /test/prix (PR #2) ; MVC étape 1 : modèles du Walk (PR #5)
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
@@ -44,10 +50,13 @@ _Dernière mise à jour : 2026-10-13 par rhamon (MVC étape 2)_
 1. Plan MVC validé par Serge le 13 oct. (`docs/PLAN-MVC.md`) → étape 1 en ligne (PR #5), étape 2 en cours ; ensuite étapes 3 et 4 (vues 3D, contrôleurs du mall)
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
-4. Créer le projet Supabase et appliquer le schéma — rhamon
-5. Paiement Stripe en mode test
-6. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-7. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
+4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → modes de mall (31 boutiques ; après merge de #6) → portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
+5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
+6. **Serge** : valider la migration des emplacements de tenue (`outfit_slot` : ajouter `cap`, `glasses`, `neck`, `watch`, `layer`, `socks`) proposée dans la PR des catégories ; plus tard retirer `customers.whatsapp` et le canal `whatsapp`
+7. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
+8. Paiement Stripe en mode test
+9. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
+10. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
 
 ## ⏳ Bloqué — attend le client
 
@@ -57,6 +66,7 @@ _Dernière mise à jour : 2026-10-13 par rhamon (MVC étape 2)_
 | Photos produits | — | — |
 | Factures fournisseur des marques (à archiver, non bloquant) | — | — |
 | Pays de l'entreprise (avant lancement ; Stripe Atlas possible) | — | — |
+| Photos en meilleure qualité (originaux) : Trapstar hoodie noir, hoodie logo rouge, polo noir/or, short gris, doudoune longue ; Polo Ralph Lauren (les deux ensembles). Vues manquantes : Tech Fleece marron (ensemble, dos), Polo Inter (4 vues). Saint Michael : mention © à recadrer avant mise en ligne. Short Travis Scott : vue de dos à confirmer | 2026-10-18 | — |
 | Lien du site du fournisseur (ou plateforme : Yupoo, 1688…), son accord pour reprendre fiches et photos, fichier Excel s'il en a un | 2026-10-13 | — |
 | Ligne de livraison DDP (droits payés) chez le livreur/transitaire ; IOSS (UE) et TVA UK avec un comptable — avant lancement | 2026-10-13 | — |
 | Prix : liste des groupes et leurs %, % de bienvenue/parrainage, crédit du parrain, marges par zone, marge minimale (R5) | 2026-10-12 | — |
@@ -65,6 +75,15 @@ _Dernière mise à jour : 2026-10-13 par rhamon (MVC étape 2)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-18 | Page Marques : pastilles **rectangulaires**, coins légèrement arrondis (pas de cercles) ; le lien sous chaque marque s'appelle **« Voir la boutique »** (au lieu de « Dans le mall »). | Rhamone |
+| 2026-10-17 | **Plus de WhatsApp sur le site** (connexion, vérification, relances) : tout passe par e-mail. Bienvenue limitée par e-mail, adresse et carte. Les liens d'invitation de Fraul partent par e-mail depuis son tableau de bord. **Remplace R3, validé par Serge le 13 oct. : discussion ouverte**, Serge peut répondre. | Rhamone |
+| 2026-10-17 | **Connexion : e-mail + mot de passe, avec code par e-mail** (vérification de l'e-mail, mot de passe oublié). Sécurité partout : RLS, captcha (Turnstile) et limitation des essais, protection contre l'injection de prompt si un assistant IA est ajouté (ARCHITECTURE §4-5). | Rhamone |
+| 2026-10-17 | Pas de logos de marques : nom en texte avec le style d'enseigne (inchangé). | Rhamone |
+| 2026-10-17 | **Crée ta tenue en 3D**, avec une liste 2D toujours utilisable (3D chargée à la demande). Zoom automatique sur la pièce choisie (montre → poignet, lunettes → visage, collier → cou…), puis le client choisit : « Vue d'ensemble », pincer, tourner. | Rhamone |
+| 2026-10-17 | Catégorie **Bijoux** ajoutée (emplacement cou dans la tenue). | Rhamone |
+| 2026-10-17 | Le mall devra accueillir **plusieurs modes** (formes) ; le T est le premier. Le nombre de boutiques vient de la liste des marques. | Rhamone |
+| 2026-10-17 | **Entrée du mall : portes en verre qui coulissent en deux**, avec « Welcome to Fraul Center » gravé sur les portes (le texte s'ouvre avec elles). | Rhamone |
+| 2026-10-13 | **Supabase en plan gratuit** (2 projets actifs max) : le projet `kelthen-social-publishing` est **mis en pause** pour faire place à `fraul`. Le relancer obligera à en mettre un autre en pause. | Rhamone |
 | 2026-10-13 | **Plan MVC validé** : on garde Next.js, rangement MVC, Walk = cœur du site avec liste en repli, `/marques/:slug`, on démarre par l'étape 1. | Serge |
 | 2026-10-13 | **Droits de douane payés par le client mais inclus dans le prix affiché (DDP)** : « Droits et taxes inclus », rien à payer à la livraison. | Serge |
 | 2026-10-13 | **WeChat : lien portail maintenant** (lien personnel épinglé dans WeChat, interface en chinois, bouton « Copier pour WeChat »), **robot WeCom plus tard**. Détail : `docs/FOURNISSEUR-COMMANDES.md`. | Serge |

@@ -26,12 +26,14 @@ export default async function BrandPage({ params }: PageProps<"/marques/[slug]">
   if (!brand) notFound();
   const products = await getProductsByBrand(slug);
   const st = brand.style;
+  // Les noms longs rétrécissent pour tenir sur la largeur d'un téléphone (une seule ligne).
+  const fit = 92 / (signWord(st).length * (0.7 + st.sp));
   return (
     <>
       <section className="storefront" style={{ background: st.bg, color: st.fg }}>
         <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
           <p className="eyebrow" style={{ color: st.fg, opacity: 0.75 }}>Boutique</p>
-          <h1 className="sign" style={{ ...signCss(st), color: st.fg, margin: "12px 0 24px" }}>
+          <h1 className="sign" style={{ ...signCss(st), color: st.fg, margin: "12px 0 24px", fontSize: `clamp(28px, min(10vw, ${fit.toFixed(1)}vw), 120px)`, textShadow: `0 0 2px ${st.bg}, 0 2px 18px ${st.bg}` }}>
             {signWord(st)}
           </h1>
           <Link className="pill solid" href={`/walk/${brand.slug}`}>

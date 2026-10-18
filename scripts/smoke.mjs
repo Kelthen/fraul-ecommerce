@@ -36,10 +36,32 @@ await check("aucun pays affiché", async () => {
   if (found.length) throw new Error(`mots trouvés : ${found.join(", ")}`);
 });
 
+await check("page marques : pastilles, recherche", async () => {
+  await page.goto(BASE + "/marques", { waitUntil: "networkidle" });
+  const n = await page.locator(".bround").count();
+  if (n < 30) throw new Error(`${n} pastilles seulement`);
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("la page déborde en largeur");
+  await shot("02b-marques");
+  await page.locator("#brand-q").fill("trav");
+  if ((await page.locator(".bround").count()) !== 1) throw new Error("la recherche ne filtre pas");
+  await page.locator(".bround").first().click();
+  await page.waitForURL("**/marques/travis-scott");
+});
+
+await check("fiche produit avec photos (face, dos, détail)", async () => {
+  await page.goto(BASE + "/produit/nike-techfleece-noir-gris-veste", { waitUntil: "networkidle" });
+  const img = page.locator(".pdp-stage.photo img");
+  if (!(await img.evaluate((el) => el.complete && el.naturalWidth > 0))) throw new Error("photo de face non chargée");
+  await page.getByRole("button", { name: "Dos" }).click();
+  await page.getByRole("button", { name: "Détail" }).click();
+  await shot("04b-produit-photos");
+});
+
 await check("fiche produit + panier", async () => {
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
   await shot("03-marque");
-  await page.locator(".card").first().click();
+  await page.locator(".card:not(:has(.photo))").first().click(); // produit dessiné (démo)
   await page.getByRole("button", { name: "Au panier" }).waitFor();
   await shot("04-produit");
   await page.getByRole("button", { name: "Tourner l'article" }).first().click();
@@ -194,6 +216,16 @@ await check("lien direct vers une boutique du mall", async () => {
   const name = await page.locator("#bname").innerText();
   if (name !== "Amiri") throw new Error(`boutique affichée : ${name}`);
   await shot("13-devant-amiri");
+});
+
+await check("boutique d'une marque hors du mall, avec peu d'articles", async () => {
+  await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });
+  await page.locator("#sCats .s-cat").first().waitFor({ state: "visible", timeout: 20000 });
+  const rayons = await page.locator("#sCats .s-cat").allTextContents();
+  if (rayons.join() !== "Hoodies et sweats") throw new Error(`rayons affichés : ${rayons.join(", ")}`);
+  await page.locator("#sCats .s-cat").first().click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await shot("14-boutique-travis-scott");
 });
 
 await browser.close();

@@ -22,6 +22,10 @@ const PRESET: Record<string, Omit<BrandStyle, "name">> = {
   "Palm Angels": { bg: "#F3EEE2", fg: "#141416", font: "serifIB", sp: 0.02, up: false },
   Essentials: { bg: "#5F5B59", fg: "#FFFEF7", font: "sansL", sp: 0.26, up: true },
   "Carhartt WIP": { bg: "#420A0D", fg: "#EAE0C8", font: "sansX", sp: 0.06, up: true },
+  "Travis Scott": { bg: "#2B2A2C", fg: "#EAE0C8", font: "sansX", sp: 0.1, up: true },
+  "Saint Michael": { bg: "#F3EEE2", fg: "#141416", font: "serif", sp: 0.12, up: true },
+  ERD: { bg: "#111113", fg: "#FFFEF7", font: "sansL", sp: 0.4, up: true },
+  "Polo Ralph Lauren": { bg: "#202833", fg: "#EAE0C8", font: "serifI", sp: 0.02, up: false },
 };
 
 const AUTO_BG = ["#111113", "#680209", "#E6DCC4", "#202833", "#420A0D", "#F3EEE2", "#2B2A2C", "#5F5B59"];
@@ -74,14 +78,19 @@ export const slugify = (s: string) =>
 // Noms de marques à titre d'exemple : le vrai catalogue viendra du fournisseur.
 export const ALL_BRANDS = [
   "Adidas", "Amiri", "Arc’teryx", "Broken Planet", "Carhartt WIP", "Chrome Hearts", "Cole Buxton",
-  "Corteiz", "Denim Tears", "Essentials", "Fear of God", "Gallery Dept.", "Hellstar", "Jordan",
-  "Moncler", "New Balance", "Nike", "Off-White", "Palm Angels", "Represent", "Rhude", "Sp5der",
-  "Stone Island", "Stüssy", "Syna World", "The North Face", "Trapstar",
+  "Corteiz", "Denim Tears", "ERD", "Essentials", "Fear of God", "Gallery Dept.", "Hellstar", "Jordan",
+  "Moncler", "New Balance", "Nike", "Off-White", "Palm Angels", "Polo Ralph Lauren", "Represent", "Rhude",
+  "Saint Michael", "Sp5der", "Stone Island", "Stüssy", "Syna World", "The North Face", "Trapstar", "Travis Scott",
 ];
+
+/** Marques ajoutées avec les photos du fournisseur (oct. 2026) : dans l'annuaire, pas encore dans le mall
+ *  (le T est prévu pour 27 vitrines ; les modes de mall arrivent dans une PR à part). Pas de produits de démo :
+ *  seulement leurs vrais produits. */
+export const NOT_IN_MALL_YET = ["ERD", "Polo Ralph Lauren", "Saint Michael", "Travis Scott"];
 
 /** Marques phares : en tête du parcours du mall (début du tronc du T, là où tout le monde passe). */
 const FEATURED = ["Nike", "Trapstar", "Corteiz", "Stüssy", "Represent", "Palm Angels", "Essentials", "Carhartt WIP"];
 
-/** Ordre des 27 boutiques dans le mall en T : les marques phares, puis les autres de A à Z.
+/** Ordre des boutiques dans le mall en T : les marques phares, puis les autres de A à Z.
  *  (décidé par l'équipe, à confirmer) */
-export const WALK_BRANDS = [...FEATURED, ...ALL_BRANDS.filter((b) => !FEATURED.includes(b))];
+export const WALK_BRANDS = [...FEATURED, ...ALL_BRANDS.filter((b) => !FEATURED.includes(b) && !NOT_IN_MALL_YET.includes(b))];

@@ -172,11 +172,16 @@ p { margin: 0; }
 /* Annuaire */
 .dir-search { width: 100%; max-width: 520px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
 .dir-search::placeholder { color: var(--muted); }
-.letter { font: 400 30px/1 var(--display); color: var(--bordeaux); margin: 28px 0 6px; }
-.brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
-.brand-row a.go { flex: 1; min-width: 0; text-decoration: none; display: grid; gap: 2px; }
-.brand-row a.go strong { font: 400 24px/1.15 var(--display); color: var(--ink); }
-.brand-row a.go span { font-size: 12px; color: var(--muted); }
+/* Page Marques : grille de pastilles rectangulaires, coins légèrement arrondis (3 par ligne sur téléphone). */
+.bround-grid { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 14px; }
+@media (min-width: 600px) { .bround-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .bround-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 30px 22px; } }
+.bround-grid li { display: grid; justify-items: center; gap: 6px; text-align: center; min-width: 0; }
+.bround { container-type: inline-size; width: 100%; min-width: 0; box-sizing: border-box; aspect-ratio: 4 / 3; border-radius: 10px; display: grid; place-items: center; padding: 10%; text-decoration: none; box-shadow: 0 10px 24px rgba(40, 30, 20, 0.14); border: 1px solid rgba(10, 10, 12, 0.12); transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.bround:hover, .bround:focus-visible { transform: translateY(-3px) scale(1.03); }
+.bround .wm { line-height: 1.05; text-align: center; overflow-wrap: normal; }
+.bround-name { font-size: 12px; font-weight: 600; color: var(--ink); }
+.bround-walk { font: 700 9px/1.3 var(--body); letter-spacing: .06em; white-space: nowrap; text-transform: uppercase; color: var(--bordeaux); text-decoration: none; }
 .chip { flex: none; display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(104, 2, 9, 0.5); background: rgba(104, 2, 9, 0.06); font: 700 10px/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--bordeaux); text-decoration: none; }
 .chip[aria-current="page"] { background: var(--bordeaux); color: var(--ivory); }
 
@@ -246,6 +251,17 @@ p { margin: 0; }
 .cart-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
 .cart-item { display: grid; grid-template-columns: 88px 1fr auto; gap: 14px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
 .cart-item .pic { margin: 0; aspect-ratio: 1; }
+/* Photos du fournisseur (pas encore détourées) : la photo remplit le cadre, sans ombre portée. */
+.pic.photo { background: #fff; }
+.pic.photo img { width: 100%; height: 100%; object-fit: cover; filter: none; }
+.pdp-photos { display: grid; gap: 10px; }
+.pdp-stage.photo { background: #fff; }
+.pdp-stage.photo img { width: 100%; height: 100%; object-fit: contain; }
+.thumbs { display: flex; gap: 8px; overflow-x: auto; }
+.thumbs button { flex: 0 0 64px; display: grid; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; cursor: pointer; }
+.thumbs button[aria-pressed="true"] { border-color: var(--ink); }
+.thumbs img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.thumbs span { font: 700 9px/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; padding: 0 0 6px; color: var(--ink); }
 .cart-item select { min-height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--ivory); color: var(--ink); padding: 0 8px; }
 .qty { display: inline-flex; align-items: center; gap: 8px; }
 .qty button { width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); }

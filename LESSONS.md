@@ -206,3 +206,21 @@
 - **Ce qui s'est passé :** en notant les remarques de Rhamone sur la stratégie de prix de Serge, Claude a écrit « l'avis de Rhamone l'emporte ». Rhamone : « je suis pas dictateur, juste des contre-propositions et explications pour Serge ».
 - **Cause :** Claude a transformé un avis en décision finale.
 - **Règle :** quand un humain réagit à la proposition de l'autre, note-le comme **contre-proposition avec sa raison**, laisse la place à une réponse (« 🗣️ <nom> » sous le bloc) et écris « discussion ouverte » dans STATUS. On peut construire sur une base provisoire, mais rien n'est figé tant que l'autre n'a pas répondu.
+
+### L-34 — Une nouvelle catégorie touche aussi le Walk
+- **Projet / date :** Fraul, 2026-10-17
+- **Ce qui s'est passé :** en préparant l'ajout de 6 catégories, on a vu que chaque rayon d'une boutique du Walk a un portant placé à la main (`src/walk/models/store-layout.ts`). Un rayon sans portant fait planter la boutique.
+- **Cause :** la liste des catégories du site était envoyée telle quelle au moteur 3D.
+- **Règle :** le Walk ne reçoit que les catégories qui ont un portant (`src/walk/data.ts`). Toute nouvelle catégorie : dessin dans `art.ts`, puis portant dans `store-layout.ts` si elle doit apparaître en boutique, puis `npm run smoke`.
+
+### L-35 — Une marque peut n'avoir que deux produits
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** avec les vrais produits du fournisseur, Travis Scott n'a qu'un hoodie et un short. Sa boutique 3D proposait quand même tous les rayons ; ouvrir un rayon vide faisait planter le panneau article.
+- **Cause :** la démo donnait 6 articles à chaque marque dans chaque rayon ; le moteur supposait qu'un rayon n'est jamais vide.
+- **Règle :** la boutique n'affiche que les rayons qui ont au moins un article (`stocked()` dans `src/walk/engine.js`) ; `npm run smoke` ouvre la boutique d'une marque qui a peu d'articles. Pour importer de nouvelles photos : `node scripts/import-catalogue.mjs <dossier>`, jamais d'édition à la main des fichiers générés.
+
+### L-38 — Des cases de grille égales demandent `minmax(0, 1fr)`
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** sur la page Marques, les pastilles ERD et Saint Michael étaient plus grosses que les autres : leur nom très espacé élargissait leur colonne.
+- **Cause :** une colonne `1fr` ne descend pas sous la largeur de son contenu.
+- **Règle :** pour une grille de cases égales, `repeat(n, minmax(0, 1fr))` et `min-width: 0` sur la case. `npm run smoke` vérifie que la page Marques ne déborde pas en largeur. (Numéro L-38 : L-36 et L-37 sont prises par la PR #10.)
