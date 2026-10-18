@@ -231,6 +231,19 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   await page.waitForURL((u) => !u.pathname.startsWith("/walk"), { timeout: 10000 });
 });
 
+await check("heure du jour : à 19 h le mall est plus sombre et éclairé ; vitrine vivante", async () => {
+  await page.goto(BASE + "/walk/travis-scott?heure=19", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#walk").getAttribute("data-time")) !== "soir") throw new Error("19 h n'est pas le soir");
+  await page.waitForTimeout(2500);
+  await shot("19-mall-19h-vitrine-vivante");
+  await page.goto(BASE + "/walk/travis-scott?heure=12", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#walk").getAttribute("data-time")) !== "jour") throw new Error("midi n'est pas le jour");
+  await page.waitForTimeout(2500);
+  await shot("19b-mall-midi-vitrine-vivante");
+});
+
 await check("lien direct vers une boutique du mall", async () => {
   await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
