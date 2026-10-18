@@ -38,6 +38,12 @@ Avec les 31 marques d'aujourd'hui :
 
 (Plan de départ à 27 : tronc 4 + 4, mur du haut 7.)
 
+## Entrée (2026-10-18)
+
+- Au bas du tronc : **deux portes en verre** avec « WELCOME TO / FRAUL CENTER » gravé dessus. Elles
+  s'écartent quand on approche (le texte se coupe en deux), en entrant comme en sortant.
+- Fichiers : `src/walk/views/entrance.ts` (portes, distance d'ouverture) et `src/content/walk.ts` (texte).
+
 ## Comment on s'y déplace
 
 - **Glisser / faire défiler** = avancer ou reculer le long du parcours. La
