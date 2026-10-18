@@ -224,3 +224,9 @@
 - **Ce qui s'est passé :** sur la page Marques, les pastilles ERD et Saint Michael étaient plus grosses que les autres : leur nom très espacé élargissait leur colonne.
 - **Cause :** une colonne `1fr` ne descend pas sous la largeur de son contenu.
 - **Règle :** pour une grille de cases égales, `repeat(n, minmax(0, 1fr))` et `min-width: 0` sur la case. `npm run smoke` vérifie que la page Marques ne déborde pas en largeur. (Numéro L-38 : L-36 et L-37 sont prises par la PR #10.)
+
+### L-40 — Une vraie photo doit apparaître partout où le produit apparaît
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** les photos du fournisseur s'affichaient sur les fiches et les cartes, mais pas dans les boutiques 3D du Walk, qui dessinaient tous les articles. Rhamone : « dans les boutiques, je vois pas les vrais produits que je t'ai envoyés ». Les sacs semblaient aussi sortir de leur vitrine en verre, trop basse.
+- **Cause :** les données envoyées au Walk ne contenaient pas les photos ; et on avait décidé seul de garder les dessins dans le Walk.
+- **Règle :** quand un produit a une photo, elle s'affiche partout où il apparaît (cartes, fiche, tenue, Walk, panier à terme). Si on choisit de ne pas l'afficher quelque part, on le dit à l'humain et on attend son avis. Vérifier chaque vue 3D sous l'angle de la caméra du visiteur, pas seulement en plan.

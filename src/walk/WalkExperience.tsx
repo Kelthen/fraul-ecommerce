@@ -10,8 +10,8 @@ import type { Cost } from "@/models/pricing/price";
 import { startWalk } from "./engine";
 import "./walk.css";
 
-/** Article compact transmis au navigateur : [slug, nom, coût, couleur, couleurs]. */
-export type WalkItem = [string, string, Cost, string, string[]];
+/** Article compact transmis au navigateur : [slug, nom, coût, couleur, couleurs, photo de face?, photo de dos?]. */
+export type WalkItem = [string, string, Cost, string, string[], string?, string?];
 
 export type WalkData = {
   shops: { name: string; slug: string; style: BrandStyle }[];
@@ -62,8 +62,9 @@ export function WalkExperience({ data, startBrand }: Props) {
       // Copies : la boutique peut changer la couleur d'un article sans toucher au catalogue.
       getItems: (brandName: string, cat: CategoryId) => {
         const b = brandOf(brandName);
-        return (b ? data.items[b.slug]?.[cat] ?? [] : []).map(([slug, n, p, c, vars]) => ({
+        return (b ? data.items[b.slug]?.[cat] ?? [] : []).map(([slug, n, p, c, vars, front, back]) => ({
           slug, n, p, c, a: ACCENT_DARK.includes(c) ? "#EAE0C8" : "#420A0D", vars, sizes: sizesOf(cat), brand: brandName, cat,
+          img: front ? [front, back ?? front] : null,
         }));
       },
       onAdd: (it: { slug: string; n: string; p: Cost; c: string; a: string; brand: string; cat: string; sizes: string[] }, size?: string) =>

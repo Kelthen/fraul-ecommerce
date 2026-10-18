@@ -11,7 +11,7 @@ export async function getWalkData(): Promise<WalkData> {
   const items: WalkData["items"] = {};
   for (const p of products) {
     if (!inStore(p.category)) continue;
-    const row: WalkItem = [p.slug, p.name, p.cost, p.color, p.colors];
+    const row: WalkItem = p.image ? [p.slug, p.name, p.cost, p.color, p.colors, p.image.front, p.image.back] : [p.slug, p.name, p.cost, p.color, p.colors];
     ((items[p.brandSlug] ??= {})[p.category] ??= []).push(row);
   }
   const pick = (b: { name: string; slug: string; style: WalkData["shops"][number]["style"] }) => ({ name: b.name, slug: b.slug, style: b.style });

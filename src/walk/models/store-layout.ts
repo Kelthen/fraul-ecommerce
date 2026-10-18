@@ -25,7 +25,7 @@ export const RACKS: Record<string, Rack> = {
   pants: { o: [5.5, 1.3, -11.9], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.62, size: [0.8, 1.0], pull: 0.75, rise: 0.05, close: 0.85 },
   cap: { o: [5.8, 1.52, -4.8], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.5, size: [0.46, 0.5], pull: 0.6, rise: 0.04, close: 1.5 },
   sneaker: { o: [-3.75, 1.53, -15.7], d: [1, 0, 0], out: [0, 0, 1], sp: 0.62, size: [0.58, 0.32], pull: 0.6, rise: 0.1, close: 2.0 },
-  bag: { o: [0, 1.12, -8.8], d: [1, 0, 0], out: [0, 0, 1], sp: 0.42, size: [0.38, 0.42], pull: 0.45, rise: 0.42, close: 1.7 },
+  bag: { o: [0, 1.12, -8.8], d: [1, 0, 0], out: [0, 0, 1], sp: 0.42, size: [0.34, 0.38], pull: 0.45, rise: 0.42, close: 1.8 },
 };
 
 /** Îlot central, à contourner quand on marche d'un rayon à l'autre. */

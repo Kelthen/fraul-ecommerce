@@ -172,6 +172,25 @@ export function startWalk(root, o) {
       if (clip) { hook(); x.save(); x.strokeStyle = "#2b2a2c"; x.lineWidth = 7; x.lineCap = "round"; x.stroke(new Path2D("M66 60 H190")); x.fillStyle = "#2b2a2c"; x.fillRect(74, 56, 16, 24); x.fillRect(166, 56, 16, 24); x.restore(); }
       return T(cn);
     }
+    // Vrai produit : sa photo dans une carte (bords blancs arrondis), sur le même cintre que les dessins.
+    // La photo arrive en différé : on redessine la scène quand elle est chargée (onLoad).
+    function photoTexture(type, src, onLoad) {
+      const sneaker = type === "sneaker", hang = type === "tee" || type === "hoodie" || type === "jacket", clip = type === "pants" || type === "shorts";
+      const [cn, x] = cv(256, sneaker ? 140 : hang || clip ? 320 : 282), tex = T(cn);
+      const top = hang || clip ? 64 : 4, card = { x: 10, y: top, w: 236, h: cn.height - top - 6 };
+      const rr = (p) => { const r = 14; x.beginPath(); x.moveTo(p.x + r, p.y); x.arcTo(p.x + p.w, p.y, p.x + p.w, p.y + p.h, r); x.arcTo(p.x + p.w, p.y + p.h, p.x, p.y + p.h, r); x.arcTo(p.x, p.y + p.h, p.x, p.y, r); x.arcTo(p.x, p.y, p.x + p.w, p.y, r); x.closePath(); };
+      if (hang || clip) { x.save(); x.strokeStyle = "#cfc9c0"; x.lineWidth = 5; x.lineCap = "round"; x.stroke(new Path2D("M128 66 V44 C128 32 146 32 146 20 C146 8 124 6 121 18")); x.restore(); }
+      x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore();
+      const img = new Image();
+      img.onload = () => {
+        const inner = { x: card.x + 6, y: card.y + 6, w: card.w - 12, h: card.h - 12 };
+        const s = Math.max(inner.w / img.width, inner.h / img.height), w = img.width * s, h = img.height * s;
+        x.save(); rr(inner); x.clip(); x.drawImage(img, inner.x + (inner.w - w) / 2, inner.y + (inner.h - h) / 2, w, h); x.restore();
+        tex.needsUpdate = true; onLoad();
+      };
+      img.src = src;
+      return tex;
+    }
     // Mannequin de vitrine : tête ovale brillante sans visage, long cou, buste sculpté, bras posés
     function limb(g, a, b, r1, r2, mat) {
       const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), m = new THREE.Mesh(new THREE.CylinderGeometry(r2, r1, A.distanceTo(B), 16), mat);
@@ -210,7 +229,7 @@ export function startWalk(root, o) {
       joint(g, [0, 0.012, 0], 0.24, new THREE.MeshPhongMaterial({ color: 0x2b2a2c, shininess: 60 }), 1, 0.05, 1);
       return g;
     }
-    GH = { cv, T, wordTex, labelTex, glowTex, itemTexture, mannequin };
+    GH = { cv, T, wordTex, labelTex, glowTex, itemTexture, photoTexture, mannequin };
     return GH;
   }
 
@@ -672,9 +691,10 @@ export function startWalk(root, o) {
     // Vitrine à accessoires (îlot central)
     add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
     add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
-    const glassG = new THREE.BoxGeometry(2.3, 0.44, 1.5);
-    add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.12, -8.8);
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.12, -8.8); scene.add(edges);
+    // Cloche en verre assez haute pour que les sacs soient bien dedans, même vus d'en haut
+    const glassG = new THREE.BoxGeometry(2.3, 0.62, 1.5);
+    add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.23, -8.8);
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
 
     // Mannequins habillés par le gabarit de la marque
     [[-2.6, -1.6, 0.45, 0], [2.6, -1.6, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
@@ -690,15 +710,18 @@ export function startWalk(root, o) {
     scene.add(gm);
 
     /* Rayons interactifs : les vrais articles pendent dans la scène, face et dos */
-    const prodMat = (type, c, a, back) => new THREE.MeshLambertMaterial({ map: U.itemTexture(type, c, a, back, st), transparent: true, alphaTest: 0.04 });
+    // Article avec photo (vrai produit) : sa photo face / dos ; sinon le dessin à sa couleur.
+    const prodMat = (type, c, a, back, img) => new THREE.MeshLambertMaterial({
+      map: img ? U.photoTexture(type, img[back ? 1 : 0], () => kick()) : U.itemTexture(type, c, a, back, st), transparent: true, alphaTest: 0.04,
+    });
     const cars = {};
     Object.entries(CAR).forEach(([cat, cfg]) => {
       const items = products(st.name, cat), geo = new THREE.PlaneGeometry(...cfg.size);
       const meshes = items.map((it) => {
-        const g = new THREE.Group(), f = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, false)), b = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, true));
+        const g = new THREE.Group(), f = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, false, it.img)), b = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, true, it.img));
         b.rotation.y = Math.PI; g.add(f, b); g.userData.mats = [f.material, b.material]; scene.add(g); return g;
       });
-      const start = Math.min(4, items.length - 1);
+      const real = items.findIndex((it) => it.img), start = real >= 0 ? real : Math.min(4, items.length - 1); // les vrais produits d'abord
       cars[cat] = { cat, items, meshes, cfg, f: start, target: start, last: null, swingT: -1e9, o: V(...cfg.o), d: V(...cfg.d), out: V(...cfg.out) };
     });
 
@@ -816,7 +839,7 @@ export function startWalk(root, o) {
       unzoom() { if (closeT) setClose(0); },
       recolor(cat, k, c) {
         const car = cars[cat], it = car.items[k]; it.c = c; it.a = accentFor(c);
-        const [f, b] = car.meshes[k].children; [f, b].forEach((m, i) => { m.material.map.dispose(); m.material.dispose(); m.material = prodMat(cat, it.c, it.a, i === 1); });
+        const [f, b] = car.meshes[k].children; [f, b].forEach((m, i) => { m.material.map.dispose(); m.material.dispose(); m.material = prodMat(cat, it.c, it.a, i === 1, it.img); });
         car.meshes[k].userData.mats = [f.material, b.material]; kick();
       },
       onFocus: (cat, k) => { if (cat === sCat) showInfo(cat, k); },
