@@ -13,6 +13,7 @@ import { ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
 import { EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
+import { daylightAt, localHour } from "./models/daylight";
 
 let THREE = null;
 
@@ -21,7 +22,8 @@ let THREE = null;
  * @param {HTMLElement} root
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
  *                    onAdd, onExit, onFallback, onFiche, startShop, startStore,
- *                    mode (forme du mall, src/walk/modes ; « t » par défaut)
+ *                    mode (forme du mall, src/walk/modes ; « t » par défaut),
+ *                    hour (heure décimale pour la lumière ; par défaut l'heure locale du visiteur)
  * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void }}
  */
 export function startWalk(root, o) {
@@ -315,7 +317,10 @@ export function startWalk(root, o) {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
     renderer.outputEncoding = THREE.sRGBEncoding;
-    const SKY = 0xf3efe8;
+    // Lumière selon l'heure locale du visiteur (src/walk/models/daylight.ts) : jour, soir plus sombre et éclairé, jamais noir
+    const DL = daylightAt(typeof o.hour === "number" ? o.hour : localHour());
+    walkEl.dataset.time = DL.label;
+    const SKY = DL.sky;
     renderer.setClearColor(SKY);
     const scene = new THREE.Scene(); scene.fog = new THREE.Fog(SKY, 34, 90);
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 160);
@@ -324,8 +329,8 @@ export function startWalk(root, o) {
     const add = (parent, geo, mat, x, y, z, ry = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; parent.add(m); return m; };
     const flat = (parent, w, d, mat, x, y, z, up = true) => { const m = add(parent, new THREE.PlaneGeometry(w, d), mat, x, y, z); m.rotation.x = up ? -Math.PI / 2 : Math.PI / 2; return m; };
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xcfc6b8, 0.92));
-    const sun = new THREE.DirectionalLight(0xfff6ea, 0.35); sun.position.set(10, 30, 20); scene.add(sun);
+    scene.add(new THREE.HemisphereLight(DL.tint, 0xcfc6b8, DL.hemi));
+    const sun = new THREE.DirectionalLight(0xfff6ea, DL.sun); sun.position.set(10, 30, 20); scene.add(sun);
 
     // Coque du mall : sols en pierre claire polie, plafond blanc, bandeaux lumineux
     const floorM = std(0xe2dbcf, 0.32, 0.08), ceilM = lam(0xfbfaf6), wallM = lam(0xefe9df), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -379,7 +384,7 @@ export function startWalk(root, o) {
     // Portes en verre « Welcome to Fraul Center » qui s'écartent à l'approche (src/walk/views/entrance.ts)
     const entrance = createEntrance(THREE, { z: STEM_END, width: 5.2, height: 3.6, lines: ENTRANCE_TEXT, serif: o.fonts.serif });
     scene.add(entrance.group);
-    add(scene, new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }), 0, 5, STEM_END + 14, Math.PI);
+    add(scene, new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ color: DL.night ? SKY : 0xffffff }), 0, 5, STEM_END + 14, Math.PI); // dehors : le jour, ou le ciel du soir
     flat(scene, 30, 16, std(0xe2dccf, 0.5), 0, -0.01, STEM_END + 7);
     const sign = (txt, x, z, rot) => { const m = flat(scene, 4.6, 0.86, new THREE.MeshBasicMaterial({ map: U.labelTex(txt, "#680209"), transparent: true }), x, 0.006, z); if (rot) m.rotation.z = Math.PI; };
     sign("ENTRÉE ↑", 2.8, STEM_END - 5, false);
@@ -438,12 +443,50 @@ export function startWalk(root, o) {
       add(d, new THREE.PlaneGeometry(3, 0.58), new THREE.MeshBasicMaterial({ map: U.wordTex(st, { w: 512, h: 100, maxW: 430, px: 64 }), transparent: true }), 0, 2.6, -6.5);
       add(d, new THREE.BoxGeometry(2, 0.8, 2.4), lam(0xe8e3db), 0, 0.4, -3.6);
       const m = U.mannequin(st, k % 2); m.position.set(0, 0.8, -3.6); d.add(m);
+      // Vitrine vivante : les pièces phares de la marque dans deux cadres, qui changent quand on est devant
+      const live = liveItems(st.name);
+      if (live.length) {
+        const frames = [-1, 1].slice(0, live.length > 1 ? 2 : 1).map((sd, i, all) => {
+          const f = new THREE.Group(); f.position.set(all.length > 1 ? sd * 1.75 : 1.75, 0, -1.7); f.rotation.y = all.length > 1 ? -sd * 0.22 : -0.22; d.add(f);
+          add(f, new THREE.BoxGeometry(1.3, 1.66, 0.06), frameM, 0, 1.85, -0.04);
+          add(f, new THREE.CylinderGeometry(0.02, 0.02, 1.05, 8), frameM, 0, 0.52, -0.05);
+          return add(f, new THREE.PlaneGeometry(1.2, 1.56), new THREE.MeshBasicMaterial({ color: 0xffffff }), 0, 1.85, 0.001);
+        });
+        sh.live = { items: live, frames, k: 0 }; showLive(sh);
+      }
       const GC = [0xf1ece0, 0x141416, 0x680209, 0x6b6766, 0xeae0c8, 0x202833, 0x9a938a];
       const rail = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), lam(0xffffff), 30), dm = new THREE.Object3D();
       let n = 0;
       [-1, 1].forEach((sd) => { for (let z = -1.2; z > -6.1 && n < 30; z -= 0.33, n++) { const h = 0.95 + ((n + k) % 3) * 0.1; dm.position.set(sd * 3.75, 2.75 - h / 2, z); dm.scale.set(0.05, h, 0.6); dm.updateMatrix(); rail.setMatrixAt(n, dm.matrix); rail.setColorAt(n, new THREE.Color(GC[(n * 3 + k) % GC.length])); } });
       rail.count = n; d.add(rail);
     }
+    // Pièces phares d'une marque pour sa vitrine : les vraies photos d'abord, 6 au plus.
+    const frameM = std(0x1b1b1d, 0.4, 0.3);
+    function liveItems(brand) {
+      const all = CATS.flatMap(([id]) => products(brand, id).map((it) => ({ it, cat: id })));
+      return [...all.filter((x) => x.it.img), ...all.filter((x) => !x.it.img)].slice(0, 6);
+    }
+    /** Image d'un cadre : la photo (ou le dessin) centrée sur fond blanc, sans déformation. */
+    function frameTex({ it, cat }) {
+      const [c, x] = U.cv(384, 500), tex = U.T(c);
+      x.fillStyle = "#ffffff"; x.fillRect(0, 0, 384, 500);
+      const draw = (src, w, h) => { const r = Math.min(344 / w, 460 / h); x.drawImage(src, (384 - w * r) / 2, (500 - h * r) / 2, w * r, h * r); tex.needsUpdate = true; kick(); };
+      if (it.img) { const im = new Image(); im.onload = () => draw(im, im.naturalWidth, im.naturalHeight); im.src = it.img[0]; }
+      else { const t = U.itemTexture(cat, it.c, it.a, false); draw(t.image, t.image.width, t.image.height); t.dispose(); }
+      return tex;
+    }
+    function showLive(sh) {
+      const { items, frames, k } = sh.live;
+      frames.forEach((pic, i) => { const old = pic.material.map; pic.material.map = frameTex(items[(k + i) % items.length]); pic.material.needsUpdate = true; if (old) old.dispose(); });
+    }
+    // Toutes les 5 s, la vitrine devant laquelle on se trouve passe aux pièces suivantes.
+    const liveTimer = setInterval(() => {
+      const sh = shops[curShop];
+      if (RM || !walkOpen || storeOpen || !sh || !sh.live || !sh.detail || !sh.detail.visible || sh.live.items.length <= sh.live.frames.length) return;
+      sh.live.k = (sh.live.k + sh.live.frames.length) % sh.live.items.length; showLive(sh); kick();
+    }, 5000);
+    life.signal.addEventListener("abort", () => clearInterval(liveTimer));
+
     let lastDetail = null;
     function updateDetails(x, z) {
       if (lastDetail && Math.hypot(lastDetail[0] - x, lastDetail[1] - z) < 0.8) return;
