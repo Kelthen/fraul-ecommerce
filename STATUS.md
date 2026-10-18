@@ -3,7 +3,9 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (photos nettes dans les boutiques ; décisions « super centre » et fournisseurs multiples)_
+_Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serge)_
+
+> **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 

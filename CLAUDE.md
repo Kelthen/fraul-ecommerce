@@ -23,6 +23,7 @@
 Le hook `.claude/hooks/session-start.sh` s'exécute à l'ouverture et t'affiche un **briefing** : dernières PR mergées, PR ouvertes, ce que l'autre a fait, STATUS.md, règles de LESSONS.md.
 - Lis-le avant de répondre à quoi que ce soit.
 - Si tu ne vois pas de briefing, lance `bash .claude/hooks/session-start.sh` toi-même.
+- **Claude de Serge** : lis aussi `docs/POUR-SERGE.md` (passation du 18 oct. 2026 : ce qui attend Serge, demandes d'avis de Rhamone).
 - Si le briefing montre que **l'autre dev a fait quelque chose depuis la dernière session**, commence ta première réponse par 2-3 lignes : « Depuis ta dernière session, l'autre dev a fait… ».
 
 ---
