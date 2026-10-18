@@ -8,11 +8,12 @@ import { DARK, accentFor } from "@/lib/catalog/demo";
 import { createFocusController } from "./controllers/focus";
 import { connectHistory } from "./controllers/history";
 import { getMode } from "./modes";
+import { createCaisse } from "./views/caisse";
 import { createEntrance } from "./views/entrance";
-import { ENTRANCE_TEXT } from "../content/walk";
+import { CAISSE_TEXT, ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
-import { EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
+import { AT_CAISSE, AT_EXIT, EYE, legs, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
 
 let THREE = null;
 
@@ -22,7 +23,7 @@ let THREE = null;
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
  *                    onAdd, onExit, onFallback, onFiche, startShop, startStore,
  *                    mode (forme du mall, src/walk/modes ; « t » par défaut)
- * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void }}
+ * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void, setCaisse(on: boolean): void }}
  */
 export function startWalk(root, o) {
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -261,11 +262,14 @@ export function startWalk(root, o) {
 
   // Parcours : entrée → un arrêt face à chaque vitrine → sortie (src/walk/models/walk-path.ts).
   let dist = 10;
-  const pathAt = (p) => pathAtFor(p, N, dist, LAYOUT);
+  // La Caisse n'est un arrêt que si le sac n'est pas vide (setCaisse, appelé par WalkExperience).
+  let withCaisse = false, caisseObj = null;
+  const pathAt = (p) => pathAtFor(p, N, dist, LAYOUT, withCaisse);
 
   let MALL = null, progress = 0, curShop = 0, curKey = null, walkOpen = false, storeOpen = false;
   const walkEl = $("#walk"), track = $("#walkTrack");
-  track.style.height = ((N + 1) * 90 + 100) + "vh";
+  const sizeTrack = () => { track.style.height = ((N + legs(withCaisse)) * 90 + 100) + "vh"; walkEl.dataset.stops = String(N + legs(withCaisse)); };
+  sizeTrack();
   const prog = $("#prog");
   for (let k = 0; k < 9; k++) { const i = document.createElement("i"); i.append(document.createElement("b")); prog.append(i); }
   const bars = [...prog.querySelectorAll("b")];
@@ -273,7 +277,8 @@ export function startWalk(root, o) {
   function setHud(i) {
     if (curKey === i) return; curKey = i;
     $("#aisle").hidden = i < 0;
-    $("#outro").hidden = i !== -2;
+    $("#outro").hidden = i !== AT_EXIT;
+    $("#caisse").hidden = i !== AT_CAISSE;
     if (i < 0) return;
     curShop = i;
     $("#count").textContent = `Boutique ${String(i + 1).padStart(2, "0")} / ${String(N).padStart(2, "0")}`;
@@ -289,7 +294,7 @@ export function startWalk(root, o) {
   }
   on(walkEl, "scroll", onWalkScroll, { passive: true });
   function jumpToShop(k) {
-    const p = progressForShop(k, N);
+    const p = progressForShop(k, N, withCaisse);
     walkEl.scrollTop = p * (track.offsetHeight - walkEl.clientHeight);
     if (MALL) MALL.snap(); onWalkScroll();
   }
@@ -384,6 +389,9 @@ export function startWalk(root, o) {
     const sign = (txt, x, z, rot) => { const m = flat(scene, 4.6, 0.86, new THREE.MeshBasicMaterial({ map: U.labelTex(txt, "#680209"), transparent: true }), x, 0.006, z); if (rot) m.rotation.z = Math.PI; };
     sign("ENTRÉE ↑", 2.8, STEM_END - 5, false);
     sign("SORTIE ↓", -2.8, STEM_END - 5, true);
+    // La Caisse : dernier arrêt avant les portes (src/walk/views/caisse.ts)
+    caisseObj = createCaisse(THREE, { ...LAYOUT.caisse, ...CAISSE_TEXT, serif: o.fonts.serif, sans: o.fonts.sans }).group;
+    caisseObj.visible = withCaisse; scene.add(caisseObj);
 
     // Pièce centrale : grand « F » Fraul sur un socle, entouré d'arbres en pot
     const C = new THREE.Group(); C.position.set(0, 0, -16); scene.add(C);
@@ -891,6 +899,15 @@ export function startWalk(root, o) {
     closeFiche: () => closeLayer("fiche"),
     showItem: (slug) => { if (STORE) STORE.show(slug); },
     refocus: () => trapUpdate(),
+    /** Sac vide → pas de Caisse : le parcours va droit aux portes. On garde la boutique regardée. */
+    setCaisse(on) {
+      if (on === withCaisse) return;
+      const range = () => Math.max(1, track.offsetHeight - walkEl.clientHeight);
+      const u = (walkEl.scrollTop / range()) * (N + legs(withCaisse));
+      withCaisse = on; sizeTrack();
+      if (caisseObj) caisseObj.visible = on;
+      if (!walkEl.hidden) { walkEl.scrollTop = (u / (N + legs(on))) * range(); onWalkScroll(); }
+    },
     destroy() {
       dead = true;
       life.abort();

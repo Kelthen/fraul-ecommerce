@@ -44,6 +44,12 @@ Avec les 31 marques d'aujourd'hui :
   s'écartent quand on approche (le texte se coupe en deux), en entrant comme en sortant.
 - Fichiers : `src/walk/views/entrance.ts` (portes, distance d'ouverture) et `src/content/walk.ts` (texte).
 
+## La Caisse et le sac (2026-10-18)
+
+- **Le sac** (`src/walk/Bag.tsx`) : toujours en haut à droite, dans le mall et les boutiques. Il se remplit (5 articles = plein) et sautille à chaque ajout ; le toucher ouvre le panier.
+- **La Caisse** : seulement si le sac contient au moins un article (sinon on va droit aux portes). Dernier arrêt du parcours, après la dernière boutique et avant les portes (`AT_CAISSE` dans `src/walk/models/walk-path.ts`). Chaque mode de mall place son comptoir (`caisse` dans le plan ; dans le T, contre le mur gauche du bas du tronc). Comptoir 3D : `src/walk/views/caisse.ts` ; enseigne : `CAISSE_TEXT` dans `src/content/walk.ts`.
+- Le panneau montre le contenu du sac, le total et « Passer à la caisse » (→ `/panier`). Pas de vrai paiement ici (Stripe plus tard).
+
 ## Comment on s'y déplace
 
 - **Glisser / faire défiler** = avancer ou reculer le long du parcours. La

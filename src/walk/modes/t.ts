@@ -43,6 +43,8 @@ export function layoutT(n: number): MallLayout<TDims> {
 
   return {
     slots: s,
+    // Contre le mur gauche du bas du tronc (pas de vitrine à cet endroit), juste avant les portes.
+    caisse: { x: -STEM_X + 0.9, z: STEM_END - 4, nx: 1, nz: 0 },
     entry: { p: [0, STEM_END + 9], l: [0, 2.2, 18] },
     exit: { p: [0, STEM_END + 9], l: [0, 2.2, STEM_END + 40] },
     dims: { SLOT, CEIL, STEM_X, STEM_END, BAR_X, BAR_Z },

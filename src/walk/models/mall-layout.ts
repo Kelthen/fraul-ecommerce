@@ -12,9 +12,11 @@ export type Slot = { x: number; z: number; nx: number; nz: number };
 /** Point du parcours de la caméra : position au sol (x, z) et point regardé (x, y, z). */
 export type PathNode = { p: [number, number]; l: [number, number, number] };
 
-/** Ce qu'un mode de mall calcule pour n boutiques : vitrines dans l'ordre de la promenade, entrée, sortie. */
+/** Ce qu'un mode de mall calcule pour n boutiques : vitrines dans l'ordre de la promenade, Caisse, entrée, sortie. */
 export type MallLayout<D = Record<string, number>> = {
   slots: Slot[];
+  /** Comptoir « La Caisse », dernier arrêt avant la sortie (décision de Rhamone, 18 oct. 2026). */
+  caisse: Slot;
   entry: PathNode;
   exit: PathNode;
   /** Dimensions propres au mode (utilisées pour construire les murs, le sol, le plafond). */
