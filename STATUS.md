@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiques du Walk, vitrine des sacs)_
+_Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiques du Walk, vitrine des sacs ; portes vitrées)_
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -28,13 +28,14 @@ _Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiqu
 - Règles de démarrage + kit NBW (CLAUDE.md, STATUS.md, LESSONS.md, briefing, modèle de PR, notifications, script photos) — rhamon
 - Architecture cible — `docs/ARCHITECTURE.md`
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
-- Fraul Walk en T : 27 boutiques, version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
+- Fraul Walk en T : **une boutique par marque (31)**, le T s'allonge tout seul ; la forme du mall est un « mode » (`src/walk/modes/`, le T aujourd'hui), version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/FRAUL-WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
 - Boutiques du Walk : les vrais produits s'affichent avec leur photo sur le cintre (carte produit, face / dos), en premier dans le rayon et en grand avec « Zoom » ; vitrine à accessoires rehaussée, les sacs sont bien dans le verre — rhamon
 - Photos réelles (test de rendu, pas pour la mise en ligne) : 35 captures du fournisseur classées par Rhamone → 23 produits (les ensembles Tech Fleece et Polo Ralph Lauren sont séparés en veste + pantalon, la photo « ensemble » sert de détail). Fiche produit : face / dos / détail, toucher pour agrandir. En tête des Nouveautés de l'accueil. Dans le Walk, la photo s'affiche dans une carte sur le cintre (pas encore détourée) — rhamon
-- 4 nouvelles marques dans l'annuaire : Travis Scott, Saint Michael, ERD, Polo Ralph Lauren (style d'enseigne, seulement leurs vrais produits). **Pas encore dans le mall** (le T est prévu pour 27 vitrines : chantier modes de mall). Une boutique 3D n'affiche que les rayons qui ont des articles — rhamon
+- Entrée du mall : deux portes en verre « WELCOME TO / FRAUL CENTER » qui s'écartent à l'approche (le texte se coupe en deux), en entrant comme en sortant — `src/walk/views/entrance.ts`, texte dans `src/content/walk.ts` — rhamon
+- 4 nouvelles marques : Travis Scott, Saint Michael, ERD, Polo Ralph Lauren (style d'enseigne, seulement leurs vrais produits), **dans l'annuaire et dans le mall** (boutiques 28 à 31). Une boutique 3D n'affiche que les rayons qui ont des articles — rhamon
 - Catégories : 12 au lieu de 6 (ajout Vestes et manteaux, Shorts, Chaussettes, Lunettes, Montres, Bijoux ; « Chapeaux » → « Casquettes », ancien lien redirigé ; « Hoodies » → « Hoodies et sweats »). Dessins provisoires, coûts de démo. Dans le Walk, seuls les rayons qui ont un portant s'affichent (nouveaux portants : plus tard) — rhamon
 - Prix par zone et par groupe, mode test, page /test/prix (PR #2) ; MVC étape 1 : modèles du Walk (PR #5)
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
@@ -44,14 +45,13 @@ _Dernière mise à jour : 2026-10-18 par rhamon (vrais produits dans les boutiqu
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| MVC étape 2 : bouton retour et focus du Walk sortis du moteur (aucun changement visible) | rhamon | feat/rhamon/mvc-etape-2 | 2026-10-13 |
 
 ## 🆕 À faire (par priorité)
 
-1. Plan MVC validé par Serge le 13 oct. (`docs/PLAN-MVC.md`) → étape 1 en ligne (PR #5), étape 2 en cours ; ensuite étapes 3 et 4 (vues 3D, contrôleurs du mall)
+1. Plan MVC validé par Serge le 13 oct. (`docs/PLAN-MVC.md`) → étapes 1 et 2 en ligne (PR #5, #6) ; ensuite étapes 3 et 4 (vues 3D, contrôleurs du mall)
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
-4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → modes de mall (31 boutiques ; après merge de #6) → portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
+4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → ✅ modes de mall (31 boutiques) → ✅ portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
 5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
 6. **Serge** : valider la migration des emplacements de tenue (`outfit_slot` : ajouter `cap`, `glasses`, `neck`, `watch`, `layer`, `socks`) proposée dans la PR des catégories ; plus tard retirer `customers.whatsapp` et le canal `whatsapp`
 7. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon

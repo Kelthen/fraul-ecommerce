@@ -83,14 +83,13 @@ export const ALL_BRANDS = [
   "Saint Michael", "Sp5der", "Stone Island", "Stüssy", "Syna World", "The North Face", "Trapstar", "Travis Scott",
 ];
 
-/** Marques ajoutées avec les photos du fournisseur (oct. 2026) : dans l'annuaire, pas encore dans le mall
- *  (le T est prévu pour 27 vitrines ; les modes de mall arrivent dans une PR à part). Pas de produits de démo :
- *  seulement leurs vrais produits. */
-export const NOT_IN_MALL_YET = ["ERD", "Polo Ralph Lauren", "Saint Michael", "Travis Scott"];
+/** Marques ajoutées avec les photos du fournisseur (oct. 2026) : pas de produits de démo, seulement leurs vrais produits. */
+export const REAL_PRODUCTS_ONLY = ["ERD", "Polo Ralph Lauren", "Saint Michael", "Travis Scott"];
 
 /** Marques phares : en tête du parcours du mall (début du tronc du T, là où tout le monde passe). */
 const FEATURED = ["Nike", "Trapstar", "Corteiz", "Stüssy", "Represent", "Palm Angels", "Essentials", "Carhartt WIP"];
 
-/** Ordre des boutiques dans le mall en T : les marques phares, puis les autres de A à Z.
+/** Ordre des boutiques dans le mall : les marques phares, puis toutes les autres de A à Z.
+ *  Le nombre de boutiques du mall = le nombre de marques ; la forme s'adapte (src/walk/modes).
  *  (décidé par l'équipe, à confirmer) */
-export const WALK_BRANDS = [...FEATURED, ...ALL_BRANDS.filter((b) => !FEATURED.includes(b) && !NOT_IN_MALL_YET.includes(b))];
+export const WALK_BRANDS = [...FEATURED, ...ALL_BRANDS.filter((b) => !FEATURED.includes(b))];

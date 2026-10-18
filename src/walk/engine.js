@@ -7,10 +7,12 @@ import { GARMENT_PATHS as P } from "@/lib/catalog/art";
 import { DARK, accentFor } from "@/lib/catalog/demo";
 import { createFocusController } from "./controllers/focus";
 import { connectHistory } from "./controllers/history";
-import { BAR_X, BAR_Z, CEIL, SLOT, SLOTS, STEM_END, STEM_X } from "./models/mall-layout";
+import { getMode } from "./modes";
+import { createEntrance } from "./views/entrance";
+import { ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
-import { ENTRY, EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
+import { EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
 
 let THREE = null;
 
@@ -18,7 +20,8 @@ let THREE = null;
  * Démarre le Fraul Walk dans `root`.
  * @param {HTMLElement} root
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
- *                    onAdd, onExit, onFallback, onOpenProduct, startShop, startStore
+ *                    onAdd, onExit, onFallback, onOpenProduct, startShop, startStore,
+ *                    mode (forme du mall, src/walk/modes ; « t » par défaut)
  * @returns {{ destroy(): void }}
  */
 export function startWalk(root, o) {
@@ -246,11 +249,15 @@ export function startWalk(root, o) {
      boutique à la fois (vitrines toujours à droite), on fait le tour de la barre du T
      autour de la pièce centrale, puis on redescend vers la sortie. */
   const SHOPS = o.shops.map((s) => s.style);
+  // Plan du mall calculé pour le nombre de boutiques (mode « t » : src/walk/modes/t.ts).
+  const LAYOUT = getMode(o.mode).layout(SHOPS.length);
+  const { SLOT, CEIL, STEM_X, STEM_END, BAR_X, BAR_Z } = LAYOUT.dims;
+  const SLOTS = LAYOUT.slots, ENTRY = LAYOUT.entry;
   const N = Math.min(SHOPS.length, SLOTS.length);
 
-  // Parcours : entrée → 27 arrêts face aux vitrines → sortie (src/walk/models/walk-path.ts).
+  // Parcours : entrée → un arrêt face à chaque vitrine → sortie (src/walk/models/walk-path.ts).
   let dist = 10;
-  const pathAt = (p) => pathAtFor(p, N, dist);
+  const pathAt = (p) => pathAtFor(p, N, dist, LAYOUT);
 
   let MALL = null, progress = 0, curShop = 0, curKey = null, walkOpen = false, storeOpen = false;
   const walkEl = $("#walk"), track = $("#walkTrack");
@@ -365,6 +372,9 @@ export function startWalk(root, o) {
     add(scene, new THREE.BoxGeometry(STEM_X - 2.6, CEIL, 0.4), wallM, -(STEM_X + 2.6) / 2, CEIL / 2, STEM_END);
     add(scene, new THREE.BoxGeometry(STEM_X - 2.6, CEIL, 0.4), wallM, (STEM_X + 2.6) / 2, CEIL / 2, STEM_END);
     add(scene, new THREE.BoxGeometry(5.2, CEIL - 3.6, 0.4), wallM, 0, 3.6 + (CEIL - 3.6) / 2, STEM_END);
+    // Portes en verre « Welcome to Fraul Center » qui s'écartent à l'approche (src/walk/views/entrance.ts)
+    const entrance = createEntrance(THREE, { z: STEM_END, width: 5.2, height: 3.6, lines: ENTRANCE_TEXT, serif: o.fonts.serif });
+    scene.add(entrance.group);
     add(scene, new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }), 0, 5, STEM_END + 14, Math.PI);
     flat(scene, 30, 16, std(0xe2dccf, 0.5), 0, -0.01, STEM_END + 7);
     const sign = (txt, x, z, rot) => { const m = flat(scene, 4.6, 0.86, new THREE.MeshBasicMaterial({ map: U.labelTex(txt, "#680209"), transparent: true }), x, 0.006, z); if (rot) m.rotation.z = Math.PI; };
@@ -483,6 +493,7 @@ export function startWalk(root, o) {
         if (diff > 0.004) more = true;
       }
       updateDetails(cam.x, cam.z);
+      entrance.update(cam.z);
       camera.position.set(cam.x + px * 0.35, EYE - py * 0.12, cam.z);
       camera.lookAt(cam.lx - px * 0.6, cam.ly - py * 0.3, cam.lz);
       renderer.render(scene, camera);
