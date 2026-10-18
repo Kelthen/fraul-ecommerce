@@ -3,6 +3,7 @@
 import { WALK_BRANDS, slugify } from "./brands";
 import { BRANDS, CATEGORIES, NEW_ARRIVALS, PRODUCTS } from "./demo";
 import type { Brand, Category, CategoryId, Product } from "./types";
+import { SLOTS, type WearSlot } from "@/models/outfit/slots";
 
 export type { Brand, Category, CategoryId, Product } from "./types";
 export { CATEGORIES } from "./demo";
@@ -53,10 +54,15 @@ export async function getNewArrivals(): Promise<Product[]> {
   return [...picked, ...demo].slice(0, 8);
 }
 
-/** Pièces proposées dans « Crée ta tenue » : quelques articles par emplacement. */
-export async function getOutfitPieces(): Promise<Record<"top" | "bottom" | "shoes", Product[]>> {
+/** Pièces proposées dans « Crée ta tenue » : par emplacement, les vrais produits (photos) d'abord, puis la démo. */
+export async function getOutfitPieces(): Promise<Record<WearSlot, Product[]>> {
   const walk = WALK_BRANDS.slice(0, 8).map(slugify);
-  const pick = (cats: CategoryId[]) =>
-    PRODUCTS.filter((p) => cats.includes(p.category) && walk.includes(p.brandSlug)).filter((_, i) => i % 3 === 0).slice(0, 8);
-  return { top: pick(["tee", "hoodie"]), bottom: pick(["pants"]), shoes: pick(["sneaker"]) };
+  const out = {} as Record<WearSlot, Product[]>;
+  for (const { id } of SLOTS) {
+    const cats = CATEGORIES.filter((c) => c.slot === id).map((c) => c.id);
+    const real = PRODUCTS.filter((p) => p.image && cats.includes(p.category));
+    const demo = PRODUCTS.filter((p) => !p.image && cats.includes(p.category) && walk.includes(p.brandSlug)).filter((_, i) => i % 5 === 0);
+    out[id] = [...real, ...demo].slice(0, 10);
+  }
+  return out;
 }
