@@ -9,6 +9,7 @@ import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { GarmentArt } from "./GarmentArt";
 import { ProductGallery, photoViews } from "./product/ProductGallery";
+import { EnvieButton } from "./EnvieButton";
 
 const COLOR_NAMES: Record<string, string> = {
   "#F1ECE0": "Écru", "#141416": "Noir", "#680209": "Bordeaux", "#420A0D": "Vin", "#6B6766": "Gris anthracite",
@@ -112,6 +113,11 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
             Acheter · {size}
           </button>
         </div>
+
+        <EnvieButton
+          className="pdp-envie"
+          item={{ slug: product.slug, name: product.name, brand: product.brandName, category: product.category, cost: product.cost, color, accent, photo: product.image?.front }}
+        />
 
         <Link className="pdp-walk" href={`/walk/${product.brandSlug}`}>
           <span>

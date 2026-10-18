@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
-import { IconBag, IconBrands, IconHome, IconOutfit, IconSearch, IconWalk } from "./Icons";
+import { useEnvies } from "./EnviesProvider";
+import { IconBag, IconBrands, IconHeart, IconHome, IconOutfit, IconSearch, IconWalk } from "./Icons";
 
 const NAV = [
   { href: "/walk", label: "Fraul Walk", walk: true },
@@ -18,6 +19,7 @@ const isCurrent = (path: string, href: string) => (href === "/" ? path === "/" :
 export function SiteHeader() {
   const path = usePathname();
   const { count } = useCart();
+  const envies = useEnvies().count;
   if (path.startsWith("/walk")) return null; // le mall occupe tout l'écran
   return (
     <header className="top">
@@ -35,6 +37,10 @@ export function SiteHeader() {
         <div className="top-acts">
           <Link className="icon-btn" href="/marques" aria-label="Rechercher une marque">
             <IconSearch />
+          </Link>
+          <Link className="icon-btn cart-btn" href="/envies" aria-label={`Mes envies, ${envies} pièce${envies > 1 ? "s" : ""}`}>
+            <IconHeart />
+            {envies > 0 && <b aria-hidden="true">{envies}</b>}
           </Link>
           <Link className="icon-btn cart-btn" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
             <IconBag />
