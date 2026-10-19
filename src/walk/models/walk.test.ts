@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createLayerStack } from "./layers.ts";
 import { route } from "./store-layout.ts";
-import { pathAt, progressForShop } from "./walk-path.ts";
+import { AT_CONCIERGE, AT_EXIT, pathAt, progressForConcierge, progressForShop } from "./walk-path.ts";
 import { layoutT } from "../modes/t.ts";
 import type { Slot } from "./mall-layout.ts";
 
@@ -38,12 +38,24 @@ test("deux vitrines ne se chevauchent jamais, même à 35 boutiques", () => {
 test("parcours : entrée à 0 %, sortie à 100 %", () => {
   const a = pathAt(0, N, 10, MALL), b = pathAt(1, N, 10, MALL);
   assert.deepEqual([a.x, a.z, a.shop], [ENTRY.p[0], ENTRY.p[1], -1]);
-  assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], -2]);
+  assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], AT_EXIT]);
+});
+
+test("Fraul Finds : un arrêt vers la 10e boutique, face au comptoir, entre deux boutiques", () => {
+  const { after, slot } = MALL.concierge;
+  const pt = pathAt(progressForConcierge(N, MALL), N, 10, MALL);
+  assert.equal(pt.shop, AT_CONCIERGE);
+  assert.ok(Math.abs(pt.x - (slot.x + slot.nx * 7)) < 1e-9 && Math.abs(pt.z - (slot.z + slot.nz * 7)) < 1e-9);
+  assert.equal(pathAt(progressForShop(after - 1, N, MALL), N, 10, MALL).shop, after - 1);
+  assert.equal(pathAt(progressForShop(after, N, MALL), N, 10, MALL).shop, after);
+  assert.ok(after >= 9 && after <= 11, `arrêt après ${after} boutiques`);
+  // Le comptoir est au pied du « F » (centre du mall, z = -16), tourné vers la caméra.
+  assert.ok(Math.hypot(slot.x, slot.z + 16) < 4.5);
 });
 
 test("sauter à une boutique la met face à la caméra", () => {
   for (const k of [0, 5, 13, 26, 30]) {
-    const pt = pathAt(progressForShop(k, N), N, 10, MALL), s = SLOTS[k];
+    const pt = pathAt(progressForShop(k, N, MALL), N, 10, MALL), s = SLOTS[k];
     assert.equal(pt.shop, k);
     assert.ok(Math.abs(pt.x - (s.x + s.nx * 10)) < 1e-9 && Math.abs(pt.z - (s.z + s.nz * 10)) < 1e-9, `boutique ${k}`);
   }
