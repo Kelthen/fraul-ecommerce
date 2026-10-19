@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAccount } from "../AccountProvider";
+import { MyOrders } from "../orders/MyOrders";
 import { AuthForm } from "./AuthForm";
 
 /** Page « Mon compte » : connecté → infos, commandes, préférences ; sinon → connexion. */
@@ -20,8 +21,9 @@ export function AccountView() {
 
       <section className="acc-card" aria-labelledby="acc-orders">
         <h2 id="acc-orders">Mes commandes</h2>
-        <p className="muted">Aucune commande pour l&apos;instant.</p>
-        <Link className="link" href="/suivi">Suivre une commande avec un code</Link>
+        <p className="todo">Démo : commandes d&apos;exemple.</p>
+        <MyOrders />
+        <Link className="link" href="/suivi/e-mails">Voir les e-mails de commande</Link>
       </section>
 
       <section className="acc-card" aria-labelledby="acc-mails">

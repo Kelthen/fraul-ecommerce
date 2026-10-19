@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serge)_
+_Dernière mise à jour : 2026-10-19 par rhamon (suivi de commande, e-mails, Mes commandes)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -52,6 +52,8 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
+- **Suivi de commande côté client** (zone de Rhamone, `docs/PARCOURS-COMMANDE.md` §7 de la PR #26) : page `/suivi` en **4 étapes** (Payée → En cours de traitement → En transit → Livrée), une **phrase qui change** sur l'étape en cours, **livraison prévue en fourchette** (« entre le 21 et le 24 oct. »), ligne « plus disponible, remboursée » si une pièce manque ; **4 e-mails** (Payée, En transit, Livrée, Article indisponible) visibles sur `/suivi/e-mails`, **jamais envoyés** ; **Mon compte → Mes commandes** ; dans **Mes envies**, une pièce qui n'est plus en vente reste affichée « Plus disponible » avec un lien vers Fraul Finds. Démo : 3 commandes d'exemple (FRL-1042, FRL-1031, FRL-1017). Délais par zone « décidé par l'équipe, à confirmer » (`src/models/orders/tracking.ts`) — rhamon
+
 ## 🔄 En cours
 
 | Quoi | Qui | Branche / PR | Depuis |
@@ -89,6 +91,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-19 | **Parcours de commande (PR #26 de Serge) : ✅ de Rhamone sur l'ensemble.** Telegram sert **seulement à Jean Paul** (CEO de Fraul) : il reçoit chaque commande et transfère les blocs aux fournisseurs et à l'expéditeur **sur WeChat** ; le bot ne répond qu'à son compte. **WeChat traduit tout seul** : pas de version chinoise, mais des blocs courts, avec le code article du fournisseur, une photo, tailles et quantités en chiffres. Livraison affichée en **fourchette** ; alerte à Jean Paul si un fournisseur n'a pas livré l'expéditeur **après 4 jours** ; plan B (changer de fournisseur, 3 choix au client, remboursement) et argent (remboursements, paiement des fournisseurs) **à la fin**. Répartition : Rhamone = suivi client et e-mails ; Serge = bot Telegram, tableau de bord des commandes, fiche d'expédition. | Rhamone + Serge (#26) |
 | 2026-10-18 | « Conciergerie » trop banal : le comptoir s'appelle **Fraul Finds**, avec « **Sur demande** » en sous-titre ; page `/sur-demande`. **Vocabulaire du site : cool, classe, posé, jamais vieillot** (règle L-43). Bouton pour garder un article : **« Envie »** (liste « Mes envies »). | Rhamone |
 | 2026-10-18 | **Serge valide** : emplacements de tenue (`outfit_slot` + cap, glasses, neck, watch, layer, socks) appliqué le 18 oct. (migration 0003) ; **plus de WhatsApp, tout par e-mail** (remplace R3), avec un lien d'invitation **copiable** pour que Fraul puisse aussi le coller dans WhatsApp, `phone` reste facultatif ; e-mails : service Supabase en test, **Resend** au lancement. | Serge |
 | 2026-10-18 | **Plusieurs fournisseurs (#18) : ✅ sur le principe.** Offre proposée par le site, **confirmée par Fraul** au début ; prix affiché sur le **fournisseur de référence** ; expédition via le lien WeChat qui ouvre un compte `courier` sans mot de passe. **Avant d'appliquer sa migration (à numéroter 0004) :** le fournisseur ne doit pas voir `unit_price`/`unit_cost` (vue limitée) et chaque livreur ne voit que ses envois (remplacer les politiques « livreur » de 0001). Détail : commentaire de Serge sur la #18. | Serge |
