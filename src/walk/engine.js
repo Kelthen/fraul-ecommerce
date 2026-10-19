@@ -8,11 +8,12 @@ import { DARK, accentFor } from "@/lib/catalog/demo";
 import { createFocusController } from "./controllers/focus";
 import { connectHistory } from "./controllers/history";
 import { getMode } from "./modes";
+import { createConciergeDesk } from "./views/concierge";
 import { createEntrance } from "./views/entrance";
-import { ENTRANCE_TEXT } from "../content/walk";
+import { CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
-import { EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
+import { AT_CONCIERGE, AT_EXIT, EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
 import { daylightAt, localHour } from "./models/daylight";
 
 let THREE = null;
@@ -21,10 +22,10 @@ let THREE = null;
  * Démarre le Fraul Walk dans `root`.
  * @param {HTMLElement} root
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
- *                    onAdd, onExit, onFallback, onFiche, startShop, startStore,
+ *                    onAdd, onExit, onFallback, onFiche, onConcierge, startShop, startStore,
  *                    mode (forme du mall, src/walk/modes ; « t » par défaut),
  *                    hour (heure décimale pour la lumière ; par défaut l'heure locale du visiteur)
- * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void }}
+ * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void, closeConcierge(): void }}
  */
 export function startWalk(root, o) {
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -57,7 +58,7 @@ export function startWalk(root, o) {
   function addToCart(it, size) { o.onAdd(it, size); }
 
   /* ===== Couches : bouton retour du téléphone (controllers/history.ts) et focus (controllers/focus.ts) ===== */
-  const focus = createFocusController({ root, walk: $("#walk"), store: $("#store"), dir: $("#dir"), sheet: $("#fiche"), signal: life.signal });
+  const focus = createFocusController({ root, walk: $("#walk"), store: $("#store"), dir: $("#dir"), sheets: [$("#concierge"), $("#fiche")], signal: life.signal });
   const trapUpdate = focus.update, opener = focus.opener, giveBack = focus.giveBack;
   const nav = connectHistory({ isDead: () => dead, onBack: trapUpdate, signal: life.signal });
   const hasLayer = nav.has, openLayer = nav.open, closeLayer = nav.close, dropLayer = nav.drop, sync = nav.sync;
@@ -100,6 +101,20 @@ export function startWalk(root, o) {
     if (chip) { closeDir(); openWalk(+chip.dataset.walk); }
   });
   on(window, "keydown", (e) => { if (e.key === "Escape" && !dir.hidden) { e.stopImmediatePropagation(); closeDir(); } });
+
+  /* ===== Fraul Finds, pièces sur demande (formulaire dessiné par React) : une couche, retour = fermer ===== */
+  let conFrom = null;
+  function openConcierge(brand) {
+    if (hasLayer("concierge")) return;
+    conFrom = opener();
+    openLayer("concierge", () => { o.onConcierge(null); giveBack(conFrom, null); });
+    o.onConcierge({ brand: brand || "" });
+  }
+  on($("#conBtn"), "click", () => openConcierge(null));
+  on($("#conStopBtn"), "click", () => openConcierge(null));
+  on($("#sCon"), "click", () => openConcierge(sBrand));
+  // Écouteur posé avant ceux de la boutique : Échap ferme d'abord Fraul Finds.
+  on(window, "keydown", (e) => { if (e.key === "Escape" && hasLayer("concierge")) { e.stopImmediatePropagation(); closeLayer("concierge"); } });
 
   /* ===== three.js chargé à l'ouverture (bundle du projet, pas de CDN) ===== */
   let threeP = null;
@@ -267,7 +282,9 @@ export function startWalk(root, o) {
 
   let MALL = null, progress = 0, curShop = 0, curKey = null, walkOpen = false, storeOpen = false;
   const walkEl = $("#walk"), track = $("#walkTrack");
-  track.style.height = ((N + 1) * 90 + 100) + "vh";
+  track.style.height = ((N + 2) * 90 + 100) + "vh"; // + l'arrêt Fraul Finds
+  // Pour le test téléphone : nombre d'étapes et place de Fraul Finds dans le parcours.
+  walkEl.dataset.stops = String(N + 2); walkEl.dataset.conAfter = String(LAYOUT.concierge.after);
   const prog = $("#prog");
   for (let k = 0; k < 9; k++) { const i = document.createElement("i"); i.append(document.createElement("b")); prog.append(i); }
   const bars = [...prog.querySelectorAll("b")];
@@ -275,7 +292,8 @@ export function startWalk(root, o) {
   function setHud(i) {
     if (curKey === i) return; curKey = i;
     $("#aisle").hidden = i < 0;
-    $("#outro").hidden = i !== -2;
+    $("#outro").hidden = i !== AT_EXIT;
+    $("#conStop").hidden = i !== AT_CONCIERGE;
     if (i < 0) return;
     curShop = i;
     $("#count").textContent = `Boutique ${String(i + 1).padStart(2, "0")} / ${String(N).padStart(2, "0")}`;
@@ -291,7 +309,7 @@ export function startWalk(root, o) {
   }
   on(walkEl, "scroll", onWalkScroll, { passive: true });
   function jumpToShop(k) {
-    const p = progressForShop(k, N);
+    const p = progressForShop(k, N, LAYOUT);
     walkEl.scrollTop = p * (track.offsetHeight - walkEl.clientHeight);
     if (MALL) MALL.snap(); onWalkScroll();
   }
@@ -392,6 +410,11 @@ export function startWalk(root, o) {
 
     // Pièce centrale : grand « F » Fraul sur un socle, entouré d'arbres en pot
     const C = new THREE.Group(); C.position.set(0, 0, -16); scene.add(C);
+    // Comptoir Fraul Finds au pied du « F », tourné vers l'entrée (src/walk/views/concierge.ts), placé par le mode
+    const desk = createConciergeDesk(THREE, { ...LAYOUT.concierge.slot, ...CONCIERGE_TEXT, serif: o.fonts.serif, sans: o.fonts.sans }).group;
+    scene.add(desk);
+    // Le comptoir cache les vitrines derrière lui : le toucher ouvre Fraul Finds, jamais la boutique cachée.
+    const deskHits = []; desk.traverse((m) => { if (m.isMesh) { m.userData.desk = true; deskHits.push(m); } });
     add(C, new THREE.CylinderGeometry(3.1, 3.3, 0.6, 48), std(0xe8e1d4, 0.35), 0, 0.3, 0);
     add(C, new THREE.CylinderGeometry(2.6, 2.6, 0.04, 48), std(0x680209, 0.4), 0, 0.62, 0);
     const fM = std(0x680209, 0.22, 0.35);
@@ -508,18 +531,19 @@ export function startWalk(root, o) {
 
     // Toucher une vitrine = entrer dans la boutique (le défilement ne fait jamais entrer)
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-    const pick = (e) => { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); const h = ray.intersectObjects(hits, false)[0]; return h && h.distance < 40 ? h.object.userData.shop : -1; };
+    const pick = (e) => { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); const h = ray.intersectObjects([...hits, ...deskHits], false)[0]; return !h || h.distance >= 40 ? -1 : h.object.userData.desk ? DESK : h.object.userData.shop; };
+    const DESK = -9;
     let down = null, px = 0, py = 0;
     on(canvas, "pointerdown", (e) => { down = { x: e.clientX, y: e.clientY }; });
     on(canvas, "pointerup", (e) => {
       if (!down || entering) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
       if (moved > 8) return;
-      const k = pick(e); if (k >= 0) enterShop(k);
+      const k = pick(e); if (k === DESK) openConcierge(null); else if (k >= 0) enterShop(k);
     });
     on(canvas, "pointercancel", () => { down = null; });
     on(stage, "pointermove", (e) => {
       if (e.pointerType !== "mouse") return; const r = stage.getBoundingClientRect(); px = (e.clientX - r.left) / r.width - 0.5; py = (e.clientY - r.top) / r.height - 0.5;
-      canvas.style.cursor = pick(e) >= 0 ? "pointer" : "default"; kick();
+      const k = pick(e); canvas.style.cursor = k >= 0 || k === DESK ? "pointer" : "default"; kick();
     });
 
     const cam = { x: ENTRY.p[0], z: ENTRY.p[1] + 6, lx: ENTRY.l[0], ly: ENTRY.l[1], lz: ENTRY.l[2] };
@@ -932,6 +956,7 @@ export function startWalk(root, o) {
 
   return {
     closeFiche: () => closeLayer("fiche"),
+    closeConcierge: () => closeLayer("concierge"),
     showItem: (slug) => { if (STORE) STORE.show(slug); },
     refocus: () => trapUpdate(),
     destroy() {

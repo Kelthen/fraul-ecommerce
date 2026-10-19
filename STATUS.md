@@ -35,6 +35,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 - Supabase : migration **0003 emplacements de tenue** appliquée (cap, glasses, neck, watch, layer, socks), alignée sur `src/lib/catalog/types.ts` — serge
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
+- **Fraul Finds, une pièce sur demande** (chantier D, ex-« Conciergerie ») : nouvel arrêt du mall **vers la 10e boutique** (au bout droit de la barre, on se retourne vers le centre), face à un comptoir au pied du grand « F » (« Fraul Finds · Sur demande ») ; **toucher le comptoir** ou le bouton « Demande une pièce » → formulaire par-dessus le mall (le retour du téléphone le ferme). Aussi : lien « Une pièce introuvable ? » sous chaque vitrine, « Pas trouvé ? Demande-le » au centre de chaque boutique (marque préremplie), page `/sur-demande` (lien dans le pied de page). Formulaire : article, marque, taille, lien, e-mail, précisions ; vérifié (champ piège anti-robot, longueurs, liens https) ; **démo : rien n'est envoyé**. Proposition pour Serge : `docs/FOURNISSEURS-MULTIPLES.md` (plusieurs fournisseurs par article, personne de l'expédition, table des demandes ; SQL proposé, non appliqué) — rhamon
 - **Vitrines vivantes + heure du jour** (chantier F) : dans chaque vitrine du mall, deux cadres montrent les pièces phares de la marque (vraies photos d'abord, sinon dessins) et changent toutes les 5 s quand on est devant (rien qui bouge si le téléphone demande moins d'animations). **Lumière selon l'heure locale du visiteur** : jour comme aujourd'hui ; dès 17 h elle baisse et se réchauffe ; à 19 h plus sombre et éclairé (vitrines et plafonniers restent allumés) ; la nuit, sombre mais jamais noir. Essai à une autre heure sur la preview : `/walk?heure=19` — rhamon
 - **Fiche en grand** (chantier B) : dans une boutique du Walk, toucher l'article devant soi (ou « En grand ») ouvre sa fiche par-dessus la boutique : toutes ses photos (face, dos, autant de détails qu'il y en a), on glisse de l'une à l'autre, compteur « 2 / 6 », miniatures, toucher pour zoomer ; taille, « Au panier », « Fiche complète ». En dessous, **12 propositions au plus, 3 par rangée** : autres articles du même rayon de la marque, « Complète la tenue » (autres rayons de la marque), puis les autres boutiques. Toucher une proposition l'affiche et le portant suit. Le retour du téléphone ferme la fiche. Mêmes galerie et propositions sur la fiche produit. « Zoom » s'appelle maintenant « Tourner » (gros plan 3D) — rhamon
 - Boutiques du Walk : photos des vrais produits nettes (512 px sur le portant, 1024 px quand on zoome ; la finesse reste limitée par la photo d'origine) — rhamon
@@ -51,7 +52,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Conciergerie « Demande un article » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
+| Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Fraul Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
 
@@ -60,11 +61,12 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → ✅ modes de mall (31 boutiques) → ✅ portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
 5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
-6. Plus tard : retirer `customers.whatsapp` et le canal `whatsapp` (validé par Serge le 18 oct.)
-7. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
-8. Paiement Stripe en mode test
-9. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-10. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
+6. Plusieurs fournisseurs + Fraul Finds : **Serge a validé le 18 oct.** avec 2 corrections de sécurité, intégrées dans `docs/FOURNISSEURS-MULTIPLES.md` (migration **0004**). Reste : écrire les tests RLS listés, puis appliquer la 0004 (Rhamone ou Serge)
+7. Plus tard : retirer `customers.whatsapp` et le canal `whatsapp` (validé par Serge le 18 oct.)
+8. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
+9. Paiement Stripe en mode test
+10. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
+11. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
 
 ## ⏳ Bloqué — attend le client
 
@@ -83,6 +85,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-18 | « Conciergerie » trop banal : le comptoir s'appelle **Fraul Finds**, avec « **Sur demande** » en sous-titre ; page `/sur-demande`. **Vocabulaire du site : cool, classe, posé, jamais vieillot** (règle L-43). Bouton pour garder un article : **« Envie »** (liste « Mes envies »). | Rhamone |
 | 2026-10-18 | **Serge valide** : emplacements de tenue (`outfit_slot` + cap, glasses, neck, watch, layer, socks) appliqué le 18 oct. (migration 0003) ; **plus de WhatsApp, tout par e-mail** (remplace R3), avec un lien d'invitation **copiable** pour que Fraul puisse aussi le coller dans WhatsApp, `phone` reste facultatif ; e-mails : service Supabase en test, **Resend** au lancement. | Serge |
 | 2026-10-18 | **Plusieurs fournisseurs (#18) : ✅ sur le principe.** Offre proposée par le site, **confirmée par Fraul** au début ; prix affiché sur le **fournisseur de référence** ; expédition via le lien WeChat qui ouvre un compte `courier` sans mot de passe. **Avant d'appliquer sa migration (à numéroter 0004) :** le fournisseur ne doit pas voir `unit_price`/`unit_cost` (vue limitée) et chaque livreur ne voit que ses envois (remplacer les politiques « livreur » de 0001). Détail : commentaire de Serge sur la #18. | Serge |
 | 2026-10-18 | **Plusieurs fournisseurs** (ex. 10 pour Nike) et **une personne à part pour l'expédition**. Pour chaque article, on doit retrouver en interne quel fournisseur le vend ; le client ne voit jamais les fournisseurs. Proposition à écrire pour Serge (zone fournisseur / SQL). | Rhamone |

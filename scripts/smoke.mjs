@@ -121,7 +121,9 @@ await check("prix : devise de la zone, groupe de test, ligne de confirmation", a
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
   const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 31;
   const track = el.querySelector("#walkTrack");
-  el.scrollTop = ((k + 1 + 0.1) / (n + 1)) * (track.offsetHeight - el.clientHeight);
+  // Étapes du parcours (walk-path.ts) : entrée, boutiques avec Fraul Finds après les `conAfter` premières, sortie.
+  const stops = Number(el.dataset.stops) || n + 1, after = Number(el.dataset.conAfter ?? Infinity);
+  el.scrollTop = ((k + 1 + (k >= after ? 1 : 0) + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
 }, k);
 
 await check("fraul walk : mall en T, 31 boutiques", async () => {
@@ -229,6 +231,43 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   await page.waitForTimeout(800);
   await back();
   await page.waitForURL((u) => !u.pathname.startsWith("/walk"), { timeout: 10000 });
+});
+
+await check("Fraul Finds : une pièce sur demande (page, puis dans le mall)", async () => {
+  await page.goto(BASE + "/sur-demande?marque=Nike", { waitUntil: "networkidle" });
+  if ((await page.locator("input[name=brand]").inputValue()) !== "Nike") throw new Error("marque non préremplie");
+  await page.getByRole("button", { name: "Envoyer ma demande" }).click();
+  if ((await page.locator(".cf-err").count()) < 2) throw new Error("erreurs non affichées (article, e-mail)");
+  await page.locator("input[name=item]").fill("Tech Fleece vert sapin");
+  await page.locator("input[name=email]").fill("test@exemple.com");
+  await shot("17-fraul-finds");
+  await page.getByRole("button", { name: "Envoyer ma demande" }).click();
+  await page.locator(".concierge-done").waitFor({ timeout: 5000 });
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("la page déborde en largeur");
+  await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
+  await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#walk").evaluate((el) => {   // arrêt Fraul Finds, en haut du tronc
+    const track = el.querySelector("#walkTrack"), after = Number(el.dataset.conAfter), stops = Number(el.dataset.stops);
+    el.scrollTop = ((after + 1 + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
+  });
+  await page.locator("#conStop:not([hidden])").waitFor({ timeout: 10000 });
+  await page.waitForTimeout(7000); // saut long (vers la 10e boutique) : la caméra glisse jusqu'au comptoir
+  await shot("18a-fraul-finds-comptoir");
+  // Toucher le comptoir ouvre Fraul Finds, jamais la boutique cachée derrière (retour de Rhamone, 18 oct.)
+  const gl = await page.locator("#gl").boundingBox();
+  await page.mouse.click(gl.x + gl.width / 2, gl.y + gl.height * 0.41);
+  await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
+  if (await page.locator("#store").isVisible()) throw new Error("le comptoir a ouvert une boutique");
+  await back();
+  await page.locator("#concierge").waitFor({ state: "hidden", timeout: 5000 });
+  await page.locator("#conStopBtn").click();
+  await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
+  if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous Fraul Finds");
+  await shot("18-fraul-finds-mall");
+  await back();
+  await page.locator("#concierge").waitFor({ state: "hidden", timeout: 5000 });
+  if (!page.url().endsWith("/walk")) throw new Error(`retour a quitté le Walk : ${page.url()}`);
 });
 
 await check("heure du jour : à 19 h le mall est plus sombre et éclairé ; vitrine vivante", async () => {

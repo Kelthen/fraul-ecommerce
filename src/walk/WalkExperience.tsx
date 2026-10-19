@@ -9,6 +9,7 @@ import { usePricing } from "@/components/PricingProvider";
 import type { Cost } from "@/models/pricing/price";
 import { startWalk } from "./engine";
 import { QuickView, type FicheItem } from "./QuickView";
+import { ConciergeForm } from "@/components/concierge/ConciergeForm";
 import "./walk.css";
 
 /** Article compact transmis au navigateur : [slug, nom, coût, couleur, couleurs, photos?]. */
@@ -44,6 +45,7 @@ export function WalkExperience({ data, startBrand }: Props) {
   const { price, format } = usePricing();
   const walkRef = useRef<ReturnType<typeof startWalk> | null>(null);
   const [fiche, setFiche] = useState<FicheItem | null>(null);
+  const [concierge, setConcierge] = useState<{ brand: string } | null>(null);
   // Tous les articles du mall, pour les propositions sous la fiche en grand.
   const allItems = useMemo(
     () => data.allBrands.flatMap((b) => Object.entries(data.items[b.slug] ?? {}).flatMap(([cat, rows]) => rows.map((r) => toItem(data, b.name, cat as CategoryId, r)))),
@@ -55,7 +57,7 @@ export function WalkExperience({ data, startBrand }: Props) {
     [add],
   );
   // La fiche vient de s'ouvrir ou de se fermer : le moteur remet le fond inerte et le focus à jour.
-  useEffect(() => { walkRef.current?.refocus(); }, [fiche]);
+  useEffect(() => { walkRef.current?.refocus(); }, [fiche, concierge]);
   const priceRef = useRef((c: Cost) => format(price(c)));
   useEffect(() => {
     addRef.current = add;
@@ -96,6 +98,7 @@ export function WalkExperience({ data, startBrand }: Props) {
       onExit: () => router.push("/"),
       onFallback: (slug: string) => router.push(`/marques/${slug}`),
       onFiche: (it: FicheItem | null) => setFiche(it ? { ...it } : null),
+      onConcierge: (c: { brand: string } | null) => setConcierge(c),
       hour,
       startShop: shopIndex >= 0 ? shopIndex : undefined,
       startStore: shopIndex < 0 ? startName : undefined,
@@ -130,6 +133,17 @@ export function WalkExperience({ data, startBrand }: Props) {
                 <p>Fais défiler pour avancer d&apos;une boutique à l&apos;autre. Touche une vitrine pour entrer.</p>
                 <p className="scroll-hint">↓ Fais défiler pour entrer dans le mall</p>
               </div>
+              <div className="outro con-stop" id="conStop" hidden>
+                <p className="eyebrow">Au centre du mall</p>
+                <h2>Fraul Finds</h2>
+                <p className="c-sum">Une pièce introuvable dans les boutiques ? Décris-la, on te la trouve chez nos fournisseurs.</p>
+                <div className="acts">
+                  <button className="pill solid" id="conStopBtn" type="button">
+                    Demande une pièce
+                  </button>
+                </div>
+                <p className="scroll-hint">↓ Continue vers les boutiques</p>
+              </div>
               <div className="outro" id="outro" hidden>
                 <p className="eyebrow">Sortie</p>
                 <h2>Merci de ta visite.</h2>
@@ -154,6 +168,9 @@ export function WalkExperience({ data, startBrand }: Props) {
                     Toutes les marques
                   </button>
                 </div>
+                <button className="con-link" id="conBtn" type="button">
+                  Une pièce introuvable ? <b>Fraul Finds →</b>
+                </button>
                 <div className="prog" id="prog" />
               </div>
             </div>
@@ -175,6 +192,9 @@ export function WalkExperience({ data, startBrand }: Props) {
         <div className="s-bottom" id="sBottom" hidden>
           <p className="s-hint">Choisis un rayon, on t&apos;y emmène.</p>
           <div className="s-cats" id="sCats" />
+          <button className="con-link" id="sCon" type="button">
+            Pas trouvé ? <b>Fraul Finds te le trouve →</b>
+          </button>
           <p className="s-back">↑ Fais défiler vers l&apos;arrière pour sortir</p>
         </div>
         <button className="s-arrow l" id="sPrev" type="button" hidden aria-label="Article précédent">
@@ -222,6 +242,26 @@ export function WalkExperience({ data, startBrand }: Props) {
         onPick={(it) => { walkRef.current?.showItem(it.slug); setFiche(it); }}
         onAdd={addItem}
       />
+
+      <div className="over" id="concierge" hidden={!concierge} role="dialog" aria-modal="true" aria-labelledby="conTitle">
+        <div className="o-head">
+          <div className="r">
+            <div>
+              <p className="eyebrow">Fraul Finds · Sur demande</p>
+              <h2 id="conTitle">Demande une pièce</h2>
+            </div>
+            <button className="close" type="button" onClick={() => walkRef.current?.closeConcierge()}>
+              Fermer
+            </button>
+          </div>
+        </div>
+        <div className="o-body">
+          <div className="o-inner">
+            <p className="con-intro">Décris la pièce : on la cherche chez nos fournisseurs et on te répond par e-mail.</p>
+            {concierge && <ConciergeForm key={concierge.brand} brand={concierge.brand} />}
+          </div>
+        </div>
+      </div>
 
       <div className="over" id="dir" hidden role="dialog" aria-modal="true" aria-label="Toutes les marques">
         <div className="o-head">
