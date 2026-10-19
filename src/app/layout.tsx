@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bodoni_Moda, Montserrat } from "next/font/google";
 import { AccountProvider } from "@/components/AccountProvider";
 import { CartProvider } from "@/components/CartProvider";
+import { EnviesProvider } from "@/components/EnviesProvider";
 import { PricingProvider } from "@/components/PricingProvider";
 import { FooterGate, SiteHeader, TabBar } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -43,14 +44,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <PricingProvider>
           <CartProvider>
-            <AccountProvider>
-              <SiteHeader />
-              <main id="contenu">{children}</main>
-              <FooterGate>
-                <SiteFooter />
-              </FooterGate>
-              <TabBar />
-            </AccountProvider>
+            <EnviesProvider>
+              <AccountProvider>
+                <SiteHeader />
+                <main id="contenu">{children}</main>
+                <FooterGate>
+                  <SiteFooter />
+                </FooterGate>
+                <TabBar />
+              </AccountProvider>
+            </EnviesProvider>
           </CartProvider>
         </PricingProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd).replace(/</g, "\\u003c") }} />

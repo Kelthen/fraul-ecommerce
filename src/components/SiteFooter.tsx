@@ -21,6 +21,7 @@ export function SiteFooter() {
           <div>
             <h3>Aide</h3>
             <ul>
+              <li><Link href="/sur-demande">Fraul Finds : une pièce sur demande</Link></li>
               <li><Link href="/suivi">Suivi de commande</Link></li>
               <li><Link href="/livraison">Livraison et douane</Link></li>
               <li><Link href="/retours">Retours et remboursements</Link></li>

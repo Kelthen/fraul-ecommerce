@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
-import { IconBag, IconBrands, IconHome, IconOutfit, IconSearch, IconUser, IconWalk } from "./Icons";
 import { useAccount } from "./AccountProvider";
+import { useEnvies } from "./EnviesProvider";
+import { IconBag, IconBrands, IconHeart, IconHome, IconOutfit, IconSearch, IconUser, IconWalk } from "./Icons";
 
 const NAV = [
   { href: "/walk", label: "Fraul Walk", walk: true },
@@ -19,6 +20,7 @@ const isCurrent = (path: string, href: string) => (href === "/" ? path === "/" :
 export function SiteHeader() {
   const path = usePathname();
   const { count } = useCart();
+  const envies = useEnvies().count;
   const { account } = useAccount();
   if (path.startsWith("/walk")) return null; // le mall occupe tout l'écran
   return (
@@ -37,6 +39,10 @@ export function SiteHeader() {
         <div className="top-acts">
           <Link className="icon-btn" href="/marques" aria-label="Rechercher une marque">
             <IconSearch />
+          </Link>
+          <Link className="icon-btn cart-btn" href="/envies" aria-label={`Mes envies, ${envies} pièce${envies > 1 ? "s" : ""}`}>
+            <IconHeart />
+            {envies > 0 && <b aria-hidden="true">{envies}</b>}
           </Link>
           <Link className={account ? "icon-btn on" : "icon-btn"} href="/compte" aria-label={account ? "Mon compte (connecté)" : "Se connecter"}>
             <IconUser />
