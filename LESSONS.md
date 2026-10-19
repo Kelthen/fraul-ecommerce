@@ -248,3 +248,21 @@
 - **Ce qui s'est passé :** en ajoutant « En grand » à la barre d'un article dans la boutique 3D, le bouton « Tourner » sortait de l'écran à 390 px, et le prix était coupé, parce que la rangée trop large élargissait toute la barre.
 - **Cause :** libellés longs en majuscules espacées, sans `min-width: 0` sur les enfants de la grille (même piège que L-38).
 - **Règle :** après tout ajout de bouton ou de libellé, regarder la capture téléphone (390 px) ; libellés courts (« Au panier ») ; `min-width: 0` sur les enfants d'une grille. `npm run smoke` vérifie que les boutons et le prix restent dans l'écran.
+
+### L-43 — Le vocabulaire du site : cool, classe, posé
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** le comptoir « Demande un article » s'appelait « Conciergerie ». Rhamone : « trop normal ; pour le vocabulaire du site on doit être cool, classe et posé, pas trop archaïque ». Renommé « Fraul Finds » (sous-titre « Sur demande »).
+- **Cause :** nom choisi seul, dans un registre hôtelier vieillot.
+- **Règle :** tout nom ou libellé visible (comptoir, bouton, rubrique) est court, moderne et posé ; un mot anglais de la culture streetwear est permis s'il reste clair. Pour un nouveau nom, proposer 3 ou 4 choix à Rhamone avant de l'écrire partout.
+
+### L-44 — Ce qui cache une vitrine doit aussi « attraper » le toucher
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** à l'arrêt Fraul Finds, toucher le comptoir faisait entrer dans la boutique ERD, cachée derrière lui. Rhamone : « ça n'a pas de sens, c'est pas ergonomique ». L'arrêt était aussi trop tôt (5e place au lieu de 10e).
+- **Cause :** le toucher ne testait que les façades des boutiques, pas les objets posés devant.
+- **Règle :** tout objet 3D placé devant une zone touchable fait partie du test de toucher et a sa propre action. Le test téléphone touche le comptoir et vérifie qu'aucune boutique ne s'ouvre. Placer un arrêt là où le visiteur en a besoin (Fraul Finds : quand il commence à fatiguer, vers la 10e boutique).
+
+### L-45 — Épater sans saouler : jamais plus d'une seconde entre un toucher et les produits
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
+- **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
+- **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.

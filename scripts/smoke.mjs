@@ -66,6 +66,38 @@ await check("fiche produit avec photos (face, dos, détail) et propositions", as
   if (wide) throw new Error("la fiche déborde en largeur");
 });
 
+await check("envies : garder une pièce, la retrouver, la retirer", async () => {
+  await page.goto(BASE + "/produit/nike-techfleece-noir-gris-veste", { waitUntil: "networkidle" });
+  await page.locator(".pdp-envie").click();
+  if ((await page.locator(".pdp-envie").getAttribute("aria-pressed")) !== "true") throw new Error("le bouton Envie ne s'allume pas");
+  await page.goto(BASE + "/envies", { waitUntil: "networkidle" });
+  await page.locator(".envie-card").first().waitFor({ timeout: 5000 });
+  await shot("06b-envies");
+  await page.locator(".envie-card .envie-btn").first().click();
+  await page.locator(".envies-empty").waitFor({ timeout: 5000 });
+});
+
+await check("compte (démo) : création avec code, mauvais code refusé, déconnexion", async () => {
+  await page.goto(BASE + "/compte", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Créer un compte" }).click();
+  await page.locator("input[name=email]").fill("test@exemple.com");
+  await page.locator("input[name=password]").fill("court");
+  await page.getByRole("button", { name: "Recevoir mon code" }).click();
+  if (!(await page.locator(".af-err").count())) throw new Error("mot de passe trop court accepté");
+  await page.locator("input[name=password]").fill("Velours-Bordeaux-19");
+  await page.getByRole("button", { name: "Recevoir mon code" }).click();
+  await page.locator("input[name=code]").fill("000000");
+  await page.getByRole("button", { name: "Valider" }).click();
+  if ((await page.locator(".af-err").textContent()) !== "Ce code ne correspond pas.") throw new Error("mauvais code accepté");
+  await shot("06c-compte-code");
+  await page.locator("input[name=code]").fill("246 810");
+  await page.getByRole("button", { name: "Valider" }).click();
+  await page.locator(".account").waitFor({ timeout: 5000 });
+  await shot("06d-mon-compte");
+  await page.getByRole("button", { name: "Se déconnecter" }).click();
+  await page.waitForURL(BASE + "/");
+});
+
 await check("fiche produit + panier", async () => {
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
   await shot("03-marque");
@@ -121,7 +153,9 @@ await check("prix : devise de la zone, groupe de test, ligne de confirmation", a
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
   const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 31;
   const track = el.querySelector("#walkTrack");
-  el.scrollTop = ((k + 1 + 0.1) / (n + 1)) * (track.offsetHeight - el.clientHeight);
+  // Étapes du parcours (walk-path.ts) : entrée, boutiques avec Fraul Finds après les `conAfter` premières, sortie.
+  const stops = Number(el.dataset.stops) || n + 1, after = Number(el.dataset.conAfter ?? Infinity);
+  el.scrollTop = ((k + 1 + (k >= after ? 1 : 0) + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
 }, k);
 
 await check("fraul walk : mall en T, 31 boutiques", async () => {
@@ -231,6 +265,83 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   await page.waitForURL((u) => !u.pathname.startsWith("/walk"), { timeout: 10000 });
 });
 
+await check("Fraul Finds : une pièce sur demande (page, puis dans le mall)", async () => {
+  await page.goto(BASE + "/sur-demande?marque=Nike", { waitUntil: "networkidle" });
+  if ((await page.locator("input[name=brand]").inputValue()) !== "Nike") throw new Error("marque non préremplie");
+  await page.getByRole("button", { name: "Envoyer ma demande" }).click();
+  if ((await page.locator(".cf-err").count()) < 2) throw new Error("erreurs non affichées (article, e-mail)");
+  await page.locator("input[name=item]").fill("Tech Fleece vert sapin");
+  await page.locator("input[name=email]").fill("test@exemple.com");
+  await shot("17-fraul-finds");
+  await page.getByRole("button", { name: "Envoyer ma demande" }).click();
+  await page.locator(".concierge-done").waitFor({ timeout: 5000 });
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("la page déborde en largeur");
+  await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
+  await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#walk").evaluate((el) => {   // arrêt Fraul Finds, en haut du tronc
+    const track = el.querySelector("#walkTrack"), after = Number(el.dataset.conAfter), stops = Number(el.dataset.stops);
+    el.scrollTop = ((after + 1 + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
+  });
+  await page.locator("#conStop:not([hidden])").waitFor({ timeout: 10000 });
+  await page.waitForTimeout(7000); // saut long (vers la 10e boutique) : la caméra glisse jusqu'au comptoir
+  await shot("18a-fraul-finds-comptoir");
+  // Toucher le comptoir ouvre Fraul Finds, jamais la boutique cachée derrière (retour de Rhamone, 18 oct.)
+  const gl = await page.locator("#gl").boundingBox();
+  await page.mouse.click(gl.x + gl.width / 2, gl.y + gl.height * 0.41);
+  await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
+  if (await page.locator("#store").isVisible()) throw new Error("le comptoir a ouvert une boutique");
+  await back();
+  await page.locator("#concierge").waitFor({ state: "hidden", timeout: 5000 });
+  await page.locator("#conStopBtn").click();
+  await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
+  if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous Fraul Finds");
+  await shot("18-fraul-finds-mall");
+  await back();
+  await page.locator("#concierge").waitFor({ state: "hidden", timeout: 5000 });
+  if (!page.url().endsWith("/walk")) throw new Error(`retour a quitté le Walk : ${page.url()}`);
+});
+
+await check("heure du jour : à 19 h le mall est plus sombre et éclairé ; vitrine vivante", async () => {
+  await page.goto(BASE + "/walk/travis-scott?heure=19", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#walk").getAttribute("data-time")) !== "soir") throw new Error("19 h n'est pas le soir");
+  await page.waitForTimeout(2500);
+  await shot("19-mall-19h-vitrine-vivante");
+  await page.goto(BASE + "/walk/travis-scott?heure=12", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#walk").getAttribute("data-time")) !== "jour") throw new Error("midi n'est pas le jour");
+  await page.waitForTimeout(2500);
+  await shot("19b-mall-midi-vitrine-vivante");
+});
+
+await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court vers un rayon", async () => {
+  await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1500);
+  const before = await page.locator("#bname").innerText();
+  let t = Date.now();
+  await page.locator("#enter").click();
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  const tIn = Date.now() - t;
+  t = Date.now();
+  await page.locator("#sCats .s-cat").first().click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  const tRayon = Date.now() - t;
+  await page.locator("#sQuit").click();
+  t = Date.now();
+  await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+  const tOut = Date.now() - t;
+  const after = await page.locator("#bname").innerText();
+  if (after !== before) throw new Error(`en sortant : vitrine ${after}, attendu ${before}`);
+  // La durée de l'animation vers le rayon est mesurée par le moteur (fiable) : 0,5 s au plus (Rhamone, 19 oct.).
+  const walkMs = Number(await page.locator("#store").getAttribute("data-walk-ms"));
+  if (!(walkMs > 0 && walkMs <= 500)) throw new Error(`trajet vers le rayon : ${walkMs} ms (0,5 s au plus)`);
+  // Temps réels : garde-fou large, le navigateur de test dessine la 3D sans carte graphique (très variable, bien plus lent qu'un téléphone).
+  if (tIn > 2500 || tRayon > 3500 || tOut > 800) throw new Error(`trop lent : entrer ${tIn} ms, rayon ${tRayon} ms, sortir ${tOut} ms`);
+  console.log(`     entrer ${tIn} ms · rayon ${tRayon} ms · sortir ${tOut} ms`);
+});
+
 await check("raccourcis : recherche « hoodie » → rayon, reprise à la dernière boutique, aide affichée une seule fois", async () => {
   await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
@@ -280,6 +391,8 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   await page.mouse.click(b2.x + b2.width / 2, b2.y + b2.height * 0.4);
   await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
   if ((await page.locator("#fiche .gal-slide img").count()) < 2) throw new Error("la fiche n'a pas face et dos");
+  const cutF = await page.evaluate(() => [...document.querySelectorAll("#fiche .f-act > *")].some((el) => el.getBoundingClientRect().right > innerWidth + 1));
+  if (cutF) throw new Error("un bouton de la fiche sort de l'écran");
   await page.waitForTimeout(500); // fin de l'animation d'ouverture
   await shot("15-fiche-en-grand");
   await page.locator("#fiche .thumbs button").nth(1).click();

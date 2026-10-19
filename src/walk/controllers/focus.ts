@@ -1,18 +1,20 @@
-// Fenêtres du Walk (fiche en grand, annuaire, boutique) : fond inerte, Tab bouclé dans la fenêtre du dessus,
+// Fenêtres du Walk (Fraul Finds, fiche en grand, annuaire, boutique) : fond inerte, Tab bouclé dans la fenêtre du dessus,
 // focus rendu au bouton d'où l'on vient à la fermeture.
 
 const FOCUSABLE = "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
 const visible = (el: Element) => el.getClientRects().length > 0;
 
-type Els = { root: HTMLElement; walk: HTMLElement; store: HTMLElement; dir: HTMLElement; sheet: HTMLElement; signal: AbortSignal };
+type Els = { root: HTMLElement; walk: HTMLElement; store: HTMLElement; dir: HTMLElement; sheets: HTMLElement[]; signal: AbortSignal };
 
-export function createFocusController({ root, walk, store, dir, sheet, signal }: Els) {
-  /** Fenêtre ouverte du dessus : la fiche en grand, puis l'annuaire, puis la boutique. */
-  const top = () => (!sheet.hidden ? sheet : !dir.hidden ? dir : !store.hidden ? store : null);
+export function createFocusController({ root, walk, store, dir, sheets, signal }: Els) {
+  /** Panneau du dessus (Fraul Finds, fiche en grand) s'il y en a un d'ouvert. */
+  const sheet = () => sheets.find((el) => !el.hidden) ?? null;
+  /** Fenêtre ouverte du dessus : un panneau, puis l'annuaire, puis la boutique. */
+  const top = () => sheet() ?? (!dir.hidden ? dir : !store.hidden ? store : null);
 
   /** Rend inerte tout ce qui est sous la fenêtre ouverte. */
   function update() {
-    const f = !sheet.hidden, d = !dir.hidden, s = !store.hidden;
+    const f = !!sheet(), d = !dir.hidden, s = !store.hidden;
     walk.inert = f || d || s;
     store.inert = f || (d && s);
     dir.inert = f && d;
