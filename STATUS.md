@@ -52,7 +52,7 @@ _Dernière mise à jour : 2026-10-19 par rhamon (rayons : photo en grand)_
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
-- **Rayons du Walk : la photo en grand** (retour de Rhamone, 19 oct.) : l'article choisi vient près de soi et occupe environ 70 % de la largeur ; nom sur une ligne, plus petit ; plus de « Glisse pour défiler… » ; rayon sneakers recentré (l'article choisi était décalé à gauche) ; **le décor d'une boutique ne montre que les rayons qui ont des articles** (Travis Scott : plus de murs de sneakers ni de vitrine « Accessoires » quand on ne vend que des hoodies) — rhamon
+- **Rayons du Walk : la photo en grand** (retour de Rhamone, 19 oct.) : l'article choisi vient près de soi et occupe environ 70 % de la largeur ; nom sur une ligne, plus petit ; plus de « Glisse pour défiler… » ; rayon sneakers recentré (l'article choisi était décalé à gauche) — rhamon
 
 ## 🔄 En cours
 
