@@ -23,6 +23,7 @@
 Le hook `.claude/hooks/session-start.sh` s'exécute à l'ouverture et t'affiche un **briefing** : dernières PR mergées, PR ouvertes, ce que l'autre a fait, STATUS.md, règles de LESSONS.md.
 - Lis-le avant de répondre à quoi que ce soit.
 - Si tu ne vois pas de briefing, lance `bash .claude/hooks/session-start.sh` toi-même.
+- **Claude de Serge** : lis aussi `docs/POUR-SERGE.md` (passation du 18 oct. 2026 : ce qui attend Serge, demandes d'avis de Rhamone).
 - Si le briefing montre que **l'autre dev a fait quelque chose depuis la dernière session**, commence ta première réponse par 2-3 lignes : « Depuis ta dernière session, l'autre dev a fait… ».
 
 ---
@@ -182,6 +183,8 @@ On reste sur une **vente e-commerce classique**. Le « privé » n'est qu'une co
   > 🗣️ **Rhamone R3 — ➕ ajout proposé** : code de vérification envoyé **par WhatsApp d'abord**, SMS seulement en secours (les SMS coûtent cher et attirent la fraude aux envois massifs). Le −10 % de bienvenue est limité à **une fois par numéro, par adresse de livraison et par carte bancaire** (les numéros jetables existent).
   >
   > 🗣️ **Serge, 13 oct. 2026 — ✅ R3 validé.**
+  >
+  > 🗣️ **Serge, 18 oct. 2026 — ✅ remplacé par « tout par e-mail »** (décision de Rhamone du 17 oct.). Condition : le lien d'invitation est copiable depuis le tableau de bord, pour que Fraul puisse aussi le coller dans WhatsApp.
 - Fraul peut changer le groupe d'un client à tout moment depuis son tableau de bord.
 
 **3. Lancement par la clientèle WhatsApp existante de Fraul — deux sortes de liens**
