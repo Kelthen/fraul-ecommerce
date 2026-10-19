@@ -66,6 +66,17 @@ await check("fiche produit avec photos (face, dos, détail) et propositions", as
   if (wide) throw new Error("la fiche déborde en largeur");
 });
 
+await check("envies : garder une pièce, la retrouver, la retirer", async () => {
+  await page.goto(BASE + "/produit/nike-techfleece-noir-gris-veste", { waitUntil: "networkidle" });
+  await page.locator(".pdp-envie").click();
+  if ((await page.locator(".pdp-envie").getAttribute("aria-pressed")) !== "true") throw new Error("le bouton Envie ne s'allume pas");
+  await page.goto(BASE + "/envies", { waitUntil: "networkidle" });
+  await page.locator(".envie-card").first().waitFor({ timeout: 5000 });
+  await shot("06b-envies");
+  await page.locator(".envie-card .envie-btn").first().click();
+  await page.locator(".envies-empty").waitFor({ timeout: 5000 });
+});
+
 await check("fiche produit + panier", async () => {
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
   await shot("03-marque");
@@ -314,6 +325,8 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   await page.mouse.click(b2.x + b2.width / 2, b2.y + b2.height * 0.4);
   await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
   if ((await page.locator("#fiche .gal-slide img").count()) < 2) throw new Error("la fiche n'a pas face et dos");
+  const cutF = await page.evaluate(() => [...document.querySelectorAll("#fiche .f-act > *")].some((el) => el.getBoundingClientRect().right > innerWidth + 1));
+  if (cutF) throw new Error("un bouton de la fiche sort de l'écran");
   await page.waitForTimeout(500); // fin de l'animation d'ouverture
   await shot("15-fiche-en-grand");
   await page.locator("#fiche .thumbs button").nth(1).click();

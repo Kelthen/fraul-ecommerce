@@ -373,3 +373,13 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .concierge-done { display: grid; gap: 10px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .concierge-done h3 { font-size: clamp(24px, 6vw, 34px); line-height: 1.1; }
 .concierge-done .pill { justify-self: start; }
+/* Bouton « Envie » et page « Mes envies » */
+.envie-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid rgba(10, 10, 12, 0.7); background: transparent; color: var(--ink); font: 700 11px/1 var(--body); letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; }
+.envie-ico { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; transition: transform .3s cubic-bezier(.3, 1.6, .5, 1), fill .2s; }
+.envie-btn.on .envie-ico { fill: var(--bordeaux); stroke: var(--bordeaux); transform: scale(1.12); }
+.envie-btn:not(:has(span)) { width: 44px; padding: 0; justify-content: center; }
+.pdp-envie { margin-top: 12px; }
+.envies-empty { display: grid; gap: 16px; justify-items: start; margin-top: 16px; }
+.envies-grid { list-style: none; padding: 0; margin: 24px 0 72px; }
+.envie-card { position: relative; min-width: 0; }
+.envie-btn.on-card { position: absolute; top: 8px; right: 8px; background: rgba(255, 254, 247, 0.9); border-color: transparent; min-height: 36px; width: 36px; }

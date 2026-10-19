@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GarmentArt } from "@/components/GarmentArt";
+import { EnvieButton } from "@/components/EnvieButton";
 import { Price, PriceNote } from "@/components/Price";
 import { ProductGallery, photoViews, type GalleryView } from "@/components/product/ProductGallery";
 import type { CategoryId } from "@/lib/catalog/types";
@@ -80,7 +81,8 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
                 ))}
               </div>
               <div className="f-act">
-                <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}>Ajouter au panier</button>
+                <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}>Au panier</button>
+                <EnvieButton compact item={{ slug: item.slug, name: item.n, brand: item.brand, category: item.cat, cost: item.p, color: item.c, accent: item.a, photo: item.photos?.front }} />
                 <Link className="pill ghost" href={`/produit/${item.slug}`}>Fiche complète</Link>
               </div>
             </div>
