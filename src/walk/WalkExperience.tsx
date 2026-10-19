@@ -121,7 +121,10 @@ export function WalkExperience({ data, startBrand }: Props) {
               <button className="pill ghost" id="wQuit" type="button">
                 Quitter
               </button>
-              <span className="w-name">Fraul Walk</span>
+              <button className="w-search" id="wSearch" type="button" aria-label="Chercher une marque ou une pièce">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                <span>Chercher</span>
+              </button>
               <Link className="pill ghost cart-chip" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
                 Panier {count}
               </Link>
@@ -267,17 +270,17 @@ export function WalkExperience({ data, startBrand }: Props) {
         <div className="o-head">
           <div className="r">
             <div>
-              <p className="eyebrow">Annuaire</p>
-              <h2>Toutes les marques</h2>
+              <p className="eyebrow">Marques et pièces</p>
+              <h2>Trouver</h2>
             </div>
             <button className="close" id="dirClose" type="button">
               Fermer
             </button>
           </div>
           <label className="sr-only" htmlFor="dirq">
-            Chercher une marque
+            Chercher une marque ou une pièce
           </label>
-          <input className="q" id="dirq" type="search" placeholder="Chercher une marque" autoComplete="off" />
+          <input className="q" id="dirq" type="search" placeholder="Une marque ou une pièce (hoodie, basket…)" autoComplete="off" />
         </div>
         <div className="o-body">
           <div className="o-inner" id="dirList" />

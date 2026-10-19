@@ -342,6 +342,24 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
   console.log(`     entrer ${tIn} ms · rayon ${tRayon} ms · sortir ${tOut} ms`);
 });
 
+await check("raccourcis : recherche « hoodie » → rayon, reprise à la dernière boutique, aide affichée une seule fois", async () => {
+  await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1500);
+  await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1500);
+  if ((await page.locator("#bname").innerText()) !== "Amiri") throw new Error("pas de reprise à la dernière boutique");
+  if (await page.locator(".tap-hint").isVisible()) throw new Error("« Touche la vitrine » encore affiché alors qu'on est déjà entré");
+  await page.locator("#wSearch").click();
+  await page.locator("#dirq").fill("hoodie");
+  await page.locator("#dirList .go[data-cat]").first().waitFor({ timeout: 5000 });
+  await shot("20-recherche-hoodie");
+  await page.locator("#dirList .go[data-cat]").first().click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await shot("20b-recherche-rayon");
+});
+
 await check("lien direct vers une boutique du mall", async () => {
   await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });

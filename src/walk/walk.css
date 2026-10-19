@@ -141,3 +141,9 @@
 .fw .walk[data-time="nuit"] .stage::after { background: linear-gradient(180deg, rgba(59,52,64,.8) 0%, rgba(59,52,64,0) 20%, rgba(255,254,247,0) 66%, rgba(255,254,247,.85) 100%); }
 .fw .walk[data-time="soir"] .w-name, .fw .walk[data-time="nuit"] .w-name { color: var(--ivory); }
 @media (prefers-reduced-motion: reduce) { .fw .veil { transition: none; } }
+/* Recherche en haut du mall (marque ou pièce) */
+.fw .w-search { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1.5px solid rgba(10, 10, 12, .25); background: rgba(255, 254, 247, .85); color: var(--ink); font: 600 12px/1 var(--body); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); min-width: 0; }
+.fw .w-search svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
+.fw .w-search span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Moins de texte : une aide disparaît dès que le geste a été fait une fois (engine.js, gesture()) */
+.fw.seen-scroll .scroll-hint, .fw.seen-tap .tap-hint, .fw.seen-rayon .s-hint, .fw.seen-back .s-back { display: none; }
