@@ -101,8 +101,10 @@ S'appuie sur `supplier_offers` (migration 0004, `docs/FOURNISSEURS-MULTIPLES.md`
 
 1. ✅ **Telegram** pour prévenir Fraul (gratuit, instantané, boutons) ; e-mail en secours. — *confirmé par Serge le 19 oct.*
 2. ✅ **Le code de suivi passe par Fraul** au lancement : l'expéditeur l'envoie à Fraul, Fraul l'envoie au site avec un bouton (vérification ci-dessus). Page de l'expéditeur au niveau 2. — *confirmé par Serge le 19 oct.*
-3. **L'adresse arrive chez l'expéditeur par la fiche d'expédition** (image transférée par Fraul). — *proposition, à confirmer*
-4. **« En cours de traitement » dès le paiement.** — *à confirmer*
+3. ✅ **L'adresse arrive chez l'expéditeur par la fiche d'expédition** (image transférée par Fraul). — *oui de Serge le 19 oct., en attente de la validation de Rhamone*
+4. ✅ **« En cours de traitement » dès le paiement.** — *oui de Serge le 19 oct., en attente de la validation de Rhamone*
+
+> **Rhamone : Serge attend ta validation sur l'ensemble de ce document avant qu'on construise.** Réponds ✅ / ⛔ / ➕ en « 🗣️ Rhamone » ou en commentaire sur la PR.
 
 ## 6. Proposition SQL (à ajouter après la 0004, **non appliquée**)
 
