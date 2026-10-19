@@ -14,7 +14,7 @@
 | **Client** | Commande et paie sur le site, suit son colis | Le site + e-mails |
 | **Fraul** | Reçoit chaque commande, la transfère aux bons fournisseurs, gère les problèmes | **Telegram** (+ tableau de bord du site) |
 | **Fournisseurs** (plusieurs, ex. 10 pour Nike) | Reçoivent de Fraul les articles à préparer, envoient leur colis à l'expéditeur | Leur habitude (WeChat) |
-| **Expéditeur** (un seul, ami de Fraul, pour tous les fournisseurs) | Reçoit les colis des fournisseurs, **regroupe tout ce qui va au même client**, expédie, donne **un seul code de suivi** | Une page web personnelle (lien sans mot de passe) |
+| **Expéditeur** (un seul, ami de Fraul, pour tous les fournisseurs) | Reçoit les colis des fournisseurs, **regroupe tout ce qui va au même client**, expédie, renvoie **un seul code de suivi** à Fraul | Sa messagerie habituelle (fiche d'expédition reçue de Fraul) ; page personnelle plus tard (niveau 2) |
 
 Règles :
 - **Un client = un seul colis = un seul code de suivi**, même si sa commande vient de plusieurs fournisseurs.
@@ -30,8 +30,10 @@ Règles :
 2. Message Telegram à Fraul             (1 bloc pour Fraul + 1 bloc « à transférer » par fournisseur)
 3. Fraul transfère chaque bloc à son fournisseur, touche « Transféré » dans Telegram
 4. Chaque fournisseur envoie son colis à l'expéditeur (n° FRL écrit dessus)
-5. L'expéditeur coche les colis reçus sur sa page : « FRL-123 : 1/2… 2/2 »
-6. Tout est là → il expédie et saisit LE code de suivi   → site : « En transit »   (e-mail au client)
+   Fraul transfère aussi la FICHE D'EXPÉDITION (image) à l'expéditeur
+5. L'expéditeur reçoit les colis (n° FRL dessus) ; tout est là → il colle la fiche, expédie
+6. Il renvoie « FRL-123 → code » à Fraul ; Fraul le transfère au bot, vérifie la carte,
+   touche ✅ Confirmer                                     → site : « En transit »   (e-mail au client après 15 min)
 7. Suivi automatique du transporteur (17TRACK) : douane, en livraison… → « Livrée »
 ```
 
@@ -54,9 +56,21 @@ Client : prénom + ville (l'adresse complète est sur la page de l'expéditeur)
 订单 FRL-2026-000123 · 请寄给发货人
 • Casquette … · taille unique · 1 pc · réf B-501 · [lien] · [photo]
 
-[ ✅ Transféré à A ]  [ ✅ Transféré à B ]  [ ⚠️ Rupture ]
+── Fiche d'expédition (image, à transférer à l'expéditeur) ──
+FRL-2026-000123 (très grand + code-barres)
+Nom, adresse complète, téléphone du client (caractères latins, intitulés en chinois)
+2 colis attendus : fournisseur A (2 articles) · fournisseur B (1 article)
+
+[ ✅ Transféré à A ]  [ ✅ Transféré à B ]  [ 📦 Fiche envoyée ]  [ ⚠️ Rupture ]
 ```
-- Une **réponse au message avec un code de suivi** l'enregistre aussi (dépannage, si l'expéditeur l'envoie à Fraul).
+
+### Codes de suivi : ne jamais se tromper de client (décision de Serge, 19 oct. : le code passe par Fraul)
+1. L'expéditeur envoie **toujours le couple** « FRL-123 → code » (le n° est sur la fiche collée au colis).
+2. Fraul **transfère ce message au bot** (un ou plusieurs couples d'un coup). Fraul ne choisit jamais la commande à la main.
+3. Pour chaque couple, le bot affiche une **carte de vérification** : code → FRL-123 · prénom + initiale · ville · nombre d'articles + photos. Rien n'est enregistré avant **✅ Confirmer**.
+4. Le site **refuse** : code déjà utilisé sur une autre commande (unique), n° de commande inconnu ou ayant déjà un code, format de code inconnu.
+5. Au **premier scan du transporteur** (17TRACK), si le pays de destination ne correspond pas à la commande → alerte à Fraul.
+6. **15 minutes pour corriger** : l'e-mail « En transit » part au client après ce délai ; bouton « Annuler » pendant ce temps.
 
 ## 3. Grandir sans que Fraul soit débordé
 
@@ -85,9 +99,10 @@ S'appuie sur `supplier_offers` (migration 0004, `docs/FOURNISSEURS-MULTIPLES.md`
 
 ## 5. Choix par défaut (à confirmer par Serge)
 
-1. **Telegram** pour prévenir Fraul (gratuit, instantané, boutons) ; e-mail en secours. WhatsApp plus tard si besoin (API payante, modèles validés par Meta). — *décidé par l'équipe, à confirmer*
-2. **Le code de suivi est saisi par l'expéditeur** sur sa page ; Fraul peut aussi répondre au message Telegram. — *à confirmer*
-3. **« En cours de traitement » dès le paiement.** — *à confirmer*
+1. ✅ **Telegram** pour prévenir Fraul (gratuit, instantané, boutons) ; e-mail en secours. — *confirmé par Serge le 19 oct.*
+2. ✅ **Le code de suivi passe par Fraul** au lancement : l'expéditeur l'envoie à Fraul, Fraul l'envoie au site avec un bouton (vérification ci-dessus). Page de l'expéditeur au niveau 2. — *confirmé par Serge le 19 oct.*
+3. **L'adresse arrive chez l'expéditeur par la fiche d'expédition** (image transférée par Fraul). — *proposition, à confirmer*
+4. **« En cours de traitement » dès le paiement.** — *à confirmer*
 
 ## 6. Proposition SQL (à ajouter après la 0004, **non appliquée**)
 
@@ -111,6 +126,9 @@ create policy "expédition voit ses colis" on order_parcels for select
 create policy "expédition coche ses colis" on order_parcels for update
   using (exists (select 1 from shipments s where s.order_id = order_parcels.order_id and s.handled_by = auth.uid()))
   with check (exists (select 1 from shipments s where s.order_id = order_parcels.order_id and s.handled_by = auth.uid()));
+
+-- Un code de suivi ne peut servir qu'à une seule commande.
+create unique index shipments_tracking_unique on shipments (tracking_code) where tracking_code is not null;
 
 -- Fraîcheur des offres (garde-fou « prix périmé »).
 alter table supplier_offers add column last_checked_at timestamptz;
