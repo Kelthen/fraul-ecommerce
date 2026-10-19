@@ -183,6 +183,8 @@ On reste sur une **vente e-commerce classique**. Le « privé » n'est qu'une co
   > 🗣️ **Rhamone R3 — ➕ ajout proposé** : code de vérification envoyé **par WhatsApp d'abord**, SMS seulement en secours (les SMS coûtent cher et attirent la fraude aux envois massifs). Le −10 % de bienvenue est limité à **une fois par numéro, par adresse de livraison et par carte bancaire** (les numéros jetables existent).
   >
   > 🗣️ **Serge, 13 oct. 2026 — ✅ R3 validé.**
+  >
+  > 🗣️ **Serge, 18 oct. 2026 — ✅ remplacé par « tout par e-mail »** (décision de Rhamone du 17 oct.). Condition : le lien d'invitation est copiable depuis le tableau de bord, pour que Fraul puisse aussi le coller dans WhatsApp.
 - Fraul peut changer le groupe d'un client à tout moment depuis son tableau de bord.
 
 **3. Lancement par la clientèle WhatsApp existante de Fraul — deux sortes de liens**

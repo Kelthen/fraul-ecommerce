@@ -74,6 +74,10 @@ export function WalkExperience({ data, startBrand }: Props) {
     const shopIndex = startBrand ? data.shops.findIndex((s) => s.slug === startBrand) : -1;
     const startName = startBrand ? data.allBrands.find((b) => b.slug === startBrand)?.name : undefined;
 
+    // ?heure=19 : voir le mall à une autre heure (essai sur la preview) ; sinon l'heure locale du visiteur.
+    const hq = new URLSearchParams(location.search).get("heure");
+    const hour = hq !== null && Number(hq) >= 0 && Number(hq) < 24 ? Number(hq) : undefined;
+
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -92,6 +96,7 @@ export function WalkExperience({ data, startBrand }: Props) {
       onExit: () => router.push("/"),
       onFallback: (slug: string) => router.push(`/marques/${slug}`),
       onFiche: (it: FicheItem | null) => setFiche(it ? { ...it } : null),
+      hour,
       startShop: shopIndex >= 0 ? shopIndex : undefined,
       startStore: shopIndex < 0 ? startName : undefined,
     }));

@@ -123,3 +123,8 @@
   .fw .f-rel { grid-column: 1 / -1; }
   .fw .f-rel ul { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
+
+/* Heure du jour (models/daylight.ts) : le soir, le haut de l'écran prend la couleur du ciel ; le bas reste clair pour lire */
+.fw .walk[data-time="soir"] .stage::after { background: linear-gradient(180deg, rgba(59,52,64,.55) 0%, rgba(59,52,64,0) 18%, rgba(255,254,247,0) 66%, rgba(255,254,247,.82) 100%); }
+.fw .walk[data-time="nuit"] .stage::after { background: linear-gradient(180deg, rgba(59,52,64,.8) 0%, rgba(59,52,64,0) 20%, rgba(255,254,247,0) 66%, rgba(255,254,247,.85) 100%); }
+.fw .walk[data-time="soir"] .w-name, .fw .walk[data-time="nuit"] .w-name { color: var(--ivory); }
