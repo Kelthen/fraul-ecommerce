@@ -33,6 +33,8 @@ But : **que personne ne change ses habitudes**. Le fournisseur garde son site, l
 
 ## 2. Commandes vers le fournisseur et le livreur : lien WeChat (maintenant), robot (plus tard)
 
+> ⚠️ **Remplacé le 19 oct. 2026 par `docs/PARCOURS-COMMANDE.md`** (décision de Serge) : Fraul reçoit chaque commande sur Telegram et la transfère ; les fournisseurs n'ont pas de portail ; un seul expéditeur regroupe les colis et donne un seul code de suivi par client. Le texte ci-dessous est gardé pour l'historique.
+
 ### Maintenant : portail ouvert depuis WeChat
 - Le fournisseur et le livreur reçoivent chacun **un lien personnel permanent** (sécurisé, sans mot de passe à retenir), qu'ils **épinglent dans WeChat**. Il s'ouvre dans le navigateur de WeChat, sans appli à installer.
 - **Interface en chinois** (中文), avec un bouton pour passer en français/anglais.
