@@ -788,6 +788,10 @@ export function startWalk(root, o) {
     const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
     add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
 
+    // Le décor ne montre que les rayons qui ont des articles (Rhamone, 19 oct. : chez Travis Scott, seuls les hoodies
+    // s'ouvraient alors qu'on voyait des sneakers et des accessoires). Le panneau de la marque et les mannequins restent.
+    const has = (cat) => products(st.name, cat).length > 0;
+
     // Mur du fond : panneau de la marque + étagères à sneakers éclairées
     add(new THREE.BoxGeometry(3.2, 2.4, 0.08), basic({ color: new THREE.Color(st.bg) }), 0, 2.15, -15.95);
     add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st), transparent: true }), 0, 2.4, -15.9);
@@ -796,7 +800,7 @@ export function startWalk(root, o) {
     const decoMat = {}, deco = (type, c, a) => decoMat[type + c + a] || (decoMat[type + c + a] = new THREE.MeshLambertMaterial({ map: U.itemTexture(type, c, a, false, st), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
     const NK = [["#F1ECE0", "#2B2A2C"], ["#141416", "#F1ECE0"], ["#680209", "#F1ECE0"], ["#EAE0C8", "#420A0D"], ["#6B6766", "#141416"], ["#202833", "#EAE0C8"]];
     const shelfM = lam(0xf4f2ee), ledM = basic({ color: 0xfff6e6 }), shoeGeo = new THREE.PlaneGeometry(0.36, 0.2);
-    [-1, 1].forEach((s) => {
+    if (has("sneaker")) [-1, 1].forEach((s) => {
       const cx = s * 3.75;
       [0.55, 0.95, 1.35, 1.75, 2.15].forEach((y, li) => {
         add(new THREE.BoxGeometry(3.5, 0.035, 0.34), shelfM, cx, y, -15.82);
@@ -818,9 +822,12 @@ export function startWalk(root, o) {
         const h = (long ? 0.95 : 0.78) + ((n * 7) % 3) * 0.05; gData.push([side * 5.6, y - 0.05 - h / 2, z, 0.5, h, 0.045, GC[(n * 3 + (long ? 2 : 0)) % GC.length]]);
       }
     }
-    wallRail(-1, -3.6, -9.2, false, -6.4); wallRail(-1, -9.8, -15.2, false, -12.4); wallRail(1, -8.6, -15.2, true, -11.9);
+    if (has("tee")) wallRail(-1, -3.6, -9.2, false, -6.4);
+    if (has("hoodie")) wallRail(-1, -9.8, -15.2, false, -12.4);
+    if (has("pants")) wallRail(1, -8.6, -15.2, true, -11.9);
 
     // Mur à casquettes
+    if (has("cap")) {
     add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
     const crownG = new THREE.SphereGeometry(0.12, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), brimG = new THREE.CylinderGeometry(0.125, 0.125, 0.012, 20, 1, false, 0, Math.PI);
     [1.0, 2.08].forEach((y, r) => { for (let k = 0; k < 7; k++) {
@@ -828,27 +835,32 @@ export function startWalk(root, o) {
       const cr = new THREE.Mesh(crownG, m); cr.scale.set(1, 0.85, 1); const br = new THREE.Mesh(brimG, m); br.position.x = 0.07;
       g.add(cr, br); g.position.set(5.82, y, -2.85 - k * 0.65); g.rotation.y = Math.PI; scene.add(g);
     } });
+    }
 
     // Vitrine à accessoires (îlot central)
+    if (has("bag")) {
     add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
     add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
     // Cloche en verre assez haute pour que les sacs soient bien dedans, même vus d'en haut
     const glassG = new THREE.BoxGeometry(2.3, 0.62, 1.5);
     add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.23, -8.8);
     const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
+    }
 
     // Mannequins habillés par le gabarit de la marque
     [[-2.6, -1.6, 0.45, 0], [2.6, -1.6, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
 
     // Signalétique
-    [["T-SHIRTS", -6, -6.4], ["HOODIES", -6, -12.4], ["CHAPEAUX", 6, -4.8], ["PANTALONS", 6, -11.9]].forEach(([t, wx, z]) =>
+    [["T-SHIRTS", -6, -6.4, "tee"], ["HOODIES", -6, -12.4, "hoodie"], ["CHAPEAUX", 6, -4.8, "cap"], ["PANTALONS", 6, -11.9, "pants"]].filter((x) => has(x[3])).forEach(([t, wx, z]) =>
       add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true }), wx - Math.sign(wx) * 0.02, 2.85, z, wx < 0 ? Math.PI / 2 : -Math.PI / 2));
-    [-3.75, 3.75].forEach((x) => add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex("SNEAKERS"), transparent: true }), x, 2.62, -15.97));
-    add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex("ACCESSOIRES"), transparent: true }), 0, 1.6, -9.62);
+    if (has("sneaker")) [-3.75, 3.75].forEach((x) => add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex("SNEAKERS"), transparent: true }), x, 2.62, -15.97));
+    if (has("bag")) add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex("ACCESSOIRES"), transparent: true }), 0, 1.6, -9.62);
 
+    if (gData.length) {
     const gm = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), gData.length), dmy = new THREE.Object3D();
     gData.forEach(([x, y, z, sx, sy, sz, c], k) => { dmy.position.set(x, y, z); dmy.scale.set(sx, sy, sz); dmy.updateMatrix(); gm.setMatrixAt(k, dmy.matrix); gm.setColorAt(k, new THREE.Color(c)); });
     scene.add(gm);
+    }
 
     /* Rayons interactifs : les vrais articles pendent dans la scène, face et dos */
     // Article avec photo (vrai produit) : sa photo face / dos ; sinon le dessin à sa couleur.

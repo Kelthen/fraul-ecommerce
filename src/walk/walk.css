@@ -59,6 +59,7 @@
 .fw .s-in { padding-inline: 16px; max-width: 760px; margin-inline: auto; width: 100%; }
 .fw .s-ir { display: flex; justify-content: space-between; align-items: end; gap: 12px; }
 .fw .s-ir h3 { margin: 4px 0 0; font: 400 clamp(20px, 5.4vw, 28px)/1.15 var(--display); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* une ligne : la photo passe avant (Rhamone 19 oct.) */
+.fw .s-ir .eyebrow { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fw .s-price { font: 700 18px/1 var(--body); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .fw .dots { display: flex; gap: 10px; }
 .fw .dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(10,10,12,.2); }

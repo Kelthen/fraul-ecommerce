@@ -16,13 +16,13 @@ type V3 = [number, number, number];
 /**
  * Portant d'un rayon : origine, sens du défilement, côté vers l'allée, espacement, taille des articles,
  * et réglages du « tirer l'article » (pull, rise) et du zoom (close).
- * `pull` est grand : l'article choisi vient près de soi et occupe le haut de l'écran (photo en grand, Rhamone 19 oct.).
+ * `pull` est grand : l'article choisi vient près de soi et occupe ~70 % de la largeur du téléphone (photo en grand, Rhamone 19 oct.).
  */
 export type Rack = { o: V3; d: V3; out: V3; sp: number; size: [number, number]; pull: number; rise: number; close: number };
 
 export const RACKS: Record<string, Rack> = {
-  tee: { o: [-5.5, 1.375, -6.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.6, rise: 0.18, close: 1.0 },
-  hoodie: { o: [-5.5, 1.375, -12.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.6, rise: 0.18, close: 1.0 },
+  tee: { o: [-5.5, 1.375, -6.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.8, rise: 0.18, close: 1.0 },
+  hoodie: { o: [-5.5, 1.375, -12.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.8, rise: 0.18, close: 1.0 },
   pants: { o: [5.5, 1.3, -11.9], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.62, size: [0.8, 1.0], pull: 1.5, rise: 0.18, close: 0.85 },
   cap: { o: [5.8, 1.52, -4.8], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.5, size: [0.46, 0.5], pull: 1.6, rise: 0.04, close: 1.5 },
   sneaker: { o: [-3.75, 1.53, -15.7], d: [1, 0, 0], out: [0, 0, 1], sp: 0.62, size: [0.58, 0.32], pull: 0.95, rise: 0.1, close: 2.0 },
