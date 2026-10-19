@@ -900,6 +900,7 @@ export function startWalk(root, o) {
       const curve = new THREE.CatmullRomCurve3(route(a, Z.p).map(([x, z]) => V(x, 1.65, z)), false, "centripetal"), len = curve.getLength();
       // Trajets vers un rayon très courts (0,5 s au plus, Rhamone) : on veut voir les produits vite.
       cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 12, 0.25, 0.5) * 1000, fromLook: cam.look.clone(), toLook: V(...Z.look), cb };
+      storeEl.dataset.walkMs = String(Math.round(cam.walk.dur)); // lu par le test téléphone (0,5 s au plus)
       kick();
     }
     function setClose(v) {

@@ -334,8 +334,11 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
   const tOut = Date.now() - t;
   const after = await page.locator("#bname").innerText();
   if (after !== before) throw new Error(`en sortant : vitrine ${after}, attendu ${before}`);
-  // Seuils larges : le navigateur de test dessine la 3D sans carte graphique (bien plus lent qu'un téléphone).
-  if (tIn > 1200 || tRayon > 1500 || tOut > 800) throw new Error(`trop lent : entrer ${tIn} ms, rayon ${tRayon} ms, sortir ${tOut} ms`);
+  // La durée de l'animation vers le rayon est mesurée par le moteur (fiable) : 0,5 s au plus (Rhamone, 19 oct.).
+  const walkMs = Number(await page.locator("#store").getAttribute("data-walk-ms"));
+  if (!(walkMs > 0 && walkMs <= 500)) throw new Error(`trajet vers le rayon : ${walkMs} ms (0,5 s au plus)`);
+  // Temps réels : garde-fou large, le navigateur de test dessine la 3D sans carte graphique (très variable, bien plus lent qu'un téléphone).
+  if (tIn > 2500 || tRayon > 3500 || tOut > 800) throw new Error(`trop lent : entrer ${tIn} ms, rayon ${tRayon} ms, sortir ${tOut} ms`);
   console.log(`     entrer ${tIn} ms · rayon ${tRayon} ms · sortir ${tOut} ms`);
 });
 
