@@ -77,6 +77,27 @@ await check("envies : garder une pièce, la retrouver, la retirer", async () => 
   await page.locator(".envies-empty").waitFor({ timeout: 5000 });
 });
 
+await check("compte (démo) : création avec code, mauvais code refusé, déconnexion", async () => {
+  await page.goto(BASE + "/compte", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Créer un compte" }).click();
+  await page.locator("input[name=email]").fill("test@exemple.com");
+  await page.locator("input[name=password]").fill("court");
+  await page.getByRole("button", { name: "Recevoir mon code" }).click();
+  if (!(await page.locator(".af-err").count())) throw new Error("mot de passe trop court accepté");
+  await page.locator("input[name=password]").fill("Velours-Bordeaux-19");
+  await page.getByRole("button", { name: "Recevoir mon code" }).click();
+  await page.locator("input[name=code]").fill("000000");
+  await page.getByRole("button", { name: "Valider" }).click();
+  if ((await page.locator(".af-err").textContent()) !== "Ce code ne correspond pas.") throw new Error("mauvais code accepté");
+  await shot("06c-compte-code");
+  await page.locator("input[name=code]").fill("246 810");
+  await page.getByRole("button", { name: "Valider" }).click();
+  await page.locator(".account").waitFor({ timeout: 5000 });
+  await shot("06d-mon-compte");
+  await page.getByRole("button", { name: "Se déconnecter" }).click();
+  await page.waitForURL(BASE + "/");
+});
+
 await check("fiche produit + panier", async () => {
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
   await shot("03-marque");

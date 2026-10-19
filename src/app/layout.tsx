@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bodoni_Moda, Montserrat } from "next/font/google";
+import { AccountProvider } from "@/components/AccountProvider";
 import { CartProvider } from "@/components/CartProvider";
 import { EnviesProvider } from "@/components/EnviesProvider";
 import { PricingProvider } from "@/components/PricingProvider";
@@ -44,12 +45,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PricingProvider>
           <CartProvider>
             <EnviesProvider>
-              <SiteHeader />
-              <main id="contenu">{children}</main>
-              <FooterGate>
-                <SiteFooter />
-              </FooterGate>
-              <TabBar />
+              <AccountProvider>
+                <SiteHeader />
+                <main id="contenu">{children}</main>
+                <FooterGate>
+                  <SiteFooter />
+                </FooterGate>
+                <TabBar />
+              </AccountProvider>
             </EnviesProvider>
           </CartProvider>
         </PricingProvider>
