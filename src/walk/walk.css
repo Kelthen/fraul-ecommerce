@@ -132,3 +132,7 @@
 .fw #concierge .o-inner { max-width: 720px; margin: 0 auto; display: grid; gap: 16px; padding-top: 8px; }
 .fw .con-intro { font-size: 14px; color: var(--muted); }
 .fw .con-stop .c-sum { font-size: 15px; max-width: 40ch; }
+/* Heure du jour (models/daylight.ts) : le soir, le haut de l'écran prend la couleur du ciel ; le bas reste clair pour lire */
+.fw .walk[data-time="soir"] .stage::after { background: linear-gradient(180deg, rgba(59,52,64,.55) 0%, rgba(59,52,64,0) 18%, rgba(255,254,247,0) 66%, rgba(255,254,247,.82) 100%); }
+.fw .walk[data-time="nuit"] .stage::after { background: linear-gradient(180deg, rgba(59,52,64,.8) 0%, rgba(59,52,64,0) 20%, rgba(255,254,247,0) 66%, rgba(255,254,247,.85) 100%); }
+.fw .walk[data-time="soir"] .w-name, .fw .walk[data-time="nuit"] .w-name { color: var(--ivory); }

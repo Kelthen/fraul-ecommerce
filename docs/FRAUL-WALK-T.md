@@ -49,6 +49,11 @@ Avec les 31 marques d'aujourd'hui :
 - Arrêt du parcours **vers la 10e boutique** (après le 2e arrêt du bout droit de la barre), face au comptoir « Fraul Finds · Sur demande » posé à droite du grand « F » ; le toucher ouvre le formulaire (il passe devant les vitrines cachées derrière) (`concierge` dans le plan du mode ; `AT_CONCIERGE` dans `src/walk/models/walk-path.ts`). Comptoir 3D : `src/walk/views/concierge.ts` ; enseigne : `CONCIERGE_TEXT` dans `src/content/walk.ts`.
 - « Demande une pièce » ouvre le formulaire par-dessus le mall (couche « concierge » : le retour du téléphone la ferme). Même formulaire sur `/sur-demande`.
 
+## Vitrines vivantes et heure du jour (2026-10-18)
+
+- **Vitrines vivantes** : deux cadres par vitrine avec les pièces phares de la marque (photos d'abord), qui changent toutes les 5 s pour la boutique devant laquelle on est (`liveItems`, `showLive` dans `engine.js`).
+- **Heure du jour** : `src/walk/models/daylight.ts` donne la lumière pour l'heure locale (jour → soir dès 17 h → nuit, plancher « jamais noir »). `?heure=19` sur `/walk` force une heure pour essayer.
+
 ## Comment on s'y déplace
 
 - **Glisser / faire défiler** = avancer ou reculer le long du parcours. La
