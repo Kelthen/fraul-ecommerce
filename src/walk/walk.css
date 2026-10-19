@@ -54,13 +54,11 @@
 .fw .s-cat.sm { min-height: 38px; padding: 0 13px; font-size: 10px; }
 .fw .s-arrow { position: absolute; top: 30%; z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(10,10,12,.25); background: rgba(255,254,247,.85); color: var(--ink); font: 400 26px/1 var(--display); display: grid; place-items: center; }
 .fw .s-arrow.l { left: 10px; } .fw .s-arrow.r { right: 10px; }
-.fw .s-swipe { position: absolute; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + 120px); z-index: 2; text-align: center; margin: 0; font: 700 11px/1 var(--body); letter-spacing: .24em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(255,255,255,.9); pointer-events: none; animation: fw-pulse 2s ease-in-out infinite; }
-@keyframes fw-pulse { 50% { opacity: .35; } }
 .fw .s-info { position: absolute; inset: auto 0 0 0; z-index: 2; display: grid; gap: 10px; padding: 36px 0 calc(env(safe-area-inset-bottom, 0px) + 14px);
   background: linear-gradient(transparent, rgba(255,254,247,.96) 15%); animation: fw-up .45s cubic-bezier(.2,.7,.2,1); }
 .fw .s-in { padding-inline: 16px; max-width: 760px; margin-inline: auto; width: 100%; }
 .fw .s-ir { display: flex; justify-content: space-between; align-items: end; gap: 12px; }
-.fw .s-ir h3 { margin: 4px 0 0; font: 400 clamp(26px, 7vw, 40px)/1.05 var(--display); color: var(--ink); }
+.fw .s-ir h3 { margin: 4px 0 0; font: 400 clamp(20px, 5.4vw, 28px)/1.15 var(--display); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* une ligne : la photo passe avant (Rhamone 19 oct.) */
 .fw .s-price { font: 700 18px/1 var(--body); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .fw .dots { display: flex; gap: 10px; }
 .fw .dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(10,10,12,.2); }

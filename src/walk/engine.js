@@ -635,14 +635,12 @@ export function startWalk(root, o) {
   // Plan de la boutique (zones, portants, contournement de l'îlot) : src/walk/models/store-layout.ts.
 
   const storeEl = $("#store");
-  const SWIPE_HINT = "Glisse pour défiler, touche pour voir en grand";
-  let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false, swiped = seen("swipe");
+  let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false;
   let sMode = "walk", backLock = 0, storeFrom = null;
   function sUI(mode) {
     sMode = mode;
     const r = mode === "rayon";
     $("#sBottom").hidden = mode !== "hub"; $("#sInfo").hidden = !r; $("#sPrev").hidden = !r; $("#sNext").hidden = !r;
-    $("#sSwipe").hidden = !(r && !swiped);
   }
   function btn(cls, text, data) { const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = text; Object.assign(b.dataset, data); return b; }
   async function openStore(brand, { fromWalk = false } = {}) {
@@ -943,8 +941,7 @@ export function startWalk(root, o) {
       if (!v !== !closeT && api.onZoom) api.onZoom(!!v);
       closeT = v; yaw = 0;
       $("#iClose").textContent = v ? "Ranger" : "Tourner";
-      $("#sSwipe").textContent = v ? "Glisse pour tourner l'article" : SWIPE_HINT;
-      if (v) $("#sSwipe").hidden = false; kick();
+      kick();
     }
 
     // Glisser : faire défiler le rayon, ou tourner l'article en gros plan. Toucher : avancer un article / fiche en grand.
@@ -967,7 +964,7 @@ export function startWalk(root, o) {
         ray.setFromCamera(ndc, camera);
         const hit = ray.intersectObjects(c.meshes.filter((m) => m.visible), true)[0];
         if (hit) { const k = c.meshes.findIndex((m) => m === hit.object.parent); if (k === Math.round(c.f)) { if (closeT) setClose(0); else openFiche(c.items[k]); } else if (!closeT) { c.target = k; } }
-      } else if (!closeT) { c.target = clamp(Math.round(c.f), 0, c.items.length - 1); swiped = true; gesture("swipe"); $("#sSwipe").hidden = true; }
+      } else if (!closeT) { c.target = clamp(Math.round(c.f), 0, c.items.length - 1); gesture("swipe"); }
       drag = null; dragging = false; kick();
     };
     canvas.addEventListener("pointerup", endDrag, sig);

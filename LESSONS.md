@@ -266,3 +266,10 @@
 - **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
 - **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
 - **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.
+
+### L-46 — Dans un rayon, la photo d'abord ; pas de mode d'emploi
+- **Projet / date :** Fraul, 2026-10-19
+- **Ce qui s'est passé :** dans un rayon du Walk, le nom de l'article (gros, sur 2 lignes) prenait plus de place que la photo, et une phrase « Glisse pour défiler, touche pour voir en grand » clignotait en haut. Rhamone : la photo doit être grande, le nom sur une ligne, et « l'instinct humain fera le reste ».
+- **Cause :** on a donné autant de poids au texte qu'au produit, et on a expliqué des gestes déjà évidents (flèches, glisser).
+- **Règle :** sur un écran produit, la photo occupe la plus grande place (environ 60 % de la largeur sur téléphone) ; nom sur une ligne, en taille modérée ; pas de texte d'aide pour un geste évident. Vérifier chaque rayon (vêtements, sneakers, casquettes, sacs) sur une capture téléphone avant la PR.
+

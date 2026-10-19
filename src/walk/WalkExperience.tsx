@@ -206,9 +206,6 @@ export function WalkExperience({ data, startBrand }: Props) {
         <button className="s-arrow r" id="sNext" type="button" hidden aria-label="Article suivant">
           ›
         </button>
-        <p className="s-swipe" id="sSwipe" hidden>
-          Glisse pour défiler, touche pour voir en grand
-        </p>
         <section className="s-info" id="sInfo" hidden aria-label="Article sorti du rayon">
           <div className="s-in s-ir">
             <div style={{ minWidth: 0 }}>

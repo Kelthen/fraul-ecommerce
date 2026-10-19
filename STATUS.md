@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serge)_
+_Dernière mise à jour : 2026-10-19 par rhamon (rayons : photo en grand)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -51,6 +51,8 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 - Prix par zone et par groupe, mode test, page /test/prix (PR #2) ; MVC étape 1 : modèles du Walk (PR #5)
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
+
+- **Rayons du Walk : la photo en grand** (retour de Rhamone, 19 oct.) : l'article choisi vient près de soi et occupe environ 60 % de la largeur ; nom sur une ligne, plus petit ; plus de « Glisse pour défiler… » ; rayon sneakers recentré (l'article choisi était décalé à gauche) — rhamon
 
 ## 🔄 En cours
 
