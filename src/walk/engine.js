@@ -121,9 +121,10 @@ export function startWalk(root, o) {
   function ensureThree() {
     if (THREE) return Promise.resolve(true);
     if (!threeP) threeP = new Promise((res) => {
-      const L = $("#loader"); L.hidden = false; const t0 = performance.now();
-      const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 2500))])
-        .then(() => setTimeout(() => { L.hidden = true; res(ok); }, Math.max(0, 650 - (performance.now() - t0))));
+      // L'écran de chargement n'apparaît que si ça dure (plus de 200 ms) ; polices attendues 800 ms au plus.
+      const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
+      const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
+        .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
       import("three").then((m) => { THREE = m; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
@@ -298,7 +299,23 @@ export function startWalk(root, o) {
     curShop = i;
     $("#count").textContent = `Boutique ${String(i + 1).padStart(2, "0")} / ${String(N).padStart(2, "0")}`;
     const b = $("#bname"); b.textContent = SHOPS[i].name; b.classList.remove("swap"); void b.offsetWidth; b.classList.add("swap");
+    prepareStore(i);
   }
+  // Pendant qu'on regarde une vitrine, sa boutique se prépare en coulisse : en touchant, on y est tout de suite.
+  let prepT = 0;
+  function prepareStore(i) {
+    clearTimeout(prepT);
+    prepT = setTimeout(() => {
+      const brand = SHOP_NAMES[i];
+      if (dead || !THREE || storeOpen || curShop !== i || (STORE && STORE.brand === brand)) return;
+      const idle = window.requestIdleCallback || ((f) => setTimeout(f, 0));
+      idle(() => {
+        if (dead || storeOpen || curShop !== i || (STORE && STORE.brand === brand)) return;
+        try { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); STORE.warm(); } catch { STORE = null; }
+      });
+    }, 600);
+  }
+  life.signal.addEventListener("abort", () => clearTimeout(prepT));
   function onWalkScroll() {
     progress = clamp(walkEl.scrollTop / Math.max(1, track.offsetHeight - walkEl.clientHeight), 0, 1);
     bars.forEach((b, k) => (b.style.width = clamp(progress * 9 - k, 0, 1) * 100 + "%"));
@@ -547,17 +564,12 @@ export function startWalk(root, o) {
     });
 
     const cam = { x: ENTRY.p[0], z: ENTRY.p[1] + 6, lx: ENTRY.l[0], ly: ENTRY.l[1], lz: ENTRY.l[2] };
-    let raf = 0, entering = null, snapNext = true;
+    let raf = 0, entering = false, snapNext = true;
     function kick() { if (!raf && !dead) raf = requestAnimationFrame(frame); }
-    function frame(now) {
+    function frame() {
       raf = 0; if (!walkOpen || storeOpen || dead) return;
       let more = false;
-      if (entering) {
-        const u = clamp((now - entering.t0) / 950, 0, 1), e = ease(u), f = entering.from, t = entering.to;
-        cam.x = lerp(f.x, t.x, e); cam.z = lerp(f.z, t.z, e); cam.lx = lerp(f.lx, t.lx, e); cam.ly = lerp(f.ly, t.ly, e); cam.lz = lerp(f.lz, t.lz, e);
-        $("#veil").style.opacity = smooth(0.5, 1, u);
-        if (u < 1) more = true; else { const cb = entering.cb; entering = null; cb(); }
-      } else {
+      {
         const tg = pathAt(progress), k = snapNext || RM ? 1 : 0.12; snapNext = false;
         let diff = 0;
         ["x", "z", "lx", "ly", "lz"].forEach((key) => { const dv = tg[key] - cam[key]; cam[key] += dv * k; diff += Math.abs(dv); });
@@ -574,10 +586,12 @@ export function startWalk(root, o) {
     return {
       kick, resize,
       snap() { snapNext = true; kick(); },
+      // Entrer sans marcher (Rhamone, 18 oct. 2026 : « c'est un site, pas un film ») : un fondu rapide et on est dedans.
+      // La caméra ne bouge pas : en sortant, on se retrouve face à la même vitrine.
       enter(k, cb) {
-        const s = SLOTS[k];
-        entering = { t0: performance.now(), from: { ...cam }, to: { x: s.x + s.nx * 0.6, z: s.z + s.nz * 0.6, lx: s.x - s.nx * 6, ly: 1.6, lz: s.z - s.nz * 6 }, cb };
-        kick();
+        if (entering) return;
+        entering = true; $("#veil").style.opacity = 1;
+        setTimeout(() => { entering = false; cb(); }, RM ? 0 : FADE_MS);
       },
       dispose() { cancelAnimationFrame(raf); disposeScene(scene); renderer.dispose(); },
     };
@@ -608,12 +622,14 @@ export function startWalk(root, o) {
     if (storeEl.hidden) storeFrom = opener();
     storeEl.hidden = false; storeOpen = true; trapUpdate();
     $("#sQuit").focus({ preventScroll: true });
-    openLayer("store", (anim) => { if (anim && STORE) { STORE.setActive(null); sUI("walk"); STORE.walk("door", closeStore); } else closeStore(); });
+    openLayer("store", closeStore); // sortir = retour direct devant la vitrine, sans marcher jusqu'à la porte
     $("#sTitle").textContent = `${brand} · Boutique`;
     const cats = $("#sCats"); cats.textContent = ""; stocked().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
-    sUI("walk"); STORE.resize(); STORE.setActive(null); STORE.place("door");
-    STORE.walk("hub", () => sUI("hub"));
+    // On arrive directement au centre, devant le choix des rayons (plus de marche depuis la porte).
+    STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
   }
+  /** Durée du fondu à l'entrée et à la sortie d'une boutique (ms). */
+  const FADE_MS = 150;
   function closeStore() {
     if (storeEl.hidden) return;
     storeEl.hidden = true; storeOpen = false; trapUpdate();
@@ -853,7 +869,7 @@ export function startWalk(root, o) {
       });
     }
     function frame(now) {
-      raf = 0; if (dead) return; let more = false; const w = cam.walk;
+      raf = 0; if (dead || storeEl.hidden) return; let more = false; const w = cam.walk; // boutique préparée en coulisse : rien à dessiner
       if (w) {
         const u = clamp((now - w.t0) / w.dur, 0, 1), e = ease(u);
         const p = w.curve.getPointAt(e), tan = w.curve.getTangentAt(Math.min(e, 0.999));
@@ -882,7 +898,9 @@ export function startWalk(root, o) {
       const Z = ZONES[zone], a = [cam.pos.x, cam.pos.z];
       if (RM || dist2(a, Z.p) < 0.05) { place(zone); cb(); return; }
       const curve = new THREE.CatmullRomCurve3(route(a, Z.p).map(([x, z]) => V(x, 1.65, z)), false, "centripetal"), len = curve.getLength();
-      cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 2.1, 1.1, 3.4) * 1000, fromLook: cam.look.clone(), toLook: V(...Z.look), cb };
+      // Trajets vers un rayon très courts (0,5 s au plus, Rhamone) : on veut voir les produits vite.
+      cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 12, 0.25, 0.5) * 1000, fromLook: cam.look.clone(), toLook: V(...Z.look), cb };
+      storeEl.dataset.walkMs = String(Math.round(cam.walk.dur)); // lu par le test téléphone (0,5 s au plus)
       kick();
     }
     function setClose(v) {
@@ -927,6 +945,8 @@ export function startWalk(root, o) {
 
     const api = {
       brand: st.name, place, walk, resize,
+      /** Prépare l'affichage (shaders) en coulisse, pour que la première image soit immédiate à l'entrée. */
+      warm() { try { place("hub"); renderer.compile(scene, camera); } catch { /* ignoré */ } },
       setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
       focus: (cat) => Math.round(cars[cat].target),
       count: (cat) => cars[cat].items.length,

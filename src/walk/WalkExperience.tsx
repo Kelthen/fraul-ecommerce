@@ -285,11 +285,13 @@ export function WalkExperience({ data, startBrand }: Props) {
       </div>
 
       <div className="loader" id="loader" hidden>
-        <b>Fraul Walk</b>
-        <p className="eyebrow">Ouverture des portes</p>
-        <div className="bar">
-          <i />
+        <div className="spin" aria-hidden="true">
+          <svg viewBox="0 0 100 110">
+            <path d="M50 8c-6 0-9 4-9 8v4l-20 10-13 20 12 8 9-8v52h42V50l9 8 12-8-13-20-20-10v-4c0-4-3-8-9-8z" fill="#420A0D" />
+            <path d="M41 20c3 5 15 5 18 0" fill="none" stroke="#EAE0C8" strokeWidth="2" />
+          </svg>
         </div>
+        <b>Fraul Walk</b>
       </div>
     </div>
   );

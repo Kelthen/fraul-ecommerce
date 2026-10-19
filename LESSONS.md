@@ -260,3 +260,9 @@
 - **Ce qui s'est passé :** à l'arrêt Fraul Finds, toucher le comptoir faisait entrer dans la boutique ERD, cachée derrière lui. Rhamone : « ça n'a pas de sens, c'est pas ergonomique ». L'arrêt était aussi trop tôt (5e place au lieu de 10e).
 - **Cause :** le toucher ne testait que les façades des boutiques, pas les objets posés devant.
 - **Règle :** tout objet 3D placé devant une zone touchable fait partie du test de toucher et a sa propre action. Le test téléphone touche le comptoir et vérifie qu'aucune boutique ne s'ouvre. Placer un arrêt là où le visiteur en a besoin (Fraul Finds : quand il commence à fatiguer, vers la 10e boutique).
+
+### L-45 — Épater sans saouler : jamais plus d'une seconde entre un toucher et les produits
+- **Projet / date :** Fraul, 2026-10-18
+- **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
+- **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
+- **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.
