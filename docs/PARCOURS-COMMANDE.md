@@ -136,3 +136,35 @@ create unique index shipments_tracking_unique on shipments (tracking_code) where
 alter table supplier_offers add column last_checked_at timestamptz;
 ```
 Un seul `shipments` par commande (= un code de suivi par client) ; l'adresse vient de `orders.shipping_address`, lisible par l'expéditeur seulement pour ses envois (vue limitée, comme pour le fournisseur).
+
+---
+
+## 7. Ajouts de Rhamone (19 oct.), avec les réponses de Serge
+
+> 🗣️ **Rhamone : ✅ d'accord sur l'ensemble**, consigne « que ce soit bien fait, comme les grandes boutiques ». Ajouts ci-dessous (détail dans ses commentaires sur la PR #26). 🗣️ **Serge, 19 oct. : ✅ avec les précisions indiquées.**
+
+### 7.1 Le client n'attend pas « dans le noir » — ✅ (zone de Rhamone)
+- 4 étapes, avec une **petite phrase qui change** sur l'étape en cours (« Tes pièces sont en préparation » → « Tout est réuni, on emballe »).
+- **Livraison estimée dès le paiement**, calculée sur le fournisseur le plus lent + le délai de la zone. ➕ Serge : afficher une **fourchette** (« entre le 28 oct. et le 2 nov. »), plus honnête qu'une date (douane).
+
+### 7.2 Un fournisseur lent ne bloque pas le colis — **plan B à la fin** (décision de Serge, 19 oct.)
+- **Dès le lancement** : seulement les offres en stock et vérifiées récemment ; **note par fournisseur** (taux de retard), les moins fiables passent derrière dans le choix de l'offre ; **alerte à Fraul à 4 jours** si un colis fournisseur n'est pas chez l'expéditeur (Serge : 7 jours est trop tard vu l'objectif < 10 j de bout en bout vers les USA).
+- **Plus tard, en dernière étape** (plan B, à 7 jours) : a) changer de fournisseur pour l'article en retard ; b) sinon e-mail au client avec 3 choix (attendre / recevoir le reste en 2 colis, frais pour nous / être remboursé de l'article) ; c) sans réponse sous 48 h : envoi de ce qui est là + remboursement de l'article. Le site **propose**, Jean Paul **confirme** tout remboursement.
+- Rupture après paiement : e-mail « article indisponible, remboursé » + ligne dans le suivi ; une pièce de « Mes envies » sans offre s'affiche « plus disponible ».
+
+### 7.3 Données des clients — ✅
+- **Fiche d'expédition minimale** : nom, adresse, pays, nombre de colis attendus (pas d'e-mail, pas de prix, pas la liste des achats). Téléphone si le transporteur l'exige (presque toujours à l'international).
+- **Lien sécurisé qui expire** (7 jours au plus après l'expédition, chaque ouverture enregistrée) **au lieu de l'image**. ⚠️ Serge : un site hors de Chine (Vercel) peut être lent, bloqué ou signalé dans WeChat en Chine continentale → **tester avec le vrai expéditeur** ; garder l'**image en secours** si le lien ne s'ouvre pas.
+- Message Telegram : prénom + ville seulement. **Accord de confidentialité** signé par l'expéditeur. Page Confidentialité + mention RGPD (adresses européennes envoyées en Chine) **à faire vérifier par le juriste**. Niveau 2 : l'expéditeur imprime l'étiquette depuis sa page.
+
+### 7.4 Telegram = Jean Paul seulement (CEO de Fraul) — ✅
+- Le bot **ne répond qu'au compte Telegram de Jean Paul** (verrouillé côté serveur, tout autre compte ignoré).
+- Chaque bloc « à transférer » a un bouton **Copier**, en texte simple, **en chinois ou bilingue** (à confirmer avec Jean Paul), à coller tel quel dans WeChat. Le lien de la fiche d'expédition passe aussi par WeChat.
+
+## 8. Argent : remboursements et paiement des fournisseurs — **plus tard, avec le plan B** (proposition de Serge, à valider avec Jean Paul)
+
+**Remboursements (Stripe)** : bouton « Rembourser cet article » sur chaque ligne (montant exact de la ligne, droits compris s'ils ne sont pas encore payés) ; seul Jean Paul ; jamais plus que le payé ; tout est enregistré ; e-mail + ligne dans le suivi du client. Option : proposer un **avoir de +10 %** avant le remboursement. Les frais Stripe ne sont pas rendus (≈ 3 % par remboursement).
+
+**Paiement des fournisseurs (hors site : WeChat Pay, Alipay, virement)** : le site sert de **carnet de comptes**. Coût réel figé sur chaque ligne → la ligne devient « due » quand l'expéditeur a reçu le colis → **relevé hebdomadaire par fournisseur** (« A : 14 articles reçus = 3 920 ¥ ») → Jean Paul paie une fois par fournisseur et touche « Payé » (date, moyen, capture). Même relevé pour les frais de l'expéditeur. Taux de change du jour du paiement enregistré → **marge réelle** par commande. Si un fournisseur exige d'être payé d'avance : la ligne est « due » dès la commande.
+
+**Questions pour Jean Paul** : comment il paie ses fournisseurs aujourd'hui et s'ils acceptent un paiement hebdomadaire après réception ; comment l'expéditeur est payé (par colis, au poids, au mois) ; avoir +10 % en premier ? ; article abîmé : remboursement sur photo ou remplacement ? Paiements vers la Chine et justificatifs : à valider avec le comptable.
