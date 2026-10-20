@@ -195,10 +195,6 @@ export function WalkExperience({ data, startBrand }: Props) {
         <div className="s-bottom" id="sBottom" hidden>
           <p className="s-hint">Choisis un rayon, on t&apos;y emmène.</p>
           <div className="s-cats" id="sCats" />
-          <button className="con-link" id="sCon" type="button">
-            Pas trouvé ? <b>Fraul Finds te le trouve →</b>
-          </button>
-          <p className="s-back">↑ Fais défiler vers l&apos;arrière pour sortir</p>
         </div>
         <button className="s-arrow l" id="sPrev" type="button" hidden aria-label="Article précédent">
           ‹
@@ -214,6 +210,7 @@ export function WalkExperience({ data, startBrand }: Props) {
             </div>
             <span className="s-price" id="iPrice" />
           </div>
+          <div className="s-in s-else" id="iElse" />
           <div className="s-in s-ir">
             <div className="dots" id="iDots" />
             <span className="i-count" id="iCount" />

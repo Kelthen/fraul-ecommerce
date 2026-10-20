@@ -143,7 +143,6 @@ export function startWalk(root, o) {
   }
   on($("#conBtn"), "click", () => openConcierge(null));
   on($("#conStopBtn"), "click", () => openConcierge(null));
-  on($("#sCon"), "click", () => openConcierge(sBrand));
   // Écouteur posé avant ceux de la boutique : Échap ferme d'abord Fraul Finds.
   on(window, "keydown", (e) => { if (e.key === "Escape" && hasLayer("concierge")) { e.stopImmediatePropagation(); closeLayer("concierge"); } });
 
@@ -656,7 +655,7 @@ export function startWalk(root, o) {
     $("#sQuit").focus({ preventScroll: true });
     openLayer("store", closeStore); // sortir = retour direct devant la vitrine, sans marcher jusqu'à la porte
     $("#sTitle").textContent = `${brand} · Boutique`;
-    const cats = $("#sCats"); cats.textContent = ""; stocked().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
+    const cats = $("#sCats"); cats.textContent = ""; rayons().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     // On arrive directement au centre, devant le choix des rayons (plus de marche depuis la porte).
     STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
   }
@@ -683,13 +682,16 @@ export function startWalk(root, o) {
   function renderChips(cat) {
     const c = $("#sChips"); c.textContent = "";
     c.append(btn("s-cat sm", "‹ Centre", { cat: "hub" }));
-    stocked().filter((x) => x[0] !== cat).forEach(([id, l]) => c.append(btn("s-cat sm", l, { cat: id })));
+    rayons().filter((x) => x[0] !== cat).forEach(([id, l]) => c.append(btn("s-cat sm", l, { cat: id })));
   }
-  // Rayons qui ont au moins un article pour la marque ouverte (une marque peut n'avoir que 2 vrais produits).
-  const stocked = () => CATS.filter(([id]) => products(sBrand, id).length > 0);
+  // Même gabarit pour toutes les boutiques : les mêmes rayons partout, même vides (Rhamone, 19 oct.).
+  const rayons = () => CATS.filter(([id]) => id in CAR);
   function showInfo(cat, k) {
     const it = STORE.item(cat, k);
     $("#iBrand").textContent = `${sBrand} · ${catLabel(cat)}`;
+    // Rayon sans article pour cette marque : on le dit simplement, sans boutons d'achat.
+    const empty = !it; $("#sInfo").classList.toggle("empty", empty); $("#sPrev").hidden = $("#sNext").hidden = empty;
+    if (empty) { $("#iName").textContent = "Rien ici pour l'instant."; renderElse(cat); return; }
     $("#iName").textContent = it.n; $("#iPrice").textContent = o.formatPrice(it.p);
     $("#iCount").textContent = `${k + 1} / ${STORE.count(cat)}`;
     const dots = $("#iDots"); dots.textContent = "";
@@ -697,6 +699,20 @@ export function startWalk(root, o) {
     const sizes = $("#iSizes"); sizes.textContent = "";
     it.sizes.forEach((z, i) => { const b = btn("size", z, {}); b.setAttribute("aria-pressed", String(i === Math.min(2, it.sizes.length - 1))); sizes.append(b); });
   }
+  // Rayon vide : le même rayon chez d'autres marques (choix de Rhamone, 20 oct.), les vrais produits d'abord.
+  function renderElse(cat) {
+    const box = $("#iElse"); box.textContent = "";
+    const others = SHOP_NAMES.filter((b) => b !== sBrand && products(b, cat).length > 0)
+      .sort((a, b) => Number(products(b, cat).some((it) => it.img)) - Number(products(a, cat).some((it) => it.img))).slice(0, 4);
+    if (!others.length) return;
+    const p = document.createElement("p"); p.textContent = `${catLabel(cat)} chez :`; box.append(p);
+    others.forEach((b) => box.append(btn("s-cat sm", b, { b, cat })));
+  }
+  on($("#iElse"), "click", (e) => {
+    const b = e.target.closest(".s-cat"); if (!b) return;
+    const { cat } = b.dataset; dropLayer("rayon");
+    openStore(b.dataset.b, { fromWalk: sFromWalk }).then(() => { if (!storeEl.hidden) goZone(cat); });
+  });
   on($("#sCats"), "click", (e) => { const b = e.target.closest(".s-cat"); if (b) goZone(b.dataset.cat); });
   on($("#sChips"), "click", (e) => {
     const b = e.target.closest(".s-cat"); if (!b) return;
@@ -726,9 +742,9 @@ export function startWalk(root, o) {
   on($("#sNext"), "click", () => STORE.step(1));
   on($("#iSizes"), "click", (e) => { const b = e.target.closest(".size"); if (!b) return; $("#iSizes").querySelectorAll(".size").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
   on($("#iDots"), "click", (e) => { const d = e.target.closest(".dot"); if (!d || !sCat) return; const k = STORE.focus(sCat); STORE.recolor(sCat, k, d.dataset.c); showInfo(sCat, k); });
-  on($("#iAdd"), "click", () => { if (!sCat) return; addToCart(STORE.item(sCat, STORE.focus(sCat)), $("#iSizes [aria-pressed=\"true\"]")?.textContent); });
+  on($("#iAdd"), "click", () => { if (!sCat || !STORE.count(sCat)) return; addToCart(STORE.item(sCat, STORE.focus(sCat)), $("#iSizes [aria-pressed=\"true\"]")?.textContent); });
   on($("#iClose"), "click", () => STORE.toggleClose());
-  on($("#iPage"), "click", () => { if (sCat) openFiche(STORE.item(sCat, STORE.focus(sCat))); });
+  on($("#iPage"), "click", () => { if (sCat && STORE.count(sCat)) openFiche(STORE.item(sCat, STORE.focus(sCat))); });
 
   // Fiche en grand (src/walk/QuickView.tsx, dessinée par React) : une couche, le retour du téléphone la ferme.
   let ficheFrom = null;

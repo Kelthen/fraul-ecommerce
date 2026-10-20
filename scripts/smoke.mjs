@@ -378,10 +378,27 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);    // toucher la vitrine = entrer
   await page.locator("#sCats .s-cat").first().waitFor({ state: "visible", timeout: 20000 });
+  // Même gabarit pour toutes les boutiques : les 6 rayons partout, même vides (Rhamone, 19 oct.).
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
-  if (rayons.join() !== "Hoodies et sweats") throw new Error(`rayons affichés : ${rayons.join(", ")}`);
-  await page.locator("#sCats .s-cat").first().click();
-  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  if (rayons.length !== 6 || !rayons.includes("Hoodies et sweats")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
+  if (await page.locator("#store #sCon, #store .s-back").count()) throw new Error("Fraul Finds ou l'aide « défiler » encore dans la boutique");
+  await page.locator("#sCats .s-cat", { hasText: "Sneakers" }).click();
+  await page.locator("#sInfo.empty:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#iName").textContent()) !== "Rien ici pour l'instant.") throw new Error("rayon vide mal affiché");
+  if (await page.locator("#iAdd").isVisible()) throw new Error("bouton Au panier dans un rayon vide");
+  await shot("14a-rayon-vide");
+  if ((await page.locator("#iElse .s-cat").count()) < 1) throw new Error("rayon vide : pas de proposition chez d'autres marques");
+  const other = await page.locator("#iElse .s-cat").first().textContent();
+  await page.locator("#iElse .s-cat").first().click();
+  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
+  if (!(await page.locator("#sTitle").textContent()).startsWith(other)) throw new Error(`n'est pas allé chez ${other}`);
+  if (!(await page.locator("#iBrand").textContent()).includes("Sneakers")) throw new Error("pas arrivé au rayon sneakers de l'autre marque");
+  await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1200);
+  await page.locator("#enter").click();
+  await page.locator("#sCats .s-cat", { hasText: "Hoodies et sweats" }).click();
+  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await shot("14-boutique-travis-scott");
   const cut = await page.evaluate(() => [...document.querySelectorAll("#sInfo .s-act > *, #iPrice")].some((el) => el.getBoundingClientRect().right > innerWidth + 1));

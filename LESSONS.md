@@ -271,5 +271,11 @@
 - **Projet / date :** Fraul, 2026-10-19
 - **Ce qui s'est passé :** dans un rayon du Walk, le nom de l'article (gros, sur 2 lignes) prenait plus de place que la photo, et une phrase « Glisse pour défiler, touche pour voir en grand » clignotait en haut. Rhamone : la photo doit être grande, le nom sur une ligne, et « l'instinct humain fera le reste ».
 - **Cause :** on a donné autant de poids au texte qu'au produit, et on a expliqué des gestes déjà évidents (flèches, glisser).
-- **Règle :** sur un écran produit, la photo occupe la plus grande place (environ 70 % de la largeur sur téléphone) ; nom sur une ligne, en taille modérée ; pas de texte d'aide pour un geste évident. Vérifier chaque rayon (vêtements, sneakers, casquettes, sacs) sur une capture téléphone avant la PR. Ne pas étendre un retour au-delà de ce qui est demandé : « Travis Scott est mal présenté » ne voulait pas dire « changer le décor de toutes les boutiques » (changement fait puis annulé le 19 oct.) ; en cas de doute, demander (L-07).
+- **Règle :** sur un écran produit, la photo occupe la plus grande place (environ 70 % de la largeur sur téléphone) ; nom sur une ligne, en taille modérée ; pas de texte d'aide pour un geste évident. Vérifier chaque rayon (vêtements, sneakers, casquettes, sacs) sur une capture téléphone avant la PR. Ne pas étendre un retour au-delà de ce qui est demandé : « Travis Scott est mal présenté » voulait dire « il n'y a qu'un bouton de rayon, il en faut 6 comme ailleurs » (même gabarit pour toutes les boutiques), pas « changer le décor » (changement fait puis annulé le 19 oct.) ; en cas de doute, demander (L-07).
+
+### L-48 — Plan et go avant de retirer ou d'ajouter quoi que ce soit
+- **Projet / date :** Fraul, 2026-10-20
+- **Ce qui s'est passé :** sur un retour de capture, j'ai changé le décor de toutes les boutiques, retiré deux lignes et inventé un affichage de rayon vide sans montrer de plan. Rhamone : « je ne comprends pas pourquoi tu enlèves les choses sans proposer de plan ni attendre mon go ».
+- **Cause :** j'ai pris une capture annotée pour un ordre complet, et j'ai comblé moi-même les trous.
+- **Règle :** même pour une petite chose, lister ce que je vais retirer, ajouter ou choisir à sa place, avec des options quand c'est un choix, et attendre le go. Rien n'est poussé sur une PR avant ce go ; un brouillon va sur une branche `wip/` sans PR.
 
