@@ -124,12 +124,13 @@ export function startWalk(root, o) {
   const closeDir = () => closeLayer("dir");
   on($("#dirBtn"), "click", openDir);
   on($("#wSearch"), "click", openDir);
+  on($("#sSearch"), "click", openDir); // la loupe de la boutique ouvre la même recherche
   on($("#dirClose"), "click", closeDir);
   on(dirq, "input", renderDir);
   on($("#dirList"), "click", (e) => {
     const go = e.target.closest(".go"), chip = e.target.closest(".chip");
-    if (go) { const cat = go.dataset.cat; closeDir(); openStore(go.dataset.b, { fromWalk: walkOpen }).then(() => { if (cat && !storeEl.hidden) goZone(cat); }); }
-    if (chip) { closeDir(); openWalk(+chip.dataset.walk); }
+    if (go) { const cat = go.dataset.cat; closeDir(); dropLayer("rayon"); openStore(go.dataset.b, { fromWalk: walkOpen }).then(() => { if (cat && !storeEl.hidden) goZone(cat); }); }
+    if (chip) { closeDir(); if (!storeEl.hidden) closeLayer("store"); openWalk(+chip.dataset.walk); }
   });
   on(window, "keydown", (e) => { if (e.key === "Escape" && !dir.hidden) { e.stopImmediatePropagation(); closeDir(); } });
 

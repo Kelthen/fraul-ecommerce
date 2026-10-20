@@ -382,6 +382,13 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
   if (rayons.length !== 6 || !rayons.includes("Hoodies et sweats")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
   if (await page.locator("#store #sCon, #store .s-back").count()) throw new Error("Fraul Finds ou l'aide « défiler » encore dans la boutique");
+  // En haut de la boutique : retour et loupe en icônes ; la loupe ouvre la recherche par-dessus la boutique.
+  if ((await page.locator("#sQuit").innerText()).trim()) throw new Error("le bouton retour de la boutique a encore du texte");
+  await page.locator("#sSearch").click();
+  await page.locator("#dir:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#dirClose").click();
+  await page.locator("#dir").waitFor({ state: "hidden", timeout: 5000 });
+  if (await page.locator("#store").isHidden()) throw new Error("fermer la recherche a fermé la boutique");
   await page.locator("#sCats .s-cat", { hasText: "Sneakers" }).click();
   await page.locator("#sInfo.empty:not([hidden])").waitFor({ timeout: 20000 });
   if ((await page.locator("#iName").textContent()) !== "Rien ici pour l'instant.") throw new Error("rayon vide mal affiché");
