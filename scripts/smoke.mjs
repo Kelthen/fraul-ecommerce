@@ -387,7 +387,17 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   if ((await page.locator("#iName").textContent()) !== "Rien ici pour l'instant.") throw new Error("rayon vide mal affiché");
   if (await page.locator("#iAdd").isVisible()) throw new Error("bouton Au panier dans un rayon vide");
   await shot("14a-rayon-vide");
-  await page.locator("#sChips .s-cat", { hasText: "Hoodies et sweats" }).click();
+  if ((await page.locator("#iElse .s-cat").count()) < 1) throw new Error("rayon vide : pas de proposition chez d'autres marques");
+  const other = await page.locator("#iElse .s-cat").first().textContent();
+  await page.locator("#iElse .s-cat").first().click();
+  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
+  if (!(await page.locator("#sTitle").textContent()).startsWith(other)) throw new Error(`n'est pas allé chez ${other}`);
+  if (!(await page.locator("#iBrand").textContent()).includes("Sneakers")) throw new Error("pas arrivé au rayon sneakers de l'autre marque");
+  await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1200);
+  await page.locator("#enter").click();
+  await page.locator("#sCats .s-cat", { hasText: "Hoodies et sweats" }).click();
   await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await shot("14-boutique-travis-scott");

@@ -52,7 +52,7 @@ _Dernière mise à jour : 2026-10-19 par rhamon (rayons : photo en grand)_
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
-- **Rayons du Walk : la photo en grand** (retour de Rhamone, 19 oct.) : l'article choisi vient près de soi et occupe environ 70 % de la largeur ; nom sur une ligne, plus petit ; plus de « Glisse pour défiler… » ; rayon sneakers recentré (l'article choisi était décalé à gauche) ; **chaque boutique propose les mêmes 6 rayons**, même vides (« Rien ici pour l'instant. ») ; **plus de lien Fraul Finds ni d'aide « défiler pour sortir » dans les boutiques** (même gabarit partout ; Fraul Finds reste dans le mall) — rhamon
+- **Rayons du Walk : la photo en grand** (retour de Rhamone, 19 oct.) : l'article choisi vient près de soi et occupe environ 70 % de la largeur ; nom sur une ligne, plus petit ; plus de « Glisse pour défiler… » ; rayon sneakers recentré (l'article choisi était décalé à gauche) ; **chaque boutique propose les mêmes 6 rayons**, même vides : un rayon vide dit « Rien ici pour l'instant. » et propose le même rayon chez d'autres marques (choix b de Rhamone, 20 oct.) ; **plus de lien Fraul Finds ni d'aide « défiler pour sortir » dans les boutiques** (même gabarit partout ; Fraul Finds reste dans le mall) — rhamon
 
 ## 🔄 En cours
 

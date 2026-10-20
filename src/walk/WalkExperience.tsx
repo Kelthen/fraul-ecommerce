@@ -210,6 +210,7 @@ export function WalkExperience({ data, startBrand }: Props) {
             </div>
             <span className="s-price" id="iPrice" />
           </div>
+          <div className="s-in s-else" id="iElse" />
           <div className="s-in s-ir">
             <div className="dots" id="iDots" />
             <span className="i-count" id="iCount" />

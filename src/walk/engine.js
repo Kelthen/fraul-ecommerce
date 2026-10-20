@@ -691,7 +691,7 @@ export function startWalk(root, o) {
     $("#iBrand").textContent = `${sBrand} · ${catLabel(cat)}`;
     // Rayon sans article pour cette marque : on le dit simplement, sans boutons d'achat.
     const empty = !it; $("#sInfo").classList.toggle("empty", empty); $("#sPrev").hidden = $("#sNext").hidden = empty;
-    if (empty) { $("#iName").textContent = "Rien ici pour l'instant."; return; }
+    if (empty) { $("#iName").textContent = "Rien ici pour l'instant."; renderElse(cat); return; }
     $("#iName").textContent = it.n; $("#iPrice").textContent = o.formatPrice(it.p);
     $("#iCount").textContent = `${k + 1} / ${STORE.count(cat)}`;
     const dots = $("#iDots"); dots.textContent = "";
@@ -699,6 +699,20 @@ export function startWalk(root, o) {
     const sizes = $("#iSizes"); sizes.textContent = "";
     it.sizes.forEach((z, i) => { const b = btn("size", z, {}); b.setAttribute("aria-pressed", String(i === Math.min(2, it.sizes.length - 1))); sizes.append(b); });
   }
+  // Rayon vide : le même rayon chez d'autres marques (choix de Rhamone, 20 oct.), les vrais produits d'abord.
+  function renderElse(cat) {
+    const box = $("#iElse"); box.textContent = "";
+    const others = SHOP_NAMES.filter((b) => b !== sBrand && products(b, cat).length > 0)
+      .sort((a, b) => Number(products(b, cat).some((it) => it.img)) - Number(products(a, cat).some((it) => it.img))).slice(0, 4);
+    if (!others.length) return;
+    const p = document.createElement("p"); p.textContent = `${catLabel(cat)} chez :`; box.append(p);
+    others.forEach((b) => box.append(btn("s-cat sm", b, { b, cat })));
+  }
+  on($("#iElse"), "click", (e) => {
+    const b = e.target.closest(".s-cat"); if (!b) return;
+    const { cat } = b.dataset; dropLayer("rayon");
+    openStore(b.dataset.b, { fromWalk: sFromWalk }).then(() => { if (!storeEl.hidden) goZone(cat); });
+  });
   on($("#sCats"), "click", (e) => { const b = e.target.closest(".s-cat"); if (b) goZone(b.dataset.cat); });
   on($("#sChips"), "click", (e) => {
     const b = e.target.closest(".s-cat"); if (!b) return;

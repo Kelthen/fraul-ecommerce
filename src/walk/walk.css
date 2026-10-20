@@ -59,6 +59,9 @@
 .fw .s-ir { display: flex; justify-content: space-between; align-items: end; gap: 12px; }
 .fw .s-ir h3 { margin: 4px 0 0; font: 400 clamp(20px, 5.4vw, 28px)/1.15 var(--display); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* une ligne : la photo passe avant (Rhamone 19 oct.) */
 .fw .s-ir .eyebrow { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fw .s-else { display: none; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fw .s-else p { margin: 0 4px 0 0; font: 700 11px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.fw .s-info.empty .s-else { display: flex; }
 .fw .s-info.empty #iPrice, .fw .s-info.empty .s-ir + .s-ir, .fw .s-info.empty .sizes, .fw .s-info.empty .s-act { display: none; }
 .fw .s-price { font: 700 18px/1 var(--body); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .fw .dots { display: flex; gap: 10px; }
