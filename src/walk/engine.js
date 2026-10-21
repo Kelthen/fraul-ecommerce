@@ -836,10 +836,13 @@ export function startWalk(root, o) {
     const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
     add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
 
-    // Mur du fond : panneau de la marque + étagères à sneakers éclairées
-    add(new THREE.BoxGeometry(3.2, 2.4, 0.08), basic({ color: new THREE.Color(st.bg) }), 0, 2.15, -15.95);
-    add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st), transparent: true }), 0, 2.4, -15.9);
-    add(new THREE.PlaneGeometry(1.6, 0.15), basic({ map: U.labelTex("FRAUL · BOUTIQUE", st.fg), transparent: true, opacity: 0.6 }), 0, 1.65, -15.9);
+    // Mur du fond : panneau de la marque + étagères à sneakers éclairées.
+    // Sur téléphone, la liste des rayons passe devant ce panneau : le nom de la marque descend alors sur l'îlot (Rhamone, 21 oct.).
+    const wallSign = [
+      add(new THREE.BoxGeometry(3.2, 2.4, 0.08), basic({ color: new THREE.Color(st.bg) }), 0, 2.15, -15.95),
+      add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st), transparent: true }), 0, 2.4, -15.9),
+      add(new THREE.PlaneGeometry(1.6, 0.15), basic({ map: U.labelTex("FRAUL · BOUTIQUE", st.fg), transparent: true, opacity: 0.6 }), 0, 1.65, -15.9),
+    ];
 
     const decoMat = {}, deco = (type, c, a) => decoMat[type + c + a] || (decoMat[type + c + a] = new THREE.MeshLambertMaterial({ map: U.itemTexture(type, c, a, false, st), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
     const NK = [["#F1ECE0", "#2B2A2C"], ["#141416", "#F1ECE0"], ["#680209", "#F1ECE0"], ["#EAE0C8", "#420A0D"], ["#6B6766", "#141416"], ["#202833", "#EAE0C8"]];
@@ -880,6 +883,7 @@ export function startWalk(root, o) {
     // Vitrine à accessoires (îlot central)
     add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
     add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
+    const tableSign = add(new THREE.PlaneGeometry(2.3, 0.45), basic({ map: U.wordTex(st, { bg: st.bg }) }), 0, 0.52, -7.99);
     // Cloche en verre assez haute pour que les sacs soient bien dedans, même vus d'en haut
     const glassG = new THREE.BoxGeometry(2.3, 0.62, 1.5);
     add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.23, -8.8);
@@ -1020,7 +1024,9 @@ export function startWalk(root, o) {
 
     function resize() {
       const w = storeEl.clientWidth || innerWidth, h = storeEl.clientHeight || innerHeight, a = w / h;
-      renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 72 : 56; camera.updateProjectionMatrix(); kick();
+      renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 72 : 56; camera.updateProjectionMatrix();
+      wallSign.forEach((m) => (m.visible = a >= 1)); tableSign.visible = a < 1; // nom de la marque : mur sur PC, îlot sur téléphone
+      kick();
     }
     window.addEventListener("resize", () => { if (!storeEl.hidden) resize(); }, sig);
 
