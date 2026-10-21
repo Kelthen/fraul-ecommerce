@@ -107,6 +107,10 @@ export function WalkExperience({ data, startBrand }: Props) {
     return () => {
       walk.destroy();
       walkRef.current = null;
+      // Au retour sur le Walk (ex. « Fiche complète » puis retour), Next garde l'état de la page mais le moteur
+      // repart de zéro : une fiche restée ouverte ne pourrait plus être fermée (Rhamone, 21 oct.). On la referme.
+      setFiche(null);
+      setConcierge(null);
       document.body.style.overflow = prevOverflow;
     };
   }, [data, startBrand, router]);
