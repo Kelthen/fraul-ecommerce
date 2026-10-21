@@ -222,12 +222,13 @@ export function WalkExperience({ data, startBrand }: Props) {
           <div className="s-in sizes" id="iSizes" />
           <div className="s-in s-act">
             <button className="add" id="iAdd" type="button">
+              <svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7z" /><path d="M9 8a3 3 0 0 1 6 0" /></svg>
               Au panier
             </button>
-            <button className="pill ghost" id="iPage" type="button" aria-label="Voir l'article en grand, toutes ses photos">
+            <button className="s-more" id="iPage" type="button" aria-label="Voir l'article en grand, toutes ses photos">
               En grand
             </button>
-            <button className="pill ghost" id="iClose" type="button" aria-label="Tourner l'article de près">
+            <button className="s-more" id="iClose" type="button" aria-label="Tourner l'article de près">
               Tourner
             </button>
           </div>

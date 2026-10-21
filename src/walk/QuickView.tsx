@@ -81,9 +81,10 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
                 ))}
               </div>
               <div className="f-act">
-                <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}>Au panier</button>
+                {/* Style « Signature » choisi par Rhamone (21 oct.) : panier bordeaux avec sac, cœur rond, lien vers la fiche. */}
+                <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}><svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7z" /><path d="M9 8a3 3 0 0 1 6 0" /></svg>Au panier</button>
                 <EnvieButton compact item={{ slug: item.slug, name: item.n, brand: item.brand, category: item.cat, cost: item.p, color: item.c, accent: item.a, photo: item.photos?.front }} />
-                <Link className="pill ghost" href={`/produit/${item.slug}`}>Fiche complète</Link>
+                <Link className="f-more" href={`/produit/${item.slug}`}>Fiche complète <span aria-hidden="true">→</span></Link>
               </div>
             </div>
             {sections.map((s) => (

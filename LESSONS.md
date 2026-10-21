@@ -279,3 +279,9 @@
 - **Cause :** j'ai pris une capture annotée pour un ordre complet, et j'ai comblé moi-même les trous.
 - **Règle :** même pour une petite chose, lister ce que je vais retirer, ajouter ou choisir à sa place, avec des options quand c'est un choix, et attendre le go. Rien n'est poussé sur une PR avant ce go ; un brouillon va sur une branche `wip/` sans PR.
 
+### L-51 — Nettoyer en changeant : modifier la règle existante, retirer le code mort
+- **Projet / date :** Fraul, 2026-10-21
+- **Ce qui s'est passé :** pour changer les boutons, j'ai ajouté des règles CSS à la fin du fichier qui écrasaient les anciennes, et des styles d'éléments retirés (#28) étaient restés. Rhamone : « tu ne debug pas, tu ne clean pas le code ».
+- **Cause :** corriger par-dessus au lieu de corriger à la source ; aucune vérification du code mort.
+- **Règle :** on modifie la règle existante à sa place, on supprime ce qu'on remplace, et on retire le style de tout élément supprimé. `npm run check` lance `scripts/dead-css.mjs`, qui refuse une classe CSS inutilisée. Avant une PR, relire son propre diff pour y chercher les restes.
+
