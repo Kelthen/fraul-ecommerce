@@ -10,7 +10,7 @@
 
 | Humain | Compte GitHub | `git config user.name` | Pages / zones de départ |
 |---|---|---|---|
-| **rhamon** (Rhamone, responsable, souvent sur téléphone) | `RhamonK` | `Claude` en session cloud | Fraul Walk (3D), accueil, design |
+| **rhamon** (Rhamone, responsable, souvent sur téléphone) | `RhamonK` | `Kelthen` (forcé par le hook de démarrage, L-49 ; identifier par le compte GitHub) | Fraul Walk (3D), accueil, design |
 | **serge** (valide les plans) | `sergesanou` | à compléter | Logistique, fournisseur, WeChat, commandes |
 
 - Identifie ton humain au début : compare `git config user.name` et le compte GitHub à cette table. Si rien ne correspond, demande-lui qui il est.

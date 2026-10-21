@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-19 par rhamon (rayons : photo en grand)_
+_Dernière mise à jour : 2026-10-21 par rhamon (Walk sur PC : écran blanc, molette)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -53,6 +53,7 @@ _Dernière mise à jour : 2026-10-19 par rhamon (rayons : photo en grand)_
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
 
 - **Rayons du Walk : la photo en grand** (retour de Rhamone, 19 oct.) : l'article choisi vient près de soi et occupe environ 70 % de la largeur ; nom sur une ligne, plus petit ; plus de « Glisse pour défiler… » ; rayon sneakers recentré (l'article choisi était décalé à gauche) ; **chaque boutique propose les mêmes 6 rayons**, même vides : un rayon vide dit « Rien ici pour l'instant. » et propose le même rayon chez d'autres marques (choix b de Rhamone, 20 oct.) ; **plus de lien Fraul Finds ni d'aide « défiler pour sortir » dans les boutiques** (même gabarit partout ; Fraul Finds reste dans le mall) ; en haut de la boutique, **un retour ← (sortir) et une loupe (chercher)** au lieu du bouton « Sortir » (Rhamone, 20 oct.) — rhamon
+- **Walk sur PC** (retour de Rhamone, 21 oct.) : image limitée à ~2,4 millions de points (un grand écran ne fait plus ramer la carte graphique ; téléphone inchangé) ; si la carte graphique décroche, l'affichage repart seul, sinon version sans 3D au lieu d'un écran blanc ; une molette qui fait sortir d'une boutique ne fait plus défiler le mall vers une autre boutique. Test PC (1920 et 2560 px) ajouté au test automatique. Garde-fou Git : un commit signé « Claude » est refusé, l'auteur est toujours Kelthen — rhamon
 
 ## 🔄 En cours
 
