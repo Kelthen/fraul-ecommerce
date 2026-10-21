@@ -19,7 +19,7 @@ export function MyOrders() {
           <li key={o.id}>
             <Link href={`/suivi?code=${o.id}`} className="order-row">
               <span className="o-id">{o.id}</span>
-              <span className={`o-stage s${v.stage}`}>{STAGES[v.stage].label}</span>
+              <span className={`o-stage${v.stage === STAGES.length - 1 ? " done" : ""}`}>{STAGES[v.stage].label}</span>
               <span className="o-meta">
                 {n} pièce{n > 1 ? "s" : ""}
                 {v.window ? ` · livraison ${v.window}` : o.deliveredAt ? ` · livrée le ${new Date(o.deliveredAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}

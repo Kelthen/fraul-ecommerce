@@ -294,3 +294,10 @@
 - **Ce qui s'est passé :** fiche en grand → « Fiche complète » → retour au Walk : la boutique et la fiche s'affichaient comme avant, mais rien ne répondait (« Fermer » mort).
 - **Cause :** Next garde l'écran d'une page quand on y revient, alors que le moteur 3D, lui, est détruit puis recréé à neuf : l'écran et le moteur ne disaient plus la même chose.
 - **Règle :** tout ce que le moteur affiche est remis à zéro à son démarrage, et ce qu'on veut retrouver (boutique, rayon) est rouvert par le moteur lui-même. Le test téléphone passe par « Fiche complète » puis retour et vérifie « Fermer ».
+
+### L-51 — Nettoyer en changeant : modifier la règle existante, retirer le code mort
+- **Projet / date :** Fraul, 2026-10-21
+- **Ce qui s'est passé :** pour changer les boutons, j'ai ajouté des règles CSS à la fin du fichier qui écrasaient les anciennes, et des styles d'éléments retirés (#28) étaient restés. Rhamone : « tu ne debug pas, tu ne clean pas le code ».
+- **Cause :** corriger par-dessus au lieu de corriger à la source ; aucune vérification du code mort.
+- **Règle :** on modifie la règle existante à sa place, on supprime ce qu'on remplace, et on retire le style de tout élément supprimé. `npm run check` lance `scripts/dead-css.mjs`, qui refuse une classe CSS inutilisée. Avant une PR, relire son propre diff pour y chercher les restes.
+

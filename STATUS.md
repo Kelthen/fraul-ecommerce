@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-21 par rhamon (fiche : « Fermer » après un retour au Walk)_
+_Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code nettoyé)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -57,6 +57,8 @@ _Dernière mise à jour : 2026-10-21 par rhamon (fiche : « Fermer » après un 
 - **Retour au Walk après une autre page** (ex. « Fiche complète » puis retour) : on revient vraiment dans la boutique et le rayon où l'on était, et tout répond (avant : écran figé, « Fermer » ne marchait plus ; vu par Rhamone le 21 oct.) — rhamon
 - **Suivi de commande côté client** (zone de Rhamone, `docs/PARCOURS-COMMANDE.md` §7 de la PR #26) : page `/suivi` en **4 étapes** (Payée → En cours de traitement → En transit → Livrée), une **phrase qui change** sur l'étape en cours, **livraison prévue en fourchette** (« entre le 21 et le 24 oct. »), ligne « plus disponible, remboursée » si une pièce manque ; **4 e-mails** (Payée, En transit, Livrée, Article indisponible) visibles sur `/suivi/e-mails`, **jamais envoyés** ; **Mon compte → Mes commandes** ; dans **Mes envies**, une pièce qui n'est plus en vente reste affichée « Plus disponible » avec un lien vers Fraul Finds. Démo : 3 commandes d'exemple (FRL-1042, FRL-1031, FRL-1017). Délais par zone « décidé par l'équipe, à confirmer » (`src/models/orders/tracking.ts`) — rhamon
 
+- **Boutons « Signature »** (choix de Rhamone, 21 oct.) : dans la fiche en grand et sous l'article d'un rayon, « Au panier » bordeaux avec un sac (44 px de haut), cœur « Envie » rond, « Fiche complète → », « En grand » et « Tourner » en liens ; sur PC, la fiche ne s'étire plus. Code CSS mort retiré ; `npm run check` refuse désormais une classe CSS inutilisée — rhamon
+
 ## 🔄 En cours
 
 | Quoi | Qui | Branche / PR | Depuis |
@@ -94,6 +96,7 @@ _Dernière mise à jour : 2026-10-21 par rhamon (fiche : « Fermer » après un 
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-21 | **Style des boutons : « Signature »** (panier bordeaux avec sac, cœur rond, liens soulignés), 44 px de haut, partout dans le Walk. **Navigation** : ✕ pour quitter, ← pour revenir d'un cran ; aucun défilement ne fait sortir d'une boutique ; un cran de molette = une boutique ; rayons en liste verticale (style GTA) ; panier par boutique (« le sac de la boutique ») lié à la Caisse. Plus tard, les rayons suivront les vrais produits de chaque marque (pas d'« Accessoires » sans accessoires). | Rhamone |
 | 2026-10-19 | **Parcours de commande validé par Rhamone** (✅ avec ses ajouts : phrase + fourchette de livraison, fiche minimale par lien qui expire avec image en secours, bot verrouillé sur le compte de Jean Paul, blocs à copier en chinois/bilingue). **Plan B (retards, changement de fournisseur, remboursements) et paiement des fournisseurs : à la fin** (Serge). Alerte à Fraul à 4 jours si un colis fournisseur manque. | Serge + Rhamone |
 | 2026-10-19 | **Parcours d'une commande** (`docs/PARCOURS-COMMANDE.md`) : le site envoie chaque commande à **Fraul sur Telegram** ; Fraul transfère à chaque fournisseur un bloc sans prix ni adresse client ; les fournisseurs envoient leurs colis à **un seul expéditeur** (ami de Fraul) qui **regroupe** et donne **un seul code de suivi par client**. Client : Payée → En cours de traitement → En transit → Livrée. Niveaux 1 à 3 pour grandir sans déborder Fraul. Remplace le portail fournisseur WeChat. **Telegram confirmé ; le code de suivi passe par Fraul** (couple « FRL → code », carte de vérification, ✅ Confirmer, code unique) ; l'adresse arrive chez l'expéditeur par une **fiche d'expédition** transférée par Fraul. | Serge |
 | 2026-10-19 | **Parcours de commande (PR #26 de Serge) : ✅ de Rhamone sur l'ensemble.** Telegram sert **seulement à Jean Paul** (CEO de Fraul) : il reçoit chaque commande et transfère les blocs aux fournisseurs et à l'expéditeur **sur WeChat** ; le bot ne répond qu'à son compte. **WeChat traduit tout seul** : pas de version chinoise, mais des blocs courts, avec le code article du fournisseur, une photo, tailles et quantités en chiffres. Livraison affichée en **fourchette** ; alerte à Jean Paul si un fournisseur n'a pas livré l'expéditeur **après 4 jours** ; plan B (changer de fournisseur, 3 choix au client, remboursement) et argent (remboursements, paiement des fournisseurs) **à la fin**. Répartition : Rhamone = suivi client et e-mails ; Serge = bot Telegram, tableau de bord des commandes, fiche d'expédition. | Rhamone + Serge (#26) |
