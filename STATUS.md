@@ -56,6 +56,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
+| Relais des commandes : bot Telegram de Jean Paul, tableau de bord `/admin/commandes` (3 piles), commande test, fiche d'expédition `/f/…` ; migrations 0004 + 0005 écrites, **pas encore appliquées** (confirmation Supabase annulée deux fois) | serge | `feat/serge/commandes-telegram` | 2026-10-20 |
 | Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Fraul Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
