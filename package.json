@@ -9,7 +9,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --test src/models/**/*.test.ts src/walk/models/*.test.ts",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "check": "npm run lint && node scripts/dead-css.mjs && npm run typecheck && npm test && npm run build",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {

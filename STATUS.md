@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-21 par rhamon (fiche : « Fermer » après un retour au Walk)_
+_Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code nettoyé)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -56,6 +56,8 @@ _Dernière mise à jour : 2026-10-21 par rhamon (fiche : « Fermer » après un 
 - **Walk sur PC** (retour de Rhamone, 21 oct.) : image limitée à ~2,4 millions de points (un grand écran ne fait plus ramer la carte graphique ; téléphone inchangé) ; si la carte graphique décroche, l'affichage repart seul, sinon version sans 3D au lieu d'un écran blanc ; une molette qui fait sortir d'une boutique ne fait plus défiler le mall vers une autre boutique. Test PC (1920 et 2560 px) ajouté au test automatique. Garde-fou Git : un commit signé « Claude » est refusé, l'auteur est toujours Kelthen — rhamon
 - **Retour au Walk après une autre page** (ex. « Fiche complète » puis retour) : on revient vraiment dans la boutique et le rayon où l'on était, et tout répond (avant : écran figé, « Fermer » ne marchait plus ; vu par Rhamone le 21 oct.) — rhamon
 
+- **Boutons « Signature »** (choix de Rhamone, 21 oct.) : dans la fiche en grand et sous l'article d'un rayon, « Au panier » bordeaux avec un sac (44 px de haut), cœur « Envie » rond, « Fiche complète → », « En grand » et « Tourner » en liens ; sur PC, la fiche ne s'étire plus. Code CSS mort retiré ; `npm run check` refuse désormais une classe CSS inutilisée — rhamon
+
 ## 🔄 En cours
 
 | Quoi | Qui | Branche / PR | Depuis |
@@ -93,6 +95,7 @@ _Dernière mise à jour : 2026-10-21 par rhamon (fiche : « Fermer » après un 
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-21 | **Style des boutons : « Signature »** (panier bordeaux avec sac, cœur rond, liens soulignés), 44 px de haut, partout dans le Walk. **Navigation** : ✕ pour quitter, ← pour revenir d'un cran ; aucun défilement ne fait sortir d'une boutique ; un cran de molette = une boutique ; rayons en liste verticale (style GTA) ; panier par boutique (« le sac de la boutique ») lié à la Caisse. Plus tard, les rayons suivront les vrais produits de chaque marque (pas d'« Accessoires » sans accessoires). | Rhamone |
 | 2026-10-19 | **Parcours de commande validé par Rhamone** (✅ avec ses ajouts : phrase + fourchette de livraison, fiche minimale par lien qui expire avec image en secours, bot verrouillé sur le compte de Jean Paul, blocs à copier en chinois/bilingue). **Plan B (retards, changement de fournisseur, remboursements) et paiement des fournisseurs : à la fin** (Serge). Alerte à Fraul à 4 jours si un colis fournisseur manque. | Serge + Rhamone |
 | 2026-10-19 | **Parcours d'une commande** (`docs/PARCOURS-COMMANDE.md`) : le site envoie chaque commande à **Fraul sur Telegram** ; Fraul transfère à chaque fournisseur un bloc sans prix ni adresse client ; les fournisseurs envoient leurs colis à **un seul expéditeur** (ami de Fraul) qui **regroupe** et donne **un seul code de suivi par client**. Client : Payée → En cours de traitement → En transit → Livrée. Niveaux 1 à 3 pour grandir sans déborder Fraul. Remplace le portail fournisseur WeChat. **Telegram confirmé ; le code de suivi passe par Fraul** (couple « FRL → code », carte de vérification, ✅ Confirmer, code unique) ; l'adresse arrive chez l'expéditeur par une **fiche d'expédition** transférée par Fraul. | Serge |
 | 2026-10-18 | « Conciergerie » trop banal : le comptoir s'appelle **Fraul Finds**, avec « **Sur demande** » en sous-titre ; page `/sur-demande`. **Vocabulaire du site : cool, classe, posé, jamais vieillot** (règle L-43). Bouton pour garder un article : **« Envie »** (liste « Mes envies »). | Rhamone |
