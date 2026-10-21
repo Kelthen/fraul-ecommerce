@@ -206,17 +206,23 @@ await check("fraul walk : toucher la vitrine pour entrer", async () => {
   await shot("11-boutique");
 });
 
-await check("fraul walk : rayon puis retour en arrière", async () => {
+await check("fraul walk : rayon, défiler ne fait pas sortir, ← revient au centre, ✕ fait sortir", async () => {
   await page.locator("#sCats .s-cat").nth(1).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await shot("12-rayon");
   await page.locator("#iAdd").click();
+  // Aucun défilement ne fait sortir d'une boutique (Rhamone, 21 oct.).
   await page.mouse.move(195, 400);
-  await page.mouse.wheel(0, -300);                 // arrière : retour au centre
+  await page.mouse.wheel(0, -300);
+  await page.waitForTimeout(800);
+  if (await page.locator("#sInfo").isHidden()) throw new Error("défiler a fait quitter le rayon");
+  if ((await page.locator("#sQuit").getAttribute("aria-label")) !== "Revenir au centre de la boutique") throw new Error("dans un rayon, le bouton du haut n'est pas ←");
+  await page.locator("#sQuit").click();            // ← : retour au centre
   await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
-  await page.waitForTimeout(1000);
-  await page.mouse.wheel(0, -300);                 // arrière au centre : on sort
+  if ((await page.locator("#sCats .s-cat.on").count()) !== 1) throw new Error("le rayon visité n'est pas surligné dans la liste");
+  await page.waitForTimeout(600);
+  await page.locator("#sQuit").click();            // ✕ : on sort
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
   await page.waitForTimeout(1500);
   await shot("12b-sorti-de-la-boutique");
@@ -346,7 +352,9 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
   await page.locator("#sCats .s-cat").first().click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   const tRayon = Date.now() - t;
-  await page.locator("#sQuit").click();
+  await page.locator("#sQuit").click(); // ← : centre de la boutique
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#sQuit").click(); // ✕ : sortir
   t = Date.now();
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
   const tOut = Date.now() - t;
@@ -453,31 +461,38 @@ for (const [w, h, dpr] of [[1920, 1080, 1], [2560, 1440, 1.5]]) {
     const pc = await dctx.newPage();
     pc.on("pageerror", (e) => errors.push(`pageerror (PC) : ${e.message}`));
     try {
-      await pc.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+      await pc.goto(BASE + "/walk/trapstar", { waitUntil: "networkidle" }); // 2e boutique : le cran suivant mène à la 3e
       await pc.locator("#aisle:not([hidden])").waitFor({ timeout: 30000 });
       await pc.waitForTimeout(1200);
       const px = await pc.locator("#gl").evaluate((c) => c.width * c.height);
       if (px > 2.6e6) throw new Error(`mall dessiné en ${(px / 1e6).toFixed(1)} millions de points (2,4 au plus)`);
-      // Entrer, ouvrir un rayon, puis remonter à la molette sans s'arrêter : on doit ressortir devant la même boutique.
+      // Un cran de molette = une boutique (Rhamone, 21 oct.), dans les deux sens.
       const shop = await pc.locator("#bname").innerText();
+      const idx = async () => Number((await pc.locator("#count").innerText()).match(/\d+/)[0]);
+      const i0 = await idx();
+      await pc.mouse.move(w / 2, h / 2);
+      await pc.mouse.wheel(0, 100); await pc.waitForTimeout(1800);
+      if ((await idx()) !== i0 + 1) throw new Error(`un cran vers le bas : boutique ${i0} → ${await idx()} (attendu ${i0 + 1})`);
+      await pc.mouse.wheel(0, -100); await pc.waitForTimeout(1800);
+      if ((await idx()) !== i0) throw new Error(`un cran vers le haut : retour à ${await idx()} (attendu ${i0})`);
+      // Entrer, ouvrir un rayon : la molette ne fait jamais sortir ; on sort par ← puis ✕, devant la même boutique.
       await pc.locator("#enter").click();
       await pc.locator("#sBottom:not([hidden])").waitFor({ timeout: 30000 });
       const spx = await pc.locator("#sgl").evaluate((c) => c.width * c.height);
       if (spx > 2.6e6) throw new Error(`boutique dessinée en ${(spx / 1e6).toFixed(1)} millions de points`);
       await pc.locator("#sCats .s-cat").first().click();
       await pc.locator("#sInfo:not([hidden])").waitFor({ timeout: 30000 });
-      await pc.mouse.move(w / 2, h / 2);
-      for (let k = 0; k < 30; k++) { await pc.mouse.wheel(0, -120); await pc.waitForTimeout(70); }
-      await pc.waitForTimeout(1200);
-      if (!(await pc.locator("#store").isHidden())) throw new Error("la molette n'a pas fait sortir de la boutique");
-      const after = await pc.locator("#bname").innerText();
-      if (after !== shop) throw new Error(`la molette a changé de boutique : ${shop} → ${after}`);
+      for (let k = 0; k < 10; k++) { await pc.mouse.wheel(0, -120); await pc.waitForTimeout(70); }
+      await pc.waitForTimeout(800);
+      if (await pc.locator("#store").isHidden()) throw new Error("la molette a fait sortir de la boutique");
       await pc.screenshot({ path: `${OUT}/20-pc-${w}.png` });
-      // Nouveau geste après une pause : la molette fait de nouveau avancer le mall.
-      await pc.waitForTimeout(700);
-      for (let k = 0; k < 12; k++) { await pc.mouse.wheel(0, 240); await pc.waitForTimeout(40); }
-      await pc.waitForTimeout(1200);
-      if ((await pc.locator("#bname").innerText()) === shop) throw new Error("après une pause, la molette ne fait plus avancer le mall");
+      await pc.locator("#sQuit").click();
+      await pc.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+      await pc.locator("#sQuit").click();
+      await pc.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+      await pc.waitForTimeout(600);
+      const after = await pc.locator("#bname").innerText();
+      if (after !== shop) throw new Error(`en sortant, autre boutique : ${shop} → ${after}`);
       // La carte graphique décroche puis revient : le mall se redessine (pas d'écran blanc, pas de version sans 3D).
       await pc.locator("#gl").evaluate((c) => { const x = c.getContext("webgl2") || c.getContext("webgl"); window.__lose = x.getExtension("WEBGL_lose_context"); window.__lose.loseContext(); });
       await pc.waitForTimeout(500);
@@ -514,7 +529,7 @@ await check("fiche en grand → « Fiche complète » → retour au Walk : « Fe
   if (await page.locator("#sInfo:not([hidden])").count() === 0) { await page.locator("#sCats .s-cat").first().click(); await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 }); }
   await page.locator("#iPage").click();
   await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
-  await page.locator("#fiche .close").click();
+  await page.locator("#fiche .f-top .ic").click();
   await page.locator("#fiche:not([hidden])").waitFor({ state: "detached", timeout: 5000 }).catch(() => {});
   if (await page.locator("#fiche:not([hidden])").count()) throw new Error("« Fermer » ne ferme pas la fiche après le retour");
 });

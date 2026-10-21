@@ -8,6 +8,9 @@
 /* Le mall */
 .fw .walk { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; background: var(--bg); overscroll-behavior: contain; animation: fw-fade .4s ease; }
 .fw .walk-track { position: relative; }
+/* Points d'arrêt du mall (engine.js, placeSnaps) : le défilement se cale sur chaque vitrine, une à la fois. */
+.fw .walk { scroll-snap-type: y mandatory; }
+.fw .snap { position: absolute; left: 0; width: 1px; height: 1px; scroll-snap-align: start; scroll-snap-stop: always; pointer-events: none; }
 .fw .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #f3efe8; }
 .fw #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .fw .stage::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
@@ -43,11 +46,20 @@
   padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 22px; background: linear-gradient(rgba(255,254,247,.85), transparent); pointer-events: none; }
 .fw .s-top > * { pointer-events: auto; }
 .fw .s-title { flex: 1; min-width: 0; font: 700 11px/1.3 var(--body); letter-spacing: .3em; text-transform: uppercase; color: var(--ink); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fw .s-ic { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid rgba(10, 10, 12, .25); background: rgba(255, 254, 247, .85); color: var(--ink); }
-.fw .s-ic svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.fw .s-bottom { position: absolute; inset: auto 0 0 0; z-index: 2; padding: 56px 0 calc(env(safe-area-inset-bottom, 0px) + 18px); background: linear-gradient(transparent, rgba(255,254,247,.94) 45%); animation: fw-up .45s cubic-bezier(.2,.7,.2,1); }
-.fw .s-hint { margin: 0 16px 12px; font: italic 400 26px/1.15 var(--display); color: var(--ink); }
-.fw .s-cats, .fw .s-chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
+/* Icônes rondes bordeaux partout dans le Walk (choix de Rhamone, 21 oct.) : ✕, ←, loupe, sac. */
+.fw .ic { position: relative; flex: none; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bordeaux); color: var(--ivory); box-shadow: 0 4px 12px rgba(104, 2, 9, .3); cursor: pointer; pointer-events: auto; }
+.fw .ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.fw .ic-n { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--ivory); color: var(--bordeaux); font: 700 10px/18px var(--body); text-align: center; }
+.fw .store .s-quit .back, .fw .store[data-mode="rayon"] .s-quit .x { display: none; }
+.fw .store[data-mode="rayon"] .s-quit .back { display: block; }
+/* Centre de la boutique : les rayons en liste verticale à gauche, sur le décor (façon menu de jeu) ; elle défile s'il y en a beaucoup. */
+.fw .s-bottom { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 84px); left: 0; z-index: 2; max-height: calc(100% - 110px); display: flex; flex-direction: column; padding: 0 16px; animation: fw-fade .3s ease; }
+.fw .s-label { margin: 0 0 8px 2px; font: 700 10px/1 var(--body); letter-spacing: .3em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 6px #fff; }
+.fw .s-cats { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; scrollbar-width: none; }
+.fw .s-cats .s-cat { width: min(240px, 60vw); height: 42px; min-height: 0; padding: 0 16px; border: 0; border-radius: 6px; text-align: left; background: linear-gradient(90deg, rgba(10,10,12,.8), rgba(10,10,12,.55)); color: var(--ivory); box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+.fw .s-cats .s-cat:hover, .fw .s-cats .s-cat:focus-visible, .fw .s-cats .s-cat.on { background: linear-gradient(90deg, var(--bordeaux), #8a0c14); box-shadow: inset 0 0 0 1.5px var(--pearl), 0 4px 14px rgba(104,2,9,.4); }
+.fw .s-cats .s-cat.on::after { content: "›"; float: right; font-size: 18px; line-height: 1; }
+.fw .s-chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
 .fw .s-cats::-webkit-scrollbar, .fw .s-chips::-webkit-scrollbar { display: none; }
 .fw .s-cat { flex: none; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(10,10,12,.6); background: rgba(255,254,247,.9);
   font: 700 11px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
@@ -95,7 +107,6 @@
 .fw .brand .go span { font-size: 12px; color: var(--muted); }
 .fw .chip { flex: none; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(104,2,9,.5); background: rgba(104,2,9,.06); font: 700 10px/1 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--bordeaux); }
 .fw .empty { color: var(--muted); padding: 24px 0; }
-.fw .close { min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; font: 700 11px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
 .fw .loader { position: absolute; inset: 0; z-index: 9; background: var(--bg); display: grid; place-items: center; align-content: center; gap: 14px; animation: fw-fade .3s; }
 .fw .loader b { font: italic 400 clamp(40px, 11vw, 72px)/1 var(--display); color: var(--ink); font-weight: 400; }
 /* Habit qui tourne sur lui-même (proposition, design à revoir avec Rhamone) */
@@ -103,7 +114,6 @@
 .fw .loader .spin svg { width: 100%; height: 100%; animation: fw-turn .9s cubic-bezier(.45, 0, .55, 1) infinite; transform-origin: 50% 50%; }
 @keyframes fw-turn { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
 @media (prefers-reduced-motion: reduce) { .fw .loader .spin svg { animation: none; } }
-.fw .cart-chip { pointer-events: auto; }
 
 /* Fiche en grand (QuickView.tsx) : par-dessus la boutique ; le retour du téléphone la ferme */
 .fw .fiche { position: absolute; inset: 0; z-index: 9; background: var(--bg); display: flex; flex-direction: column; animation: fw-up .3s cubic-bezier(.16, 1, .3, 1); }
@@ -141,9 +151,6 @@
 .fw .walk[data-time="nuit"] .stage::after { background: linear-gradient(180deg, rgba(59,52,64,.8) 0%, rgba(59,52,64,0) 20%, rgba(255,254,247,0) 66%, rgba(255,254,247,.85) 100%); }
 @media (prefers-reduced-motion: reduce) { .fw .veil { transition: none; } }
 /* Recherche en haut du mall (marque ou pièce) */
-.fw .w-search { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1.5px solid rgba(10, 10, 12, .25); background: rgba(255, 254, 247, .85); color: var(--ink); font: 600 12px/1 var(--body); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); min-width: 0; }
-.fw .w-search svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
-.fw .w-search span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Moins de texte : une aide disparaît dès que le geste a été fait une fois (engine.js, gesture()) */
-.fw.seen-scroll .scroll-hint, .fw.seen-tap .tap-hint, .fw.seen-rayon .s-hint { display: none; }
+.fw.seen-scroll .scroll-hint, .fw.seen-tap .tap-hint { display: none; }
 

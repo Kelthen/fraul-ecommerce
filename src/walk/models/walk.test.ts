@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createLayerStack } from "./layers.ts";
 import { route } from "./store-layout.ts";
-import { AT_CONCIERGE, AT_EXIT, pathAt, progressForConcierge, progressForShop } from "./walk-path.ts";
+import { AT_CONCIERGE, AT_ENTRY, AT_EXIT, pathAt, progressForConcierge, progressForShop, stopProgress } from "./walk-path.ts";
 import { layoutT } from "../modes/t.ts";
 import type { Slot } from "./mall-layout.ts";
 
@@ -59,6 +59,15 @@ test("sauter à une boutique la met face à la caméra", () => {
     assert.equal(pt.shop, k);
     assert.ok(Math.abs(pt.x - (s.x + s.nx * 10)) < 1e-9 && Math.abs(pt.z - (s.z + s.nz * 10)) < 1e-9, `boutique ${k}`);
   }
+});
+
+test("points d'arrêt : un par étape, dans l'ordre entrée → boutiques et Fraul Finds → sortie (un cran = une boutique)", () => {
+  const seen = Array.from({ length: N + 3 }, (_, j) => pathAt(stopProgress(j, N), N, 10, MALL).shop);
+  const shops = seen.filter((k) => k >= 0);
+  assert.deepEqual(shops, Array.from({ length: N }, (_, k) => k), "chaque boutique a exactement un arrêt, dans l'ordre");
+  assert.equal(seen[0], AT_ENTRY);
+  assert.equal(seen[N + 2], AT_EXIT);
+  assert.equal(seen.filter((k) => k === AT_CONCIERGE).length, 1);
 });
 
 test("la boutique regardée ne recule jamais quand on avance", () => {
