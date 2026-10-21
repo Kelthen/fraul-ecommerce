@@ -396,10 +396,34 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);    // toucher la vitrine = entrer
   await page.locator("#sCats .s-cat").first().waitFor({ state: "visible", timeout: 20000 });
+  // Même gabarit pour toutes les boutiques : les 6 rayons partout, même vides (Rhamone, 19 oct.).
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
-  if (rayons.join() !== "Hoodies et sweats") throw new Error(`rayons affichés : ${rayons.join(", ")}`);
-  await page.locator("#sCats .s-cat").first().click();
-  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  if (rayons.length !== 6 || !rayons.includes("Hoodies et sweats")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
+  if (await page.locator("#store #sCon, #store .s-back").count()) throw new Error("Fraul Finds ou l'aide « défiler » encore dans la boutique");
+  // En haut de la boutique : retour et loupe en icônes ; la loupe ouvre la recherche par-dessus la boutique.
+  if ((await page.locator("#sQuit").innerText()).trim()) throw new Error("le bouton retour de la boutique a encore du texte");
+  await page.locator("#sSearch").click();
+  await page.locator("#dir:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#dirClose").click();
+  await page.locator("#dir").waitFor({ state: "hidden", timeout: 5000 });
+  if (await page.locator("#store").isHidden()) throw new Error("fermer la recherche a fermé la boutique");
+  await page.locator("#sCats .s-cat", { hasText: "Sneakers" }).click();
+  await page.locator("#sInfo.empty:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#iName").textContent()) !== "Rien ici pour l'instant.") throw new Error("rayon vide mal affiché");
+  if (await page.locator("#iAdd").isVisible()) throw new Error("bouton Au panier dans un rayon vide");
+  await shot("14a-rayon-vide");
+  if ((await page.locator("#iElse .s-cat").count()) < 1) throw new Error("rayon vide : pas de proposition chez d'autres marques");
+  const other = await page.locator("#iElse .s-cat").first().textContent();
+  await page.locator("#iElse .s-cat").first().click();
+  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
+  if (!(await page.locator("#sTitle").textContent()).startsWith(other)) throw new Error(`n'est pas allé chez ${other}`);
+  if (!(await page.locator("#iBrand").textContent()).includes("Sneakers")) throw new Error("pas arrivé au rayon sneakers de l'autre marque");
+  await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1200);
+  await page.locator("#enter").click();
+  await page.locator("#sCats .s-cat", { hasText: "Hoodies et sweats" }).click();
+  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await shot("14-boutique-travis-scott");
   const cut = await page.evaluate(() => [...document.querySelectorAll("#sInfo .s-act > *, #iPrice")].some((el) => el.getBoundingClientRect().right > innerWidth + 1));
@@ -420,6 +444,79 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   const first = await page.locator("#fName").textContent();
   await page.locator("#fiche .f-rel li button").first().click();
   await page.waitForFunction((t) => document.querySelector("#fName")?.textContent !== t, first);
+});
+
+// PC (Rhamone, 21 oct. : écran blanc et lenteur sur grand écran, la molette changeait de boutique).
+for (const [w, h, dpr] of [[1920, 1080, 1], [2560, 1440, 1.5]]) {
+  await check(`PC ${w}×${h} : image pas trop lourde, molette, carte graphique qui décroche`, async () => {
+    const dctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
+    const pc = await dctx.newPage();
+    pc.on("pageerror", (e) => errors.push(`pageerror (PC) : ${e.message}`));
+    try {
+      await pc.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+      await pc.locator("#aisle:not([hidden])").waitFor({ timeout: 30000 });
+      await pc.waitForTimeout(1200);
+      const px = await pc.locator("#gl").evaluate((c) => c.width * c.height);
+      if (px > 2.6e6) throw new Error(`mall dessiné en ${(px / 1e6).toFixed(1)} millions de points (2,4 au plus)`);
+      // Entrer, ouvrir un rayon, puis remonter à la molette sans s'arrêter : on doit ressortir devant la même boutique.
+      const shop = await pc.locator("#bname").innerText();
+      await pc.locator("#enter").click();
+      await pc.locator("#sBottom:not([hidden])").waitFor({ timeout: 30000 });
+      const spx = await pc.locator("#sgl").evaluate((c) => c.width * c.height);
+      if (spx > 2.6e6) throw new Error(`boutique dessinée en ${(spx / 1e6).toFixed(1)} millions de points`);
+      await pc.locator("#sCats .s-cat").first().click();
+      await pc.locator("#sInfo:not([hidden])").waitFor({ timeout: 30000 });
+      await pc.mouse.move(w / 2, h / 2);
+      for (let k = 0; k < 30; k++) { await pc.mouse.wheel(0, -120); await pc.waitForTimeout(70); }
+      await pc.waitForTimeout(1200);
+      if (!(await pc.locator("#store").isHidden())) throw new Error("la molette n'a pas fait sortir de la boutique");
+      const after = await pc.locator("#bname").innerText();
+      if (after !== shop) throw new Error(`la molette a changé de boutique : ${shop} → ${after}`);
+      await pc.screenshot({ path: `${OUT}/20-pc-${w}.png` });
+      // Nouveau geste après une pause : la molette fait de nouveau avancer le mall.
+      await pc.waitForTimeout(700);
+      for (let k = 0; k < 12; k++) { await pc.mouse.wheel(0, 240); await pc.waitForTimeout(40); }
+      await pc.waitForTimeout(1200);
+      if ((await pc.locator("#bname").innerText()) === shop) throw new Error("après une pause, la molette ne fait plus avancer le mall");
+      // La carte graphique décroche puis revient : le mall se redessine (pas d'écran blanc, pas de version sans 3D).
+      await pc.locator("#gl").evaluate((c) => { const x = c.getContext("webgl2") || c.getContext("webgl"); window.__lose = x.getExtension("WEBGL_lose_context"); window.__lose.loseContext(); });
+      await pc.waitForTimeout(500);
+      await pc.evaluate(() => window.__lose.restoreContext());
+      await pc.waitForTimeout(1500);
+      if (await pc.locator("#walk.nogl").count()) throw new Error("après le retour de la carte graphique, le mall est passé sans 3D");
+      await pc.screenshot({ path: `${OUT}/21-pc-${w}-apres-decrochage.png` });
+      // Elle ne revient pas : au bout de 4 s, la version sans 3D (jamais un écran blanc).
+      await pc.locator("#gl").evaluate(() => window.__lose.loseContext());
+      await pc.locator("#walk.nogl").waitFor({ timeout: 8000 });
+    } finally { await dctx.close(); }
+  });
+}
+await check("fiche en grand → « Fiche complète » → retour au Walk : « Fermer » marche toujours", async () => {
+  // Bug vu par Rhamone (21 oct.) : la fiche restait ouverte au retour et « Fermer » ne répondait plus.
+  await page.goto(BASE + "/walk/trapstar", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(800);
+  await page.locator("#enter").click();
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#sCats .s-cat").first().click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#iPage").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#fiche a", { hasText: "Fiche complète" }).click();
+  await page.waitForURL(/\/produit\//, { timeout: 15000 });
+  await page.goBack();
+  await page.waitForURL(/\/walk/, { timeout: 15000 });
+  await page.waitForTimeout(2500);
+  if (await page.locator("#fiche:not([hidden])").count()) throw new Error("la fiche est restée ouverte au retour");
+  // Le moteur repart : on peut rouvrir une fiche et la fermer.
+  if (await page.locator("#store:not([hidden])").count() === 0) await page.locator("#enter").click();
+  await page.locator("#sBottom:not([hidden]), #sInfo:not([hidden])").first().waitFor({ timeout: 20000 });
+  if (await page.locator("#sInfo:not([hidden])").count() === 0) { await page.locator("#sCats .s-cat").first().click(); await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 }); }
+  await page.locator("#iPage").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#fiche .close").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ state: "detached", timeout: 5000 }).catch(() => {});
+  if (await page.locator("#fiche:not([hidden])").count()) throw new Error("« Fermer » ne ferme pas la fiche après le retour");
 });
 
 await browser.close();
