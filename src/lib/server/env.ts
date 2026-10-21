@@ -8,7 +8,8 @@ import { createHash } from "node:crypto";
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://rqrdccsxyyufqlenmpct.supabase.co";
 
 function need(name: string): string {
-  const v = process.env[name];
+  // Les valeurs collées dans Vercel portent parfois un espace ou un retour à la ligne : on les retire.
+  const v = process.env[name]?.trim();
   if (!v) throw new MissingSetting(name);
   return v;
 }
@@ -20,7 +21,8 @@ export class MissingSetting extends Error {
 }
 
 export const serviceKey = () => need("SUPABASE_SERVICE_ROLE_KEY");
-export const botToken = () => need("TELEGRAM_BOT_TOKEN");
+/** Code d'accès du bot ; accepte aussi une valeur collée avec le préfixe « bot » de l'adresse de l'API. */
+export const botToken = () => need("TELEGRAM_BOT_TOKEN").replace(/^bot(?=\d+:)/, "");
 /** Le seul compte Telegram que le bot écoute (Jean Paul ; Serge pendant la démo). */
 export const adminChatId = () => Number(need("TELEGRAM_ADMIN_CHAT_ID"));
 
@@ -34,5 +36,14 @@ export const webhookSecret = () => createHash("sha256").update(`fraul-webhook:${
 export const sessionKey = () => createHash("sha256").update(`fraul-admin-session:${serviceKey()}`).digest();
 
 export function missingSettings(): string[] {
-  return ["SUPABASE_SERVICE_ROLE_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID"].filter((n) => !process.env[n]);
+  return ["SUPABASE_SERVICE_ROLE_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID"].filter((n) => !process.env[n]?.trim());
+}
+
+/** Forme attendue du code d'accès Telegram (chiffres, deux-points, 30 caractères ou plus), sans jamais l'afficher. */
+export function botTokenLooksValid(): boolean {
+  try {
+    return /^\d{5,}:[A-Za-z0-9_-]{30,}$/.test(botToken());
+  } catch {
+    return false;
+  }
 }

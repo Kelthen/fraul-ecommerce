@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { hasPendingCode, isAdmin } from "@/lib/server/admin-session";
-import { missingSettings } from "@/lib/server/env";
+import { botTokenLooksValid, missingSettings } from "@/lib/server/env";
 import { loadPaidOrders, type OrderRow } from "@/lib/server/relay";
 import { PILES, pileOf, type PileId } from "@/models/relay/piles";
 import { clearTestOrders, connectBot, newTestOrder, requestCode, resend, signOut, verifyCode } from "./actions";
@@ -30,6 +30,13 @@ async function Gate({ searchParams }: { searchParams: PageProps<"/admin/commande
     return (
       <p className="todo">
         Réglages manquants dans Vercel : {missing.join(", ")}. Ajoute-les (Settings → Environment Variables), puis redéploie.
+      </p>
+    );
+  if (!botTokenLooksValid())
+    return (
+      <p className="todo">
+        Le code d&apos;accès du bot (TELEGRAM_BOT_TOKEN) n&apos;a pas la bonne forme : il doit ressembler à « 1234567890:AAE… », sans texte autour.
+        Corrige-le dans Vercel, puis redéploie.
       </p>
     );
   if (!(await isAdmin())) return <Login msg={msg} waiting={await hasPendingCode()} />;
