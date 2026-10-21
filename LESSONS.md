@@ -266,3 +266,10 @@
 - **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
 - **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
 - **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.
+
+### L-50 — Un retour sur le Walk recrée le moteur : l'écran doit suivre
+- **Projet / date :** Fraul, 2026-10-21
+- **Ce qui s'est passé :** fiche en grand → « Fiche complète » → retour au Walk : la boutique et la fiche s'affichaient comme avant, mais rien ne répondait (« Fermer » mort).
+- **Cause :** Next garde l'écran d'une page quand on y revient, alors que le moteur 3D, lui, est détruit puis recréé à neuf : l'écran et le moteur ne disaient plus la même chose.
+- **Règle :** tout ce que le moteur affiche est remis à zéro à son démarrage, et ce qu'on veut retrouver (boutique, rayon) est rouvert par le moteur lui-même. Le test téléphone passe par « Fiche complète » puis retour et vérifie « Fermer ».
+

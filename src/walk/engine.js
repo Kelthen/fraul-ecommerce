@@ -1006,8 +1006,22 @@ export function startWalk(root, o) {
   }
 
   /* ===== Démarrage ===== */
+  // Retour sur le Walk après une autre page (ex. « Fiche complète ») : Next garde l'écran tel qu'on l'a quitté, mais ce
+  // moteur est neuf. On remet l'écran à zéro, puis on rouvre pour de vrai la boutique et le rayon où l'on était
+  // (Rhamone, 21 oct. : « tu reviens là où t'étais, c'est bien », mais plus rien ne répondait).
+  storeEl.hidden = true; dir.hidden = true; ["#sBottom", "#sInfo", "#sPrev", "#sNext"].forEach((s) => ($(s).hidden = true));
+  $("#veil").style.opacity = 0;
+  const RESUME = "fraul.walk.resume";
+  let back = null;
+  try { back = JSON.parse(sessionStorage.getItem(RESUME) || "null"); sessionStorage.removeItem(RESUME); } catch { /* stockage indisponible */ }
+  const fresh = back && back.brand && Date.now() - back.at < 30 * 60e3 && (!o.startStore || o.startStore === back.brand)
+    && (o.startShop === undefined || SHOP_NAMES[o.startShop] === back.brand);
   sync();
-  if (o.startStore) openStore(o.startStore, { fromWalk: false });
+  if (fresh) {
+    const i = SHOP_NAMES.indexOf(back.brand);
+    if (i >= 0) openWalk(i);
+    openStore(back.brand, { fromWalk: i >= 0 }).then(() => { if (back.cat && !storeEl.hidden) goZone(back.cat); });
+  } else if (o.startStore) openStore(o.startStore, { fromWalk: false });
   else openWalk(typeof o.startShop === "number" ? o.startShop : resumeShop()); // revenir : pas besoin de refaire le tour
 
   return {
@@ -1016,6 +1030,8 @@ export function startWalk(root, o) {
     showItem: (slug) => { if (STORE) STORE.show(slug); },
     refocus: () => trapUpdate(),
     destroy() {
+      // Mémorise la boutique et le rayon ouverts, pour y revenir si l'on revient sur le Walk dans la même visite.
+      try { sessionStorage.setItem("fraul.walk.resume", JSON.stringify({ brand: storeEl.hidden ? null : sBrand, cat: sCat, at: Date.now() })); } catch { /* ignoré */ }
       dead = true;
       life.abort();
       if (MALL) MALL.dispose();

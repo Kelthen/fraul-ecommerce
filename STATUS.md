@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serge)_
+_Dernière mise à jour : 2026-10-21 par rhamon (fiche : « Fermer » après un retour au Walk)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -51,6 +51,8 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 - Prix par zone et par groupe, mode test, page /test/prix (PR #2) ; MVC étape 1 : modèles du Walk (PR #5)
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
+
+- **Retour au Walk après une autre page** (ex. « Fiche complète » puis retour) : on revient vraiment dans la boutique et le rayon où l'on était, et tout répond (avant : écran figé, « Fermer » ne marchait plus ; vu par Rhamone le 21 oct.) — rhamon
 
 ## 🔄 En cours
 

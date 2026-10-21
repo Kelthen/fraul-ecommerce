@@ -404,6 +404,34 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   await page.waitForFunction((t) => document.querySelector("#fName")?.textContent !== t, first);
 });
 
+await check("fiche en grand → « Fiche complète » → retour au Walk : « Fermer » marche toujours", async () => {
+  // Bug vu par Rhamone (21 oct.) : la fiche restait ouverte au retour et « Fermer » ne répondait plus.
+  await page.goto(BASE + "/walk/trapstar", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(800);
+  await page.locator("#enter").click();
+  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#sCats .s-cat").first().click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#iPage").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#fiche a", { hasText: "Fiche complète" }).click();
+  await page.waitForURL(/\/produit\//, { timeout: 15000 });
+  await page.goBack();
+  await page.waitForURL(/\/walk/, { timeout: 15000 });
+  await page.waitForTimeout(2500);
+  if (await page.locator("#fiche:not([hidden])").count()) throw new Error("la fiche est restée ouverte au retour");
+  // Le moteur repart : on peut rouvrir une fiche et la fermer.
+  if (await page.locator("#store:not([hidden])").count() === 0) await page.locator("#enter").click();
+  await page.locator("#sBottom:not([hidden]), #sInfo:not([hidden])").first().waitFor({ timeout: 20000 });
+  if (await page.locator("#sInfo:not([hidden])").count() === 0) { await page.locator("#sCats .s-cat").first().click(); await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 }); }
+  await page.locator("#iPage").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#fiche .close").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ state: "detached", timeout: 5000 }).catch(() => {});
+  if (await page.locator("#fiche:not([hidden])").count()) throw new Error("« Fermer » ne ferme pas la fiche après le retour");
+});
+
 await browser.close();
 console.log(results.join("\n"));
 console.log(errors.length ? `\nErreurs navigateur :\n${[...new Set(errors)].join("\n")}` : "\nAucune erreur navigateur.");
