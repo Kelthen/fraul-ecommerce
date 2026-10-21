@@ -404,6 +404,52 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   await page.waitForFunction((t) => document.querySelector("#fName")?.textContent !== t, first);
 });
 
+// PC (Rhamone, 21 oct. : écran blanc et lenteur sur grand écran, la molette changeait de boutique).
+for (const [w, h, dpr] of [[1920, 1080, 1], [2560, 1440, 1.5]]) {
+  await check(`PC ${w}×${h} : image pas trop lourde, molette, carte graphique qui décroche`, async () => {
+    const dctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
+    const pc = await dctx.newPage();
+    pc.on("pageerror", (e) => errors.push(`pageerror (PC) : ${e.message}`));
+    try {
+      await pc.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+      await pc.locator("#aisle:not([hidden])").waitFor({ timeout: 30000 });
+      await pc.waitForTimeout(1200);
+      const px = await pc.locator("#gl").evaluate((c) => c.width * c.height);
+      if (px > 2.6e6) throw new Error(`mall dessiné en ${(px / 1e6).toFixed(1)} millions de points (2,4 au plus)`);
+      // Entrer, ouvrir un rayon, puis remonter à la molette sans s'arrêter : on doit ressortir devant la même boutique.
+      const shop = await pc.locator("#bname").innerText();
+      await pc.locator("#enter").click();
+      await pc.locator("#sBottom:not([hidden])").waitFor({ timeout: 30000 });
+      const spx = await pc.locator("#sgl").evaluate((c) => c.width * c.height);
+      if (spx > 2.6e6) throw new Error(`boutique dessinée en ${(spx / 1e6).toFixed(1)} millions de points`);
+      await pc.locator("#sCats .s-cat").first().click();
+      await pc.locator("#sInfo:not([hidden])").waitFor({ timeout: 30000 });
+      await pc.mouse.move(w / 2, h / 2);
+      for (let k = 0; k < 30; k++) { await pc.mouse.wheel(0, -120); await pc.waitForTimeout(70); }
+      await pc.waitForTimeout(1200);
+      if (!(await pc.locator("#store").isHidden())) throw new Error("la molette n'a pas fait sortir de la boutique");
+      const after = await pc.locator("#bname").innerText();
+      if (after !== shop) throw new Error(`la molette a changé de boutique : ${shop} → ${after}`);
+      await pc.screenshot({ path: `${OUT}/20-pc-${w}.png` });
+      // Nouveau geste après une pause : la molette fait de nouveau avancer le mall.
+      await pc.waitForTimeout(700);
+      for (let k = 0; k < 12; k++) { await pc.mouse.wheel(0, 240); await pc.waitForTimeout(40); }
+      await pc.waitForTimeout(1200);
+      if ((await pc.locator("#bname").innerText()) === shop) throw new Error("après une pause, la molette ne fait plus avancer le mall");
+      // La carte graphique décroche puis revient : le mall se redessine (pas d'écran blanc, pas de version sans 3D).
+      await pc.locator("#gl").evaluate((c) => { const x = c.getContext("webgl2") || c.getContext("webgl"); window.__lose = x.getExtension("WEBGL_lose_context"); window.__lose.loseContext(); });
+      await pc.waitForTimeout(500);
+      await pc.evaluate(() => window.__lose.restoreContext());
+      await pc.waitForTimeout(1500);
+      if (await pc.locator("#walk.nogl").count()) throw new Error("après le retour de la carte graphique, le mall est passé sans 3D");
+      await pc.screenshot({ path: `${OUT}/21-pc-${w}-apres-decrochage.png` });
+      // Elle ne revient pas : au bout de 4 s, la version sans 3D (jamais un écran blanc).
+      await pc.locator("#gl").evaluate(() => window.__lose.loseContext());
+      await pc.locator("#walk.nogl").waitFor({ timeout: 8000 });
+    } finally { await dctx.close(); }
+  });
+}
+
 await browser.close();
 console.log(results.join("\n"));
 console.log(errors.length ? `\nErreurs navigateur :\n${[...new Set(errors)].join("\n")}` : "\nAucune erreur navigateur.");

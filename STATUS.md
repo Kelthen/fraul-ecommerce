@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serge)_
+_Dernière mise à jour : 2026-10-21 par rhamon (Walk sur PC : écran blanc, molette)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -51,6 +51,8 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 - Prix par zone et par groupe, mode test, page /test/prix (PR #2) ; MVC étape 1 : modèles du Walk (PR #5)
 - PR #1 mergée : fondations, Walk, bouton retour, plan MVC, stratégie de prix notée
 - Walk : le bouton retour du téléphone ferme la couche ouverte (annuaire, zoom, rayon, boutique) puis quitte le mall ; focus gardé dans la fenêtre ouverte, Échap ferme, focus rendu au bouton d'origine — testé dans `npm run smoke`
+
+- **Walk sur PC** (retour de Rhamone, 21 oct.) : image limitée à ~2,4 millions de points (un grand écran ne fait plus ramer la carte graphique ; téléphone inchangé) ; si la carte graphique décroche, l'affichage repart seul, sinon version sans 3D au lieu d'un écran blanc ; une molette qui fait sortir d'une boutique ne fait plus défiler le mall vers une autre boutique. Test PC (1920 et 2560 px) ajouté au test automatique. Garde-fou Git : un commit signé « Claude » est refusé, l'auteur est toujours Kelthen — rhamon
 
 ## 🔄 En cours
 

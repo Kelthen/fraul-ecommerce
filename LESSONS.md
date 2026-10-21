@@ -266,3 +266,10 @@
 - **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
 - **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
 - **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.
+
+### L-49 — Tester sur PC aussi, et l'auteur des commits n'est jamais « Claude »
+- **Projet / date :** Fraul, 2026-10-21
+- **Ce qui s'est passé :** sur PC, le mall devenait blanc et ramait, et la molette changeait de boutique en sortant d'une boutique ; le test automatique ne regardait que le téléphone. Un commit de fusion a aussi été signé « Claude » (réglage par défaut des sessions cloud).
+- **Cause :** image dessinée jusqu'à ×1,75 sur grand écran, aucun plan B si la carte graphique décroche, molette continue non bloquée ; auteur Git laissé par défaut.
+- **Règle :** chaque changement du Walk passe le test téléphone ET le test PC (`npm run smoke`, 1920 et 2560 px). Image limitée à ~2,4 millions de points. L'auteur Git est forcé à Kelthen au démarrage, et les hooks `.githooks/pre-commit` et `pre-merge-commit` refusent tout commit signé « Claude ».
+
