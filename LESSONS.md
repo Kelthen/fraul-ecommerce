@@ -283,6 +283,11 @@
 - **Ce qui s'est passé :** sur PC, le mall devenait blanc et ramait, et la molette changeait de boutique en sortant d'une boutique ; le test automatique ne regardait que le téléphone. Un commit de fusion a aussi été signé « Claude » (réglage par défaut des sessions cloud).
 - **Cause :** image dessinée jusqu'à ×1,75 sur grand écran, aucun plan B si la carte graphique décroche, molette continue non bloquée ; auteur Git laissé par défaut.
 - **Règle :** chaque changement du Walk passe le test téléphone ET le test PC (`npm run smoke`, 1920 et 2560 px). Image limitée à ~2,4 millions de points. L'auteur Git est forcé à Kelthen au démarrage, et les hooks `.githooks/pre-commit` et `pre-merge-commit` refusent tout commit signé « Claude ».
+### L-50 — Un retour sur le Walk recrée le moteur : l'écran doit suivre
+- **Projet / date :** Fraul, 2026-10-21
+- **Ce qui s'est passé :** fiche en grand → « Fiche complète » → retour au Walk : la boutique et la fiche s'affichaient comme avant, mais rien ne répondait (« Fermer » mort).
+- **Cause :** Next garde l'écran d'une page quand on y revient, alors que le moteur 3D, lui, est détruit puis recréé à neuf : l'écran et le moteur ne disaient plus la même chose.
+- **Règle :** tout ce que le moteur affiche est remis à zéro à son démarrage, et ce qu'on veut retrouver (boutique, rayon) est rouvert par le moteur lui-même. Le test téléphone passe par « Fiche complète » puis retour et vérifie « Fermer ».
 
 ### L-51 — Nettoyer en changeant : modifier la règle existante, retirer le code mort
 - **Projet / date :** Fraul, 2026-10-21
