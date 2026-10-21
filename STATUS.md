@@ -56,7 +56,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| Relais des commandes : bot Telegram de Jean Paul, tableau de bord `/admin/commandes` (3 piles), commande test, fiche d'expédition `/f/…` ; migrations 0004 + 0005 écrites, **pas encore appliquées** (confirmation Supabase annulée deux fois) | serge | `feat/serge/commandes-telegram` | 2026-10-20 |
+| Relais des commandes : bot Telegram de Jean Paul, tableau de bord `/admin/commandes` (3 piles), commande test, fiche d'expédition `/f/…`. 21 oct. : message de commande avec une ligne d'état par fournisseur (⏳ à transférer / ✅ transféré par… / 📥 reçu), `/afaire`, ↩️ 15 min, groupe Telegram d'équipe (`TELEGRAM_ALLOWED_USERS`). Migrations 0004, 0005, 0006 **appliquées** (21 oct.). Testé sur la preview : connexion, commande test FRL-2026-000001, boutons transféré/reçu | serge | `feat/serge/commandes-telegram` | 2026-10-21 |
 | Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Fraul Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
@@ -90,6 +90,7 @@ _Dernière mise à jour : 2026-10-18 par rhamon (document de passation pour Serg
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-10-21 | **Bot des commandes : on doit voir ce qui est déjà transféré et ce qui reste.** Chaque message de commande montre une ligne d'état par fournisseur (⏳ / ✅ transféré par… / 📥 reçu), le titre change quand tout est transféré ; `/afaire` liste ce qui reste ; ↩️ annule un geste pendant 15 min. **Groupe Telegram d'équipe** (Serge, Rhamone, puis Jean Paul) au lieu d'une conversation privée : seuls les comptes de `TELEGRAM_ALLOWED_USERS` peuvent agir. | Serge |
 | 2026-10-18 | « Conciergerie » trop banal : le comptoir s'appelle **Fraul Finds**, avec « **Sur demande** » en sous-titre ; page `/sur-demande`. **Vocabulaire du site : cool, classe, posé, jamais vieillot** (règle L-43). Bouton pour garder un article : **« Envie »** (liste « Mes envies »). | Rhamone |
 | 2026-10-18 | **Serge valide** : emplacements de tenue (`outfit_slot` + cap, glasses, neck, watch, layer, socks) appliqué le 18 oct. (migration 0003) ; **plus de WhatsApp, tout par e-mail** (remplace R3), avec un lien d'invitation **copiable** pour que Fraul puisse aussi le coller dans WhatsApp, `phone` reste facultatif ; e-mails : service Supabase en test, **Resend** au lancement. | Serge |
 | 2026-10-18 | **Plusieurs fournisseurs (#18) : ✅ sur le principe.** Offre proposée par le site, **confirmée par Fraul** au début ; prix affiché sur le **fournisseur de référence** ; expédition via le lien WeChat qui ouvre un compte `courier` sans mot de passe. **Avant d'appliquer sa migration (à numéroter 0004) :** le fournisseur ne doit pas voir `unit_price`/`unit_cost` (vue limitée) et chaque livreur ne voit que ses envois (remplacer les politiques « livreur » de 0001). Détail : commentaire de Serge sur la #18. | Serge |

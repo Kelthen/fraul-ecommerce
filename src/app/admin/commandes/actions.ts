@@ -84,6 +84,13 @@ export async function connectBot() {
     const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
     const url = `${base}/api/telegram${bypass ? `?x-vercel-protection-bypass=${encodeURIComponent(bypass)}` : ""}`;
     await tg("setWebhook", { url, secret_token: webhookSecret(), allowed_updates: ["message", "callback_query"], drop_pending_updates: true });
+    // Menu « / » du bot (groupe et conversation privée).
+    await tg("setMyCommands", {
+      commands: [
+        { command: "afaire", description: "Ce qui reste à transférer ou à recevoir" },
+        { command: "aide", description: "Comment utiliser le bot" },
+      ],
+    });
     return `Bot branché sur ${base}.`;
   });
 }

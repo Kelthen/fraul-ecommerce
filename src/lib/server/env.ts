@@ -1,5 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
+import { parseAllowedUsers } from "@/models/relay/access";
 
 // Réglages secrets, lus seulement côté serveur (variables d'environnement Vercel).
 // Rien ici ne part vers le navigateur.
@@ -23,8 +24,10 @@ export class MissingSetting extends Error {
 export const serviceKey = () => need("SUPABASE_SERVICE_ROLE_KEY");
 /** Code d'accès du bot ; accepte aussi une valeur collée avec le préfixe « bot » de l'adresse de l'API. */
 export const botToken = () => need("TELEGRAM_BOT_TOKEN").replace(/^bot(?=\d+:)/, "");
-/** Le seul compte Telegram que le bot écoute (Jean Paul ; Serge pendant la démo). */
+/** La seule conversation Telegram du bot : le compte de Jean Paul, ou le groupe de l'équipe (identifiant négatif). */
 export const adminChatId = () => Number(need("TELEGRAM_ADMIN_CHAT_ID"));
+/** Comptes Telegram autorisés à agir (boutons, codes de suivi) ; voir models/relay/access.ts. */
+export const allowedUsers = () => parseAllowedUsers(process.env.TELEGRAM_ALLOWED_USERS, adminChatId());
 
 /**
  * Secret partagé entre Telegram et le site (en-tête X-Telegram-Bot-Api-Secret-Token).

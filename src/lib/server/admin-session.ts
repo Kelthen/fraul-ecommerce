@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 import { adminChatId, sessionKey } from "./env";
 import { sendMessage } from "./telegram";
 
-// Connexion de démo au tableau de bord : un code à 8 chiffres envoyé sur le Telegram de Jean Paul
-// (le seul compte que le bot connaît). Pas de mot de passe à retenir, pas de variable de plus.
+// Connexion de démo au tableau de bord : un code à 8 chiffres envoyé dans la conversation du bot
+// (le compte de Jean Paul, ou le groupe de l'équipe). Pas de mot de passe à retenir, pas de variable de plus.
 // ⚠️ Provisoire : la vraie connexion (Supabase Auth + double vérification, ARCHITECTURE §4) remplacera ceci.
 
 const PENDING = "fraul_admin_code";

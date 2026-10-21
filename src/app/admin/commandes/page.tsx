@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { hasPendingCode, isAdmin } from "@/lib/server/admin-session";
-import { botTokenLooksValid, missingSettings } from "@/lib/server/env";
+import { adminChatId, allowedUsers, botTokenLooksValid, missingSettings } from "@/lib/server/env";
+import { isGroupChat } from "@/models/relay/access";
 import { loadPaidOrders, type OrderRow } from "@/lib/server/relay";
 import { PILES, pileOf, type PileId } from "@/models/relay/piles";
 import { clearTestOrders, connectBot, newTestOrder, requestCode, resend, signOut, verifyCode } from "./actions";
@@ -37,6 +38,13 @@ async function Gate({ searchParams }: { searchParams: PageProps<"/admin/commande
       <p className="todo">
         Le code d&apos;accès du bot (TELEGRAM_BOT_TOKEN) n&apos;a pas la bonne forme : il doit ressembler à « 1234567890:AAE… », sans texte autour.
         Corrige-le dans Vercel, puis redéploie.
+      </p>
+    );
+  if (isGroupChat(adminChatId()) && !allowedUsers().length)
+    return (
+      <p className="todo">
+        Le bot écrit dans un groupe, mais personne n&apos;est autorisé à agir : ajoute dans Vercel TELEGRAM_ALLOWED_USERS (les numéros Telegram
+        de l&apos;équipe, séparés par des virgules), puis redéploie.
       </p>
     );
   if (!(await isAdmin())) return <Login msg={msg} waiting={await hasPendingCode()} />;

@@ -6,12 +6,16 @@ import {
   UNDO_MINUTES,
   cardButtons,
   confirmedCard,
+  esc,
+  messageLink,
   orderButtons,
   orderMessage,
   trackingCard,
   undoButtons,
+  undoableStep,
   type CardOrder,
   type RelayOrder,
+  type TodoOrder,
 } from "@/models/relay/messages";
 import { orderStatusOf } from "@/models/relay/piles";
 import { ZONES, type ZoneId } from "@/models/pricing/config";
@@ -53,7 +57,16 @@ export type OrderRow = {
   relay_message_id: number | null;
   price_snapshot: { zone?: ZoneId; margin?: number };
   order_items: { qty: number; title: string; color_name: string; size: string; supplier_id: string; offer_id: string | null; supplier_offers: { supplier_ref: string | null; supplier_url: string | null } | null }[];
-  order_parcels: { id: string; supplier_id: string; status: string; forwarded_at: string | null; received_at: string | null; suppliers: { name: string } }[];
+  order_parcels: {
+    id: string;
+    supplier_id: string;
+    status: string;
+    forwarded_at: string | null;
+    received_at: string | null;
+    forwarded_by: string | null;
+    received_by: string | null;
+    suppliers: { name: string };
+  }[];
   shipping_sheets: { token: string; expires_at: string } | null;
   shipments: { id: string; tracking_code: string | null; shipped_at: string | null }[];
 };
@@ -61,7 +74,7 @@ export type OrderRow = {
 const ORDER_SELECT =
   "select=id,number,status,is_demo,currency,total,created_at,shipping_address,relay_chat_id,relay_message_id,price_snapshot," +
   "order_items(qty,title,color_name,size,supplier_id,offer_id,supplier_offers(supplier_ref,supplier_url))," +
-  "order_parcels(id,supplier_id,status,forwarded_at,received_at,suppliers(name))," +
+  "order_parcels(id,supplier_id,status,forwarded_at,received_at,forwarded_by,received_by,suppliers(name))," +
   "shipping_sheets(token,expires_at),shipments(id,tracking_code,shipped_at)";
 
 export const loadOrder = (id: string) => db.one<OrderRow>("orders", `${ORDER_SELECT}&id=${eq(id)}`);
@@ -87,6 +100,8 @@ export function toRelay(o: OrderRow, baseUrl: string): RelayOrder {
       supplier: p.suppliers.name,
       forwardedAt: p.forwarded_at,
       receivedAt: p.received_at,
+      forwardedBy: p.forwarded_by,
+      receivedBy: p.received_by,
       lines: o.order_items
         .filter((i) => i.supplier_id === p.supplier_id)
         .map((i) => ({
@@ -110,7 +125,10 @@ export const cardOrder = (o: OrderRow): CardOrder => ({
   isDemo: o.is_demo,
 });
 
-/** Envoie (ou renvoie) le message de commande à Jean Paul. */
+/**
+ * Envoie (ou renvoie, en bas du fil) le message de commande à Jean Paul.
+ * L'ancien message perd ses boutons : un seul message vivant par commande.
+ */
 export async function relayOrder(orderId: string, baseUrl: string): Promise<void> {
   const o = await loadOrder(orderId);
   if (!o) throw new Error("Commande introuvable");
@@ -118,6 +136,16 @@ export async function relayOrder(orderId: string, baseUrl: string): Promise<void
   const relay = toRelay(o, baseUrl);
   const messageId = await sendMessage(chat, orderMessage(relay), orderButtons(relay));
   await db.update("orders", `id=${eq(o.id)}`, { relay_chat_id: chat, relay_message_id: messageId, relayed_at: new Date().toISOString() });
+  if (o.relay_chat_id && o.relay_message_id) {
+    await editButtons(o.relay_chat_id, o.relay_message_id, []).catch((e) => console.warn("[relais] ancien message", e));
+  }
+}
+
+/** Réécrit le message de commande (lignes d'état, titre, boutons) après un geste. */
+async function refreshMessage(o: OrderRow, baseUrl: string): Promise<void> {
+  if (!o.relay_chat_id || !o.relay_message_id) return;
+  const relay = toRelay(o, baseUrl);
+  await editText(o.relay_chat_id, o.relay_message_id, orderMessage(relay), orderButtons(relay));
 }
 
 async function refreshOrderStatus(o: OrderRow): Promise<void> {
@@ -130,24 +158,76 @@ async function refreshOrderStatus(o: OrderRow): Promise<void> {
   if (status !== o.status) await db.update("orders", `id=${eq(o.id)}`, { status });
 }
 
-/** Bouton « Transféré à … » ou « Colis reçu de … » dans le message de commande. */
-export async function markParcel(parcelId: string, step: "forwarded" | "received", baseUrl: string): Promise<string> {
-  const parcel = await db.one<{ id: string; order_id: string; forwarded_at: string | null }>("order_parcels", `select=id,order_id,forwarded_at&id=${eq(parcelId)}`);
+type ParcelRow = { id: string; order_id: string; forwarded_at: string | null; received_at: string | null };
+const PARCEL_SELECT = "select=id,order_id,forwarded_at,received_at";
+
+/** Bouton « Transféré à … » ou « Colis reçu de … » dans le message de commande. `who` : prénom Telegram. */
+export async function markParcel(parcelId: string, step: "forwarded" | "received", baseUrl: string, who: string | null): Promise<string> {
+  const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}`);
   if (!parcel) return "Colis introuvable.";
+  if (step === "forwarded" && parcel.forwarded_at) return "Déjà noté comme transféré.";
+  if (step === "received" && parcel.received_at) return "Déjà noté comme reçu.";
   const now = new Date().toISOString();
-  const patch = step === "forwarded" ? { forwarded_at: now } : { received_at: now, status: "received", ...(parcel.forwarded_at ? {} : { forwarded_at: now }) };
+  const patch =
+    step === "forwarded"
+      ? { forwarded_at: now, forwarded_by: who }
+      : { received_at: now, received_by: who, status: "received", ...(parcel.forwarded_at ? {} : { forwarded_at: now, forwarded_by: who }) };
   await db.update("order_parcels", `id=${eq(parcelId)}`, patch);
   const o = (await loadOrder(parcel.order_id))!;
   await refreshOrderStatus(o);
-  if (o.relay_chat_id && o.relay_message_id) await editButtons(o.relay_chat_id, o.relay_message_id, orderButtons(toRelay(o, baseUrl)));
+  await refreshMessage(o, baseUrl);
   const all = o.order_parcels.every((p) => (step === "forwarded" ? p.forwarded_at : p.received_at));
-  if (step === "received" && all) return "Tous les colis sont chez l'expéditeur : il peut expédier.";
+  if (all) return step === "received" ? "Tous les colis sont chez l'expéditeur : il peut expédier." : "Tout est transféré pour cette commande.";
   return step === "forwarded" ? "Noté : transféré." : "Noté : colis reçu.";
 }
 
-/** Message texte de Jean Paul : on y cherche des couples « FRL-… → code ». */
-export async function handleTrackingText(chat: number, text: string): Promise<void> {
-  const { pairs, rejected } = parseTrackingMessage(text);
+/** ↩️ : défait le dernier geste sur ce colis, dans les UNDO_MINUTES qui suivent. */
+export async function undoParcel(parcelId: string, baseUrl: string): Promise<string> {
+  const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}`);
+  if (!parcel) return "Colis introuvable.";
+  const o = (await loadOrder(parcel.order_id))!;
+  if (o.shipments.some((s) => s.tracking_code)) return "Commande déjà expédiée : contacte l'équipe pour corriger.";
+  const step = undoableStep({ forwardedAt: parcel.forwarded_at, receivedAt: parcel.received_at }, Date.now());
+  if (!step) {
+    await refreshMessage(o, baseUrl); // retire le bouton ↩️ devenu inutile
+    return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
+  }
+  const patch =
+    step === "received"
+      ? { received_at: null, received_by: null, status: "expected" }
+      : { forwarded_at: null, forwarded_by: null };
+  await db.update("order_parcels", `id=${eq(parcelId)}`, patch);
+  const fresh = (await loadOrder(parcel.order_id))!;
+  await refreshOrderStatus(fresh);
+  await refreshMessage(fresh, baseUrl);
+  return step === "received" ? "Annulé : colis remis « attendu »." : "Annulé : remis « à transférer ».";
+}
+
+/** /afaire : commandes payées pas encore expédiées, avec ce qui reste à transférer ou à recevoir. */
+export async function todoList(): Promise<TodoOrder[]> {
+  const orders = await loadPaidOrders();
+  return orders
+    .filter((o) => !o.shipments.some((s) => s.tracking_code) && !["cancelled", "refunded", "delivered"].includes(o.status))
+    .map((o) => ({
+      orderId: o.id,
+      number: o.number,
+      isDemo: o.is_demo,
+      link: messageLink(o.relay_chat_id, o.relay_message_id),
+      toForward: o.order_parcels.filter((p) => !p.forwarded_at).map((p) => p.suppliers.name),
+      toReceive: o.order_parcels.filter((p) => p.forwarded_at && !p.received_at).map((p) => p.suppliers.name),
+    }))
+    .filter((t) => t.toForward.length || t.toReceive.length)
+    .reverse(); // les plus anciennes d'abord
+}
+
+/**
+ * Message texte de Jean Paul : on y cherche des couples « FRL-… → code ».
+ * Dans un groupe, l'équipe discute aussi : on ne répond que si le message parle d'une commande (« FRL »).
+ */
+export async function handleTrackingText(chat: number, text: string, inGroup: boolean): Promise<void> {
+  const parsed = parseTrackingMessage(text);
+  const pairs = parsed.pairs;
+  const rejected = inGroup ? parsed.rejected.filter((l) => /FRL/i.test(l)) : parsed.rejected;
   if (!pairs.length && !rejected.length) return;
   for (const p of pairs) {
     const o = await loadOrderByNumber(p.order);
@@ -184,7 +264,7 @@ async function codeOwner(code: string): Promise<string | null> {
 type Submission = { id: string; order_id: string; tracking_code: string; status: string; card_message_id: number | null; confirmed_at: string | null };
 
 /** ✅ Confirmer / ✖️ Annuler sur la carte de vérification, ↩️ Annuler dans les 15 min. */
-export async function decideSubmission(chat: number, subId: string, decision: "ok" | "no" | "undo"): Promise<string> {
+export async function decideSubmission(chat: number, subId: string, decision: "ok" | "no" | "undo", who: string | null): Promise<string> {
   const sub = await db.one<Submission>("tracking_submissions", `select=*&id=${eq(subId)}`);
   if (!sub) return "Introuvable.";
   const o = (await loadOrder(sub.order_id))!;
@@ -192,8 +272,8 @@ export async function decideSubmission(chat: number, subId: string, decision: "o
 
   if (decision === "no") {
     if (sub.status !== "pending") return "Déjà traité.";
-    await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString() });
-    if (sub.card_message_id) await editText(chat, sub.card_message_id, `✖️ Annulé : rien n'a été enregistré pour ${o.number}.`);
+    await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString(), decided_by: who });
+    if (sub.card_message_id) await editText(chat, sub.card_message_id, `✖️ Annulé${who ? ` par ${esc(who)}` : ""} : rien n'a été enregistré pour ${o.number}.`);
     return "Annulé.";
   }
 
@@ -213,10 +293,10 @@ export async function decideSubmission(chat: number, subId: string, decision: "o
       if (e instanceof DbError && e.isUnique) return "Ce code est déjà utilisé sur une autre commande.";
       throw e;
     }
-    await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "confirmed", confirmed_at: now.toISOString() });
+    await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "confirmed", confirmed_at: now.toISOString(), decided_by: who });
     await db.update("shipping_sheets", `order_id=${eq(o.id)}`, { expires_at: new Date(now.getTime() + SHEET_DAYS_AFTER_SHIPPING * DAY).toISOString() });
     await refreshOrderStatus((await loadOrder(o.id))!);
-    if (sub.card_message_id) await editText(chat, sub.card_message_id, confirmedCard(sub.tracking_code, card), undoButtons(sub.id));
+    if (sub.card_message_id) await editText(chat, sub.card_message_id, confirmedCard(sub.tracking_code, card, who), undoButtons(sub.id));
     return "Enregistré.";
   }
 
@@ -227,9 +307,9 @@ export async function decideSubmission(chat: number, subId: string, decision: "o
     return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
   }
   await db.remove("shipments", `order_id=${eq(o.id)}&tracking_code=${eq(sub.tracking_code)}`);
-  await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString() });
+  await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString(), decided_by: who });
   await refreshOrderStatus((await loadOrder(o.id))!);
-  if (sub.card_message_id) await editText(chat, sub.card_message_id, `↩️ Annulé : ${o.number} n'a plus de code de suivi. Renvoie le bon couple « FRL → code ».`);
+  if (sub.card_message_id) await editText(chat, sub.card_message_id, `↩️ Annulé${who ? ` par ${esc(who)}` : ""} : ${o.number} n'a plus de code de suivi. Renvoie le bon couple « FRL → code ».`);
   return "Annulé.";
 }
 
