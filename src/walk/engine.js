@@ -33,6 +33,20 @@ export function startWalk(root, o) {
   const $ = (s) => root.querySelector(s);
   const life = new AbortController();
   const on = (el, ev, fn, opts = {}) => el.addEventListener(ev, fn, { ...opts, signal: life.signal });
+  /**
+   * Finesse de l'image : jamais plus d'environ 2,4 millions de points dessinés. Un téléphone garde sa netteté (×1,75) ;
+   * un grand écran de PC ne fait plus ramer ni saturer la carte graphique (écran blanc vu par Rhamone, 21 oct.).
+   */
+  const pixelRatio = (w, h) => Math.max(0.75, Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(2.4e6 / Math.max(1, w * h))));
+  /**
+   * Si la carte graphique décroche (mémoire saturée, veille), on attend qu'elle revienne et on redessine ;
+   * sans retour sous 4 s, on passe à la version sans 3D au lieu de laisser un écran blanc.
+   */
+  function survive(canvas, redraw, giveUp) {
+    let t = 0;
+    canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); clearTimeout(t); t = setTimeout(giveUp, 4000); }, { signal: life.signal });
+    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); redraw(); }, { signal: life.signal });
+  }
   let dead = false;
 
   /* ===== Gabarit de marque (polices du site passées en options) ===== */
@@ -384,8 +398,8 @@ export function startWalk(root, o) {
   function initMall() {
     const U = G(), canvas = $("#gl"), stage = $("#stage");
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
     renderer.outputEncoding = THREE.sRGBEncoding;
+    survive(canvas, () => resize(), () => { walkEl.classList.add("nogl"); });
     // Lumière selon l'heure locale du visiteur (src/walk/models/daylight.ts) : jour, soir plus sombre et éclairé, jamais noir
     const DL = daylightAt(typeof o.hour === "number" ? o.hour : localHour());
     walkEl.dataset.time = DL.label;
@@ -574,7 +588,7 @@ export function startWalk(root, o) {
 
     function resize() {
       const w = stage.clientWidth || innerWidth, h = stage.clientHeight || innerHeight, a = w / h;
-      renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 66 : 52; camera.updateProjectionMatrix();
+      renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 66 : 52; camera.updateProjectionMatrix();
       const hHalf = Math.atan(Math.tan(camera.fov * Math.PI / 360) * a);
       dist = clamp(((a < 1 ? 9.2 : 13) / 2) / Math.tan(hHalf), 7, 12); kick();
     }
@@ -727,8 +741,13 @@ export function startWalk(root, o) {
     const now = performance.now(); if (now < backLock) return; backLock = now + 900;
     gesture("back");
     closeLayer(hasLayer("rayon") ? "rayon" : "store");
+    wheelLock = now + 1000;
   }
   on(storeEl, "wheel", (e) => { if (e.deltaY < -12) storeBack(); }, { passive: true });
+  // Une molette continue après la sortie d'une boutique ne doit pas faire défiler le mall vers une autre boutique (Rhamone, 21 oct.).
+  let wheelLock = 0;
+  // Le mall reste immobile tant que cette molette continue (pause de 0,4 s = nouveau geste).
+  on(walkEl, "wheel", (e) => { const now = performance.now(); if (now < wheelLock) { e.preventDefault(); wheelLock = Math.max(wheelLock, now + 400); } }, { passive: false });
   let tStart = null;
   on(storeEl, "touchstart", (e) => { const t = e.touches[0]; tStart = t ? { x: t.clientX, y: t.clientY } : null; }, { passive: true });
   on(storeEl, "touchend", (e) => {
@@ -759,7 +778,8 @@ export function startWalk(root, o) {
     const U = G();
     if (!SR) {
       const canvas = $("#sgl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75)); renderer.outputEncoding = THREE.sRGBEncoding; renderer.setClearColor(0xf3efe8);
+      renderer.outputEncoding = THREE.sRGBEncoding; renderer.setClearColor(0xf3efe8);
+      survive(canvas, () => STORE && STORE.resize(), () => { if (!storeEl.hidden) o.onFallback(slugOf(sBrand)); });
       SR = { canvas, renderer, camera: new THREE.PerspectiveCamera(60, 1, 0.05, 80) };
     }
     const { canvas, renderer, camera } = SR, ac = new AbortController(), sig = { signal: ac.signal };
@@ -989,7 +1009,7 @@ export function startWalk(root, o) {
 
     function resize() {
       const w = storeEl.clientWidth || innerWidth, h = storeEl.clientHeight || innerHeight, a = w / h;
-      renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 72 : 56; camera.updateProjectionMatrix(); kick();
+      renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 72 : 56; camera.updateProjectionMatrix(); kick();
     }
     window.addEventListener("resize", () => { if (!storeEl.hidden) resize(); }, sig);
 

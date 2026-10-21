@@ -1,0 +1,10 @@
+#!/bin/sh
+# L-49 : un commit n'est jamais signé « Claude » (règle de Rhamone : aucune trace d'IA dans Git).
+# Appelé par pre-commit et pre-merge-commit (un commit de fusion ne passe pas par pre-commit).
+a="$(git var GIT_AUTHOR_IDENT 2>/dev/null) $(git var GIT_COMMITTER_IDENT 2>/dev/null)"
+case "$(printf '%s' "$a" | tr '[:upper:]' '[:lower:]')" in
+  *claude*|*anthropic*)
+    echo "Commit refusé : auteur « $(git config user.name) ». Auteur attendu : Kelthen." >&2
+    echo "Corriger : git config user.name Kelthen" >&2
+    exit 1 ;;
+esac

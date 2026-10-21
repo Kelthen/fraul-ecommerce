@@ -278,6 +278,11 @@
 - **Ce qui s'est passé :** sur un retour de capture, j'ai changé le décor de toutes les boutiques, retiré deux lignes et inventé un affichage de rayon vide sans montrer de plan. Rhamone : « je ne comprends pas pourquoi tu enlèves les choses sans proposer de plan ni attendre mon go ».
 - **Cause :** j'ai pris une capture annotée pour un ordre complet, et j'ai comblé moi-même les trous.
 - **Règle :** même pour une petite chose, lister ce que je vais retirer, ajouter ou choisir à sa place, avec des options quand c'est un choix, et attendre le go. Rien n'est poussé sur une PR avant ce go ; un brouillon va sur une branche `wip/` sans PR.
+### L-49 — Tester sur PC aussi, et l'auteur des commits n'est jamais « Claude »
+- **Projet / date :** Fraul, 2026-10-21
+- **Ce qui s'est passé :** sur PC, le mall devenait blanc et ramait, et la molette changeait de boutique en sortant d'une boutique ; le test automatique ne regardait que le téléphone. Un commit de fusion a aussi été signé « Claude » (réglage par défaut des sessions cloud).
+- **Cause :** image dessinée jusqu'à ×1,75 sur grand écran, aucun plan B si la carte graphique décroche, molette continue non bloquée ; auteur Git laissé par défaut.
+- **Règle :** chaque changement du Walk passe le test téléphone ET le test PC (`npm run smoke`, 1920 et 2560 px). Image limitée à ~2,4 millions de points. L'auteur Git est forcé à Kelthen au démarrage, et les hooks `.githooks/pre-commit` et `pre-merge-commit` refusent tout commit signé « Claude ».
 ### L-50 — Un retour sur le Walk recrée le moteur : l'écran doit suivre
 - **Projet / date :** Fraul, 2026-10-21
 - **Ce qui s'est passé :** fiche en grand → « Fiche complète » → retour au Walk : la boutique et la fiche s'affichaient comme avant, mais rien ne répondait (« Fermer » mort).
