@@ -8,8 +8,9 @@ import { useEnvies } from "./EnviesProvider";
 import type { CategoryId } from "@/lib/catalog";
 
 /** Page « Mes envies » : les pièces gardées de côté, du plus récent au plus ancien. */
-export function EnviesView() {
+export function EnviesView({ available }: { available: string[] }) {
   const { list } = useEnvies();
+  const inStock = new Set(available);
   return (
     <>
       <p className="eyebrow">Mes envies</p>
@@ -25,9 +26,11 @@ export function EnviesView() {
             {list.length} pièce{list.length > 1 ? "s" : ""}. Gardées sur ce téléphone pour l&apos;instant.
           </p>
           <ul className="grid envies-grid">
-            {list.map((e) => (
-              <li key={e.slug} className="envie-card">
-                <Link className="card" href={`/produit/${e.slug}`}>
+            {list.map((e) => {
+              const gone = !inStock.has(e.slug);
+              return (
+              <li key={e.slug} className={`envie-card${gone ? " gone" : ""}`}>
+                <Link className="card" href={gone ? `/sur-demande?marque=${encodeURIComponent(e.brand)}` : `/produit/${e.slug}`}>
                   <div className={e.photo ? "pic photo" : "pic"}>
                     {e.photo ? (
                       // eslint-disable-next-line @next/next/no-img-element -- captures du fournisseur, test de rendu avant détourage
@@ -38,11 +41,16 @@ export function EnviesView() {
                   </div>
                   <span className="br">{e.brand}</span>
                   <span className="nm">{e.name}</span>
-                  <span className="pr"><Price cost={e.cost} /></span>
+                  {gone ? (
+                    <span className="pr gone-note">Plus disponible · <u>la faire chercher</u></span>
+                  ) : (
+                    <span className="pr"><Price cost={e.cost} /></span>
+                  )}
                 </Link>
                 <EnvieButton compact item={e} className="on-card" />
               </li>
-            ))}
+              );
+            })}
           </ul>
         </>
       )}

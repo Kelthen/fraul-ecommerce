@@ -77,6 +77,23 @@ await check("envies : garder une pièce, la retrouver, la retirer", async () => 
   await page.locator(".envies-empty").waitFor({ timeout: 5000 });
 });
 
+await check("suivi : 4 étapes, fourchette, remboursement, code invalide refusé, e-mails", async () => {
+  await page.goto(BASE + "/suivi?code=frl%201031", { waitUntil: "networkidle" });
+  await page.locator(".track-eta").waitFor({ timeout: 5000 });
+  if ((await page.locator(".steps li").count()) !== 4) throw new Error("le suivi n'a pas 4 étapes");
+  if (!/entre le .+ et le /.test(await page.locator(".track-eta").textContent())) throw new Error("pas de fourchette de livraison");
+  if ((await page.locator('.steps li[aria-current="step"] b').textContent()) !== "En transit") throw new Error("mauvaise étape en cours");
+  if (!(await page.locator(".track-refund").count())) throw new Error("la pièce remboursée n'apparaît pas");
+  await shot("06e-suivi");
+  await page.fill("#track-code", "ABC");
+  await page.getByRole("button", { name: "Suivre" }).click();
+  await page.locator("#track-err").waitFor({ timeout: 3000 });
+  await page.goto(BASE + "/suivi/e-mails", { waitUntil: "networkidle" });
+  await page.locator(".mail").nth(3).waitFor({ timeout: 5000 });
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("les e-mails débordent en largeur");
+});
+
 await check("compte (démo) : création avec code, mauvais code refusé, déconnexion", async () => {
   await page.goto(BASE + "/compte", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Créer un compte" }).click();
@@ -94,6 +111,7 @@ await check("compte (démo) : création avec code, mauvais code refusé, déconn
   await page.getByRole("button", { name: "Valider" }).click();
   await page.locator(".account").waitFor({ timeout: 5000 });
   await shot("06d-mon-compte");
+  if ((await page.locator(".order-row").count()) !== 3) throw new Error("Mes commandes : 3 commandes de démo attendues");
   await page.getByRole("button", { name: "Se déconnecter" }).click();
   await page.waitForURL(BASE + "/");
 });
