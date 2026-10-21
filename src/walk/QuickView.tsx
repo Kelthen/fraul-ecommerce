@@ -67,7 +67,9 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
         <>
           <div className="f-top">
             <p className="eyebrow">{item.brand} · {catLabel(item.cat)}</p>
-            <button className="close" type="button" ref={closeBtn} onClick={onClose}>Fermer</button>
+            <button className="ic" type="button" aria-label="Fermer" ref={closeBtn} onClick={onClose}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
           </div>
           <div className="f-body" ref={sheet}>
             <ProductGallery key={item.slug} name={item.n} views={views(item)} className="f-gal" />

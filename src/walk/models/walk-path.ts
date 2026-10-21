@@ -41,7 +41,9 @@ export function pathAt(p: number, n: number, dist: number, mall: MallLayout): Pa
   return { x: lerp(a.p[0], b.p[0], m), z: lerp(a.p[1], b.p[1], m), lx: lerp(a.l[0], b.l[0], m), ly: lerp(a.l[1], b.l[1], m), lz: lerp(a.l[2], b.l[2], m), shop, intro: i === 0 ? 1 - t : 0 };
 }
 
+/** Avancement de l'arrêt j (0 entrée, 1…n+1 vitrines et Fraul Finds, n+2 sortie) : un point d'arrêt du défilement. */
+export const stopProgress = (j: number, n: number) => (j <= 0 ? 0 : j >= n + 2 ? 1 : (j + 0.1) / (n + 2));
 /** Avancement qui place la caméra juste devant la boutique k (utilisé pour « sauter » à une boutique). */
-export const progressForShop = (k: number, n: number, mall: MallLayout) => (k + 1 + (k >= mall.concierge.after ? 1 : 0) + 0.1) / (n + 2);
+export const progressForShop = (k: number, n: number, mall: MallLayout) => stopProgress(k + 1 + (k >= mall.concierge.after ? 1 : 0), n);
 /** Avancement qui place la caméra face au comptoir Fraul Finds. */
-export const progressForConcierge = (n: number, mall: MallLayout) => (mall.concierge.after + 1 + 0.1) / (n + 2);
+export const progressForConcierge = (n: number, mall: MallLayout) => stopProgress(mall.concierge.after + 1, n);

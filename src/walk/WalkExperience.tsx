@@ -122,15 +122,16 @@ export function WalkExperience({ data, startBrand }: Props) {
           <div className="stage" id="stage">
             <canvas id="gl" aria-label="Fraul Walk, promenade devant les boutiques" />
             <div className="w-top">
-              <button className="pill ghost" id="wQuit" type="button">
-                Quitter
+              {/* Icônes rondes bordeaux (choix de Rhamone, 21 oct.) : ✕ quitter, loupe chercher, sac = panier. */}
+              <button className="ic" id="wQuit" type="button" aria-label="Quitter le mall">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>
-              <button className="w-search" id="wSearch" type="button" aria-label="Chercher une marque ou une pièce">
+              <button className="ic" id="wSearch" type="button" aria-label="Chercher une marque ou une pièce">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-                <span>Chercher</span>
               </button>
-              <Link className="pill ghost cart-chip" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
-                Panier {count}
+              <Link className="ic" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7z" /><path d="M9 8a3 3 0 0 1 6 0" /></svg>
+                {count > 0 && <span className="ic-n">{count}</span>}
               </Link>
             </div>
             <div className="hud">
@@ -189,19 +190,21 @@ export function WalkExperience({ data, startBrand }: Props) {
       <div className="store" id="store" hidden role="dialog" aria-modal="true" aria-labelledby="sTitle">
         <canvas id="sgl" aria-label="Intérieur de la boutique" />
         <div className="s-top">
-          {/* Icônes plutôt que du texte (Rhamone, 20 oct.) : retour = sortir de la boutique, loupe = chercher. */}
-          <button className="s-ic" id="sQuit" type="button" aria-label="Sortir de la boutique">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          {/* ✕ au centre de la boutique (sortir), ← dans un rayon (revenir au centre) : seul moyen de sortir (Rhamone, 21 oct.). */}
+          <button className="ic s-quit" id="sQuit" type="button" aria-label="Sortir de la boutique">
+            <svg className="x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            <svg className="back" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
           </button>
           <span className="s-title" id="sTitle">
             Boutique
           </span>
-          <button className="s-ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
+          <button className="ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
           </button>
         </div>
         <div className="s-bottom" id="sBottom" hidden>
-          <p className="s-hint">Choisis un rayon, on t&apos;y emmène.</p>
+          {/* Rayons en liste verticale sur le décor, façon menu de jeu (Rhamone, 21 oct.). */}
+          <p className="s-label">Rayons</p>
           <div className="s-cats" id="sCats" />
         </div>
         <button className="s-arrow l" id="sPrev" type="button" hidden aria-label="Article précédent">
@@ -256,8 +259,8 @@ export function WalkExperience({ data, startBrand }: Props) {
               <p className="eyebrow">Fraul Finds · Sur demande</p>
               <h2 id="conTitle">Demande une pièce</h2>
             </div>
-            <button className="close" type="button" onClick={() => walkRef.current?.closeConcierge()}>
-              Fermer
+            <button className="ic" type="button" aria-label="Fermer" onClick={() => walkRef.current?.closeConcierge()}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
             </button>
           </div>
         </div>
@@ -276,8 +279,8 @@ export function WalkExperience({ data, startBrand }: Props) {
               <p className="eyebrow">Marques et pièces</p>
               <h2>Trouver</h2>
             </div>
-            <button className="close" id="dirClose" type="button">
-              Fermer
+            <button className="ic" id="dirClose" type="button" aria-label="Fermer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
             </button>
           </div>
           <label className="sr-only" htmlFor="dirq">

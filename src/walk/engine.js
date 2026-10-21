@@ -13,7 +13,7 @@ import { createEntrance } from "./views/entrance";
 import { CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
-import { AT_CONCIERGE, AT_EXIT, EYE, pathAt as pathAtFor, progressForShop } from "./models/walk-path";
+import { AT_CONCIERGE, AT_EXIT, EYE, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
 import { daylightAt, localHour } from "./models/daylight";
 import { matchCategories } from "./models/search";
 
@@ -372,6 +372,31 @@ export function startWalk(root, o) {
     if (MALL) MALL.kick();
   }
   on(walkEl, "scroll", onWalkScroll, { passive: true });
+  // Un point d'arrêt par étape (entrée, chaque vitrine, Fraul Finds, sortie) : un cran de molette ou un glisser = une boutique,
+  // avec un court glissé qui garde l'effet de marche (Rhamone, 21 oct.). Le défilement s'y cale tout seul (walk.css).
+  function placeSnaps() {
+    track.querySelectorAll(".snap").forEach((el) => el.remove());
+    const range = track.offsetHeight - walkEl.clientHeight;
+    for (let j = 0; j <= N + 2; j++) {
+      const el = document.createElement("i"); el.className = "snap"; el.style.top = Math.round(stopProgress(j, N) * range) + "px"; track.append(el);
+    }
+  }
+  on(window, "resize", () => { if (walkOpen) placeSnaps(); });
+  // Molette (PC) : les points d'arrêt natifs ramènent au plus proche, donc un geste = un arrêt, géré ici.
+  // Les événements d'un même geste (molette continue, pavé tactile) arrivent à moins de 250 ms : seul le premier compte.
+  let wheelEnd = 0;
+  on(walkEl, "wheel", (e) => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    e.preventDefault();
+    const now = performance.now(), fresh = now > wheelEnd;
+    wheelEnd = now + 250;
+    if (!fresh) return;
+    const range = track.offsetHeight - walkEl.clientHeight;
+    let cur = 0;
+    for (let j = 1; j <= N + 2; j++) if (Math.abs(stopProgress(j, N) * range - walkEl.scrollTop) < Math.abs(stopProgress(cur, N) * range - walkEl.scrollTop)) cur = j;
+    const next = clamp(cur + Math.sign(e.deltaY), 0, N + 2);
+    walkEl.scrollTo({ top: stopProgress(next, N) * range, behavior: RM ? "auto" : "smooth" });
+  }, { passive: false });
   function jumpToShop(k) {
     const p = progressForShop(k, N, LAYOUT);
     walkEl.scrollTop = p * (track.offsetHeight - walkEl.clientHeight);
@@ -384,6 +409,7 @@ export function startWalk(root, o) {
     if (ok && !MALL) { try { MALL = initMall(); } catch (err) { console.error(err); walkEl.classList.add("nogl"); } }
     if (!ok) walkEl.classList.add("nogl");
     if (MALL) MALL.resize();
+    placeSnaps();
     if (typeof i === "number") jumpToShop(i); else { walkEl.scrollTop = 0; if (MALL) MALL.snap(); onWalkScroll(); }
   }
   const enterShop = (k) => {
@@ -650,10 +676,13 @@ export function startWalk(root, o) {
 
   const storeEl = $("#store");
   let SR = null, STORE = null, sBrand = "", sCat = null, sFromWalk = false;
-  let sMode = "walk", backLock = 0, storeFrom = null;
+  let storeFrom = null, lastCat = null;
   function sUI(mode) {
-    sMode = mode;
     const r = mode === "rayon";
+    storeEl.dataset.mode = mode; // ✕ au centre, ← dans un rayon (src/walk/walk.css)
+    $("#sQuit").setAttribute("aria-label", r ? "Revenir au centre de la boutique" : "Sortir de la boutique");
+    // Au centre, le dernier rayon visité reste surligné dans la liste.
+    if (mode === "hub") $("#sCats").querySelectorAll(".s-cat").forEach((b) => b.classList.toggle("on", b.dataset.cat === lastCat));
     $("#sBottom").hidden = mode !== "hub"; $("#sInfo").hidden = !r; $("#sPrev").hidden = !r; $("#sNext").hidden = !r;
   }
   function btn(cls, text, data) { const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = text; Object.assign(b.dataset, data); return b; }
@@ -664,6 +693,7 @@ export function startWalk(root, o) {
     try {
       if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); }
     } catch { STORE = null; o.onFallback(slugOf(brand)); return; }
+    if (brand !== sBrand) lastCat = null;
     sBrand = brand; sFromWalk = fromWalk; sCat = null;
     if (storeEl.hidden) storeFrom = opener();
     storeEl.hidden = false; storeOpen = true; trapUpdate();
@@ -689,6 +719,7 @@ export function startWalk(root, o) {
     if (anim) STORE.walk("hub", () => sUI("hub"));
   }
   function goZone(cat) {
+    lastCat = cat;
     gesture("rayon");
     openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
@@ -733,31 +764,11 @@ export function startWalk(root, o) {
     const b = e.target.closest(".s-cat"); if (!b) return;
     if (b.dataset.cat === "hub") closeLayer("rayon"); else goZone(b.dataset.cat);
   });
-  on($("#sQuit"), "click", () => closeLayer("store"));
-  // Revenir en arrière en faisant défiler (molette vers le haut, ou glisser vers le bas) :
-  // dans un rayon → retour au centre ; au centre → on sort de la boutique. Jamais pour entrer.
-  function storeBack() {
-    if (!STORE || storeEl.hidden || sMode === "walk") return;
-    const now = performance.now(); if (now < backLock) return; backLock = now + 900;
-    gesture("back");
-    closeLayer(hasLayer("rayon") ? "rayon" : "store");
-    wheelLock = now + 1000;
-  }
-  on(storeEl, "wheel", (e) => { if (e.deltaY < -12) storeBack(); }, { passive: true });
-  // Une molette continue après la sortie d'une boutique ne doit pas faire défiler le mall vers une autre boutique (Rhamone, 21 oct.).
-  let wheelLock = 0;
-  // Le mall reste immobile tant que cette molette continue (pause de 0,4 s = nouveau geste).
-  on(walkEl, "wheel", (e) => { const now = performance.now(); if (now < wheelLock) { e.preventDefault(); wheelLock = Math.max(wheelLock, now + 400); } }, { passive: false });
-  let tStart = null;
-  on(storeEl, "touchstart", (e) => { const t = e.touches[0]; tStart = t ? { x: t.clientX, y: t.clientY } : null; }, { passive: true });
-  on(storeEl, "touchend", (e) => {
-    if (!tStart) return; const t = e.changedTouches[0], dx = t.clientX - tStart.x, dy = t.clientY - tStart.y; tStart = null;
-    if (dy > 70 && Math.abs(dy) > 1.5 * Math.abs(dx)) storeBack();
-  }, { passive: true });
-  on(window, "keydown", (e) => {
-    if (e.key !== "Escape" || !dir.hidden || storeEl.hidden) return;
-    if (hasLayer("fiche")) closeLayer("fiche"); else if (hasLayer("zoom")) closeLayer("zoom"); else storeBack();
-  });
+  // On ne sort d'une boutique que par le bouton en haut à gauche (Rhamone, 21 oct. : aucun défilement ne fait sortir) :
+  // ✕ au centre de la boutique (sortir), ← dans un rayon (revenir au centre). Échap fait la même chose au clavier.
+  const storeBack = () => closeLayer(hasLayer("fiche") ? "fiche" : hasLayer("zoom") ? "zoom" : hasLayer("rayon") ? "rayon" : "store");
+  on($("#sQuit"), "click", storeBack);
+  on(window, "keydown", (e) => { if (e.key === "Escape" && dir.hidden && !storeEl.hidden) storeBack(); });
   on($("#sPrev"), "click", () => STORE.step(-1));
   on($("#sNext"), "click", () => STORE.step(1));
   on($("#iSizes"), "click", (e) => { const b = e.target.closest(".size"); if (!b) return; $("#iSizes").querySelectorAll(".size").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
