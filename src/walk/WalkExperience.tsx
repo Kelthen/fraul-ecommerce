@@ -189,20 +189,20 @@ export function WalkExperience({ data, startBrand }: Props) {
       <div className="store" id="store" hidden role="dialog" aria-modal="true" aria-labelledby="sTitle">
         <canvas id="sgl" aria-label="Intérieur de la boutique" />
         <div className="s-top">
-          <button className="pill ghost" id="sQuit" type="button">
-            Sortir
+          {/* Icônes plutôt que du texte (Rhamone, 20 oct.) : retour = sortir de la boutique, loupe = chercher. */}
+          <button className="s-ic" id="sQuit" type="button" aria-label="Sortir de la boutique">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
           </button>
           <span className="s-title" id="sTitle">
             Boutique
           </span>
+          <button className="s-ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+          </button>
         </div>
         <div className="s-bottom" id="sBottom" hidden>
           <p className="s-hint">Choisis un rayon, on t&apos;y emmène.</p>
           <div className="s-cats" id="sCats" />
-          <button className="con-link" id="sCon" type="button">
-            Pas trouvé ? <b>Fraul Finds te le trouve →</b>
-          </button>
-          <p className="s-back">↑ Fais défiler vers l&apos;arrière pour sortir</p>
         </div>
         <button className="s-arrow l" id="sPrev" type="button" hidden aria-label="Article précédent">
           ‹
@@ -210,9 +210,6 @@ export function WalkExperience({ data, startBrand }: Props) {
         <button className="s-arrow r" id="sNext" type="button" hidden aria-label="Article suivant">
           ›
         </button>
-        <p className="s-swipe" id="sSwipe" hidden>
-          Glisse pour défiler, touche pour voir en grand
-        </p>
         <section className="s-info" id="sInfo" hidden aria-label="Article sorti du rayon">
           <div className="s-in s-ir">
             <div style={{ minWidth: 0 }}>
@@ -221,6 +218,7 @@ export function WalkExperience({ data, startBrand }: Props) {
             </div>
             <span className="s-price" id="iPrice" />
           </div>
+          <div className="s-in s-else" id="iElse" />
           <div className="s-in s-ir">
             <div className="dots" id="iDots" />
             <span className="i-count" id="iCount" />
