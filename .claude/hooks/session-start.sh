@@ -17,6 +17,11 @@ fi
 
 # Garde-fou L-32 : retire tout « Co-Authored-By: Claude » des messages de commit.
 [ -d .githooks ] && git config core.hooksPath .githooks 2>/dev/null
+# L-49 : les sessions cloud signent « Claude » par défaut ; l'auteur des commits est toujours Kelthen.
+case "$(git config user.name 2>/dev/null | tr '[:upper:]' '[:lower:]')" in
+  ""|*claude*) KM="$(git log origin/main --author=Kelthen -1 --format=%ae 2>/dev/null)"
+    git config user.name Kelthen; [ -n "$KM" ] && git config user.email "$KM" ;;
+esac
 
 git fetch origin --prune --quiet 2>/dev/null || echo "⚠️ git fetch impossible : le briefing peut être en retard."
 
