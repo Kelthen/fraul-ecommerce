@@ -266,3 +266,9 @@
 - **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
 - **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
 - **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.
+
+### L-52 — Bot Telegram : aucun bouton ne reste après validation, et on ne change jamais les boutons sous le doigt
+- **Projet / date :** Fraul, 2026-10-22
+- **Ce qui s'est passé :** Serge : « les boutons de validation ne doivent pas rester après une validation, ils peuvent être corrompus lors d'une mauvaise manipulation ». À l'essai, un faux bouton « ✔︎ reçu » et des « ↩️ » restaient affichés ; puis « Corriger » remplaçait les boutons du message par « Oui / Non », Telegram décalait le message et « Oui » tombait sous le doigt : « reçu » et « envoyé » ont été défaits d'un coup.
+- **Cause :** l'état était affiché par des boutons, et la confirmation modifiait un message que l'utilisateur était en train de toucher.
+- **Règle :** l'état se lit dans le texte ; un bouton n'existe que pour la prochaine action et disparaît une fois faite. Une confirmation se pose dans un **nouveau message** en bas du fil. Chaque bouton qui défait quelque chose porte l'étape qu'il défait (un double-tap ne défait pas deux étapes). Un geste réversible a une fenêtre courte (15 min), puis son bouton est effacé.
