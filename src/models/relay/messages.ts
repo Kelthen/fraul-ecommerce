@@ -138,11 +138,10 @@ export function orderButtons(o: Pick<RelayOrder, "parcels">, now = Date.now(), a
   for (const p of o.parcels) {
     const step = undoableStep(p, now);
     if (asking === p.id && step) {
-      rows.push([
-        // L'étape est dans le bouton : un double-tap ne peut pas défaire deux étapes d'affilée.
-        { text: step === "received" ? `Oui, ${p.supplier} pas encore reçu` : `Oui, pas encore envoyé à ${p.supplier}`, data: `unf:${p.id}:${step === "received" ? "r" : "f"}` },
-        { text: "Non", data: `keep:${p.id}` },
-      ]);
+      // « Non » prend exactement la place de « Corriger » : un deuxième tap trop rapide tombe sur « Non ».
+      // L'étape est dans « Oui » : un double-tap ne peut pas défaire deux étapes d'affilée.
+      rows.push([{ text: "✖️ Non, ne rien changer", data: `keep:${p.id}` }]);
+      rows.push([{ text: step === "received" ? `Oui, annuler « reçu » (${p.supplier})` : `Oui, annuler « envoyé » (${p.supplier})`, data: `unf:${p.id}:${step === "received" ? "r" : "f"}` }]);
       continue;
     }
     const row: Button[] = [];

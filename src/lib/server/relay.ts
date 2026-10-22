@@ -189,7 +189,8 @@ export async function markParcel(parcelId: string, step: "forwarded" | "received
           received_by: who,
           status: "received",
           undo_until: undoUntil(),
-          ...(parcel.forwarded_at ? {} : { forwarded_at: now, forwarded_by: who }),
+          // Reçu sans « envoyé » noté : on date l'envoi, sans prétendre savoir qui l'a fait.
+          ...(parcel.forwarded_at ? {} : { forwarded_at: now, forwarded_by: who === SHIPPER ? null : who }),
         };
   await db.update("order_parcels", `id=${eq(parcelId)}`, patch);
   const o = (await loadOrder(parcel.order_id))!;
