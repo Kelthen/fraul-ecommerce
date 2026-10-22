@@ -13,7 +13,7 @@ import { todoButtons, todoMessage } from "@/models/relay/messages";
 type User = { id: number; first_name?: string };
 type Update = {
   message?: { chat: { id: number }; from?: User; text?: string; caption?: string };
-  callback_query?: { id: string; from: User; message?: { chat: { id: number }; message_id: number }; data?: string };
+  callback_query?: { id: string; from: User; message?: { chat: { id: number }; message_id: number; text?: string }; data?: string };
 };
 
 const ok = () => new Response("ok");
@@ -70,7 +70,8 @@ export async function POST(request: Request) {
       } else if (action === "ok" || action === "no" || action === "undo" || action === "undq" || action === "keepc")
         reply = await decideSubmission(chat, id, action, who(cb.from));
       // Réponse à une question « Oui / Non » : la question garde la trace et perd ses boutons.
-      if (["unf", "keep", "undo", "keepc"].includes(action) && cb.message) {
+      // (seulement une question « ↩️ … ? » : jamais le message d'une commande ni une carte de suivi).
+      if (["unf", "keep", "undo", "keepc"].includes(action) && cb.message?.text?.startsWith("↩️")) {
         const name = who(cb.from);
         await editText(chat, cb.message.message_id, `${reply}${name ? ` (${name})` : ""}`).catch((e) => console.warn("[bot] question", e));
       }
