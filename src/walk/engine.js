@@ -249,7 +249,7 @@ export function startWalk(root, o) {
       x.scale(k, k); x.imageSmoothingQuality = "high";
       const top = hang || clip ? 64 : 4, card = { x: 10, y: top, w: 236, h: H - top - 6 };
       const rr = (p) => { const r = 14; x.beginPath(); x.moveTo(p.x + r, p.y); x.arcTo(p.x + p.w, p.y, p.x + p.w, p.y + p.h, r); x.arcTo(p.x + p.w, p.y + p.h, p.x, p.y + p.h, r); x.arcTo(p.x, p.y + p.h, p.x, p.y, r); x.arcTo(p.x, p.y, p.x + p.w, p.y, r); x.closePath(); };
-      if (hang || clip) { x.save(); x.strokeStyle = "#cfc9c0"; x.lineWidth = 5; x.lineCap = "round"; x.stroke(new Path2D("M128 66 V44 C128 32 146 32 146 20 C146 8 124 6 121 18")); x.restore(); }
+      if (hang || clip) hook(x, 128);
       x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore();
       const img = new Image();
       img.onload = () => {
@@ -259,6 +259,63 @@ export function startWalk(root, o) {
         tex.needsUpdate = true; onLoad();
       };
       img.src = src;
+      return tex;
+    }
+    // Couleur dominante d'une photo produit (le centre du vêtement, sans le fond), pour sa vue de côté.
+    function photoColor(img) {
+      const [, x] = cv(40, 40); x.drawImage(img, 0, 0, 40, 40);
+      let px; try { px = x.getImageData(0, 0, 40, 40).data; } catch { return null; }
+      const at = (i, j) => { const o = (j * 40 + i) * 4; return [px[o], px[o + 1], px[o + 2]]; };
+      const bg = [at(0, 0), at(39, 0), at(0, 39), at(39, 39)].reduce((s, v) => s.map((a, i) => a + v[i] / 4), [0, 0, 0]);
+      const keep = [];
+      for (let j = 12; j < 32; j++) for (let i = 10; i < 30; i++) { const v = at(i, j); if (Math.abs(v[0] - bg[0]) + Math.abs(v[1] - bg[1]) + Math.abs(v[2] - bg[2]) > 45) keep.push(v); }
+      if (!keep.length) return null;
+      const med = (k) => keep.map((v) => v[k]).sort((a, b) => a - b)[keep.length >> 1];
+      return `rgb(${med(0)},${med(1)},${med(2)})`;
+    }
+    // Crochet en « ? » qui sort du col (le cintre est caché dans les épaules) : fin, laiton. Mesures sur 256 points de large.
+    function hook(x, cx) {
+      x.save(); x.lineCap = "round";
+      const p = new Path2D(`M${cx} 66 V36 C${cx} 28 ${cx + 10} 27 ${cx + 10} 19 C${cx + 10} 11 ${cx - 2} 9 ${cx - 4} 16`);
+      x.strokeStyle = "#7a6238"; x.lineWidth = 3.2; x.stroke(p); x.strokeStyle = "#c9a96a"; x.lineWidth = 1.9; x.stroke(p);
+      x.fillStyle = "#7a6238"; x.fillRect(cx - 2.5, 61, 5, 6); x.restore();
+    }
+    /**
+     * Vêtement vu de côté, comme sur un vrai portant (Rhamone, 22 oct.) : on voit la manche et le flanc, jamais le devant.
+     * Hoodie : la capuche tombe dans le dos, le crochet sort du cou. Le devant regarde à gauche.
+     * Même hauteur que la carte photo (320 points) pour que tous les crochets touchent la barre ; 104 points de large.
+     */
+    const SIDE_W = 104;
+    function sideTexture(type, color, img, onLoad, k = 2) {
+      const [cn, x] = cv(SIDE_W * k, 320 * k), tex = T(cn);
+      const draw = (c) => {
+        x.setTransform(k, 0, 0, k, 0, 0); x.clearRect(0, 0, SIDE_W, 320);
+        const hood = type !== "tee", cx = 50, ny = 66, D = hood ? 46 : 42, hem = ny + (hood ? 228 : 220);
+        const sl = hood ? ny + 190 : ny + 68, sw = hood ? 36 : 44, sx = cx - 2;
+        const shade = (f) => { const t = new THREE.Color(c).multiplyScalar(f); return `#${t.getHexString()}`; };
+        const fill = (d, col) => { x.fillStyle = col; x.fill(new Path2D(d)); };
+        if (hood) fill(`M${cx + 6} ${ny + 4} Q${cx + 34} ${ny + 8} ${cx + 31} ${ny + 46} Q${cx + 30} ${ny + 74} ${cx + 21} ${ny + 80} L${cx + 19} ${ny + 20} Z`, shade(0.84));
+        fill(`M${cx - D / 2} ${ny + 15} Q${cx - D * 0.42} ${ny} ${cx} ${ny} Q${cx + D * 0.42} ${ny} ${cx + D / 2} ${ny + 15} L${cx + D * 0.56} ${hem} L${cx - D * 0.58} ${hem} Z`, c);
+        if (hood) fill(`M${cx - D * 0.55} ${hem} H${cx + D * 0.53} L${cx + D * 0.49} ${hem + 9} H${cx - D * 0.51} Z`, shade(0.8));
+        fill(`M${sx - sw * 0.52} ${ny + 16} Q${sx} ${ny + 6} ${sx + sw * 0.5} ${ny + 16} L${sx + sw * 0.44} ${(ny + sl) / 2} L${sx + sw * 0.36} ${sl} H${sx - sw * 0.46} L${sx - sw * 0.56} ${(ny + sl) / 2} Z`, shade(1.04));
+        if (hood) fill(`M${sx + sw * 0.36} ${sl} H${sx - sw * 0.46} L${sx - sw * 0.41} ${sl + 9} H${sx + sw * 0.31} Z`, shade(0.82));
+        // Lumière venue de l'allée (gauche claire, droite plus sombre) et plis doux au coude et en bas du corps
+        x.save(); x.globalCompositeOperation = "source-atop";
+        const g = x.createLinearGradient(cx - D, 0, cx + D, 0); g.addColorStop(0, "rgba(255,255,255,.14)"); g.addColorStop(0.5, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.28)");
+        x.fillStyle = g; x.fillRect(0, 0, SIDE_W, 320);
+        x.strokeStyle = "rgba(0,0,0,.09)"; x.lineCap = "round";
+        const folds = hood ? [ny + 70, ny + 118, ny + 160] : [ny + 40];
+        folds.forEach((y, i) => { [5, 2].forEach((w) => { x.lineWidth = w; x.stroke(new Path2D(`M${sx - sw * 0.4} ${y} Q${sx} ${y + 8 + i * 3} ${sx + sw * 0.34} ${y + 2}`)); }); });
+        [cx - 8, cx + 12].forEach((fx) => { [5, 2].forEach((w) => { x.lineWidth = w; x.stroke(new Path2D(`M${fx} ${hem - 70} Q${fx + 3} ${hem - 35} ${fx - 1} ${hem}`)); }); });
+        x.restore();
+        x.strokeStyle = shade(0.6); x.lineWidth = 1.6;
+        x.stroke(new Path2D(`M${sx - sw * 0.52} ${ny + 16} Q${sx} ${ny + 6} ${sx + sw * 0.5} ${ny + 16}`)); // couture d'emmanchure
+        x.lineWidth = 2.4; x.stroke(new Path2D(`M${cx - 9} ${ny + 3} Q${cx} ${ny - 2} ${cx + 8} ${ny + 3}`)); // col
+        hook(x, cx);
+        tex.needsUpdate = true;
+      };
+      draw(color);
+      if (img) { const im = new Image(); im.onload = () => { const c = photoColor(im); if (c) { draw(c); onLoad(); } }; im.src = img; }
       return tex;
     }
     // Mannequin de vitrine : tête ovale brillante sans visage, long cou, buste sculpté, bras posés
@@ -299,7 +356,7 @@ export function startWalk(root, o) {
       joint(g, [0, 0.012, 0], 0.24, new THREE.MeshPhongMaterial({ color: 0x2b2a2c, shininess: 60 }), 1, 0.05, 1);
       return g;
     }
-    GH = { cv, T, wordTex, labelTex, glowTex, itemTexture, photoTexture, mannequin };
+    GH = { cv, T, wordTex, labelTex, glowTex, itemTexture, photoTexture, sideTexture, SIDE_W, mannequin };
     return GH;
   }
 
@@ -681,10 +738,14 @@ export function startWalk(root, o) {
     const r = mode === "rayon";
     storeEl.dataset.mode = mode; // ✕ au centre, ← dans un rayon (src/walk/walk.css)
     $("#sQuit").setAttribute("aria-label", r ? "Revenir au centre de la boutique" : "Sortir de la boutique");
-    // Au centre, le dernier rayon visité reste surligné dans la liste.
-    if (mode === "hub") $("#sCats").querySelectorAll(".s-cat").forEach((b) => b.classList.toggle("on", b.dataset.cat === lastCat));
-    $("#sBottom").hidden = mode !== "hub"; $("#sInfo").hidden = !r; $("#sPrev").hidden = !r; $("#sNext").hidden = !r;
+    // La liste des rayons reste là au centre et dans chaque rayon ; le rayon ouvert (ou le dernier visité) est surligné.
+    $("#sCats").querySelectorAll(".s-cat").forEach((b) => b.classList.toggle("on", b.dataset.cat === lastCat));
+    foldCats(true);
+    $("#sBottom").hidden = mode === "walk"; $("#sInfo").hidden = !r; $("#sPrev").hidden = !r; $("#sNext").hidden = !r;
   }
+  // Sur téléphone, dans un rayon, la liste est repliée derrière « Rayons » (la photo passe avant).
+  function foldCats(shut) { const open = !shut; $("#sBottom").classList.toggle("open", open); $("#sTog").setAttribute("aria-expanded", String(open)); }
+  on($("#sTog"), "click", () => foldCats($("#sBottom").classList.contains("open")));
   function btn(cls, text, data) { const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = text; Object.assign(b.dataset, data); return b; }
   async function openStore(brand, { fromWalk = false } = {}) {
     const ok = await ensureThree();
@@ -723,12 +784,7 @@ export function startWalk(root, o) {
     gesture("rayon");
     openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
-    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); sUI("rayon"); renderChips(cat); showInfo(cat, STORE.focus(cat)); });
-  }
-  function renderChips(cat) {
-    const c = $("#sChips"); c.textContent = "";
-    c.append(btn("s-cat sm", "‹ Centre", { cat: "hub" }));
-    rayons().filter((x) => x[0] !== cat).forEach(([id, l]) => c.append(btn("s-cat sm", l, { cat: id })));
+    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
   }
   // Même gabarit pour toutes les boutiques : les mêmes rayons partout, même vides (Rhamone, 19 oct.).
   const rayons = () => CATS.filter(([id]) => id in CAR);
@@ -759,11 +815,7 @@ export function startWalk(root, o) {
     const { cat } = b.dataset; dropLayer("rayon");
     openStore(b.dataset.b, { fromWalk: sFromWalk }).then(() => { if (!storeEl.hidden) goZone(cat); });
   });
-  on($("#sCats"), "click", (e) => { const b = e.target.closest(".s-cat"); if (b) goZone(b.dataset.cat); });
-  on($("#sChips"), "click", (e) => {
-    const b = e.target.closest(".s-cat"); if (!b) return;
-    if (b.dataset.cat === "hub") closeLayer("rayon"); else goZone(b.dataset.cat);
-  });
+  on($("#sCats"), "click", (e) => { const b = e.target.closest(".s-cat"); if (b && b.dataset.cat !== sCat) goZone(b.dataset.cat); else foldCats(true); });
   // On ne sort d'une boutique que par le bouton en haut à gauche (Rhamone, 21 oct. : aucun défilement ne fait sortir) :
   // ✕ au centre de la boutique (sortir), ← dans un rayon (revenir au centre). Échap fait la même chose au clavier.
   const storeBack = () => closeLayer(hasLayer("fiche") ? "fiche" : hasLayer("zoom") ? "zoom" : hasLayer("rayon") ? "rayon" : "store");
@@ -857,19 +909,30 @@ export function startWalk(root, o) {
       });
     });
 
-    // Portants muraux : vêtements de profil aux extrémités ; le rayon interactif au milieu
-    const metalM = lam(0x1b1b1d), gData = [];
+    // Portants muraux. À gauche (hauts) : vêtements de côté, serrés, comme dans une vraie boutique (Rhamone, 22 oct.),
+    // autour du rayon interactif ; on laisse libre la place où ses pièces glissent. À droite (pantalons) : profils simples.
+    const metalM = lam(0x1b1b1d), gData = [], sideDeco = [];
     const GC = [0xf1ece0, 0x141416, 0x680209, 0x6b6766, 0xeae0c8, 0x202833, 0x2b2a2c, 0x9a938a];
-    function wallRail(side, z0, z1, long, zc) {
+    function wallRail(side, z0, z1, long, zc, cat) {
       const y = 1.78, rx = side * 5.62, len = z0 - z1;
       const rod = add(new THREE.CylinderGeometry(0.016, 0.016, len, 8), metalM, rx, y, (z0 + z1) / 2); rod.rotation.x = Math.PI / 2;
       [z0, z1].forEach((z) => add(new THREE.BoxGeometry(0.4, 0.03, 0.03), metalM, side * 5.8, y, z));
-      let n = 0; for (let z = z0 - 0.15; z > z1 + 0.15; z -= 0.14, n++) {
-        if (Math.abs(z - zc) < 2.3) continue;
-        const h = (long ? 0.95 : 0.78) + ((n * 7) % 3) * 0.05; gData.push([side * 5.6, y - 0.05 - h / 2, z, 0.5, h, 0.045, GC[(n * 3 + (long ? 2 : 0)) % GC.length]]);
+      const r = cat && CAR[cat], free = r ? Math.max(0.6, (products(st.name, cat).length - 1) * r.side + r.sp) : 2.3;
+      let n = 0; for (let z = z0 - 0.15; z > z1 + 0.15; z -= cat ? 0.16 : 0.14, n++) {
+        if (Math.abs(z - zc) < free) continue;
+        const c = GC[(n * 3 + (long ? 2 : 0)) % GC.length];
+        if (r) { sideDeco.push([z, c, cat, n]); continue; }
+        const h = (long ? 0.95 : 0.78) + ((n * 7) % 3) * 0.05; gData.push([side * 5.6, y - 0.05 - h / 2, z, 0.5, h, 0.045, c]);
       }
     }
-    wallRail(-1, -3.6, -9.2, false, -6.4); wallRail(-1, -9.8, -15.2, false, -12.4); wallRail(1, -8.6, -15.2, true, -11.9);
+    wallRail(-1, -3.6, -9.2, false, -6.4, "tee"); wallRail(-1, -9.8, -15.2, false, -12.4, "hoodie"); wallRail(1, -8.6, -15.2, true, -11.9);
+    { const mats = {}, geo = new THREE.PlaneGeometry(CAR.tee.size[0] * U.SIDE_W / 256, CAR.tee.size[1]);
+      sideDeco.forEach(([z, c, cat, n]) => {
+        const key = cat + c, hex = `#${new THREE.Color(c).getHexString()}`;
+        const m = mats[key] || (mats[key] = new THREE.MeshLambertMaterial({ map: U.sideTexture(cat, hex), transparent: true, alphaTest: 0.4 }));
+        add(geo, m, -5.57 - (n % 3) * 0.004, CAR[cat].o[1], z, Math.PI / 2);
+      });
+    }
 
     // Mur à casquettes
     add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
@@ -910,14 +973,19 @@ export function startWalk(root, o) {
     // Article regardé de près : sa photo passe en haute définition (une seule fois, à la demande, pour ménager la mémoire).
     function sharpen(m) {
       const { it, cat } = m.userData; if (!it || !it.img || m.userData.hi) return; m.userData.hi = true;
-      m.children.forEach((mesh, i) => { const old = mesh.material.map; mesh.material.map = U.photoTexture(cat, it.img[i], () => kick(), 4); mesh.material.needsUpdate = true; old.dispose(); });
+      m.children.slice(0, 2).forEach((mesh, i) => { const old = mesh.material.map; mesh.material.map = U.photoTexture(cat, it.img[i], () => kick(), 4); mesh.material.needsUpdate = true; old.dispose(); });
     }
+    // Vue de côté d'un haut, à la couleur de sa photo (ou de son dessin).
+    const sideMat = (cat, it) => new THREE.MeshLambertMaterial({ map: U.sideTexture(cat, it.c, it.img && it.img[0], () => kick()), transparent: true, alphaTest: 0.04 });
     const cars = {};
     Object.entries(CAR).forEach(([cat, cfg]) => {
       const items = products(st.name, cat), geo = new THREE.PlaneGeometry(...cfg.size);
+      const sideGeo = cfg.side ? new THREE.PlaneGeometry(cfg.size[0] * U.SIDE_W / 256, cfg.size[1]) : null;
       const meshes = items.map((it) => {
         const g = new THREE.Group(), f = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, false, it.img)), b = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, true, it.img));
-        b.rotation.y = Math.PI; g.add(f, b); g.userData.mats = [f.material, b.material]; g.userData.it = it; g.userData.cat = cat; scene.add(g); return g;
+        b.rotation.y = Math.PI; g.add(f, b); g.userData.mats = [f.material, b.material]; g.userData.it = it; g.userData.cat = cat;
+        if (sideGeo) { const s = new THREE.Mesh(sideGeo, sideMat(cat, it)); g.add(s); g.userData.side = s; }
+        scene.add(g); return g;
       });
       const real = items.findIndex((it) => it.img), start = real >= 0 ? real : Math.min(4, items.length - 1); // les vrais produits d'abord
       cars[cat] = { cat, items, meshes, cfg, f: start, target: start, last: null, swingT: -1e9, o: V(...cfg.o), d: V(...cfg.d), out: V(...cfg.out) };
@@ -929,12 +997,15 @@ export function startWalk(root, o) {
     const UP = V(0, 1, 0), tmp = V(0, 0, 0), tmp2 = V(0, 0, 0);
     const kick = () => { if (!raf && !dead) raf = requestAnimationFrame(frame); };
     function layout(car, isActive, now) {
-      const fi = Math.round(car.f), cfg = car.cfg;
+      const fi = Math.round(car.f), cfg = car.cfg, side = cfg.side, L = side ? 12 : 3.4;
       car.meshes.forEach((m, k) => {
         const d = k - car.f, ad = Math.abs(d);
-        if (ad > 3.4) { m.visible = false; return; } m.visible = true;
+        if (ad > L) { m.visible = false; return; } m.visible = true;
         const w = isActive ? Math.max(0, 1 - ad) : 0, isF = isActive && k === fi;
-        m.position.copy(car.o).addScaledVector(car.d, d * cfg.sp).addScaledVector(car.out, w * cfg.pull - Math.min(ad, 3) * 0.03).addScaledVector(UP, w * cfg.rise);
+        // Portant de côté : pièces serrées ; en rayon, la pièce choisie s'écarte des autres, sort et se tourne de face.
+        const along = side ? d * side + (isActive ? Math.sign(d) * Math.min(ad, 1) * (cfg.sp - side) : 0) : d * cfg.sp;
+        const back = side ? Math.min(ad, L) * 0.012 : Math.min(ad, 3) * 0.03;
+        m.position.copy(car.o).addScaledVector(car.d, along).addScaledVector(car.out, w * cfg.pull - back).addScaledVector(UP, w * cfg.rise);
         let s = 1 + 0.12 * w;
         if (isF && closeAmt > 0) {
           sharpen(m);
@@ -949,8 +1020,11 @@ export function startWalk(root, o) {
           if (age < 1.6) m.rotateZ(Math.sin(age * 7) * 0.08 * Math.exp(-age * 2.4));
           if (closeAmt > 0) m.rotateY(yaw * closeAmt);
         }
-        const op = (1 - smooth(2.7, 3.4, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1);
-        m.userData.mats.forEach((mt) => (mt.opacity = op));
+        const op = (1 - smooth(L - (side ? 1.5 : 0.7), L, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1);
+        const face = side ? w : 1, sd = m.userData.side; // de côté : le devant n'apparaît que sur la pièce choisie
+        m.userData.mats.forEach((mt) => (mt.opacity = op * face));
+        m.children[0].visible = m.children[1].visible = face > 0.01;
+        if (sd) { sd.material.opacity = op * (1 - face); sd.visible = face < 0.99; }
         m.renderOrder = isF ? 2 : 1;
       });
     }
@@ -1005,7 +1079,7 @@ export function startWalk(root, o) {
       if (drag.moved > 6) {
         dragging = true;
         if (closeT) { yaw = drag.y0 + dx / 90; }
-        else { const c = cars[active]; c.f = clamp(drag.f0 - dx / 95, -0.4, c.items.length - 0.6); c.target = c.f; }
+        else { const c = cars[active]; c.f = clamp(drag.f0 - dx / (c.cfg.side ? 45 : 95), -0.4, c.items.length - 0.6); c.target = c.f; }
         kick();
       }
     }, sig);
@@ -1014,7 +1088,7 @@ export function startWalk(root, o) {
       if (drag.moved <= 6 && e.type === "pointerup") {
         const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
         ray.setFromCamera(ndc, camera);
-        const hit = ray.intersectObjects(c.meshes.filter((m) => m.visible), true)[0];
+        const hit = ray.intersectObjects(c.meshes.filter((m) => m.visible), true).find((h) => h.object.visible); // le devant caché d'une pièce de côté ne compte pas
         if (hit) { const k = c.meshes.findIndex((m) => m === hit.object.parent); if (k === Math.round(c.f)) { if (closeT) setClose(0); else openFiche(c.items[k]); } else if (!closeT) { c.target = k; } }
       } else if (!closeT) { c.target = clamp(Math.round(c.f), 0, c.items.length - 1); gesture("swipe"); }
       drag = null; dragging = false; kick();
@@ -1045,7 +1119,8 @@ export function startWalk(root, o) {
       unzoom() { if (closeT) setClose(0); },
       recolor(cat, k, c) {
         const car = cars[cat], it = car.items[k]; it.c = c; it.a = accentFor(c);
-        const [f, b] = car.meshes[k].children; [f, b].forEach((m, i) => { m.material.map.dispose(); m.material.dispose(); m.material = prodMat(cat, it.c, it.a, i === 1, it.img); });
+        const [f, b, s] = car.meshes[k].children; [f, b].forEach((m, i) => { m.material.map.dispose(); m.material.dispose(); m.material = prodMat(cat, it.c, it.a, i === 1, it.img); });
+        if (s && !it.img) { s.material.map.dispose(); s.material.dispose(); s.material = sideMat(cat, it); }
         car.meshes[k].userData.mats = [f.material, b.material]; kick();
       },
       onFocus: (cat, k) => { if (cat === sCat) showInfo(cat, k); },
