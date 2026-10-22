@@ -211,13 +211,20 @@ export async function askUndoParcel(parcelId: string, baseUrl: string, asking: b
   return asking ? "Confirme ou touche « Non »." : "Rien n'a changé.";
 }
 
-/** Oui : défait le dernier geste sur ce colis, dans les UNDO_MINUTES qui suivent. */
-export async function undoParcel(parcelId: string, baseUrl: string): Promise<string> {
+/**
+ * Oui : défait le dernier geste sur ce colis, dans les UNDO_MINUTES qui suivent.
+ * `expected` : l'étape que le bouton affichait ; si elle a déjà été défaite (double-tap), on ne touche à rien.
+ */
+export async function undoParcel(parcelId: string, baseUrl: string, expected?: "received" | "forwarded"): Promise<string> {
   const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}`);
   if (!parcel) return "Colis introuvable.";
   const o = (await loadOrder(parcel.order_id))!;
   if (o.shipments.some((s) => s.tracking_code)) return "Commande déjà expédiée : contacte l'équipe pour corriger.";
   const step = undoableStep({ forwardedAt: parcel.forwarded_at, receivedAt: parcel.received_at }, Date.now());
+  if (expected && step !== expected) {
+    await refreshMessage(o, baseUrl);
+    return "Déjà corrigé.";
+  }
   if (!step) {
     await refreshMessage(o, baseUrl); // retire le bouton ↩️ devenu inutile
     return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
@@ -272,7 +279,7 @@ export async function undoReceiveFromSheet(token: string, parcelId: string, base
   if (undoableStep({ forwardedAt: parcel.forwarded_at, receivedAt: parcel.received_at }, Date.now()) !== "received") return "late";
   const o = (await loadOrder(parcel.order_id))!;
   if (o.order_parcels.find((x) => x.id === parcelId)?.received_by !== SHIPPER) return "late";
-  const msg = await undoParcel(parcelId, baseUrl);
+  const msg = await undoParcel(parcelId, baseUrl, "received");
   if (!msg.startsWith("Corrigé")) return "late";
   const name = o.order_parcels.find((x) => x.id === parcelId)!.suppliers.name;
   await sendMessage(o.relay_chat_id ?? adminChatId(), `↩️ <b>${esc(o.number)}</b> : l'expéditeur a retiré « reçu » pour <b>${esc(name)}</b> (erreur de colis).`).catch((e) =>

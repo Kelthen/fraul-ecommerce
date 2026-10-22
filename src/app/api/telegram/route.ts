@@ -56,13 +56,14 @@ export async function POST(request: Request) {
         await answerCallback(cb.id, "Tu n'es pas autorisé à modifier les commandes.");
         return ok();
       }
-      const [action, id] = (cb.data ?? "").split(":");
+      const [action, id, extra] = (cb.data ?? "").split(":");
+      console.info("[bot] bouton", action, id, extra ?? "", "par", who(cb.from)); // trace dans les journaux Vercel
       let reply = "";
       if (action === "fwd") reply = await markParcel(id, "forwarded", base, who(cb.from));
       else if (action === "rcv") reply = await markParcel(id, "received", base, who(cb.from));
       else if (action === "unq") reply = await askUndoParcel(id, base, true);
       else if (action === "keep") reply = await askUndoParcel(id, base, false);
-      else if (action === "unf") reply = await undoParcel(id, base);
+      else if (action === "unf") reply = await undoParcel(id, base, extra === "r" ? "received" : extra === "f" ? "forwarded" : undefined);
       else if (action === "rsd") {
         await relayOrder(id, base);
         reply = "Commande renvoyée en bas du fil.";

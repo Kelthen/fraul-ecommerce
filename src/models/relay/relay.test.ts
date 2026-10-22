@@ -99,10 +99,10 @@ test("boutons : seulement la prochaine étape ; ↩️ Corriger 15 min, avec con
   assert.equal(b[1][1].data, "unq:p2", "↩️ demande d'abord confirmation");
   assert.equal(orderButtons(order, t + 20 * 60_000)[1].length, 1, "plus de ↩️ après 15 min");
   const ask = orderButtons(order, t, "p2");
-  assert.deepEqual(ask[1].map((x) => x.data), ["unf:p2", "keep:p2"]);
+  assert.deepEqual(ask[1].map((x) => x.data), ["unf:p2:f", "keep:p2"], "l'étape est dans le bouton (double-tap sans effet)");
   assert.match(ask[1][0].text, /Oui, pas encore envoyé à Fournisseur B/);
   const uuid = "123e4567-e89b-12d3-a456-426614174000";
-  for (const data of [...b.flat().map((x) => x.data), `unq:${uuid}`, `keep:${uuid}`, `rsd:${uuid}`, `keepc:${uuid}`, `undq:${uuid}`])
+  for (const data of [...b.flat().map((x) => x.data), `unq:${uuid}`, `unf:${uuid}:r`, `keep:${uuid}`, `rsd:${uuid}`, `keepc:${uuid}`, `undq:${uuid}`])
     assert.ok(Buffer.byteLength(data) <= 64, "limite Telegram de 64 octets");
 });
 
