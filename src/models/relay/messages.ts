@@ -131,19 +131,13 @@ export function undoableStep(p: Pick<RelayParcel, "forwardedAt" | "receivedAt">,
 /**
  * Boutons du message de commande : seulement la prochaine étape de chaque colis, rien une fois tout fait.
  * « 📤 J'ai envoyé à A », puis (secours, si l'expéditeur n'a pas coché sa fiche) « 📥 A reçu par l'expéditeur ».
- * « ↩️ Corriger » pendant UNDO_MINUTES après un geste ; il demande confirmation (`asking` = colis en question).
+ * « ↩️ Corriger » pendant UNDO_MINUTES après un geste ; la question « Oui / Non » arrive dans un NOUVEAU
+ * message (undoQuestion) : rien ne bouge sous le doigt, un second tap ne peut pas tomber sur « Oui ».
  */
-export function orderButtons(o: Pick<RelayOrder, "parcels">, now = Date.now(), asking?: string): Button[][] {
+export function orderButtons(o: Pick<RelayOrder, "parcels">, now = Date.now()): Button[][] {
   const rows: Button[][] = [];
   for (const p of o.parcels) {
     const step = undoableStep(p, now);
-    if (asking === p.id && step) {
-      // « Non » prend exactement la place de « Corriger » : un deuxième tap trop rapide tombe sur « Non ».
-      // L'étape est dans « Oui » : un double-tap ne peut pas défaire deux étapes d'affilée.
-      rows.push([{ text: "✖️ Non, ne rien changer", data: `keep:${p.id}` }]);
-      rows.push([{ text: step === "received" ? `Oui, annuler « reçu » (${p.supplier})` : `Oui, annuler « envoyé » (${p.supplier})`, data: `unf:${p.id}:${step === "received" ? "r" : "f"}` }]);
-      continue;
-    }
     const row: Button[] = [];
     if (!p.forwardedAt) row.push({ text: `📤 J'ai envoyé à ${p.supplier}`, data: `fwd:${p.id}` });
     else if (!p.receivedAt) row.push({ text: `📥 ${p.supplier} reçu par l'expéditeur`, data: `rcv:${p.id}` });
@@ -151,6 +145,23 @@ export function orderButtons(o: Pick<RelayOrder, "parcels">, now = Date.now(), a
     if (row.length) rows.push(row);
   }
   return rows;
+}
+
+/**
+ * Question posée en bas du fil après « ↩️ Corriger ». L'étape est dans « Oui » :
+ * un double-tap ne peut pas défaire deux étapes d'affilée.
+ */
+export function undoQuestion(orderNumber: string, p: Pick<RelayParcel, "id" | "supplier">, step: "received" | "forwarded"): { text: string; buttons: Button[][] } {
+  const what = step === "received" ? "« reçu chez l'expéditeur »" : "« envoyé au fournisseur »";
+  return {
+    text: `↩️ <b>${esc(orderNumber)}</b> : annuler ${what} pour <b>${esc(p.supplier)}</b> ?`,
+    buttons: [
+      [
+        { text: "Oui, annuler", data: `unf:${p.id}:${step === "received" ? "r" : "f"}` },
+        { text: "✖️ Non", data: `keep:${p.id}` },
+      ],
+    ],
+  };
 }
 
 // ───────────────────────── /afaire : ce qui reste ─────────────────────────
@@ -231,16 +242,18 @@ export function confirmedCard(code: string, o: CardOrder, who?: string | null): 
   return [`✅ <b>Code enregistré</b>${by(who)}${o.isDemo ? " (commande test)" : ""}`, ...cardBody(code, o), "La commande passe « En transit »."].join("\n");
 }
 
-/** Après ✅ : un seul bouton « Corriger », qui demande confirmation ; il disparaît après UNDO_MINUTES. */
-export const undoButtons = (submissionId: string, asking = false): Button[][] =>
-  asking
-    ? [
-        [
-          { text: "Oui, retirer ce code", data: `undo:${submissionId}` },
-          { text: "Non", data: `keepc:${submissionId}` },
-        ],
-      ]
-    : [[{ text: `↩️ Corriger (${UNDO_MINUTES} min)`, data: `undq:${submissionId}` }]];
+/** Après ✅ : un seul bouton « Corriger » ; la question arrive dans un nouveau message. Il disparaît après UNDO_MINUTES. */
+export const undoButtons = (submissionId: string): Button[][] => [[{ text: `↩️ Corriger (${UNDO_MINUTES} min)`, data: `undq:${submissionId}` }]];
+
+export const undoCodeQuestion = (code: string, orderNumber: string, submissionId: string) => ({
+  text: `↩️ Retirer le code <code>${esc(code)}</code> de <b>${esc(orderNumber)}</b> ?`,
+  buttons: [
+    [
+      { text: "Oui, retirer", data: `undo:${submissionId}` },
+      { text: "✖️ Non", data: `keepc:${submissionId}` },
+    ],
+  ] as Button[][],
+});
 
 /** Pourquoi un code est refusé, en clair pour Jean Paul. */
 export const REFUSALS = {

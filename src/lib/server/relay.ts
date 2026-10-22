@@ -13,6 +13,8 @@ import {
   orderMessage,
   trackingCard,
   undoButtons,
+  undoCodeQuestion,
+  undoQuestion,
   undoableStep,
   type CardOrder,
   type RelayOrder,
@@ -149,11 +151,11 @@ export async function relayOrder(orderId: string, baseUrl: string): Promise<void
   }
 }
 
-/** Réécrit le message de commande (lignes d'état, titre, boutons) après un geste. `asking` : colis dont on confirme la correction. */
-async function refreshMessage(o: OrderRow, baseUrl: string, asking?: string): Promise<void> {
+/** Réécrit le message de commande (lignes d'état, titre, boutons) après un geste. */
+async function refreshMessage(o: OrderRow, baseUrl: string): Promise<void> {
   if (!o.relay_chat_id || !o.relay_message_id) return;
   const relay = toRelay(o, baseUrl);
-  await editText(o.relay_chat_id, o.relay_message_id, orderMessage(relay), orderButtons(relay, Date.now(), asking));
+  await editText(o.relay_chat_id, o.relay_message_id, orderMessage(relay), orderButtons(relay));
 }
 
 const undoUntil = () => new Date(Date.now() + UNDO_MINUTES * 60_000).toISOString();
@@ -201,15 +203,20 @@ export async function markParcel(parcelId: string, step: "forwarded" | "received
   return step === "forwarded" ? "Noté : envoyé." : "Noté : reçu chez l'expéditeur.";
 }
 
-/** ↩️ Corriger : affiche « Oui / Non » à la place des boutons de ce colis (aucun changement en base). */
-export async function askUndoParcel(parcelId: string, baseUrl: string, asking: boolean): Promise<string> {
+/** ↩️ Corriger : pose la question « Oui / Non » dans un nouveau message en bas du fil (aucun changement en base). */
+export async function askUndoParcel(parcelId: string, baseUrl: string, chat: number): Promise<string> {
   const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}`);
   if (!parcel) return "Colis introuvable.";
   const o = (await loadOrder(parcel.order_id))!;
   const step = undoableStep({ forwardedAt: parcel.forwarded_at, receivedAt: parcel.received_at }, Date.now());
-  await refreshMessage(o, baseUrl, asking && step ? parcelId : undefined);
-  if (!step) return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
-  return asking ? "Confirme ou touche « Non »." : "Rien n'a changé.";
+  if (!step) {
+    await refreshMessage(o, baseUrl); // retire le bouton ↩️ devenu inutile
+    return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
+  }
+  const p = o.order_parcels.find((x) => x.id === parcelId)!;
+  const q = undoQuestion(o.number, { id: p.id, supplier: p.suppliers.name }, step);
+  await sendMessage(chat, q.text, q.buttons);
+  return "Réponds à la question en bas.";
 }
 
 /**
@@ -422,9 +429,11 @@ export async function decideSubmission(chat: number, subId: string, decision: "o
     await db.update("tracking_submissions", `id=${eq(sub.id)}`, { undo_until: null });
     return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
   }
-  if (decision === "undq" || decision === "keepc") {
-    if (sub.card_message_id) await editButtons(chat, sub.card_message_id, undoButtons(sub.id, decision === "undq"));
-    return decision === "undq" ? "Confirme ou touche « Non »." : "Rien n'a changé.";
+  if (decision === "keepc") return "Rien n'a changé.";
+  if (decision === "undq") {
+    const q = undoCodeQuestion(sub.tracking_code, o.number, sub.id);
+    await sendMessage(chat, q.text, q.buttons);
+    return "Réponds à la question en bas.";
   }
   await db.remove("shipments", `order_id=${eq(o.id)}&tracking_code=${eq(sub.tracking_code)}`);
   await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString(), decided_by: who, undo_until: null });

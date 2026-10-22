@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { adminChatId, allowedUsers, webhookSecret } from "@/lib/server/env";
 import { askUndoParcel, decideSubmission, handleTrackingText, markParcel, relayOrder, sweepExpiredUndo, todoList, undoParcel } from "@/lib/server/relay";
-import { answerCallback, sendMessage } from "@/lib/server/telegram";
+import { answerCallback, editText, sendMessage } from "@/lib/server/telegram";
 import { commandOf, isGroupChat } from "@/models/relay/access";
 import { todoButtons, todoMessage } from "@/models/relay/messages";
 
@@ -13,7 +13,7 @@ import { todoButtons, todoMessage } from "@/models/relay/messages";
 type User = { id: number; first_name?: string };
 type Update = {
   message?: { chat: { id: number }; from?: User; text?: string; caption?: string };
-  callback_query?: { id: string; from: User; message?: { chat: { id: number } }; data?: string };
+  callback_query?: { id: string; from: User; message?: { chat: { id: number }; message_id: number }; data?: string };
 };
 
 const ok = () => new Response("ok");
@@ -61,14 +61,19 @@ export async function POST(request: Request) {
       let reply = "";
       if (action === "fwd") reply = await markParcel(id, "forwarded", base, who(cb.from));
       else if (action === "rcv") reply = await markParcel(id, "received", base, who(cb.from));
-      else if (action === "unq") reply = await askUndoParcel(id, base, true);
-      else if (action === "keep") reply = await askUndoParcel(id, base, false);
+      else if (action === "unq") reply = await askUndoParcel(id, base, chat);
+      else if (action === "keep") reply = "Rien n'a changé.";
       else if (action === "unf") reply = await undoParcel(id, base, extra === "r" ? "received" : extra === "f" ? "forwarded" : undefined);
       else if (action === "rsd") {
         await relayOrder(id, base);
         reply = "Commande renvoyée en bas du fil.";
       } else if (action === "ok" || action === "no" || action === "undo" || action === "undq" || action === "keepc")
         reply = await decideSubmission(chat, id, action, who(cb.from));
+      // Réponse à une question « Oui / Non » : la question garde la trace et perd ses boutons.
+      if (["unf", "keep", "undo", "keepc"].includes(action) && cb.message) {
+        const name = who(cb.from);
+        await editText(chat, cb.message.message_id, `${reply}${name ? ` (${name})` : ""}`).catch((e) => console.warn("[bot] question", e));
+      }
       await answerCallback(cb.id, reply || undefined);
       return ok();
     }

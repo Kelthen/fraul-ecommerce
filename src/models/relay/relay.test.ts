@@ -16,6 +16,8 @@ import {
   todoMessage,
   trackingCard,
   undoButtons,
+  undoCodeQuestion,
+  undoQuestion,
   undoableStep,
   type RelayOrder,
 } from "./messages.ts";
@@ -98,9 +100,9 @@ test("boutons : seulement la prochaine étape ; ↩️ Corriger 15 min, avec con
   assert.equal(b[1][0].data, "rcv:p2", "secours si l'expéditeur ne coche pas");
   assert.equal(b[1][1].data, "unq:p2", "↩️ demande d'abord confirmation");
   assert.equal(orderButtons(order, t + 20 * 60_000)[1].length, 1, "plus de ↩️ après 15 min");
-  const ask = orderButtons(order, t, "p2");
-  assert.deepEqual(ask[1], [{ text: "✖️ Non, ne rien changer", data: "keep:p2" }], "« Non » à la place de « Corriger »");
-  assert.deepEqual(ask[2], [{ text: "Oui, annuler « envoyé » (Fournisseur B)", data: "unf:p2:f" }], "l'étape est dans le bouton (double-tap sans effet)");
+  const q = undoQuestion("FRL-2026-000123", { id: "p2", supplier: "Fournisseur B" }, "forwarded");
+  assert.match(q.text, /annuler « envoyé au fournisseur » pour <b>Fournisseur B<\/b>/);
+  assert.deepEqual(q.buttons.flat().map((x) => x.data), ["unf:p2:f", "keep:p2"], "l'étape est dans le bouton (double-tap sans effet)");
   const uuid = "123e4567-e89b-12d3-a456-426614174000";
   for (const data of [...b.flat().map((x) => x.data), `unq:${uuid}`, `unf:${uuid}:r`, `keep:${uuid}`, `rsd:${uuid}`, `keepc:${uuid}`, `undq:${uuid}`])
     assert.ok(Buffer.byteLength(data) <= 64, "limite Telegram de 64 octets");
@@ -113,7 +115,7 @@ test("aucun bouton qui reste après validation", () => {
   const justNow = { parcels: [{ ...done.parcels[0], receivedAt: "2026-10-23T17:55:00Z", receivedBy: "l'expéditeur" }] };
   assert.deepEqual(orderButtons(justNow, t), [[{ text: "↩️ Corriger : Fournisseur A", data: "unq:p1" }]], "seulement Corriger, 15 min");
   assert.deepEqual(undoButtons("s1"), [[{ text: "↩️ Corriger (15 min)", data: "undq:s1" }]]);
-  assert.deepEqual(undoButtons("s1", true).flat().map((x) => x.data), ["undo:s1", "keepc:s1"]);
+  assert.deepEqual(undoCodeQuestion("LP1", "FRL-1", "s1").buttons.flat().map((x) => x.data), ["undo:s1", "keepc:s1"]);
 });
 
 test("carte de suivi : avertit s'il manque un colis, ne promet rien au client", () => {
