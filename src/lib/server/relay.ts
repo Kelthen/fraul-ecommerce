@@ -78,10 +78,16 @@ const ORDER_SELECT =
   "order_parcels(id,supplier_id,status,forwarded_at,received_at,forwarded_by,received_by,suppliers(name))," +
   "shipping_sheets(token,expires_at),shipments(id,tracking_code,shipped_at)";
 
-export const loadOrder = (id: string) => db.one<OrderRow>("orders", `${ORDER_SELECT}&id=${eq(id)}`);
-export const loadOrderByNumber = (n: string) => db.one<OrderRow>("orders", `${ORDER_SELECT}&number=${eq(n)}`);
-export const loadPaidOrders = () =>
-  db.select<OrderRow>("orders", `${ORDER_SELECT}&status=not.in.(pending_payment,cancelled)&order=created_at.desc&limit=200`);
+/** Colis toujours dans le même ordre (nom du fournisseur) : la fiche et le message ne bougent pas après un geste. */
+function sorted<T extends OrderRow | null>(o: T): T {
+  o?.order_parcels.sort((a, b) => a.suppliers.name.localeCompare(b.suppliers.name, "fr") || a.id.localeCompare(b.id));
+  return o;
+}
+
+export const loadOrder = async (id: string) => sorted(await db.one<OrderRow>("orders", `${ORDER_SELECT}&id=${eq(id)}`));
+export const loadOrderByNumber = async (n: string) => sorted(await db.one<OrderRow>("orders", `${ORDER_SELECT}&number=${eq(n)}`));
+export const loadPaidOrders = async () =>
+  (await db.select<OrderRow>("orders", `${ORDER_SELECT}&status=not.in.(pending_payment,cancelled)&order=created_at.desc&limit=200`)).map(sorted);
 
 const money = (minor: number, currency: string) => `${Math.round(minor / 100)} ${currency}`;
 const dateFr = (iso: string) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "America/Toronto" }).format(new Date(iso));
@@ -542,6 +548,7 @@ export async function openSheet(token: string, userAgent: string | null) {
     `select=id,expires_at,orders(${ORDER_SELECT.replace("select=", "")})&token=${eq(token)}`,
   );
   if (!sheet) return null;
+  sorted(sheet.orders);
   const expired = Date.parse(sheet.expires_at) < Date.now();
   if (!expired) await db.insert("shipping_sheet_views", { sheet_id: sheet.id, user_agent: userAgent?.slice(0, 300) ?? null });
   // Colis que l'expéditeur peut encore « dé-cocher » (son propre « reçu », moins de UNDO_MINUTES).
