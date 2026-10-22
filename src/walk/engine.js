@@ -915,9 +915,15 @@ export function startWalk(root, o) {
     const cars = {};
     Object.entries(CAR).forEach(([cat, cfg]) => {
       const items = products(st.name, cat), geo = new THREE.PlaneGeometry(...cfg.size);
+      const [gw, gh] = cfg.size, body = new THREE.BoxGeometry(gw * 0.92, gh * 0.94, 0.05);
+      const hook = new THREE.TorusGeometry(0.035, 0.006, 6, 14, Math.PI * 1.4);
       const meshes = items.map((it) => {
         const g = new THREE.Group(), f = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, false, it.img)), b = new THREE.Mesh(geo, prodMat(cat, it.c, it.a, true, it.img));
-        b.rotation.y = Math.PI; g.add(f, b); g.userData.mats = [f.material, b.material]; g.userData.it = it; g.userData.cat = cat; scene.add(g); return g;
+        b.rotation.y = Math.PI; f.position.z = 0.027; b.position.z = -0.027;
+        // Épaisseur du vêtement (vu de côté sur le portant) et vrai crochet par-dessus la barre.
+        const t = new THREE.Mesh(body, lam(new THREE.Color(it.c).getHex())); const h = new THREE.Mesh(hook, metalM);
+        h.position.set(0, gh / 2 + 0.03, 0); h.rotation.z = Math.PI * 0.8;
+        g.add(t, h, f, b); g.userData.mats = [f.material, b.material]; g.userData.it = it; g.userData.cat = cat; scene.add(g); return g;
       });
       const real = items.findIndex((it) => it.img), start = real >= 0 ? real : Math.min(4, items.length - 1); // les vrais produits d'abord
       cars[cat] = { cat, items, meshes, cfg, f: start, target: start, last: null, swingT: -1e9, o: V(...cfg.o), d: V(...cfg.d), out: V(...cfg.out) };
@@ -932,9 +938,11 @@ export function startWalk(root, o) {
       const fi = Math.round(car.f), cfg = car.cfg;
       car.meshes.forEach((m, k) => {
         const d = k - car.f, ad = Math.abs(d);
-        if (ad > 3.4) { m.visible = false; return; } m.visible = true;
+        if (ad > 14) { m.visible = false; return; } m.visible = true;
         const w = isActive ? Math.max(0, 1 - ad) : 0, isF = isActive && k === fi;
-        m.position.copy(car.o).addScaledVector(car.d, d * cfg.sp).addScaledVector(car.out, w * cfg.pull - Math.min(ad, 3) * 0.03).addScaledVector(UP, w * cfg.rise);
+        // Rangés serrés et de côté comme en boutique ; celui de devant sort du rang (essai, Rhamone 22 oct.).
+        const off = Math.sign(d) * (Math.min(ad, 1) * 0.55 + Math.max(ad - 1, 0) * 0.13);
+        m.position.copy(car.o).addScaledVector(car.d, off).addScaledVector(car.out, w * cfg.pull).addScaledVector(UP, w * cfg.rise);
         let s = 1 + 0.12 * w;
         if (isF && closeAmt > 0) {
           sharpen(m);
@@ -943,13 +951,13 @@ export function startWalk(root, o) {
           m.position.lerp(tmp, closeAmt); s = lerp(s, cfg.close, closeAmt);
         }
         m.scale.setScalar(s);
-        if (isF) m.lookAt(tmp.set(cam.pos.x, m.position.y, cam.pos.z)); else m.lookAt(tmp.copy(m.position).add(car.out));
+        if (isF) m.lookAt(tmp.set(cam.pos.x, m.position.y, cam.pos.z)); else { m.lookAt(tmp.copy(m.position).add(car.out)); m.rotateY((1 - w) * (Math.PI / 2 - 0.2 + (((k * 37) % 10) / 10) * 0.3)); }
         if (isF) {
           const age = (now - car.swingT) / 1000;
           if (age < 1.6) m.rotateZ(Math.sin(age * 7) * 0.08 * Math.exp(-age * 2.4));
           if (closeAmt > 0) m.rotateY(yaw * closeAmt);
         }
-        const op = (1 - smooth(2.7, 3.4, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1);
+        const op = (1 - smooth(11, 14, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1);
         m.userData.mats.forEach((mt) => (mt.opacity = op));
         m.renderOrder = isF ? 2 : 1;
       });
