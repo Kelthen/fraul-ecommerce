@@ -1,4 +1,4 @@
-// Textes du bot Telegram de Jean Paul (Fraul) : message de commande, blocs à transférer, carte de vérification.
+// Textes du bot Telegram de Jean Paul (Fraul) : message de commande, blocs à envoyer aux fournisseurs, carte de vérification.
 // docs/PARCOURS-COMMANDE.md §2 et §7 : Fraul voit prix et marge ; les blocs « à transférer » n'ont
 // ni prix ni adresse du client ; la fiche d'expédition passe par un lien qui expire.
 // Pur : HTML Telegram (parse_mode=HTML), aucune base, aucun réseau (testé dans messages.test.ts).
@@ -75,19 +75,22 @@ export const when = (iso: string) => `${DAY_FMT.format(new Date(iso))} à ${TIME
 
 const by = (name?: string | null) => (name ? ` (${esc(name)})` : "");
 
+/** Nom affiché quand c'est l'expéditeur qui a coché « reçu » sur sa fiche. */
+export const SHIPPER = "l'expéditeur";
+
 /** Une ligne d'état par fournisseur, en tête du message : on voit d'un coup d'œil ce qui reste à faire. */
 export function parcelStatusLine(p: RelayParcel): string {
   const name = `<b>${esc(p.supplier)}</b>`;
-  if (p.receivedAt) return `📥 ${name} : colis reçu ${when(p.receivedAt)}${by(p.receivedBy)}`;
-  if (p.forwardedAt) return `✅ ${name} : transféré ${when(p.forwardedAt)}${by(p.forwardedBy)}`;
-  return `⏳ ${name} : à transférer`;
+  if (p.receivedAt) return `📥 ${name} : reçu chez l'expéditeur ${when(p.receivedAt)}${by(p.receivedBy)}`;
+  if (p.forwardedAt) return `📤 ${name} : envoyé au fournisseur ${when(p.forwardedAt)}${by(p.forwardedBy)}`;
+  return `⏳ ${name} : à envoyer au fournisseur`;
 }
 
-/** Titre du message selon l'avancement : il change quand tout est transféré, puis quand tout est reçu. */
+/** Titre du message selon l'avancement : il change quand tout est envoyé, puis quand tout est reçu. */
 export function orderTitle(o: Pick<RelayOrder, "number" | "parcels">): string {
   const n = esc(o.number);
-  if (o.parcels.length && o.parcels.every((p) => p.receivedAt)) return `📦 <b>Tous les colis reçus · ${n}</b>`;
-  if (o.parcels.length && o.parcels.every((p) => p.forwardedAt)) return `✅ <b>Tout transféré · ${n}</b>`;
+  if (o.parcels.length && o.parcels.every((p) => p.receivedAt)) return `📦 <b>Tous les colis reçus · ${n}</b> — l'expéditeur peut expédier`;
+  if (o.parcels.length && o.parcels.every((p) => p.forwardedAt)) return `📤 <b>Tout envoyé aux fournisseurs · ${n}</b>`;
   return `🛍 <b>Nouvelle commande ${n}</b>`;
 }
 
@@ -102,12 +105,12 @@ export function orderMessage(o: RelayOrder): string {
   ].join("\n");
   const blocks = o.parcels.map(
     (p) =>
-      `\n<b>── ${p.forwardedAt ? "✅ Transféré" : "À transférer"} : ${esc(p.supplier)} ──</b>\n<pre>${esc(supplierBlock(o.number, p))}</pre>`,
+      `\n<b>── ${p.forwardedAt ? "📤 Envoyé" : "À envoyer"} : ${esc(p.supplier)} ──</b>\n<pre>${esc(supplierBlock(o.number, p))}</pre>`,
   );
   const sheet = [
     "\n<b>── Fiche d'expédition (pour l'expéditeur) ──</b>",
     `<pre>${esc(`发货单 Shipping sheet ${o.number}\n${o.sheetUrl}`)}</pre>`,
-    `Lien valable jusqu'au ${esc(o.sheetExpires)}. Chaque ouverture est enregistrée.`,
+    `Lien valable jusqu'au ${esc(o.sheetExpires)}. L'expéditeur y coche chaque colis reçu ; je préviens ici.`,
     "\nQuand l'expéditeur envoie le code de suivi, transfère-moi son message (« FRL-… → code »).",
   ].join("\n");
   return [head, ...blocks, sheet].join("\n");
@@ -126,19 +129,28 @@ export function undoableStep(p: Pick<RelayParcel, "forwardedAt" | "receivedAt">,
 }
 
 /**
- * Boutons du message de commande, colis par colis : « Transféré », puis « Colis reçu ».
- * Un « ↩️ » à côté pendant UNDO_MINUTES après chaque geste, en cas de mauvais bouton.
+ * Boutons du message de commande : seulement la prochaine étape de chaque colis, rien une fois tout fait.
+ * « 📤 J'ai envoyé à A », puis (secours, si l'expéditeur n'a pas coché sa fiche) « 📥 A reçu par l'expéditeur ».
+ * « ↩️ Corriger » pendant UNDO_MINUTES après un geste ; il demande confirmation (`asking` = colis en question).
  */
-export function orderButtons(o: Pick<RelayOrder, "parcels">, now = Date.now()): Button[][] {
-  return o.parcels.map((p) => {
-    const row: Button[] = !p.forwardedAt
-      ? [{ text: `✅ Transféré à ${p.supplier}`, data: `fwd:${p.id}` }]
-      : !p.receivedAt
-        ? [{ text: `📥 Colis reçu de ${p.supplier}`, data: `rcv:${p.id}` }]
-        : [{ text: `✔︎ ${p.supplier} : reçu`, data: `noop:${p.id}` }];
-    if (undoableStep(p, now)) row.push({ text: "↩️ Annuler", data: `unf:${p.id}` });
-    return row;
-  });
+export function orderButtons(o: Pick<RelayOrder, "parcels">, now = Date.now(), asking?: string): Button[][] {
+  const rows: Button[][] = [];
+  for (const p of o.parcels) {
+    const step = undoableStep(p, now);
+    if (asking === p.id && step) {
+      rows.push([
+        { text: step === "received" ? `Oui, ${p.supplier} pas encore reçu` : `Oui, pas encore envoyé à ${p.supplier}`, data: `unf:${p.id}` },
+        { text: "Non", data: `keep:${p.id}` },
+      ]);
+      continue;
+    }
+    const row: Button[] = [];
+    if (!p.forwardedAt) row.push({ text: `📤 J'ai envoyé à ${p.supplier}`, data: `fwd:${p.id}` });
+    else if (!p.receivedAt) row.push({ text: `📥 ${p.supplier} reçu par l'expéditeur`, data: `rcv:${p.id}` });
+    if (step) row.push({ text: row.length ? "↩️" : `↩️ Corriger : ${p.supplier}`, data: `unq:${p.id}` });
+    if (row.length) rows.push(row);
+  }
+  return rows;
 }
 
 // ───────────────────────── /afaire : ce qui reste ─────────────────────────
@@ -164,7 +176,7 @@ export function messageLink(chatId: number | null, messageId: number | null): st
 export function todoMessage(list: TodoOrder[]): string {
   const forward = list.filter((o) => o.toForward.length);
   const receive = list.filter((o) => o.toReceive.length);
-  if (!forward.length && !receive.length) return "✅ Rien en attente : tout est transféré et reçu.";
+  if (!forward.length && !receive.length) return "✅ Rien en attente : tout est envoyé et reçu.";
   const ref = (o: TodoOrder) => {
     const n = `${esc(o.number)}${o.isDemo ? " (test)" : ""}`;
     return o.link ? `<a href="${esc(o.link)}">${n}</a>` : n;
@@ -173,7 +185,7 @@ export function todoMessage(list: TodoOrder[]): string {
   const parts: string[] = [];
   if (forward.length) {
     const n = forward.reduce((s, o) => s + o.toForward.length, 0);
-    parts.push(`⏳ <b>${count(n, "bloc à transférer", "blocs à transférer")}</b>`, ...forward.map((o) => `• ${ref(o)} → ${o.toForward.map(esc).join(", ")}`));
+    parts.push(`⏳ <b>${count(n, "bloc à envoyer", "blocs à envoyer")} aux fournisseurs</b>`, ...forward.map((o) => `• ${ref(o)} → ${o.toForward.map(esc).join(", ")}`));
   }
   if (receive.length) {
     const n = receive.reduce((s, o) => s + o.toReceive.length, 0);
@@ -191,14 +203,20 @@ export const todoButtons = (list: TodoOrder[]): Button[][] =>
     .slice(0, 20)
     .map((o) => [{ text: `🔁 ${o.number}`, data: `rsd:${o.orderId}` }]);
 
-export type CardOrder = { number: string; firstName: string; city: string; articles: number; isDemo: boolean };
+export type CardOrder = { number: string; firstName: string; city: string; articles: number; isDemo: boolean; missing?: string[] };
 
-/** Carte de vérification avant d'enregistrer un code de suivi. */
+const cardBody = (code: string, o: CardOrder) => [
+  `Code <code>${esc(code)}</code>`,
+  `→ <b>${esc(o.number)}</b> · ${esc(o.firstName)} · ${esc(o.city)} · ${o.articles} article${o.articles > 1 ? "s" : ""}`,
+];
+
+/** Carte de vérification avant d'enregistrer un code de suivi ; avertit s'il manque un colis chez l'expéditeur. */
 export function trackingCard(code: string, o: CardOrder): string {
+  const missing = o.missing ?? [];
   return [
     `🔎 <b>Vérifie avant d'enregistrer</b>${o.isDemo ? " (commande test)" : ""}`,
-    `Code <code>${esc(code)}</code>`,
-    `→ <b>${esc(o.number)}</b> · ${esc(o.firstName)} · ${esc(o.city)} · ${o.articles} article${o.articles > 1 ? "s" : ""}`,
+    ...cardBody(code, o),
+    ...(missing.length ? ["", `⚠️ Pas encore reçu chez l'expéditeur : <b>${missing.map(esc).join(", ")}</b>. Tout est bien dans le colis ?`] : []),
   ].join("\n");
 }
 
@@ -210,10 +228,19 @@ export const cardButtons = (submissionId: string): Button[][] => [
 ];
 
 export function confirmedCard(code: string, o: CardOrder, who?: string | null): string {
-  return `${trackingCard(code, o).replace("🔎 <b>Vérifie avant d'enregistrer</b>", `✅ <b>Code enregistré</b>${by(who)}`)}\nLa commande passe « En transit ». Le client est prévenu dans ${UNDO_MINUTES} min.`;
+  return [`✅ <b>Code enregistré</b>${by(who)}${o.isDemo ? " (commande test)" : ""}`, ...cardBody(code, o), "La commande passe « En transit »."].join("\n");
 }
 
-export const undoButtons = (submissionId: string): Button[][] => [[{ text: `↩️ Annuler (${UNDO_MINUTES} min)`, data: `undo:${submissionId}` }]];
+/** Après ✅ : un seul bouton « Corriger », qui demande confirmation ; il disparaît après UNDO_MINUTES. */
+export const undoButtons = (submissionId: string, asking = false): Button[][] =>
+  asking
+    ? [
+        [
+          { text: "Oui, retirer ce code", data: `undo:${submissionId}` },
+          { text: "Non", data: `keepc:${submissionId}` },
+        ],
+      ]
+    : [[{ text: `↩️ Corriger (${UNDO_MINUTES} min)`, data: `undq:${submissionId}` }]];
 
 /** Pourquoi un code est refusé, en clair pour Jean Paul. */
 export const REFUSALS = {

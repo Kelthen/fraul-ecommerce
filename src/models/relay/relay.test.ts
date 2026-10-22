@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { normalizeOrderNumber, normalizeTrackingCode, parseTrackingMessage } from "./codes.ts";
 import { commandOf, isGroupChat, parseAllowedUsers } from "./access.ts";
 import {
+  confirmedCard,
   esc,
   messageLink,
   orderButtons,
@@ -14,6 +15,7 @@ import {
   todoButtons,
   todoMessage,
   trackingCard,
+  undoButtons,
   undoableStep,
   type RelayOrder,
 } from "./messages.ts";
@@ -84,21 +86,43 @@ test("message à Jean Paul : prix et marge pour lui, HTML échappé, un bloc par
   assert.match(m, /COMMANDE TEST/);
   assert.match(m, /358 USD/);
   assert.match(m, /Hoodie &lt;logo&gt;/);
-  assert.equal((m.match(/À transférer :/g) ?? []).length, 1, "B est déjà transféré");
-  assert.match(m, /✅ Transféré : Fournisseur B/);
+  assert.equal((m.match(/À envoyer :/g) ?? []).length, 1, "B est déjà envoyé");
+  assert.match(m, /📤 Envoyé : Fournisseur B/);
   assert.ok(!m.includes("<logo>"));
 });
 
-test("boutons : transféré, puis colis reçu ; ↩️ seulement dans les 15 min", () => {
+test("boutons : seulement la prochaine étape ; ↩️ Corriger 15 min, avec confirmation", () => {
   const t = Date.parse("2026-10-21T16:10:00Z");
   const b = orderButtons(order, t);
-  assert.equal(b[0][0].data, "fwd:p1");
-  assert.equal(b[0].length, 1, "rien à annuler sur A");
-  assert.equal(b[1][0].data, "rcv:p2");
-  assert.equal(b[1][1].data, "unf:p2", "B transféré il y a 6 min");
+  assert.deepEqual(b[0], [{ text: "📤 J'ai envoyé à Fournisseur A", data: "fwd:p1" }], "rien à corriger sur A");
+  assert.equal(b[1][0].data, "rcv:p2", "secours si l'expéditeur ne coche pas");
+  assert.equal(b[1][1].data, "unq:p2", "↩️ demande d'abord confirmation");
   assert.equal(orderButtons(order, t + 20 * 60_000)[1].length, 1, "plus de ↩️ après 15 min");
+  const ask = orderButtons(order, t, "p2");
+  assert.deepEqual(ask[1].map((x) => x.data), ["unf:p2", "keep:p2"]);
+  assert.match(ask[1][0].text, /Oui, pas encore envoyé à Fournisseur B/);
   const uuid = "123e4567-e89b-12d3-a456-426614174000";
-  for (const data of [...b.flat().map((x) => x.data), `unf:${uuid}`, `rsd:${uuid}`]) assert.ok(Buffer.byteLength(data) <= 64, "limite Telegram de 64 octets");
+  for (const data of [...b.flat().map((x) => x.data), `unq:${uuid}`, `keep:${uuid}`, `rsd:${uuid}`, `keepc:${uuid}`, `undq:${uuid}`])
+    assert.ok(Buffer.byteLength(data) <= 64, "limite Telegram de 64 octets");
+});
+
+test("aucun bouton qui reste après validation", () => {
+  const t = Date.parse("2026-10-23T18:00:00Z");
+  const done = { parcels: order.parcels.map((p) => ({ ...p, forwardedAt: "2026-10-21T16:04:00Z", receivedAt: "2026-10-23T13:00:00Z" })) };
+  assert.deepEqual(orderButtons(done, t), [], "tout reçu depuis longtemps : plus aucun bouton");
+  const justNow = { parcels: [{ ...done.parcels[0], receivedAt: "2026-10-23T17:55:00Z", receivedBy: "l'expéditeur" }] };
+  assert.deepEqual(orderButtons(justNow, t), [[{ text: "↩️ Corriger : Fournisseur A", data: "unq:p1" }]], "seulement Corriger, 15 min");
+  assert.deepEqual(undoButtons("s1"), [[{ text: "↩️ Corriger (15 min)", data: "undq:s1" }]]);
+  assert.deepEqual(undoButtons("s1", true).flat().map((x) => x.data), ["undo:s1", "keepc:s1"]);
+});
+
+test("carte de suivi : avertit s'il manque un colis, ne promet rien au client", () => {
+  const card = { number: "FRL-2026-000123", firstName: "Awa", city: "Paris", articles: 2, isDemo: false };
+  assert.match(trackingCard("LP123456789CN", { ...card, missing: ["Fournisseur B"] }), /⚠️ Pas encore reçu chez l'expéditeur : <b>Fournisseur B<\/b>/);
+  assert.ok(!trackingCard("LP123456789CN", { ...card, missing: [] }).includes("⚠️"));
+  const c = confirmedCard("LP123456789CN", card, "Serge");
+  assert.match(c, /✅ <b>Code enregistré<\/b> \(Serge\)/);
+  assert.ok(!/client est prévenu/i.test(c));
 });
 
 test("annulation : le dernier geste, jamais plus vieux que 15 min", () => {
@@ -110,15 +134,15 @@ test("annulation : le dernier geste, jamais plus vieux que 15 min", () => {
 });
 
 test("lignes d'état et titre : ce qui est fait, par qui, ce qui reste", () => {
-  assert.match(parcelStatusLine(order.parcels[0]), /⏳ <b>Fournisseur A<\/b> : à transférer/);
+  assert.match(parcelStatusLine(order.parcels[0]), /⏳ <b>Fournisseur A<\/b> : à envoyer au fournisseur/);
   const l = parcelStatusLine(order.parcels[1]);
-  assert.match(l, /✅ <b>Fournisseur B<\/b> : transféré 21 oct\. à 12:04 \(Serge\)/, "heure de Toronto");
+  assert.match(l, /📤 <b>Fournisseur B<\/b> : envoyé au fournisseur 21 oct\. à 12:04 \(Serge\)/, "heure de Toronto");
   assert.match(orderTitle(order), /Nouvelle commande/);
   const all = { ...order, parcels: order.parcels.map((p) => ({ ...p, forwardedAt: "2026-10-21T16:04:00Z" })) };
-  assert.match(orderTitle(all), /Tout transféré · FRL-2026-000123/);
+  assert.match(orderTitle(all), /Tout envoyé aux fournisseurs · FRL-2026-000123/);
   const recv = { ...order, parcels: order.parcels.map((p) => ({ ...p, forwardedAt: "2026-10-21T16:04:00Z", receivedAt: "2026-10-23T13:00:00Z" })) };
   assert.match(orderTitle(recv), /Tous les colis reçus/);
-  assert.match(parcelStatusLine({ ...order.parcels[0], supplier: "<A>", receivedAt: "2026-10-23T13:00:00Z", receivedBy: "Rha<mone" }), /📥 <b>&lt;A&gt;<\/b> : colis reçu .*\(Rha&lt;mone\)/);
+  assert.match(parcelStatusLine({ ...order.parcels[0], supplier: "<A>", receivedAt: "2026-10-23T13:00:00Z", receivedBy: "Rha<mone" }), /📥 <b>&lt;A&gt;<\/b> : reçu chez l'expéditeur .*\(Rha&lt;mone\)/);
 });
 
 test("/afaire : à transférer, puis à recevoir ; liens en groupe, boutons sinon", () => {
@@ -130,7 +154,7 @@ test("/afaire : à transférer, puis à recevoir ; liens en groupe, boutons sino
     { orderId: "o2", number: "FRL-2026-000005", isDemo: false, link: "https://t.me/c/1/9", toForward: ["A"], toReceive: ["B"] },
   ];
   const m = todoMessage(list);
-  assert.match(m, /3 blocs à transférer/);
+  assert.match(m, /3 blocs à envoyer aux fournisseurs/);
   assert.match(m, /FRL-2026-000002 \(test\) → A, B/);
   assert.match(m, /<a href="https:\/\/t\.me\/c\/1\/9">FRL-2026-000005<\/a> → A/);
   assert.match(m, /1 colis attendu chez l'expéditeur/);

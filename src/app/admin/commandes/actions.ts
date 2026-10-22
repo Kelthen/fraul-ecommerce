@@ -87,7 +87,7 @@ export async function connectBot() {
     // Menu « / » du bot (groupe et conversation privée).
     await tg("setMyCommands", {
       commands: [
-        { command: "afaire", description: "Ce qui reste à transférer ou à recevoir" },
+        { command: "afaire", description: "Ce qui reste à envoyer ou à recevoir" },
         { command: "aide", description: "Comment utiliser le bot" },
       ],
     });

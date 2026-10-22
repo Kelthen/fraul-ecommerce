@@ -6,6 +6,7 @@ import {
   UNDO_MINUTES,
   cardButtons,
   confirmedCard,
+  SHIPPER,
   esc,
   messageLink,
   orderButtons,
@@ -123,6 +124,7 @@ export const cardOrder = (o: OrderRow): CardOrder => ({
   city: o.shipping_address.city,
   articles: o.order_items.reduce((n, i) => n + i.qty, 0),
   isDemo: o.is_demo,
+  missing: o.order_parcels.filter((p) => !p.received_at).map((p) => p.suppliers.name),
 });
 
 /**
@@ -141,12 +143,14 @@ export async function relayOrder(orderId: string, baseUrl: string): Promise<void
   }
 }
 
-/** Réécrit le message de commande (lignes d'état, titre, boutons) après un geste. */
-async function refreshMessage(o: OrderRow, baseUrl: string): Promise<void> {
+/** Réécrit le message de commande (lignes d'état, titre, boutons) après un geste. `asking` : colis dont on confirme la correction. */
+async function refreshMessage(o: OrderRow, baseUrl: string, asking?: string): Promise<void> {
   if (!o.relay_chat_id || !o.relay_message_id) return;
   const relay = toRelay(o, baseUrl);
-  await editText(o.relay_chat_id, o.relay_message_id, orderMessage(relay), orderButtons(relay));
+  await editText(o.relay_chat_id, o.relay_message_id, orderMessage(relay), orderButtons(relay, Date.now(), asking));
 }
+
+const undoUntil = () => new Date(Date.now() + UNDO_MINUTES * 60_000).toISOString();
 
 async function refreshOrderStatus(o: OrderRow): Promise<void> {
   const shipped = o.shipments.find((s) => s.tracking_code && s.shipped_at);
@@ -161,27 +165,47 @@ async function refreshOrderStatus(o: OrderRow): Promise<void> {
 type ParcelRow = { id: string; order_id: string; forwarded_at: string | null; received_at: string | null };
 const PARCEL_SELECT = "select=id,order_id,forwarded_at,received_at";
 
-/** Bouton « Transféré à … » ou « Colis reçu de … » dans le message de commande. `who` : prénom Telegram. */
+/**
+ * « 📤 J'ai envoyé à … » ou « 📥 … reçu par l'expéditeur » (bouton Telegram, ou fiche de l'expéditeur).
+ * `who` : prénom Telegram, ou SHIPPER quand l'expéditeur coche sa fiche.
+ */
 export async function markParcel(parcelId: string, step: "forwarded" | "received", baseUrl: string, who: string | null): Promise<string> {
   const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}`);
   if (!parcel) return "Colis introuvable.";
-  if (step === "forwarded" && parcel.forwarded_at) return "Déjà noté comme transféré.";
+  if (step === "forwarded" && parcel.forwarded_at) return "Déjà noté comme envoyé.";
   if (step === "received" && parcel.received_at) return "Déjà noté comme reçu.";
   const now = new Date().toISOString();
   const patch =
     step === "forwarded"
-      ? { forwarded_at: now, forwarded_by: who }
-      : { received_at: now, received_by: who, status: "received", ...(parcel.forwarded_at ? {} : { forwarded_at: now, forwarded_by: who }) };
+      ? { forwarded_at: now, forwarded_by: who, undo_until: undoUntil() }
+      : {
+          received_at: now,
+          received_by: who,
+          status: "received",
+          undo_until: undoUntil(),
+          ...(parcel.forwarded_at ? {} : { forwarded_at: now, forwarded_by: who }),
+        };
   await db.update("order_parcels", `id=${eq(parcelId)}`, patch);
   const o = (await loadOrder(parcel.order_id))!;
   await refreshOrderStatus(o);
   await refreshMessage(o, baseUrl);
   const all = o.order_parcels.every((p) => (step === "forwarded" ? p.forwarded_at : p.received_at));
-  if (all) return step === "received" ? "Tous les colis sont chez l'expéditeur : il peut expédier." : "Tout est transféré pour cette commande.";
-  return step === "forwarded" ? "Noté : transféré." : "Noté : colis reçu.";
+  if (all) return step === "received" ? "Tous les colis sont chez l'expéditeur : il peut expédier." : "Tout est envoyé aux fournisseurs.";
+  return step === "forwarded" ? "Noté : envoyé." : "Noté : reçu chez l'expéditeur.";
 }
 
-/** ↩️ : défait le dernier geste sur ce colis, dans les UNDO_MINUTES qui suivent. */
+/** ↩️ Corriger : affiche « Oui / Non » à la place des boutons de ce colis (aucun changement en base). */
+export async function askUndoParcel(parcelId: string, baseUrl: string, asking: boolean): Promise<string> {
+  const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}`);
+  if (!parcel) return "Colis introuvable.";
+  const o = (await loadOrder(parcel.order_id))!;
+  const step = undoableStep({ forwardedAt: parcel.forwarded_at, receivedAt: parcel.received_at }, Date.now());
+  await refreshMessage(o, baseUrl, asking && step ? parcelId : undefined);
+  if (!step) return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
+  return asking ? "Confirme ou touche « Non »." : "Rien n'a changé.";
+}
+
+/** Oui : défait le dernier geste sur ce colis, dans les UNDO_MINUTES qui suivent. */
 export async function undoParcel(parcelId: string, baseUrl: string): Promise<string> {
   const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}`);
   if (!parcel) return "Colis introuvable.";
@@ -194,13 +218,87 @@ export async function undoParcel(parcelId: string, baseUrl: string): Promise<str
   }
   const patch =
     step === "received"
-      ? { received_at: null, received_by: null, status: "expected" }
-      : { forwarded_at: null, forwarded_by: null };
+      ? { received_at: null, received_by: null, status: "expected", undo_until: null }
+      : { forwarded_at: null, forwarded_by: null, undo_until: null };
   await db.update("order_parcels", `id=${eq(parcelId)}`, patch);
   const fresh = (await loadOrder(parcel.order_id))!;
   await refreshOrderStatus(fresh);
   await refreshMessage(fresh, baseUrl);
-  return step === "received" ? "Annulé : colis remis « attendu »." : "Annulé : remis « à transférer ».";
+  return step === "received" ? "Corrigé : colis remis « attendu »." : "Corrigé : remis « à envoyer ».";
+}
+
+// ───────────────────────── Fiche de l'expéditeur : « 已收到 Reçu » ─────────────────────────
+
+type SheetRef = { order_id: string; expires_at: string };
+
+/** Vérifie que le lien de fiche est valable et que ce colis appartient bien à sa commande. */
+async function sheetParcel(token: string, parcelId: string): Promise<ParcelRow | string> {
+  if (!/^[0-9a-f]{48}$/.test(token)) return "invalid";
+  const sheet = await db.one<SheetRef>("shipping_sheets", `select=order_id,expires_at&token=${eq(token)}`);
+  if (!sheet) return "invalid";
+  if (Date.parse(sheet.expires_at) < Date.now()) return "expired";
+  const parcel = await db.one<ParcelRow>("order_parcels", `${PARCEL_SELECT}&id=${eq(parcelId)}&order_id=${eq(sheet.order_id)}`);
+  return parcel ?? "invalid";
+}
+
+/** L'expéditeur coche « reçu » sur sa fiche : on l'enregistre et on prévient l'équipe sur Telegram. */
+export async function receiveFromSheet(token: string, parcelId: string, baseUrl: string): Promise<"ok" | "already" | "invalid" | "expired"> {
+  const parcel = await sheetParcel(token, parcelId);
+  if (typeof parcel === "string") return parcel as "invalid" | "expired";
+  if (parcel.received_at) return "already";
+  await markParcel(parcelId, "received", baseUrl, SHIPPER);
+  const o = (await loadOrder(parcel.order_id))!;
+  const p = o.order_parcels.find((x) => x.id === parcelId)!;
+  const all = o.order_parcels.every((x) => x.received_at);
+  const chat = o.relay_chat_id ?? adminChatId();
+  await sendMessage(
+    chat,
+    `📥 <b>${esc(o.number)}</b> : colis de <b>${esc(p.suppliers.name)}</b> reçu par l'expéditeur (coché sur sa fiche).` +
+      (all ? `\n📦 Tout est là : l'expéditeur peut expédier, puis envoyer le code de suivi.` : `\nEncore attendu : ${o.order_parcels.filter((x) => !x.received_at).map((x) => esc(x.suppliers.name)).join(", ")}.`),
+  ).catch((e) => console.error("[fiche] message Telegram", e));
+  return "ok";
+}
+
+/** L'expéditeur s'est trompé de colis : il retire son « reçu » dans les UNDO_MINUTES (seulement le sien). */
+export async function undoReceiveFromSheet(token: string, parcelId: string, baseUrl: string): Promise<"ok" | "late" | "invalid" | "expired"> {
+  const parcel = await sheetParcel(token, parcelId);
+  if (typeof parcel === "string") return parcel as "invalid" | "expired";
+  if (undoableStep({ forwardedAt: parcel.forwarded_at, receivedAt: parcel.received_at }, Date.now()) !== "received") return "late";
+  const o = (await loadOrder(parcel.order_id))!;
+  if (o.order_parcels.find((x) => x.id === parcelId)?.received_by !== SHIPPER) return "late";
+  const msg = await undoParcel(parcelId, baseUrl);
+  if (!msg.startsWith("Corrigé")) return "late";
+  const name = o.order_parcels.find((x) => x.id === parcelId)!.suppliers.name;
+  await sendMessage(o.relay_chat_id ?? adminChatId(), `↩️ <b>${esc(o.number)}</b> : l'expéditeur a retiré « reçu » pour <b>${esc(name)}</b> (erreur de colis).`).catch((e) =>
+    console.error("[fiche] message Telegram", e),
+  );
+  return "ok";
+}
+
+// ───────────────────────── Nettoyage des boutons « ↩️ » expirés ─────────────────────────
+
+/**
+ * Retire les boutons « ↩️ Corriger » dont les UNDO_MINUTES sont passées. Appelé à chaque message reçu
+ * par le bot (et chaque ouverture de fiche) : pas de tâche planifiée à maintenir. Même s'il reste affiché,
+ * un ↩️ expiré ne fait plus rien (le serveur refuse et l'efface).
+ */
+export async function sweepExpiredUndo(baseUrl: string): Promise<void> {
+  const now = new Date().toISOString();
+  const parcels = await db.select<{ id: string; order_id: string }>("order_parcels", `select=id,order_id&undo_until=lt.${encodeURIComponent(now)}&limit=50`);
+  for (const orderId of new Set(parcels.map((p) => p.order_id))) {
+    const o = await loadOrder(orderId);
+    if (o) await refreshMessage(o, baseUrl).catch((e) => console.warn("[nettoyage]", e));
+  }
+  if (parcels.length) await db.update("order_parcels", `id=in.(${parcels.map((p) => p.id).join(",")})`, { undo_until: null });
+
+  const subs = await db.select<{ id: string; card_message_id: number | null; orders: { relay_chat_id: number | null } }>(
+    "tracking_submissions",
+    `select=id,card_message_id,orders(relay_chat_id)&undo_until=lt.${encodeURIComponent(now)}&limit=50`,
+  );
+  for (const s of subs) {
+    if (s.card_message_id) await editButtons(s.orders.relay_chat_id ?? adminChatId(), s.card_message_id, []).catch((e) => console.warn("[nettoyage]", e));
+  }
+  if (subs.length) await db.update("tracking_submissions", `id=in.(${subs.map((s) => s.id).join(",")})`, { undo_until: null });
 }
 
 /** /afaire : commandes payées pas encore expédiées, avec ce qui reste à transférer ou à recevoir. */
@@ -264,7 +362,7 @@ async function codeOwner(code: string): Promise<string | null> {
 type Submission = { id: string; order_id: string; tracking_code: string; status: string; card_message_id: number | null; confirmed_at: string | null };
 
 /** ✅ Confirmer / ✖️ Annuler sur la carte de vérification, ↩️ Annuler dans les 15 min. */
-export async function decideSubmission(chat: number, subId: string, decision: "ok" | "no" | "undo", who: string | null): Promise<string> {
+export async function decideSubmission(chat: number, subId: string, decision: "ok" | "no" | "undo" | "undq" | "keepc", who: string | null): Promise<string> {
   const sub = await db.one<Submission>("tracking_submissions", `select=*&id=${eq(subId)}`);
   if (!sub) return "Introuvable.";
   const o = (await loadOrder(sub.order_id))!;
@@ -293,21 +391,29 @@ export async function decideSubmission(chat: number, subId: string, decision: "o
       if (e instanceof DbError && e.isUnique) return "Ce code est déjà utilisé sur une autre commande.";
       throw e;
     }
-    await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "confirmed", confirmed_at: now.toISOString(), decided_by: who });
+    await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "confirmed", confirmed_at: now.toISOString(), decided_by: who, undo_until: undoUntil() });
     await db.update("shipping_sheets", `order_id=${eq(o.id)}`, { expires_at: new Date(now.getTime() + SHEET_DAYS_AFTER_SHIPPING * DAY).toISOString() });
     await refreshOrderStatus((await loadOrder(o.id))!);
     if (sub.card_message_id) await editText(chat, sub.card_message_id, confirmedCard(sub.tracking_code, card, who), undoButtons(sub.id));
     return "Enregistré.";
   }
 
-  // undo
-  if (sub.status !== "confirmed" || !sub.confirmed_at) return "Rien à annuler.";
+  // ↩️ Corriger → Oui / Non → retrait du code
+  if (sub.status !== "confirmed" || !sub.confirmed_at) {
+    if (sub.card_message_id) await editButtons(chat, sub.card_message_id, []);
+    return "Rien à corriger.";
+  }
   if (Date.now() - Date.parse(sub.confirmed_at) > UNDO_MINUTES * 60_000) {
     if (sub.card_message_id) await editButtons(chat, sub.card_message_id, []);
+    await db.update("tracking_submissions", `id=${eq(sub.id)}`, { undo_until: null });
     return `Plus de ${UNDO_MINUTES} min : contacte l'équipe pour corriger.`;
   }
+  if (decision === "undq" || decision === "keepc") {
+    if (sub.card_message_id) await editButtons(chat, sub.card_message_id, undoButtons(sub.id, decision === "undq"));
+    return decision === "undq" ? "Confirme ou touche « Non »." : "Rien n'a changé.";
+  }
   await db.remove("shipments", `order_id=${eq(o.id)}&tracking_code=${eq(sub.tracking_code)}`);
-  await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString(), decided_by: who });
+  await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString(), decided_by: who, undo_until: null });
   await refreshOrderStatus((await loadOrder(o.id))!);
   if (sub.card_message_id) await editText(chat, sub.card_message_id, `↩️ Annulé${who ? ` par ${esc(who)}` : ""} : ${o.number} n'a plus de code de suivi. Renvoie le bon couple « FRL → code ».`);
   return "Annulé.";
@@ -438,6 +544,11 @@ export async function openSheet(token: string, userAgent: string | null) {
   if (!sheet) return null;
   const expired = Date.parse(sheet.expires_at) < Date.now();
   if (!expired) await db.insert("shipping_sheet_views", { sheet_id: sheet.id, user_agent: userAgent?.slice(0, 300) ?? null });
-  return { expired, expiresAt: sheet.expires_at, order: sheet.orders };
+  // Colis que l'expéditeur peut encore « dé-cocher » (son propre « reçu », moins de UNDO_MINUTES).
+  const now = Date.now();
+  const undoable = sheet.orders.order_parcels
+    .filter((p) => p.received_by === SHIPPER && undoableStep({ forwardedAt: p.forwarded_at, receivedAt: p.received_at }, now) === "received")
+    .map((p) => p.id);
+  return { expired, expiresAt: sheet.expires_at, order: sheet.orders, undoable };
 }
 

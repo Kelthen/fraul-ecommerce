@@ -146,7 +146,7 @@ async function Dashboard({ msg }: { msg: string | null }) {
                   <ul>
                     {o.order_parcels.map((p) => (
                       <li key={p.id}>
-                        {p.suppliers.name} : {p.received_at ? "reçu chez l'expéditeur" : p.forwarded_at ? "transféré, colis attendu" : "à transférer"}
+                        {p.suppliers.name} : {p.received_at ? "reçu chez l'expéditeur" : p.forwarded_at ? "envoyé au fournisseur, colis attendu" : "à envoyer au fournisseur"}
                       </li>
                     ))}
                   </ul>

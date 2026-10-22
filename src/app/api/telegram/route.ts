@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { adminChatId, allowedUsers, webhookSecret } from "@/lib/server/env";
-import { decideSubmission, handleTrackingText, markParcel, relayOrder, todoList, undoParcel } from "@/lib/server/relay";
+import { askUndoParcel, decideSubmission, handleTrackingText, markParcel, relayOrder, sweepExpiredUndo, todoList, undoParcel } from "@/lib/server/relay";
 import { answerCallback, sendMessage } from "@/lib/server/telegram";
 import { commandOf, isGroupChat } from "@/models/relay/access";
 import { todoButtons, todoMessage } from "@/models/relay/messages";
@@ -33,8 +33,8 @@ function sameSecret(got: string | null): boolean {
 const HELP = [
   "Bonjour 👋 Je poste ici chaque commande payée.",
   "",
-  "• Sous chaque commande : touche <b>✅ Transféré</b> quand le bloc est envoyé au fournisseur sur WeChat, puis <b>📥 Colis reçu</b> quand l'expéditeur l'a. Le haut du message montre ce qui reste. <b>↩️</b> annule pendant 15 min.",
-  "• /afaire : la liste de tout ce qui reste à transférer ou à recevoir.",
+  "• Sous chaque commande : touche <b>📤 J'ai envoyé à …</b> quand le bloc est collé dans WeChat. L'expéditeur coche lui-même chaque colis reçu sur sa fiche (bouton <b>📥</b> en secours). Le haut du message montre ce qui reste. <b>↩️ Corriger</b> (15 min) demande confirmation.",
+  "• /afaire : la liste de tout ce qui reste à envoyer ou à recevoir.",
   "• Code de suivi : transfère le message de l'expéditeur ou écris",
   "<code>FRL-2026-000123 → LP123456789CN</code>",
   "(une ligne par commande). Je montre une carte à vérifier avant d'enregistrer.",
@@ -60,11 +60,14 @@ export async function POST(request: Request) {
       let reply = "";
       if (action === "fwd") reply = await markParcel(id, "forwarded", base, who(cb.from));
       else if (action === "rcv") reply = await markParcel(id, "received", base, who(cb.from));
+      else if (action === "unq") reply = await askUndoParcel(id, base, true);
+      else if (action === "keep") reply = await askUndoParcel(id, base, false);
       else if (action === "unf") reply = await undoParcel(id, base);
       else if (action === "rsd") {
         await relayOrder(id, base);
         reply = "Commande renvoyée en bas du fil.";
-      } else if (action === "ok" || action === "no" || action === "undo") reply = await decideSubmission(chat, id, action, who(cb.from));
+      } else if (action === "ok" || action === "no" || action === "undo" || action === "undq" || action === "keepc")
+        reply = await decideSubmission(chat, id, action, who(cb.from));
       await answerCallback(cb.id, reply || undefined);
       return ok();
     }
@@ -89,6 +92,8 @@ export async function POST(request: Request) {
     try {
       await sendMessage(chat, "⚠️ Une erreur est survenue, rien n'a été enregistré. Réessaie dans un instant.");
     } catch {}
+  } finally {
+    await sweepExpiredUndo(base).catch((e) => console.warn("[nettoyage]", e));
   }
   return ok();
 }

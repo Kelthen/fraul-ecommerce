@@ -10,7 +10,7 @@ export type PileId = "a_transferer" | "en_attente" | "en_retard" | "expediee";
 
 export const PILES: { id: PileId; label: string }[] = [
   { id: "en_retard", label: "En retard" },
-  { id: "a_transferer", label: "À transférer" },
+  { id: "a_transferer", label: "À envoyer aux fournisseurs" },
   { id: "en_attente", label: "En attente (colis ou suivi)" },
   { id: "expediee", label: "Expédiées" },
 ];
@@ -31,7 +31,7 @@ export function pileOf(o: PileOrder, now: number): { pile: PileId; reasons: stri
   const notForwarded = o.parcels.filter((p) => !p.forwardedAt);
   const notReceived = o.parcels.filter((p) => !p.receivedAt);
   if (notForwarded.length && age > FORWARD_ALERT_HOURS * HOUR)
-    reasons.push(`Pas encore transférée à ${notForwarded.map((p) => p.supplier).join(", ")} (plus de ${FORWARD_ALERT_HOURS} h)`);
+    reasons.push(`Pas encore envoyée à ${notForwarded.map((p) => p.supplier).join(", ")} (plus de ${FORWARD_ALERT_HOURS} h)`);
   if (notReceived.length && age > PARCEL_ALERT_DAYS * DAY)
     reasons.push(`Colis attendu de ${notReceived.map((p) => p.supplier).join(", ")} depuis plus de ${PARCEL_ALERT_DAYS} jours`);
   if (!notReceived.length && age > TRACKING_ALERT_DAYS * DAY) reasons.push(`Tout est reçu mais pas de code de suivi après ${TRACKING_ALERT_DAYS} jours`);
