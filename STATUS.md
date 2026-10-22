@@ -59,6 +59,7 @@ _Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code n
 - **Suivi de commande côté client** (zone de Rhamone, `docs/PARCOURS-COMMANDE.md` §7 de la PR #26) : page `/suivi` en **4 étapes** (Payée → En cours de traitement → En transit → Livrée), une **phrase qui change** sur l'étape en cours, **livraison prévue en fourchette** (« entre le 21 et le 24 oct. »), ligne « plus disponible, remboursée » si une pièce manque ; **4 e-mails** (Payée, En transit, Livrée, Article indisponible) visibles sur `/suivi/e-mails`, **jamais envoyés** ; **Mon compte → Mes commandes** ; dans **Mes envies**, une pièce qui n'est plus en vente reste affichée « Plus disponible » avec un lien vers Fraul Finds. Démo : 3 commandes d'exemple (FRL-1042, FRL-1031, FRL-1017). Délais par zone « décidé par l'équipe, à confirmer » (`src/models/orders/tracking.ts`) — rhamon
 
 - **Boutons « Signature »** (choix de Rhamone, 21 oct.) : dans la fiche en grand et sous l'article d'un rayon, « Au panier » bordeaux avec un sac (44 px de haut), cœur « Envie » rond, « Fiche complète → », « En grand » et « Tourner » en liens ; sur PC, la fiche ne s'étire plus. Code CSS mort retiré ; `npm run check` refuse désormais une classe CSS inutilisée — rhamon
+- **Sécurité** (22 oct.) : Next.js 16.4.0 → **16.4.2**, qui corrige une faille critique (exécution de code à distance via l'optimisation d'images) et un déni de service ; `npm audit` : 0 faille — rhamon
 
 ## 🔄 En cours
 
