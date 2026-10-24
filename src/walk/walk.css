@@ -59,8 +59,22 @@
 .fw .s-cats .s-cat { width: min(240px, 60vw); height: 42px; min-height: 0; padding: 0 16px; border: 0; border-radius: 6px; text-align: left; background: linear-gradient(90deg, rgba(10,10,12,.8), rgba(10,10,12,.55)); color: var(--ivory); box-shadow: 0 2px 10px rgba(0,0,0,.18); }
 .fw .s-cats .s-cat:hover, .fw .s-cats .s-cat:focus-visible, .fw .s-cats .s-cat.on { background: linear-gradient(90deg, var(--bordeaux), #8a0c14); box-shadow: inset 0 0 0 1.5px var(--pearl), 0 4px 14px rgba(104,2,9,.4); }
 .fw .s-cats .s-cat.on::after { content: "›"; float: right; font-size: 18px; line-height: 1; }
-.fw .s-chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
-.fw .s-cats::-webkit-scrollbar, .fw .s-chips::-webkit-scrollbar { display: none; }
+.fw .s-cats::-webkit-scrollbar { display: none; }
+/* Dans un rayon : la même liste, dans un coin qui ne gâche pas le décor (Rhamone, 22 oct.).
+   Téléphone : repliée derrière un bouton « Rayons » sous la barre du haut. PC : ouverte, en bas à gauche, à côté de la fiche. */
+.fw .s-tog { display: none; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border: 0; border-radius: 6px; background: rgba(10,10,12,.78); color: var(--ivory); font: 700 10px/1 var(--body); letter-spacing: .24em; text-transform: uppercase; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+.fw .s-tog svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.fw .store[data-mode="rayon"] .s-label { display: none; }
+.fw .store[data-mode="rayon"] .s-tog { display: inline-flex; align-self: flex-start; }
+.fw .store[data-mode="rayon"] .s-bottom:not(.open) .s-cats { display: none; }
+.fw .store[data-mode="rayon"] .s-bottom.open .s-cats { margin-top: 6px; }
+.fw .store[data-mode="rayon"] .s-cats .s-cat { width: min(220px, 60vw); height: 38px; }
+@media (min-width: 1260px) { /* assez de place à gauche de la fiche (760 px au centre) */
+  .fw .store[data-mode="rayon"] .s-bottom { top: auto; bottom: 24px; z-index: 3; }
+  .fw .store[data-mode="rayon"] .s-tog { display: none; }
+  .fw .store[data-mode="rayon"] .s-label { display: block; }
+  .fw .store[data-mode="rayon"] .s-bottom:not(.open) .s-cats { display: flex; }
+}
 .fw .s-cat { flex: none; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(10,10,12,.6); background: rgba(255,254,247,.9);
   font: 700 11px/1 var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
 .fw .s-cat.sm { min-height: 38px; padding: 0 13px; font-size: 10px; }

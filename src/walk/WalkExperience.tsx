@@ -203,8 +203,13 @@ export function WalkExperience({ data, startBrand }: Props) {
           </button>
         </div>
         <div className="s-bottom" id="sBottom" hidden>
-          {/* Rayons en liste verticale sur le décor, façon menu de jeu (Rhamone, 21 oct.). */}
+          {/* Rayons en liste verticale sur le décor, façon menu de jeu (Rhamone, 21 oct.) ; aussi dans chaque rayon,
+              dans un coin (22 oct.) : en bas à gauche sur PC, repliée derrière « Rayons » sur téléphone. */}
           <p className="s-label">Rayons</p>
+          <button className="s-tog" id="sTog" type="button" aria-expanded="false" aria-controls="sCats">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            Rayons
+          </button>
           <div className="s-cats" id="sCats" />
         </div>
         <button className="s-arrow l" id="sPrev" type="button" hidden aria-label="Article précédent">
@@ -239,7 +244,6 @@ export function WalkExperience({ data, startBrand }: Props) {
               Tourner
             </button>
           </div>
-          <div className="s-chips" id="sChips" />
         </section>
       </div>
 

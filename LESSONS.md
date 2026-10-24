@@ -301,3 +301,9 @@
 - **Cause :** corriger par-dessus au lieu de corriger à la source ; aucune vérification du code mort.
 - **Règle :** on modifie la règle existante à sa place, on supprime ce qu'on remplace, et on retire le style de tout élément supprimé. `npm run check` lance `scripts/dead-css.mjs`, qui refuse une classe CSS inutilisée. Avant une PR, relire son propre diff pour y chercher les restes.
 
+
+### L-53 — Un vêtement sur un portant se montre de côté, sur un vrai cintre
+- **Projet / date :** Fraul, 2026-10-22
+- **Ce qui s'est passé :** maquettes du portant refusées trois fois : vêtements de face dans le rayon, cintre posé sur la capuche, crochet qui « ne ressemble pas à un cintre ». Rhamone : « le cintre prend les épaules, la capuche est derrière, le crochet sort du cou » ; « je t'ai envoyé plein de photos pour que tu te réfères à ça ».
+- **Cause :** dessiné de tête au lieu de partir des photos de vraies boutiques envoyées par Rhamone.
+- **Règle :** dans un rayon, les hauts sont serrés **de côté** (manche et flanc, jamais le devant ni le logo) ; seule la pièce touchée sort et se met de face. Le cintre est caché dans les épaules ; seul un crochet fin en « ? » sort du col et passe par-dessus la barre ; la capuche tombe dans le dos. Avant de dessiner un objet réel, relire les photos de référence de l'humain et montrer une maquette d'abord.

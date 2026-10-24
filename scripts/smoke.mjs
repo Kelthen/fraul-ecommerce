@@ -201,7 +201,7 @@ await check("fraul walk : toucher la vitrine pour entrer", async () => {
   await page.waitForTimeout(1800);
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(800);
   await shot("11-boutique");
 });
@@ -211,6 +211,12 @@ await check("fraul walk : rayon, défiler ne fait pas sortir, ← revient au cen
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await shot("12-rayon");
+  // Dans un rayon, sur téléphone : la liste des rayons est repliée derrière « Rayons », le rayon ouvert y est surligné (Rhamone, 22 oct.).
+  if (await page.locator("#sCats").isVisible()) throw new Error("dans un rayon, la liste des rayons n'est pas repliée");
+  await page.locator("#sTog").click();
+  if ((await page.locator("#sCats .s-cat.on").count()) !== 1) throw new Error("dans un rayon, le rayon ouvert n'est pas surligné");
+  await shot("12a-rayon-liste-ouverte");
+  await page.locator("#sTog").click();
   await page.locator("#iAdd").click();
   // Aucun défilement ne fait sortir d'une boutique (Rhamone, 21 oct.).
   await page.mouse.move(195, 400);
@@ -219,7 +225,7 @@ await check("fraul walk : rayon, défiler ne fait pas sortir, ← revient au cen
   if (await page.locator("#sInfo").isHidden()) throw new Error("défiler a fait quitter le rayon");
   if ((await page.locator("#sQuit").getAttribute("aria-label")) !== "Revenir au centre de la boutique") throw new Error("dans un rayon, le bouton du haut n'est pas ←");
   await page.locator("#sQuit").click();            // ← : retour au centre
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   if ((await page.locator("#sCats .s-cat.on").count()) !== 1) throw new Error("le rayon visité n'est pas surligné dans la liste");
   await page.waitForTimeout(600);
   await page.locator("#sQuit").click();            // ✕ : on sort
@@ -262,7 +268,7 @@ await check("retour : annuaire, focus piégé, Échap", async () => {
 await check("retour : fiche en grand → zoom → rayon → boutique → mall → page précédente", async () => {
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous la boutique");
   await page.locator("#sCats .s-cat").nth(0).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
@@ -279,7 +285,7 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   if ((await page.locator("#iClose").textContent()) !== "Tourner") throw new Error("retour n'a pas rangé le zoom");
   if (await page.locator("#sInfo").isHidden()) throw new Error("retour a fermé le rayon au lieu du zoom");
   await back();
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await shot("14-retour-centre-boutique");
   await back();
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
@@ -346,14 +352,14 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
   const before = await page.locator("#bname").innerText();
   let t = Date.now();
   await page.locator("#enter").click();
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   const tIn = Date.now() - t;
   t = Date.now();
   await page.locator("#sCats .s-cat").first().click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   const tRayon = Date.now() - t;
   await page.locator("#sQuit").click(); // ← : centre de la boutique
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await page.locator("#sQuit").click(); // ✕ : sortir
   t = Date.now();
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
@@ -477,7 +483,7 @@ for (const [w, h, dpr] of [[1920, 1080, 1], [2560, 1440, 1.5]]) {
       if ((await idx()) !== i0) throw new Error(`un cran vers le haut : retour à ${await idx()} (attendu ${i0})`);
       // Entrer, ouvrir un rayon : la molette ne fait jamais sortir ; on sort par ← puis ✕, devant la même boutique.
       await pc.locator("#enter").click();
-      await pc.locator("#sBottom:not([hidden])").waitFor({ timeout: 30000 });
+      await pc.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 30000 });
       const spx = await pc.locator("#sgl").evaluate((c) => c.width * c.height);
       if (spx > 2.6e6) throw new Error(`boutique dessinée en ${(spx / 1e6).toFixed(1)} millions de points`);
       await pc.locator("#sCats .s-cat").first().click();
@@ -486,8 +492,11 @@ for (const [w, h, dpr] of [[1920, 1080, 1], [2560, 1440, 1.5]]) {
       await pc.waitForTimeout(800);
       if (await pc.locator("#store").isHidden()) throw new Error("la molette a fait sortir de la boutique");
       await pc.screenshot({ path: `${OUT}/20-pc-${w}.png` });
+      // Sur PC, la liste des rayons reste ouverte en bas à gauche, sans toucher la fiche de l'article.
+      const list = await pc.locator("#sCats").boundingBox(), info = await pc.locator("#sInfo .s-in").first().boundingBox();
+      if (!list || list.x > 40 || list.x + list.width > info.x) throw new Error("sur PC, la liste des rayons n'est pas dans le coin bas-gauche");
       await pc.locator("#sQuit").click();
-      await pc.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+      await pc.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
       await pc.locator("#sQuit").click();
       await pc.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
       await pc.waitForTimeout(600);
@@ -512,7 +521,7 @@ await check("fiche en grand → « Fiche complète » → retour au Walk : « Fe
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(800);
   await page.locator("#enter").click();
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await page.locator("#sCats .s-cat").first().click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.locator("#iPage").click();
@@ -525,7 +534,7 @@ await check("fiche en grand → « Fiche complète » → retour au Walk : « Fe
   if (await page.locator("#fiche:not([hidden])").count()) throw new Error("la fiche est restée ouverte au retour");
   // Le moteur repart : on peut rouvrir une fiche et la fermer.
   if (await page.locator("#store:not([hidden])").count() === 0) await page.locator("#enter").click();
-  await page.locator("#sBottom:not([hidden]), #sInfo:not([hidden])").first().waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden]), #sInfo:not([hidden])").first().waitFor({ timeout: 20000 });
   if (await page.locator("#sInfo:not([hidden])").count() === 0) { await page.locator("#sCats .s-cat").first().click(); await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 }); }
   await page.locator("#iPage").click();
   await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
