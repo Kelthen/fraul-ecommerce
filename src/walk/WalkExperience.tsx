@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import type { BrandStyle, Category, CategoryId } from "@/lib/catalog/types";
+import { Price, PriceNote } from "@/components/Price";
 import { usePricing } from "@/components/PricingProvider";
 import type { Cost } from "@/models/pricing/price";
 import { startWalk } from "./engine";
@@ -40,7 +41,7 @@ function toItem(data: WalkData, brand: string, cat: CategoryId, [slug, n, p, c, 
 export function WalkExperience({ data, startBrand }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { add, count } = useCart();
+  const { add, count, lines } = useCart();
   const addRef = useRef(add);
   const { price, format } = usePricing();
   const walkRef = useRef<ReturnType<typeof startWalk> | null>(null);
@@ -115,6 +116,9 @@ export function WalkExperience({ data, startBrand }: Props) {
     };
   }, [data, startBrand, router]);
 
+  // La Caisse n'apparaît dans le mall que si le sac contient au moins un article (Rhamone, 18 oct.).
+  useEffect(() => { walkRef.current?.setCaisse(count > 0); }, [count, data, startBrand]);
+
   return (
     <div className="fw" ref={root}>
       <div className="walk" id="walk" hidden>
@@ -153,6 +157,29 @@ export function WalkExperience({ data, startBrand }: Props) {
                   </button>
                 </div>
                 <p className="scroll-hint">↓ Continue vers les boutiques</p>
+              </div>
+              <div className="outro caisse" id="caisse" hidden>
+                <p className="eyebrow">Dernier arrêt avant la sortie</p>
+                <h2>La Caisse</h2>
+                <p className="c-sum">
+                  Ton sac : {count} article{count > 1 ? "s" : ""} · <b><Price costs={lines} /></b>
+                </p>
+                <ul className="c-lines">
+                  {lines.slice(0, 4).map((l, i) => (
+                    <li key={`${l.slug}-${l.size}-${i}`}>
+                      <i style={{ background: l.color }} aria-hidden="true" />
+                      <span>{l.brandName} · {l.name}{l.size ? ` · ${l.size}` : ""}{l.qty > 1 ? ` × ${l.qty}` : ""}</span>
+                    </li>
+                  ))}
+                  {lines.length > 4 && <li className="more">+ {lines.length - 4} autre{lines.length - 4 > 1 ? "s" : ""}</li>}
+                </ul>
+                <PriceNote />
+                <div className="acts">
+                  <Link className="pill solid" href="/panier">
+                    Passer à la caisse
+                  </Link>
+                </div>
+                <p className="scroll-hint">↓ Continue pour sortir</p>
               </div>
               <div className="outro" id="outro" hidden>
                 <p className="eyebrow">Sortie</p>

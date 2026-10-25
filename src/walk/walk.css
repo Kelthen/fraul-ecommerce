@@ -170,3 +170,11 @@
 /* Moins de texte : une aide disparaît dès que le geste a été fait une fois (engine.js, gesture()) */
 .fw.seen-scroll .scroll-hint, .fw.seen-tap .tap-hint { display: none; }
 
+/* La Caisse : dernier arrêt du mall avant la sortie, si le sac n'est pas vide */
+.fw .caisse .c-sum { font-size: 15px; }
+.fw .caisse .c-sum b { font-variant-numeric: tabular-nums; }
+.fw .c-lines { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.fw .c-lines li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fw .c-lines li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fw .c-lines i { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(10, 10, 12, .2); }
+.fw .c-lines .more { color: var(--muted); }

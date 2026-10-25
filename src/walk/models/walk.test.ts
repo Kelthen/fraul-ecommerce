@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createLayerStack } from "./layers.ts";
 import { route } from "./store-layout.ts";
-import { AT_CONCIERGE, AT_ENTRY, AT_EXIT, pathAt, progressForConcierge, progressForShop, stopProgress } from "./walk-path.ts";
+import { AT_CAISSE, AT_CONCIERGE, AT_ENTRY, AT_EXIT, pathAt, progressForCaisse, progressForConcierge, progressForShop, stopProgress } from "./walk-path.ts";
 import { layoutT } from "../modes/t.ts";
 import type { Slot } from "./mall-layout.ts";
 
@@ -68,6 +68,16 @@ test("points d'arrêt : un par étape, dans l'ordre entrée → boutiques et Fra
   assert.equal(seen[0], AT_ENTRY);
   assert.equal(seen[N + 2], AT_EXIT);
   assert.equal(seen.filter((k) => k === AT_CONCIERGE).length, 1);
+});
+
+test("la Caisse : un arrêt juste avant la sortie, seulement si le sac n'est pas vide (Rhamone, 18 oct.)", () => {
+  const sans = Array.from({ length: N + 3 }, (_, j) => pathAt(stopProgress(j, N), N, 10, MALL).shop);
+  assert.ok(!sans.includes(AT_CAISSE), "sac vide : pas de Caisse");
+  const avec = Array.from({ length: N + 4 }, (_, j) => pathAt(stopProgress(j, N, true), N, 10, MALL, true).shop);
+  assert.deepEqual(avec.slice(-2), [AT_CAISSE, AT_EXIT], "Caisse puis sortie");
+  assert.deepEqual(avec.filter((k) => k >= 0), Array.from({ length: N }, (_, k) => k), "toutes les boutiques gardent leur arrêt");
+  assert.equal(pathAt(progressForCaisse(N), N, 10, MALL, true).shop, AT_CAISSE);
+  assert.equal(pathAt(progressForShop(5, N, MALL, true), N, 10, MALL, true).shop, 5);
 });
 
 test("la boutique regardée ne recule jamais quand on avance", () => {

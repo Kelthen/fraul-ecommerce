@@ -8,18 +8,21 @@ import { DARK, accentFor } from "@/lib/catalog/demo";
 import { createFocusController } from "./controllers/focus";
 import { connectHistory } from "./controllers/history";
 import { getMode } from "./modes";
+import { createCaisse } from "./views/caisse";
 import { createConciergeDesk } from "./views/concierge";
 import { createEntrance } from "./views/entrance";
-import { CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
+import { CAISSE_TEXT, CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
-import { AT_CONCIERGE, AT_EXIT, EYE, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
+import { AT_CAISSE, AT_CONCIERGE, AT_EXIT, EYE, lastStop, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
 import { daylightAt, localHour } from "./models/daylight";
 import { matchCategories } from "./models/search";
 
 let THREE = null;
 /** Mannequin modélisé dans Blender par Rhamone (public/models/mannequin.glb, préparé par scripts/prep-mannequin.mjs). */
 let MANNEQUIN = null;
+/** Comptoir de la Caisse modélisé dans Blender par Rhamone (public/models/caisse.glb, préparé par scripts/prep-decor.mjs). */
+let CAISSE = null;
 
 /**
  * Démarre le Fraul Walk dans `root`.
@@ -28,7 +31,7 @@ let MANNEQUIN = null;
  *                    onAdd, onExit, onFallback, onFiche, onConcierge, startShop, startStore,
  *                    mode (forme du mall, src/walk/modes ; « t » par défaut),
  *                    hour (heure décimale pour la lumière ; par défaut l'heure locale du visiteur)
- * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void, closeConcierge(): void }}
+ * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void, closeConcierge(): void, setCaisse(on: boolean): void }}
  */
 export function startWalk(root, o) {
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -172,18 +175,32 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; MANNEQUIN = await loadMannequin(); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE] = await Promise.all([loadModel("mannequin"), loadModel("caisse")]); if (CAISSE) walkMaterials(CAISSE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
 
-  // Chargé avec three.js ; s'il manque ou tarde (plus de 4 s), on garde le mannequin dessiné (mannequin() plus bas).
-  async function loadMannequin() {
+  // Chargés avec three.js ; un modèle qui manque ou tarde (plus de 4 s) laisse la version dessinée (mannequin, Caisse).
+  async function loadModel(name) {
     try {
       const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
       const late = new Promise((_, no) => setTimeout(() => no(new Error("trop lent")), 4000));
-      return (await Promise.race([new GLTFLoader().loadAsync("/models/mannequin.glb"), late])).scene;
+      return (await Promise.race([new GLTFLoader().loadAsync(`/models/${name}.glb`), late])).scene;
     } catch { return null; }
+  }
+  // Matières de Blender → matières simples du Walk (léger sur téléphone, même éclairage partout), selon leur nom.
+  // Les lumières (liserets, halos) brillent par elles-mêmes.
+  function walkMaterials(root3d) {
+    const done = {};
+    const make = (m) => {
+      const n = m.name, c = m.color;
+      if (/Lumiere/.test(n)) return new THREE.MeshBasicMaterial({ color: 0xffe9c8 });
+      if (/Laiton|Alu/.test(n)) return new THREE.MeshPhongMaterial({ color: c, specular: 0xffe2a8, shininess: 70 });
+      if (/Marbre|Perle|Bordeaux|Encre/.test(n)) return new THREE.MeshPhongMaterial({ color: c, specular: 0x555555, shininess: 50 });
+      return new THREE.MeshLambertMaterial({ color: c });
+    };
+    // Les faces visibles des deux côtés dans Blender le restent.
+    root3d.traverse((ob) => { if (ob.isMesh) ob.material = done[ob.material.name] ||= Object.assign(make(ob.material), { side: ob.material.side }); });
   }
 
   /* ===== Outils 3D partagés (textures, vêtements, mannequins) ===== */
@@ -422,15 +439,16 @@ export function startWalk(root, o) {
   const SLOTS = LAYOUT.slots, ENTRY = LAYOUT.entry;
   const N = Math.min(SHOPS.length, SLOTS.length);
 
-  // Parcours : entrée → un arrêt face à chaque vitrine → sortie (src/walk/models/walk-path.ts).
-  let dist = 10;
-  const pathAt = (p) => pathAtFor(p, N, dist, LAYOUT);
+  // Parcours : entrée → un arrêt face à chaque vitrine → la Caisse si le sac n'est pas vide → sortie (src/walk/models/walk-path.ts).
+  let dist = 10, withCaisse = false, caisseObj = null;
+  const pathAt = (p) => pathAtFor(p, N, dist, LAYOUT, withCaisse);
+  const LAST = () => lastStop(N, withCaisse), stopAt = (j) => stopProgress(j, N, withCaisse);
 
   let MALL = null, progress = 0, curShop = 0, curKey = null, walkOpen = false, storeOpen = false;
   const walkEl = $("#walk"), track = $("#walkTrack");
-  track.style.height = ((N + 2) * 90 + 100) + "vh"; // + l'arrêt Fraul Finds
   // Pour le test téléphone : nombre d'étapes et place de Fraul Finds dans le parcours.
-  walkEl.dataset.stops = String(N + 2); walkEl.dataset.conAfter = String(LAYOUT.concierge.after);
+  const sizeTrack = () => { track.style.height = (LAST() * 90 + 100) + "vh"; walkEl.dataset.stops = String(LAST()); };
+  sizeTrack(); walkEl.dataset.conAfter = String(LAYOUT.concierge.after);
   const prog = $("#prog");
   for (let k = 0; k < 9; k++) { const i = document.createElement("i"); i.append(document.createElement("b")); prog.append(i); }
   const bars = [...prog.querySelectorAll("b")];
@@ -440,6 +458,7 @@ export function startWalk(root, o) {
     $("#aisle").hidden = i < 0;
     $("#outro").hidden = i !== AT_EXIT;
     $("#conStop").hidden = i !== AT_CONCIERGE;
+    $("#caisse").hidden = i !== AT_CAISSE;
     if (i < 0) return;
     curShop = i;
     $("#count").textContent = `Boutique ${String(i + 1).padStart(2, "0")} / ${String(N).padStart(2, "0")}`;
@@ -477,8 +496,8 @@ export function startWalk(root, o) {
   function placeSnaps() {
     track.querySelectorAll(".snap").forEach((el) => el.remove());
     const range = track.offsetHeight - walkEl.clientHeight;
-    for (let j = 0; j <= N + 2; j++) {
-      const el = document.createElement("i"); el.className = "snap"; el.style.top = Math.round(stopProgress(j, N) * range) + "px"; track.append(el);
+    for (let j = 0; j <= LAST(); j++) {
+      const el = document.createElement("i"); el.className = "snap"; el.style.top = Math.round(stopAt(j) * range) + "px"; track.append(el);
     }
   }
   on(window, "resize", () => { if (walkOpen) placeSnaps(); });
@@ -493,12 +512,12 @@ export function startWalk(root, o) {
     if (!fresh) return;
     const range = track.offsetHeight - walkEl.clientHeight;
     let cur = 0;
-    for (let j = 1; j <= N + 2; j++) if (Math.abs(stopProgress(j, N) * range - walkEl.scrollTop) < Math.abs(stopProgress(cur, N) * range - walkEl.scrollTop)) cur = j;
-    const next = clamp(cur + Math.sign(e.deltaY), 0, N + 2);
-    walkEl.scrollTo({ top: stopProgress(next, N) * range, behavior: RM ? "auto" : "smooth" });
+    for (let j = 1; j <= LAST(); j++) if (Math.abs(stopAt(j) * range - walkEl.scrollTop) < Math.abs(stopAt(cur) * range - walkEl.scrollTop)) cur = j;
+    const next = clamp(cur + Math.sign(e.deltaY), 0, LAST());
+    walkEl.scrollTo({ top: stopAt(next) * range, behavior: RM ? "auto" : "smooth" });
   }, { passive: false });
   function jumpToShop(k) {
-    const p = progressForShop(k, N, LAYOUT);
+    const p = progressForShop(k, N, LAYOUT, withCaisse);
     walkEl.scrollTop = p * (track.offsetHeight - walkEl.clientHeight);
     if (MALL) MALL.snap(); onWalkScroll();
   }
@@ -596,8 +615,28 @@ export function startWalk(root, o) {
     add(scene, new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ color: DL.night ? SKY : 0xffffff }), 0, 5, STEM_END + 14, Math.PI); // dehors : le jour, ou le ciel du soir
     flat(scene, 30, 16, std(0xe2dccf, 0.5), 0, -0.01, STEM_END + 7);
     const sign = (txt, x, z, rot) => { const m = flat(scene, 4.6, 0.86, new THREE.MeshBasicMaterial({ map: U.labelTex(txt, "#680209"), transparent: true }), x, 0.006, z); if (rot) m.rotation.z = Math.PI; };
-    sign("ENTRÉE ↑", 2.8, STEM_END - 5, false);
-    sign("SORTIE ↓", -2.8, STEM_END - 5, true);
+    // Près des portes : plus loin, « SORTIE » passait sous le texte de la Caisse (L-54).
+    sign("ENTRÉE ↑", 2.8, STEM_END - 1.6, false);
+    sign("SORTIE ↓", -2.8, STEM_END - 1.6, true);
+
+    // La Caisse : dernier arrêt avant les portes, seulement si le sac n'est pas vide (setCaisse). Comptoir de Blender
+    // (Rhamone, 25 oct.) avec l'enseigne « La Caisse » au repère ; à défaut, le comptoir dessiné (src/walk/views/caisse.ts).
+    const CA = LAYOUT.caisse;
+    if (CAISSE) {
+      const g = new THREE.Group(); g.position.set(CA.x, 0, CA.z); g.rotation.y = Math.atan2(CA.nx, CA.nz); scene.add(g);
+      g.add(CAISSE.clone(true));
+      const [c, x] = U.cv(1024, 384);
+      x.fillStyle = "#420A0D"; x.fillRect(0, 0, 1024, 384); x.strokeStyle = "#C8A96A"; x.lineWidth = 6; x.strokeRect(18, 18, 988, 348);
+      x.fillStyle = "#FFFEF7"; x.textAlign = "center"; x.textBaseline = "middle";
+      x.font = `600 150px ${o.fonts.serif}`; x.fillText(CAISSE_TEXT.title, 512, 170);
+      x.font = `500 40px ${o.fonts.sans}`; x.fillText(CAISSE_TEXT.sub.toUpperCase(), 512, 290);
+      const r = CAISSE.getObjectByName("Repere_Enseigne_Caisse").position;
+      add(g, new THREE.PlaneGeometry(1.8, 0.675), new THREE.MeshBasicMaterial({ map: U.T(c) }), r.x, r.y + 0.35, r.z + 0.05);
+      caisseObj = g;
+    } else {
+      caisseObj = createCaisse(THREE, { ...CA, ...CAISSE_TEXT, serif: o.fonts.serif, sans: o.fonts.sans }).group; scene.add(caisseObj);
+    }
+    caisseObj.visible = withCaisse;
 
     // Pièce centrale : grand « F » Fraul sur un socle, entouré d'arbres en pot
     const C = new THREE.Group(); C.position.set(0, 0, -16); scene.add(C);
@@ -1198,6 +1237,14 @@ export function startWalk(root, o) {
     closeConcierge: () => closeLayer("concierge"),
     showItem: (slug) => { if (STORE) STORE.show(slug); },
     refocus: () => trapUpdate(),
+    /** Sac vide → pas de Caisse : le parcours va droit aux portes. On garde l'endroit où l'on est. */
+    setCaisse(on) {
+      if (on === withCaisse) return;
+      const range = () => Math.max(1, track.offsetHeight - walkEl.clientHeight), u = (walkEl.scrollTop / range()) * LAST();
+      withCaisse = on; sizeTrack();
+      if (caisseObj) caisseObj.visible = on;
+      if (!walkEl.hidden) { placeSnaps(); walkEl.scrollTop = (u / LAST()) * range(); onWalkScroll(); }
+    },
     destroy() {
       // Mémorise la boutique et le rayon ouverts, pour y revenir si l'on revient sur le Walk dans la même visite.
       try { sessionStorage.setItem("fraul.walk.resume", JSON.stringify({ brand: storeEl.hidden ? null : sBrand, cat: sCat, at: Date.now() })); } catch { /* ignoré */ }
