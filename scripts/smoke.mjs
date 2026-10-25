@@ -205,6 +205,7 @@ await check("fraul walk : toucher la vitrine pour entrer", async () => {
   await page.waitForTimeout(800);
   // Les mannequins viennent du modèle Blender de Rhamone (25 oct.), pas du dessin de secours.
   if ((await page.locator("[data-mannequin]").getAttribute("data-mannequin")) !== "blender") throw new Error("mannequin Blender non chargé");
+  if ((await page.locator("[data-facade]").getAttribute("data-facade")) !== "blender") throw new Error("façade Blender non chargée");
   await shot("11-boutique");
 });
 

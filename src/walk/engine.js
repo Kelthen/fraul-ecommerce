@@ -18,8 +18,11 @@ import { daylightAt, localHour } from "./models/daylight";
 import { matchCategories } from "./models/search";
 
 let THREE = null;
-/** Mannequin modélisé dans Blender par Rhamone (public/models/mannequin.glb, préparé par scripts/prep-mannequin.mjs). */
-let MANNEQUIN = null;
+/**
+ * Modèles faits dans Blender par Rhamone (public/models/, préparés par scripts/prep-mannequin.mjs et scripts/prep-decor.mjs) :
+ * mannequin, façade de boutique, galerie du mall. Absent ou trop lent = on garde la version dessinée en code.
+ */
+const MODELS = {};
 
 /**
  * Démarre le Fraul Walk dans `root`.
@@ -172,18 +175,36 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; MANNEQUIN = await loadMannequin(); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; await loadModels(); root.dataset.mannequin = MODELS.mannequin ? "blender" : "dessin"; root.dataset.facade = MODELS.facade ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
 
-  // Chargé avec three.js ; s'il manque ou tarde (plus de 4 s), on garde le mannequin dessiné (mannequin() plus bas).
-  async function loadMannequin() {
-    try {
-      const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
-      const late = new Promise((_, no) => setTimeout(() => no(new Error("trop lent")), 4000));
-      return (await Promise.race([new GLTFLoader().loadAsync("/models/mannequin.glb"), late])).scene;
-    } catch { return null; }
+  // Chargés avec three.js, en parallèle ; un modèle qui manque ou tarde (plus de 4 s) laisse la version dessinée.
+  async function loadModels() {
+    let L = null;
+    try { L = new (await import("three/examples/jsm/loaders/GLTFLoader.js")).GLTFLoader(); } catch { return; }
+    const late = () => new Promise((_, no) => setTimeout(() => no(new Error("trop lent")), 4000));
+    await Promise.all(["mannequin", "facade", "galerie"].map(async (name) => {
+      try { MODELS[name] = (await Promise.race([L.loadAsync(`/models/${name}.glb`), late()])).scene; } catch { MODELS[name] = null; }
+    }));
+    ["facade", "galerie"].forEach((name) => MODELS[name] && walkMaterials(MODELS[name]));
+  }
+  // Matières de Blender → matières simples du Walk (léger sur téléphone, même éclairage partout), selon leur nom.
+  // Les lumières (liserets, halos) brillent par elles-mêmes ; le verre devient un voile transparent.
+  function walkMaterials(root3d) {
+    const done = {};
+    const make = (m) => {
+      const n = m.name, c = m.color;
+      // Halo = panneau lumineux qui remplit une arche : translucide, sinon il cache le mannequin de la vitrine.
+      if (/Lumiere_Halo/.test(n)) return new THREE.MeshBasicMaterial({ color: 0xffe9c8, transparent: true, opacity: 0.22, depthWrite: false });
+      if (/Lumiere/.test(n)) return new THREE.MeshBasicMaterial({ color: 0xffe9c8 });
+      if (/Verre/.test(n)) return new THREE.MeshBasicMaterial({ color: 0xe8eef0, transparent: true, opacity: 0.16, depthWrite: false });
+      if (/Laiton|Alu/.test(n)) return new THREE.MeshPhongMaterial({ color: c, specular: 0xffe2a8, shininess: 70 });
+      if (/Marbre|Perle|Bordeaux|Encre/.test(n)) return new THREE.MeshPhongMaterial({ color: c, specular: 0x555555, shininess: 50 });
+      return new THREE.MeshLambertMaterial({ color: c });
+    };
+    root3d.traverse((ob) => { if (ob.isMesh) ob.material = done[ob.material.name] ||= make(ob.material); });
   }
 
   /* ===== Outils 3D partagés (textures, vêtements, mannequins) ===== */
@@ -350,7 +371,7 @@ export function startWalk(root, o) {
       return MQ[key];
     }
     function blenderMannequin(st, variant) {
-      const g = MANNEQUIN.clone(true), [tee, ink] = (variant ? [st.fg, st.bg] : [st.bg, st.fg]).map((c) => `#${new THREE.Color(c).getHexString()}`);
+      const g = MODELS.mannequin.clone(true), [tee, ink] = (variant ? [st.fg, st.bg] : [st.bg, st.fg]).map((c) => `#${new THREE.Color(c).getHexString()}`);
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
@@ -367,7 +388,7 @@ export function startWalk(root, o) {
     }
     function joint(g, p, r, mat, sx = 1, sy = 1, sz = 1) { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat); m.position.set(...p); m.scale.set(sx, sy, sz); g.add(m); return m; }
     function mannequin(st, variant) {
-      if (MANNEQUIN) return blenderMannequin(st, variant);
+      if (MODELS.mannequin) return blenderMannequin(st, variant);
       const g = new THREE.Group(), darkSkin = variant === 1, hoodie = variant === 1;
       const skin = new THREE.MeshPhongMaterial({ color: darkSkin ? 0x1c1c1f : 0xf4f3f0, specular: darkSkin ? 0xb0b0b0 : 0x9a9a9a, shininess: 110 });
       const topCol = new THREE.Color(hoodie ? st.fg : st.bg);
@@ -599,6 +620,19 @@ export function startWalk(root, o) {
     sign("ENTRÉE ↑", 2.8, STEM_END - 5, false);
     sign("SORTIE ↓", -2.8, STEM_END - 5, true);
 
+    // Galerie de Blender (Rhamone, 25 oct.) : on reprend ses pièces là où elles ne gênent pas la caméra (qui marche au milieu
+    // de l'allée) : verrières au plafond du tronc, jardinières et bancs autour du « F ».
+    const GAL = MODELS.galerie;
+    const galPart = (names, cx, cz) => {
+      const p = new THREE.Group();
+      names.forEach((n) => { const o = GAL.getObjectByName(n).clone(); o.position.x -= cx; o.position.z -= cz; p.add(o); });
+      return p;
+    };
+    if (GAL) {
+      const sky = galPart(["Gal_Verriere", "Gal_Verriere_Cadre"], 0, 3.3);
+      for (let z = 4; z < STEM_END - 3; z += SLOT) { const v = sky.clone(); v.position.set(0, CEIL - 4.99, z); scene.add(v); }
+    }
+
     // Pièce centrale : grand « F » Fraul sur un socle, entouré d'arbres en pot
     const C = new THREE.Group(); C.position.set(0, 0, -16); scene.add(C);
     // Comptoir Fraul Finds au pied du « F », tourné vers l'entrée (src/walk/views/concierge.ts), placé par le mode
@@ -614,7 +648,11 @@ export function startWalk(root, o) {
     add(F, new THREE.BoxGeometry(2.7, 0.75, 0.75), fM, 0.2, 4.03, 0);
     add(F, new THREE.BoxGeometry(2.0, 0.65, 0.75), fM, -0.15, 2.6, 0);
     const leafA = lam(0x6b7a55), leafB = lam(0x56653f), trunkM = lam(0x7a6450), potM = std(0xdcd3c4, 0.5);
+    const planter = GAL && galPart(["Gal_Jardiniere", "Gal_Jardiniere_Liseret", "Gal_Arbuste", "Gal_Arbuste_Tronc"], 1.55, 3.3);
+    const bench = GAL && galPart(["Gal_Banc_Assise", "Gal_Banc_Pieds"], 0, 3.3);
+    if (bench) [[0, 4.6, 0], [0, -4.6, Math.PI]].forEach(([x, z, r]) => { const b = bench.clone(); b.position.set(x, 0, z); b.rotation.y = r; C.add(b); });
     [[-5.5, -3.5], [5.5, -3.5], [-5.5, 3.5], [5.5, 3.5]].forEach(([x, z], k) => {
+      if (planter) { const p = planter.clone(); p.position.set(x, 0, z); p.scale.setScalar(1.6); C.add(p); return; }
       const t = new THREE.Group(); t.position.set(x, 0, z); C.add(t);
       add(t, new THREE.CylinderGeometry(0.75, 0.6, 0.9, 20), potM, 0, 0.45, 0);
       add(t, new THREE.CylinderGeometry(0.08, 0.12, 2.0, 8), trunkM, 0, 1.9, 0);
@@ -626,9 +664,28 @@ export function startWalk(root, o) {
     const metal = std(0xc9c3b9, 0.3, 0.7), lightLine = new THREE.MeshBasicMaterial({ color: 0xfffaf0 });
     const glow = U.glowTex(true), pillarM = lam(0xfbf9f4);
     const hits = [], shops = [];
+    // Façade de Blender (Rhamone, 25 oct.) : agrandie pour faire toute la hauteur du mall, proportions gardées,
+    // deux piliers de pierre comblent la largeur de la vitrine ; le nom de la marque se pose sur son bandeau (repère).
+    const FAC = MODELS.facade, FS = CEIL / 4.4, FW = 2.03 * FS, stoneM = lam(0xd8cdb4);
+    const facNode = (name) => FAC.getObjectByName(name).position.clone().multiplyScalar(FS);
+    function blenderFacade(g, st) {
+      const f = FAC.clone(true); f.scale.setScalar(FS); f.position.z = 0.2; g.add(f);
+      // Le mur du fond de la vitrine recule derrière le podium, pour que le mannequin soit bien dans la vitrine.
+      f.getObjectByName("Fac_Mur_Fond_Vitrine").position.z -= 0.85;
+      [-1, 1].forEach((sd) => add(g, new THREE.BoxGeometry(SLOT / 2 - FW, CEIL, 0.4), stoneM, sd * (SLOT / 2 + FW) / 2, CEIL / 2, 0.2));
+      const r = facNode("Repere_Facade_Nom_Marque");
+      add(g, new THREE.PlaneGeometry(3.3 * FS, 0.55 * FS), new THREE.MeshBasicMaterial({ map: U.wordTex(st, { w: 1024, h: 170, bg: st.bg, maxW: 900, px: 110 }) }), r.x, r.y, 0.2 + r.z + 0.02);
+    }
     SLOTS.slice(0, N).forEach((s, k) => {
       const st = SHOPS[k], g = new THREE.Group();
       g.position.set(s.x, 0, s.z); g.rotation.y = Math.atan2(s.nx, s.nz); scene.add(g);
+      if (FAC) {
+        blenderFacade(g, st);
+        const hit = add(g, new THREE.PlaneGeometry(SLOT - 0.4, CEIL), new THREE.MeshBasicMaterial({ visible: false }), 0, CEIL / 2, 0.6);
+        hit.userData.shop = k; hits.push(hit);
+        shops.push({ g, st, s, detail: null, backdrop: new THREE.Object3D() });
+        return;
+      }
       const facade = std(new THREE.Color(st.bg).getHex(), 0.6, 0.05, 0.05);
       [-1, 1].forEach((sd) => add(g, new THREE.BoxGeometry(1.75, CEIL, 0.4), facade, sd * 3.25, CEIL / 2, 0.2));
       add(g, new THREE.BoxGeometry(4.8, CEIL - 4.2, 0.4), facade, 0, 4.2 + (CEIL - 4.2) / 2, 0.2);
@@ -646,6 +703,7 @@ export function startWalk(root, o) {
     });
     function buildDetail(sh, k) {
       const d = new THREE.Group(), st = sh.st; sh.g.add(d); sh.detail = d;
+      if (FAC) { facadeDetail(sh, d); return; }
       [-1, 1].forEach((sd) => {
         add(d, new THREE.PlaneGeometry(1.35, 3.2), new THREE.MeshBasicMaterial({ map: glow }), sd * 3.25, 1.8, 0.41);
         const m = U.mannequin(st, sd > 0 ? 1 : 0); m.position.set(sd * 3.25, 0, 0.9); m.rotation.y = -sd * 0.2; d.add(m);
@@ -673,6 +731,18 @@ export function startWalk(root, o) {
       let n = 0;
       [-1, 1].forEach((sd) => { for (let z = -1.2; z > -6.1 && n < 30; z -= 0.33, n++) { const h = 0.95 + ((n + k) % 3) * 0.1; dm.position.set(sd * 3.75, 2.75 - h / 2, z); dm.scale.set(0.05, h, 0.6); dm.updateMatrix(); rail.setMatrixAt(n, dm.matrix); rail.setColorAt(n, new THREE.Color(GC[(n * 3 + k) % GC.length])); } });
       rail.count = n; d.add(rail);
+    }
+    // Façade de Blender, à l'approche : le mannequin dans la vitrine (repère), et la pièce phare encadrée derrière la porte vitrée.
+    function facadeDetail(sh, d) {
+      const st = sh.st, r = facNode("Repere_Mannequin_Vitrine");
+      const m = U.mannequin(st, 0); m.position.set(r.x, r.y, 0.2 + r.z); m.rotation.y = 0.15; d.add(m);
+      const live = liveItems(st.name);
+      if (!live.length) return;
+      const f = new THREE.Group(); f.position.set(0.95 * FS, 0, 0.2 - 0.75); d.add(f); // au milieu de la porte (arche de 0,3 à 1,6 m)
+      add(f, new THREE.BoxGeometry(1.16, 1.5, 0.06), frameM, 0, 2.2, -0.04);
+      add(f, new THREE.CylinderGeometry(0.02, 0.02, 1.4, 8), frameM, 0, 0.7, -0.05);
+      sh.live = { items: live, frames: [add(f, new THREE.PlaneGeometry(1.06, 1.4), new THREE.MeshBasicMaterial({ color: 0xffffff }), 0, 2.2, 0.001)], k: 0 };
+      showLive(sh);
     }
     // Pièces phares d'une marque pour sa vitrine : les vraies photos d'abord, 6 au plus.
     const frameM = std(0x1b1b1d, 0.4, 0.3);
