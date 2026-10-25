@@ -307,3 +307,9 @@
 - **Ce qui s'est passé :** maquettes du portant refusées trois fois : vêtements de face dans le rayon, cintre posé sur la capuche, crochet qui « ne ressemble pas à un cintre ». Rhamone : « le cintre prend les épaules, la capuche est derrière, le crochet sort du cou » ; « je t'ai envoyé plein de photos pour que tu te réfères à ça ».
 - **Cause :** dessiné de tête au lieu de partir des photos de vraies boutiques envoyées par Rhamone.
 - **Règle :** dans un rayon, les hauts sont serrés **de côté** (manche et flanc, jamais le devant ni le logo) ; seule la pièce touchée sort et se met de face. Le cintre est caché dans les épaules ; seul un crochet fin en « ? » sort du col et passe par-dessus la barre ; la capuche tombe dans le dos. Avant de dessiner un objet réel, relire les photos de référence de l'humain et montrer une maquette d'abord.
+
+### L-54 — Un mot ne doit jamais en cacher un autre
+- **Projet / date :** Fraul, 2026-10-25
+- **Ce qui s'est passé :** dans le rayon Pantalons, le panneau 3D « PANTALONS » passait sous le nom de la boutique ; dans Hoodies, le crochet de la pièce choisie coupait « HOODIES ». Rhamone : « c'est des trucs que tu dois vérifier ».
+- **Cause :** les textes dessinés dans la 3D bougent avec la caméra ; personne ne vérifiait qu'ils ne passaient pas sous les textes et boutons de l'écran.
+- **Règle :** un texte important ne vit pas dans la 3D quand l'écran affiche autre chose par-dessus : il passe dans l'interface (titre), et la 3D garde au plus un filigrane derrière les objets. Regarder chaque capture du test en cherchant un mot coupé ou recouvert ; le test téléphone vérifie le titre de chaque rayon.
