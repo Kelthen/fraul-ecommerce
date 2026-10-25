@@ -234,6 +234,31 @@ await check("fraul walk : rayon, défiler ne fait pas sortir, ← revient au cen
   await shot("12b-sorti-de-la-boutique");
 });
 
+// Un mot ne doit jamais en cacher un autre (Rhamone, 25 oct. : « PANTALONS » sous le titre, crochet au milieu de « HOODIES ») :
+// dans un rayon, son nom est en haut, sous la marque, en entier ; les panneaux 3D des rayons ne s'affichent plus.
+await check("fraul walk : dans chaque rayon, son nom en haut, en entier, sous la marque", async () => {
+  await goShop(1);
+  await page.waitForTimeout(1800);
+  const box = await page.locator("#gl").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  for (const label of ["T-shirts", "Hoodies et sweats", "Pantalons", "Casquettes"]) {
+    if (await page.locator("#sTog").isVisible()) await page.locator("#sTog").click();
+    await page.locator("#sCats .s-cat", { hasText: label }).click();
+    await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+    await page.waitForTimeout(700);
+    await shot(`12d-titre-${label.split(" ")[0].toLowerCase()}`);
+    const t = await page.locator("#sTitle").evaluate((el) => ({ text: el.textContent, cut: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1 }));
+    if (t.text.split("\n")[1] !== label) throw new Error(`rayon ${label} : titre « ${t.text} »`);
+    if (t.cut) throw new Error(`rayon ${label} : titre coupé`);
+  }
+  await page.locator("#sQuit").click();
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  if (!(await page.locator("#sTitle").textContent()).endsWith("· Boutique")) throw new Error("au centre, le titre n'est pas revenu à « · Boutique »");
+  await page.locator("#sQuit").click();
+  await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+});
+
 await check("fraul walk : sortie du mall", async () => {
   await page.locator("#walk").evaluate((el) => (el.scrollTop = el.scrollHeight));
   await page.locator("#outro:not([hidden])").waitFor({ timeout: 10000 });
