@@ -12,7 +12,7 @@ import { createConciergeDesk } from "./views/concierge";
 import { createEntrance } from "./views/entrance";
 import { CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
-import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
+import { MODULES, MODULE_LAYOUT, RACKS, STORE_ZONES, route } from "./models/store-layout";
 import { AT_CONCIERGE, AT_EXIT, EYE, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
 import { daylightAt, localHour } from "./models/daylight";
 import { matchCategories } from "./models/search";
@@ -23,6 +23,8 @@ let THREE = null;
  * mannequin, façade de boutique, galerie du mall. Absent ou trop lent = on garde la version dessinée en code.
  */
 const MODELS = {};
+/** Plan de la boutique : celui des modules de Blender s'ils sont chargés, sinon la boutique dessinée (store-layout.ts). */
+let CAR = RACKS, ZONES = STORE_ZONES, around = (a, b) => route(a, b);
 
 /**
  * Démarre le Fraul Walk dans `root`.
@@ -175,7 +177,7 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; await loadModels(); root.dataset.mannequin = MODELS.mannequin ? "blender" : "dessin"; root.dataset.facade = MODELS.facade ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; await loadModels(); root.dataset.mannequin = MODELS.mannequin ? "blender" : "dessin"; root.dataset.facade = MODELS.facade ? "blender" : "dessin"; root.dataset.boutique = MODELS.boutique ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
@@ -185,10 +187,11 @@ export function startWalk(root, o) {
     let L = null;
     try { L = new (await import("three/examples/jsm/loaders/GLTFLoader.js")).GLTFLoader(); } catch { return; }
     const late = () => new Promise((_, no) => setTimeout(() => no(new Error("trop lent")), 4000));
-    await Promise.all(["mannequin", "facade", "galerie"].map(async (name) => {
+    await Promise.all(["mannequin", "facade", "galerie", "boutique"].map(async (name) => {
       try { MODELS[name] = (await Promise.race([L.loadAsync(`/models/${name}.glb`), late()])).scene; } catch { MODELS[name] = null; }
     }));
-    ["facade", "galerie"].forEach((name) => MODELS[name] && walkMaterials(MODELS[name]));
+    ["facade", "galerie", "boutique"].forEach((name) => MODELS[name] && walkMaterials(MODELS[name]));
+    if (MODELS.boutique) { CAR = MODULE_LAYOUT.racks; ZONES = MODULE_LAYOUT.zones; around = (a, b) => route(a, b, MODULE_LAYOUT.box, MODULE_LAYOUT.corners); }
   }
   // Matières de Blender → matières simples du Walk (léger sur téléphone, même éclairage partout), selon leur nom.
   // Les lumières (liserets, halos) brillent par elles-mêmes ; le verre devient un voile transparent.
@@ -204,7 +207,8 @@ export function startWalk(root, o) {
       if (/Marbre|Perle|Bordeaux|Encre/.test(n)) return new THREE.MeshPhongMaterial({ color: c, specular: 0x555555, shininess: 50 });
       return new THREE.MeshLambertMaterial({ color: c });
     };
-    root3d.traverse((ob) => { if (ob.isMesh) ob.material = done[ob.material.name] ||= make(ob.material); });
+    // Les faces visibles des deux côtés dans Blender le restent (murs vus de l'intérieur).
+    root3d.traverse((ob) => { if (ob.isMesh) ob.material = done[ob.material.name] ||= Object.assign(make(ob.material), { side: ob.material.side }); });
   }
 
   /* ===== Outils 3D partagés (textures, vêtements, mannequins) ===== */
@@ -320,8 +324,21 @@ export function startWalk(root, o) {
     const SIDE_W = 104;
     function sideTexture(type, color, img, onLoad, k = 2) {
       const [cn, x] = cv(SIDE_W * k, 320 * k), tex = T(cn);
+      // Pantalon sur cintre à pinces, vu de côté : une jambe longue et étroite, la ceinture en haut, un pli.
+      const pants = (c) => {
+        const cx = 50, top = 72, hem = 312, shade = (f) => `#${new THREE.Color(c).multiplyScalar(f).getHexString()}`;
+        x.fillStyle = c; x.fill(new Path2D(`M${cx - 17} ${top} H${cx + 17} L${cx + 15} ${hem} H${cx - 13} Z`));
+        x.fillStyle = shade(0.78); x.fillRect(cx - 17, top, 34, 9);
+        x.save(); x.globalCompositeOperation = "source-atop";
+        const g = x.createLinearGradient(cx - 18, 0, cx + 18, 0); g.addColorStop(0, "rgba(255,255,255,.12)"); g.addColorStop(1, "rgba(0,0,0,.25)");
+        x.fillStyle = g; x.fillRect(0, 0, SIDE_W, 320); x.restore();
+        x.strokeStyle = shade(0.65); x.lineWidth = 1.4; x.stroke(new Path2D(`M${cx + 2} ${top + 12} L${cx + 1} ${hem - 4}`));
+        x.fillStyle = "#2b2a2c"; x.fillRect(cx - 19, top - 8, 38, 4); x.fillRect(cx - 4, top - 6, 8, 12); // barre et pince du cintre
+        hook(x, cx);
+      };
       const draw = (c) => {
         x.setTransform(k, 0, 0, k, 0, 0); x.clearRect(0, 0, SIDE_W, 320);
+        if (type === "pants") { pants(c); tex.needsUpdate = true; return; }
         const hood = type !== "tee", cx = 50, ny = 66, D = hood ? 46 : 42, hem = ny + (hood ? 228 : 220);
         const sl = hood ? ny + 190 : ny + 68, sw = hood ? 36 : 44, sx = cx - 2;
         const shade = (f) => { const t = new THREE.Color(c).multiplyScalar(f); return `#${t.getHexString()}`; };
@@ -970,126 +987,169 @@ export function startWalk(root, o) {
     const dl = new THREE.DirectionalLight(0xffffff, 0.45); dl.position.set(2, 6, 4); scene.add(dl);
     const pl = new THREE.PointLight(0xffffff, 0.5, 12, 1.5); pl.position.set(0, 3.5, -2); scene.add(pl);
 
-    /* Surfaces à lumière « cuite » : ombres et reflets peints une fois dans les textures */
-    { const [c, x] = U.cv(512, 256);
-      const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, "#f4f2ee"); g.addColorStop(0.72, "#e2ded8"); g.addColorStop(0.93, "#cdc8c1"); g.addColorStop(1, "#a8a39c");
-      x.fillStyle = g; x.fillRect(0, 0, 512, 256);
-      for (let i = 0; i < 7; i++) { const gx = (i + 0.5) * 512 / 7, r = x.createRadialGradient(gx, 0, 4, gx, 0, 130); r.addColorStop(0, "rgba(255,255,255,.6)"); r.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = r; x.fillRect(gx - 140, 0, 280, 150); }
-      const wallM = basic({ map: U.T(c) });
-      add(new THREE.PlaneGeometry(16, 4.2), wallM, -6, 2.1, -8, Math.PI / 2);
-      add(new THREE.PlaneGeometry(16, 4.2), wallM, 6, 2.1, -8, -Math.PI / 2);
-      add(new THREE.PlaneGeometry(12, 4.2), wallM, 0, 2.1, -16);
-    }
-    { const [c, x] = U.cv(512, 704), X = (v) => (v + 6) / 12 * 512, Y = (z) => (z + 16) / 16 * 704;
-      x.fillStyle = "#a39f98"; x.fillRect(0, 0, 512, 704);
-      for (let i = 0; i < 5000; i++) { x.fillStyle = `rgba(${Math.random() < 0.5 ? "255,255,255" : "0,0,0"},${(Math.random() * 0.05).toFixed(3)})`; x.fillRect(Math.random() * 512, Math.random() * 704, 2, 2); }
-      [-2, 2].forEach((sx) => { const g = x.createLinearGradient(X(sx) - 44, 0, X(sx) + 44, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,.3)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(X(sx) - 44, Y(-15.6), 88, Y(-0.4) - Y(-15.6)); });
-      const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.42)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
-      ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
-      const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
-      blob(0, -8.8, 150, 0.36); [[-2.6, -1.6], [2.6, -1.6], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
-      const fl = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c) }), 0, 0, -8); fl.rotation.x = -Math.PI / 2;
-    }
-    const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: 0xf1efeb }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
-    const white = basic({ color: 0xffffff });
-    [-2, 2].forEach((sx) => add(new THREE.BoxGeometry(0.14, 0.03, 15.2), white, sx, 4.18, -8));
-    const spotGeo = new THREE.CircleGeometry(0.07, 16);
-    for (let z = -1.2; z > -15.5; z -= 1.6) [-4.6, 4.6].forEach((sx) => { const s = add(spotGeo, white, sx, 4.19, z); s.rotation.x = Math.PI / 2; });
-
-    // Façade à la couleur de la marque, sol extérieur, enseigne (texte, jamais le logo)
-    const facadeM = basic({ color: new THREE.Color(st.bg) });
-    add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, -3.8, 2.1, 0); add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, 3.8, 2.1, 0);
-    add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
-    const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
-    add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
-
-    // Mur du fond : panneau de la marque + étagères à sneakers éclairées.
-    // Sur téléphone, la liste des rayons passe devant ce panneau : le nom de la marque descend alors sur l'îlot (Rhamone, 21 oct.).
-    const wallSign = [
-      add(new THREE.BoxGeometry(3.2, 2.4, 0.08), basic({ color: new THREE.Color(st.bg) }), 0, 2.15, -15.95),
-      add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st), transparent: true }), 0, 2.4, -15.9),
-      add(new THREE.PlaneGeometry(1.6, 0.15), basic({ map: U.labelTex("FRAUL · BOUTIQUE", st.fg), transparent: true, opacity: 0.6 }), 0, 1.65, -15.9),
-    ];
-
-    const decoMat = {}, deco = (type, c, a) => decoMat[type + c + a] || (decoMat[type + c + a] = new THREE.MeshLambertMaterial({ map: U.itemTexture(type, c, a, false, st), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
-    const NK = [["#F1ECE0", "#2B2A2C"], ["#141416", "#F1ECE0"], ["#680209", "#F1ECE0"], ["#EAE0C8", "#420A0D"], ["#6B6766", "#141416"], ["#202833", "#EAE0C8"]];
-    const shelfM = lam(0xf4f2ee), ledM = basic({ color: 0xfff6e6 }), shoeGeo = new THREE.PlaneGeometry(0.36, 0.2);
-    [-1, 1].forEach((s) => {
-      const cx = s * 3.75;
-      [0.55, 0.95, 1.35, 1.75, 2.15].forEach((y, li) => {
-        add(new THREE.BoxGeometry(3.5, 0.035, 0.34), shelfM, cx, y, -15.82);
-        add(new THREE.BoxGeometry(3.5, 0.01, 0.02), ledM, cx, y - 0.025, -15.66);
-        if (s < 0 && li === 2) return; // cette étagère porte le rayon sneakers interactif
-        for (let k = 0; k < 4; k++) { const [c, a] = NK[(k + li * 2 + (s > 0 ? 3 : 0)) % NK.length]; const m = add(shoeGeo, deco("sneaker", c, a), cx - 1.25 + k * 0.83, y + 0.12, -15.78); if (k % 2) m.scale.x = -1; }
-      });
-    });
-
-    // Portants muraux. À gauche (hauts) : vêtements de côté, serrés, comme dans une vraie boutique (Rhamone, 22 oct.),
-    // autour du rayon interactif ; on laisse libre la place où ses pièces glissent. À droite (pantalons) : profils simples.
-    const metalM = lam(0x1b1b1d), gData = [], sideDeco = [];
-    const GC = [0xf1ece0, 0x141416, 0x680209, 0x6b6766, 0xeae0c8, 0x202833, 0x2b2a2c, 0x9a938a];
-    function wallRail(side, z0, z1, long, zc, cat) {
-      const y = 1.78, rx = side * 5.62, len = z0 - z1;
-      const rod = add(new THREE.CylinderGeometry(0.016, 0.016, len, 8), metalM, rx, y, (z0 + z1) / 2); rod.rotation.x = Math.PI / 2;
-      [z0, z1].forEach((z) => add(new THREE.BoxGeometry(0.4, 0.03, 0.03), metalM, side * 5.8, y, z));
-      const r = cat && CAR[cat], free = r ? Math.max(0.6, (products(st.name, cat).length - 1) * r.side + r.sp) : 2.3;
-      let n = 0; for (let z = z0 - 0.15; z > z1 + 0.15; z -= cat ? 0.16 : 0.14, n++) {
-        if (Math.abs(z - zc) < free) continue;
-        const c = GC[(n * 3 + (long ? 2 : 0)) % GC.length];
-        if (r) { sideDeco.push([z, c, cat, n]); continue; }
-        const h = (long ? 0.95 : 0.78) + ((n * 7) % 3) * 0.05; gData.push([side * 5.6, y - 0.05 - h / 2, z, 0.5, h, 0.045, c]);
+    // Nom de la marque (mur du fond sur PC, îlot ou table sur téléphone) et panneaux des rayons, posés par le décor.
+    let wallSign = [], tableSign = null, signs = [];
+    const sign = (cat, t, x, y, z, ry, big = false) => { const m = add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true, depthWrite: false }), x, y, z, ry); m.userData = { cat, y, big }; return m; };
+    if (MODELS.boutique) moduleDecor();
+    else {
+      /* Surfaces à lumière « cuite » : ombres et reflets peints une fois dans les textures */
+      { const [c, x] = U.cv(512, 256);
+        const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, "#f4f2ee"); g.addColorStop(0.72, "#e2ded8"); g.addColorStop(0.93, "#cdc8c1"); g.addColorStop(1, "#a8a39c");
+        x.fillStyle = g; x.fillRect(0, 0, 512, 256);
+        for (let i = 0; i < 7; i++) { const gx = (i + 0.5) * 512 / 7, r = x.createRadialGradient(gx, 0, 4, gx, 0, 130); r.addColorStop(0, "rgba(255,255,255,.6)"); r.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = r; x.fillRect(gx - 140, 0, 280, 150); }
+        const wallM = basic({ map: U.T(c) });
+        add(new THREE.PlaneGeometry(16, 4.2), wallM, -6, 2.1, -8, Math.PI / 2);
+        add(new THREE.PlaneGeometry(16, 4.2), wallM, 6, 2.1, -8, -Math.PI / 2);
+        add(new THREE.PlaneGeometry(12, 4.2), wallM, 0, 2.1, -16);
       }
-    }
-    wallRail(-1, -3.6, -9.2, false, -6.4, "tee"); wallRail(-1, -9.8, -15.2, false, -12.4, "hoodie"); wallRail(1, -8.6, -15.2, true, -11.9);
-    { const mats = {}, geo = new THREE.PlaneGeometry(CAR.tee.size[0] * U.SIDE_W / 256, CAR.tee.size[1]);
-      sideDeco.forEach(([z, c, cat, n]) => {
-        const key = cat + c, hex = `#${new THREE.Color(c).getHexString()}`;
-        const m = mats[key] || (mats[key] = new THREE.MeshLambertMaterial({ map: U.sideTexture(cat, hex), transparent: true, alphaTest: 0.4 }));
-        add(geo, m, -5.57 - (n % 3) * 0.004, CAR[cat].o[1], z, Math.PI / 2);
+      { const [c, x] = U.cv(512, 704), X = (v) => (v + 6) / 12 * 512, Y = (z) => (z + 16) / 16 * 704;
+        x.fillStyle = "#a39f98"; x.fillRect(0, 0, 512, 704);
+        for (let i = 0; i < 5000; i++) { x.fillStyle = `rgba(${Math.random() < 0.5 ? "255,255,255" : "0,0,0"},${(Math.random() * 0.05).toFixed(3)})`; x.fillRect(Math.random() * 512, Math.random() * 704, 2, 2); }
+        [-2, 2].forEach((sx) => { const g = x.createLinearGradient(X(sx) - 44, 0, X(sx) + 44, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,.3)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(X(sx) - 44, Y(-15.6), 88, Y(-0.4) - Y(-15.6)); });
+        const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.42)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
+        ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
+        const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
+        blob(0, -8.8, 150, 0.36); [[-2.6, -1.6], [2.6, -1.6], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
+        const fl = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c) }), 0, 0, -8); fl.rotation.x = -Math.PI / 2;
+      }
+      const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: 0xf1efeb }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
+      const white = basic({ color: 0xffffff });
+      [-2, 2].forEach((sx) => add(new THREE.BoxGeometry(0.14, 0.03, 15.2), white, sx, 4.18, -8));
+      const spotGeo = new THREE.CircleGeometry(0.07, 16);
+      for (let z = -1.2; z > -15.5; z -= 1.6) [-4.6, 4.6].forEach((sx) => { const s = add(spotGeo, white, sx, 4.19, z); s.rotation.x = Math.PI / 2; });
+
+      // Façade à la couleur de la marque, sol extérieur, enseigne (texte, jamais le logo)
+      const facadeM = basic({ color: new THREE.Color(st.bg) });
+      add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, -3.8, 2.1, 0); add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, 3.8, 2.1, 0);
+      add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
+      const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
+      add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
+
+      // Mur du fond : panneau de la marque + étagères à sneakers éclairées.
+      // Sur téléphone, la liste des rayons passe devant ce panneau : le nom de la marque descend alors sur l'îlot (Rhamone, 21 oct.).
+      wallSign = [
+        add(new THREE.BoxGeometry(3.2, 2.4, 0.08), basic({ color: new THREE.Color(st.bg) }), 0, 2.15, -15.95),
+        add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st), transparent: true }), 0, 2.4, -15.9),
+        add(new THREE.PlaneGeometry(1.6, 0.15), basic({ map: U.labelTex("FRAUL · BOUTIQUE", st.fg), transparent: true, opacity: 0.6 }), 0, 1.65, -15.9),
+      ];
+
+      const decoMat = {}, deco = (type, c, a) => decoMat[type + c + a] || (decoMat[type + c + a] = new THREE.MeshLambertMaterial({ map: U.itemTexture(type, c, a, false, st), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
+      const NK = [["#F1ECE0", "#2B2A2C"], ["#141416", "#F1ECE0"], ["#680209", "#F1ECE0"], ["#EAE0C8", "#420A0D"], ["#6B6766", "#141416"], ["#202833", "#EAE0C8"]];
+      const shelfM = lam(0xf4f2ee), ledM = basic({ color: 0xfff6e6 }), shoeGeo = new THREE.PlaneGeometry(0.36, 0.2);
+      [-1, 1].forEach((s) => {
+        const cx = s * 3.75;
+        [0.55, 0.95, 1.35, 1.75, 2.15].forEach((y, li) => {
+          add(new THREE.BoxGeometry(3.5, 0.035, 0.34), shelfM, cx, y, -15.82);
+          add(new THREE.BoxGeometry(3.5, 0.01, 0.02), ledM, cx, y - 0.025, -15.66);
+          if (s < 0 && li === 2) return; // cette étagère porte le rayon sneakers interactif
+          for (let k = 0; k < 4; k++) { const [c, a] = NK[(k + li * 2 + (s > 0 ? 3 : 0)) % NK.length]; const m = add(shoeGeo, deco("sneaker", c, a), cx - 1.25 + k * 0.83, y + 0.12, -15.78); if (k % 2) m.scale.x = -1; }
+        });
       });
+
+      // Portants muraux. À gauche (hauts) : vêtements de côté, serrés, comme dans une vraie boutique (Rhamone, 22 oct.),
+      // autour du rayon interactif ; on laisse libre la place où ses pièces glissent. À droite (pantalons) : profils simples.
+      const metalM = lam(0x1b1b1d), gData = [], sideDeco = [];
+      const GC = [0xf1ece0, 0x141416, 0x680209, 0x6b6766, 0xeae0c8, 0x202833, 0x2b2a2c, 0x9a938a];
+      function wallRail(side, z0, z1, long, zc, cat) {
+        const y = 1.78, rx = side * 5.62, len = z0 - z1;
+        const rod = add(new THREE.CylinderGeometry(0.016, 0.016, len, 8), metalM, rx, y, (z0 + z1) / 2); rod.rotation.x = Math.PI / 2;
+        [z0, z1].forEach((z) => add(new THREE.BoxGeometry(0.4, 0.03, 0.03), metalM, side * 5.8, y, z));
+        const r = cat && CAR[cat], free = r ? Math.max(0.6, (products(st.name, cat).length - 1) * r.side + r.sp) : 2.3;
+        let n = 0; for (let z = z0 - 0.15; z > z1 + 0.15; z -= cat ? 0.16 : 0.14, n++) {
+          if (Math.abs(z - zc) < free) continue;
+          const c = GC[(n * 3 + (long ? 2 : 0)) % GC.length];
+          if (r) { sideDeco.push([z, c, cat, n]); continue; }
+          const h = (long ? 0.95 : 0.78) + ((n * 7) % 3) * 0.05; gData.push([side * 5.6, y - 0.05 - h / 2, z, 0.5, h, 0.045, c]);
+        }
+      }
+      wallRail(-1, -3.6, -9.2, false, -6.4, "tee"); wallRail(-1, -9.8, -15.2, false, -12.4, "hoodie"); wallRail(1, -8.6, -15.2, true, -11.9);
+      { const mats = {}, geo = new THREE.PlaneGeometry(CAR.tee.size[0] * U.SIDE_W / 256, CAR.tee.size[1]);
+        sideDeco.forEach(([z, c, cat, n]) => {
+          const key = cat + c, hex = `#${new THREE.Color(c).getHexString()}`;
+          const m = mats[key] || (mats[key] = new THREE.MeshLambertMaterial({ map: U.sideTexture(cat, hex), transparent: true, alphaTest: 0.4 }));
+          add(geo, m, -5.57 - (n % 3) * 0.004, CAR[cat].o[1], z, Math.PI / 2);
+        });
+      }
+
+      // Mur à casquettes
+      add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
+      const crownG = new THREE.SphereGeometry(0.12, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), brimG = new THREE.CylinderGeometry(0.125, 0.125, 0.012, 20, 1, false, 0, Math.PI);
+      [1.0, 2.08].forEach((y, r) => { for (let k = 0; k < 7; k++) {
+        const m = lam(GC[(k + r * 3) % GC.length]), g = new THREE.Group();
+        const cr = new THREE.Mesh(crownG, m); cr.scale.set(1, 0.85, 1); const br = new THREE.Mesh(brimG, m); br.position.x = 0.07;
+        g.add(cr, br); g.position.set(5.82, y, -2.85 - k * 0.65); g.rotation.y = Math.PI; scene.add(g);
+      } });
+
+      // Vitrine à accessoires (îlot central)
+      add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
+      add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
+      tableSign = add(new THREE.PlaneGeometry(2.3, 0.45), basic({ map: U.wordTex(st, { bg: st.bg }) }), 0, 0.52, -7.99);
+      // Cloche en verre assez haute pour que les sacs soient bien dedans, même vus d'en haut
+      const glassG = new THREE.BoxGeometry(2.3, 0.62, 1.5);
+      add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.23, -8.8);
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
+
+      // Mannequins habillés par le gabarit de la marque
+      [[-2.6, -1.6, 0.45, 0], [2.6, -1.6, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
+
+      // Signalétique
+      // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
+      // filigrane presque invisible, derrière les vêtements (idée de Rhamone) : un mot ne doit jamais en cacher un autre
+      // (25 oct. : « PANTALONS » sous le titre, le crochet de la pièce choisie au milieu de « HOODIES »).
+      const sign = (cat, t, x, y, z, ry) => { const m = add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true, depthWrite: false }), x, y, z, ry); m.userData = { cat, y }; return m; };
+      signs = [["tee", "T-SHIRTS", -6, -6.4], ["hoodie", "HOODIES", -6, -12.4], ["cap", "CASQUETTES", 6, -4.8], ["pants", "PANTALONS", 6, -11.9]]
+        .map(([cat, t, wx, z]) => sign(cat, t, wx - Math.sign(wx) * (cat === "cap" ? 0.06 : 0.02), 2.85, z, wx < 0 ? Math.PI / 2 : -Math.PI / 2));
+      [-3.75, 3.75].forEach((x) => signs.push(sign("sneaker", "SNEAKERS", x, 2.62, -15.97)));
+      signs.push(sign("bag", "ACCESSOIRES", 0, 1.6, -9.62));
+
+      const gm = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), gData.length), dmy = new THREE.Object3D();
+      gData.forEach(([x, y, z, sx, sy, sz, c], k) => { dmy.position.set(x, y, z); dmy.scale.set(sx, sy, sz); dmy.updateMatrix(); gm.setMatrixAt(k, dmy.matrix); gm.setColorAt(k, new THREE.Color(c)); });
+      scene.add(gm);
     }
-
-    // Mur à casquettes
-    add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
-    const crownG = new THREE.SphereGeometry(0.12, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), brimG = new THREE.CylinderGeometry(0.125, 0.125, 0.012, 20, 1, false, 0, Math.PI);
-    [1.0, 2.08].forEach((y, r) => { for (let k = 0; k < 7; k++) {
-      const m = lam(GC[(k + r * 3) % GC.length]), g = new THREE.Group();
-      const cr = new THREE.Mesh(crownG, m); cr.scale.set(1, 0.85, 1); const br = new THREE.Mesh(brimG, m); br.position.x = 0.07;
-      g.add(cr, br); g.position.set(5.82, y, -2.85 - k * 0.65); g.rotation.y = Math.PI; scene.add(g);
-    } });
-
-    // Vitrine à accessoires (îlot central)
-    add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
-    add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
-    const tableSign = add(new THREE.PlaneGeometry(2.3, 0.45), basic({ map: U.wordTex(st, { bg: st.bg }) }), 0, 0.52, -7.99);
-    // Cloche en verre assez haute pour que les sacs soient bien dedans, même vus d'en haut
-    const glassG = new THREE.BoxGeometry(2.3, 0.62, 1.5);
-    add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.23, -8.8);
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
-
-    // Mannequins habillés par le gabarit de la marque
-    [[-2.6, -1.6, 0.45, 0], [2.6, -1.6, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
-
-    // Signalétique
-    // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
-    // filigrane presque invisible, derrière les vêtements (idée de Rhamone) : un mot ne doit jamais en cacher un autre
-    // (25 oct. : « PANTALONS » sous le titre, le crochet de la pièce choisie au milieu de « HOODIES »).
-    const sign = (cat, t, x, y, z, ry) => { const m = add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true, depthWrite: false }), x, y, z, ry); m.userData = { cat, y }; return m; };
-    const signs = [["tee", "T-SHIRTS", -6, -6.4], ["hoodie", "HOODIES", -6, -12.4], ["cap", "CASQUETTES", 6, -4.8], ["pants", "PANTALONS", 6, -11.9]]
-      .map(([cat, t, wx, z]) => sign(cat, t, wx - Math.sign(wx) * (cat === "cap" ? 0.06 : 0.02), 2.85, z, wx < 0 ? Math.PI / 2 : -Math.PI / 2));
-    [-3.75, 3.75].forEach((x) => signs.push(sign("sneaker", "SNEAKERS", x, 2.62, -15.97)));
-    signs.push(sign("bag", "ACCESSOIRES", 0, 1.6, -9.62));
     function watermark(cat) {
       signs.forEach((m) => {
-        const on = m.userData.cat === cat, big = on && cat !== "bag" && cat !== "sneaker";
+        const on = m.userData.cat === cat, big = on && m.userData.big;
         m.visible = !cat || on; m.material.opacity = cat ? 0.1 : 1;
         m.position.y = big ? 1.3 : m.userData.y; m.scale.setScalar(big ? 2.4 : 1);
       });
     }
 
-    const gm = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), gData.length), dmy = new THREE.Object3D();
-    gData.forEach(([x, y, z, sx, sy, sz, c], k) => { dmy.position.set(x, y, z); dmy.scale.set(sx, sy, sz); dmy.updateMatrix(); gm.setMatrixAt(k, dmy.matrix); gm.setColorAt(k, new THREE.Color(c)); });
-    scene.add(gm);
+    // Boutique en modules de Blender (Rhamone, 25 oct.) : entrée, 3 travées, table, fond. Une niche par rayon
+    // (src/walk/models/store-layout.ts, MODULE_LAYOUT) ; le reste de la niche choisit sa variante (barre ou étagères).
+    function moduleDecor() {
+      const M = MODELS.boutique, L = MODULE_LAYOUT;
+      scene.traverse((l) => { if (l.isHemisphereLight) l.intensity = 0.82; }); // sol en pierre perle : moins de lumière, sinon il sort crème
+      const put = (name, z) => { const g = M.getObjectByName(name).clone(true); g.position.z = z; scene.add(g); return g; };
+      put("Module_Entree", 0);
+      for (let k = 0; k < MODULES.travees; k++) {
+        const t = put("Module_Travee", -(MODULES.entree + k * MODULES.travee));
+        [["G", -1], ["D", 1]].forEach(([s, side]) => {
+          const kind = Object.values(MODULES.niches).find(([kk, sd]) => kk === k && sd === side)?.[2] ?? "etageres";
+          ["Barre", "Barre_Supports"].forEach((n) => (t.getObjectByName(`Trv_Niche_${s}_Variante_${n}`).visible = kind === "barre"));
+          ["Etageres", "Etageres_Liserets"].forEach((n) => (t.getObjectByName(`Trv_Niche_${s}_Variante_${n}`).visible = kind === "etageres"));
+        });
+      }
+      const tableZ0 = -(MODULES.entree + MODULES.travees * MODULES.travee);
+      put("Module_Table", tableZ0);
+      const fondZ0 = tableZ0 - MODULES.table, fond = put("Module_Fond", fondZ0);
+      // Nom de la marque sur l'arche du fond (repère), et sur la table pour le téléphone (la liste des rayons passe devant le fond).
+      const r = M.getObjectByName("Repere_Nom_Marque").position;
+      wallSign = [add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st), transparent: true }), r.x, r.y, fondZ0 + r.z + 0.03)];
+      tableSign = add(new THREE.PlaneGeometry(0.92, 0.18), basic({ map: U.wordTex(st, { bg: st.bg }) }), 0, 0.5, tableZ0 - 0.49);
+      fond.updateMatrixWorld();
+      // Deux mannequins sur le podium de l'entrée (repères)
+      ["Repere_Mannequin_1", "Repere_Mannequin_2"].forEach((n, i) => {
+        const p = M.getObjectByName(n).position, m = U.mannequin(st, i);
+        m.position.set(p.x, p.y, p.z); m.rotation.y = 0.5 - i * 0.3; scene.add(m);
+      });
+      // Panneau au-dessus de chaque niche (devient un filigrane dans le rayon)
+      const LABEL = { tee: "T-SHIRTS", hoodie: "HOODIES", pants: "PANTALONS", cap: "CASQUETTES", sneaker: "SNEAKERS" };
+      Object.entries(LABEL).forEach(([cat, t]) => {
+        const [k, side] = MODULES.niches[cat];
+        signs.push(sign(cat, t, side * 3.97, 3.2, L.nicheZ(k), -side * Math.PI / 2));
+      });
+      signs.push(sign("bag", "ACCESSOIRES", 0, 1.25, L.tableZ - 0.95));
+    }
 
     /* Rayons interactifs : les vrais articles pendent dans la scène, face et dos */
     // Article avec photo (vrai produit) : sa photo face / dos ; sinon le dessin à sa couleur.
@@ -1146,7 +1206,9 @@ export function startWalk(root, o) {
           if (age < 1.6) m.rotateZ(Math.sin(age * 7) * 0.08 * Math.exp(-age * 2.4));
           if (closeAmt > 0) m.rotateY(yaw * closeAmt);
         }
-        const op = (1 - smooth(L - (side ? 1.5 : 0.7), L, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1);
+        // Portant dans une niche (`len`) : les pièces qui sortiraient de la niche disparaissent, sauf celle qu'on tient.
+        const inNiche = cfg.len && !(isActive && w > 0) ? 1 - smooth(cfg.len - 0.12, cfg.len + 0.04, Math.abs(along)) : 1;
+        const op = (1 - smooth(L - (side ? 1.5 : 0.7), L, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1) * inNiche;
         const face = side ? w : 1, sd = m.userData.side; // de côté : le devant n'apparaît que sur la pièce choisie
         m.userData.mats.forEach((mt) => (mt.opacity = op * face));
         m.children[0].visible = m.children[1].visible = face > 0.01;
@@ -1183,7 +1245,7 @@ export function startWalk(root, o) {
     function walk(zone, cb) {
       const Z = ZONES[zone], a = [cam.pos.x, cam.pos.z];
       if (RM || dist2(a, Z.p) < 0.05) { place(zone); cb(); return; }
-      const curve = new THREE.CatmullRomCurve3(route(a, Z.p).map(([x, z]) => V(x, 1.65, z)), false, "centripetal"), len = curve.getLength();
+      const curve = new THREE.CatmullRomCurve3(around(a, Z.p).map(([x, z]) => V(x, 1.65, z)), false, "centripetal"), len = curve.getLength();
       // Trajets vers un rayon très courts (0,5 s au plus, Rhamone) : on veut voir les produits vite.
       cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 12, 0.25, 0.5) * 1000, fromLook: cam.look.clone(), toLook: V(...Z.look), cb };
       storeEl.dataset.walkMs = String(Math.round(cam.walk.dur)); // lu par le test téléphone (0,5 s au plus)
@@ -1225,7 +1287,7 @@ export function startWalk(root, o) {
     function resize() {
       const w = storeEl.clientWidth || innerWidth, h = storeEl.clientHeight || innerHeight, a = w / h;
       renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 72 : 56; camera.updateProjectionMatrix();
-      wallSign.forEach((m) => (m.visible = a >= 1)); tableSign.visible = a < 1; // nom de la marque : mur sur PC, îlot sur téléphone
+      wallSign.forEach((m) => (m.visible = a >= 1)); tableSign.visible = a < 1 && !active; // nom de la marque : mur sur PC, îlot sur téléphone (au centre seulement)
       kick();
     }
     window.addEventListener("resize", () => { if (!storeEl.hidden) resize(); }, sig);
@@ -1234,7 +1296,7 @@ export function startWalk(root, o) {
       brand: st.name, place, walk, resize,
       /** Prépare l'affichage (shaders) en coulisse, pour que la première image soit immédiate à l'entrée. */
       warm() { try { place("hub"); renderer.compile(scene, camera); } catch { /* ignoré */ } },
-      setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; watermark(cat); if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
+      setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; watermark(cat); tableSign.visible = !cat && camera.aspect < 1; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
       focus: (cat) => Math.round(cars[cat].target),
       count: (cat) => cars[cat].items.length,
       item: (cat, k) => cars[cat].items[k],
