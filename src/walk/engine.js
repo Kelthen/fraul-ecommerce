@@ -18,6 +18,8 @@ import { daylightAt, localHour } from "./models/daylight";
 import { matchCategories } from "./models/search";
 
 let THREE = null;
+/** Mannequin modélisé dans Blender par Rhamone (public/models/mannequin.glb, préparé par scripts/prep-mannequin.mjs). */
+let MANNEQUIN = null;
 
 /**
  * Démarre le Fraul Walk dans `root`.
@@ -170,9 +172,18 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then((m) => { THREE = m; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; MANNEQUIN = await loadMannequin(); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
+  }
+
+  // Chargé avec three.js ; s'il manque ou tarde (plus de 4 s), on garde le mannequin dessiné (mannequin() plus bas).
+  async function loadMannequin() {
+    try {
+      const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
+      const late = new Promise((_, no) => setTimeout(() => no(new Error("trop lent")), 4000));
+      return (await Promise.race([new GLTFLoader().loadAsync("/models/mannequin.glb"), late])).scene;
+    } catch { return null; }
   }
 
   /* ===== Outils 3D partagés (textures, vêtements, mannequins) ===== */
@@ -318,13 +329,33 @@ export function startWalk(root, o) {
       if (img) { const im = new Image(); im.onload = () => { const c = photoColor(im); if (c) { draw(c); onLoad(); } }; im.src = img; }
       return tex;
     }
-    // Mannequin de vitrine : tête ovale brillante sans visage, long cou, buste sculpté, bras posés
+    // Mannequin de Blender : on garde ses formes, ses matières passent à l'éclairage simple du Walk (léger sur téléphone).
+    // Le tee prend la couleur de la marque, comme le mannequin dessiné.
+    const MQ = {}, MQ_MAT = {
+      Mannequin_Blanc_Laque: () => new THREE.MeshPhongMaterial({ color: 0xf4f3f0, specular: 0x9a9a9a, shininess: 110 }),
+      Jean_Noir_Delave: () => new THREE.MeshLambertMaterial({ color: 0x2a2b31 }),
+      Basket_Blanc: () => new THREE.MeshPhongMaterial({ color: 0xf6f5f2, shininess: 30 }),
+      Semelle_Blanc: () => new THREE.MeshPhongMaterial({ color: 0xe9e7e2, shininess: 20 }),
+      Socle_Metal_Brosse: () => new THREE.MeshPhongMaterial({ color: 0x9c9ca0, specular: 0x777777, shininess: 60 }),
+    };
+    function blenderMannequin(st, variant) {
+      const g = MANNEQUIN.clone(true), tee = `#${new THREE.Color(variant ? st.fg : st.bg).getHexString()}`;
+      g.traverse((ob) => {
+        if (!ob.isMesh) return;
+        const n = ob.material.name;
+        ob.material = n === "Tee_Noir" ? (MQ[tee] ||= new THREE.MeshLambertMaterial({ color: tee }))
+          : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
+      });
+      return g;
+    }
+    // Mannequin dessiné (secours si le modèle Blender ne charge pas) : tête ovale brillante sans visage, long cou, buste sculpté, bras posés
     function limb(g, a, b, r1, r2, mat) {
       const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), m = new THREE.Mesh(new THREE.CylinderGeometry(r2, r1, A.distanceTo(B), 16), mat);
       m.position.copy(A).add(B).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize()); g.add(m); return m;
     }
     function joint(g, p, r, mat, sx = 1, sy = 1, sz = 1) { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat); m.position.set(...p); m.scale.set(sx, sy, sz); g.add(m); return m; }
     function mannequin(st, variant) {
+      if (MANNEQUIN) return blenderMannequin(st, variant);
       const g = new THREE.Group(), darkSkin = variant === 1, hoodie = variant === 1;
       const skin = new THREE.MeshPhongMaterial({ color: darkSkin ? 0x1c1c1f : 0xf4f3f0, specular: darkSkin ? 0xb0b0b0 : 0x9a9a9a, shininess: 110 });
       const topCol = new THREE.Color(hoodie ? st.fg : st.bg);

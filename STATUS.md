@@ -61,6 +61,7 @@ _Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code n
 
 - **Boutons « Signature »** (choix de Rhamone, 21 oct.) : dans la fiche en grand et sous l'article d'un rayon, « Au panier » bordeaux avec un sac (44 px de haut), cœur « Envie » rond, « Fiche complète → », « En grand » et « Tourner » en liens ; sur PC, la fiche ne s'étire plus. Code CSS mort retiré ; `npm run check` refuse désormais une classe CSS inutilisée — rhamon
 - **Sécurité** (22 oct.) : Next.js 16.4.0 → **16.4.2**, qui corrige une faille critique (exécution de code à distance via l'optimisation d'images) et un déni de service ; `npm audit` : 0 faille — rhamon
+- **Mannequins modélisés dans Blender par Rhamone** (25 oct.) : ils remplacent les mannequins dessinés, dans les vitrines du mall et dans les boutiques. Tee à la couleur de la marque, jean noir délavé, baskets, socle. Fichier allégé pour téléphone (22 000 triangles au lieu de 166 000, 323 Ko) par `node scripts/prep-mannequin.mjs` (source : `assets-src/models/fraul_mannequin.glb`) ; le mannequin dessiné reste en secours si le modèle ne charge pas — rhamon
 
 ## 🔄 En cours
 
