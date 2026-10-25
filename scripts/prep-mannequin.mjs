@@ -14,10 +14,10 @@ const doc = await io.read(src);
 const root = doc.getRoot();
 
 // Le tee sur cintre de l'export n'est pas utilisé : dans un rayon, les vêtements sont de côté (L-53).
-for (const n of root.listNodes()) if (["Tee_Suspendu", "Cintre_Crochet", "Cintre_Ecrou", "Cintre_Epaules"].includes(n.getName())) n.dispose();
+for (const n of root.listNodes()) if (["Tee_Suspendu", "Tee_Suspendu_Poitrine_Marque", "Cintre_Crochet", "Cintre_Ecrou", "Cintre_Epaules"].includes(n.getName())) n.dispose();
 
-// La couleur du jean vient d'un réglage Blender que l'export ne garde pas : on la donne ici (noir délavé).
-for (const m of root.listMaterials()) if (m.getName() === "Jean_Noir_Delave") m.setBaseColorFactor([0.03, 0.032, 0.04, 1]);
+// Si la couleur du jean s'est perdue à l'export (réglage Blender par nœuds : il sort blanc), on la remet (noir délavé).
+for (const m of root.listMaterials()) if (m.getName() === "Jean_Noir_Delave" && m.getBaseColorFactor()[0] > 0.5) m.setBaseColorFactor([0.03, 0.032, 0.04, 1]);
 
 // Tee un peu plus long et plus ample en bas : il couvre la taille du jean (plus de bande blanche du corps).
 const tee = root.listNodes().find((n) => n.getName() === "Tee_Mannequin")?.getMesh();
@@ -30,7 +30,7 @@ for (const p of tee ? tee.listPrimitives() : []) {
   }
 }
 
-await doc.transform(prune(), dedup(), weld());
+await doc.transform(prune({ keepAttributes: true }), dedup(), weld()); // garder les coordonnées de texture du panneau de poitrine
 
 // Simplification pièce par pièce (part des triangles gardés).
 await MeshoptSimplifier.ready;
@@ -40,7 +40,7 @@ for (const n of root.listNodes()) {
   if (r) for (const p of n.getMesh().listPrimitives()) simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio: r, error: 0.002 });
 }
 
-await doc.transform(prune(), quantize());
+await doc.transform(prune({ keepAttributes: true }), quantize());
 // Pas de Draco sur le site (son décodeur pèse plus que le gain) : géométrie quantifiée à la place.
 root.listExtensionsUsed().filter((e) => e.extensionName === "KHR_draco_mesh_compression").forEach((e) => e.dispose());
 await io.write(out, doc);

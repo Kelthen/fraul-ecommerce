@@ -330,7 +330,7 @@ export function startWalk(root, o) {
       return tex;
     }
     // Mannequin de Blender : on garde ses formes, ses matières passent à l'éclairage simple du Walk (léger sur téléphone).
-    // Le tee prend la couleur de la marque, comme le mannequin dessiné.
+    // Le tee prend la couleur de la marque et son nom sur la poitrine, comme le mannequin dessiné.
     const MQ = {}, MQ_MAT = {
       Mannequin_Blanc_Laque: () => new THREE.MeshPhongMaterial({ color: 0xf4f3f0, specular: 0x9a9a9a, shininess: 110 }),
       Jean_Noir_Delave: () => new THREE.MeshLambertMaterial({ color: 0x2a2b31 }),
@@ -338,12 +338,24 @@ export function startWalk(root, o) {
       Semelle_Blanc: () => new THREE.MeshPhongMaterial({ color: 0xe9e7e2, shininess: 20 }),
       Socle_Metal_Brosse: () => new THREE.MeshPhongMaterial({ color: 0x9c9ca0, specular: 0x777777, shininess: 60 }),
     };
+    // Panneau de poitrine (Tee_Poitrine_Marque) : le nom de la marque, à la couleur inverse du tee.
+    function chestMat(st, tee, ink) {
+      const key = `${st.name}|${tee}`;
+      if (!MQ[key]) {
+        const map = wordTex(st, { w: 512, h: 384, bg: tee, fg: ink, maxW: 480, px: 170 });
+        map.flipY = false; // coordonnées de texture du glTF
+        map.encoding = THREE.LinearEncoding; // même rendu de couleur que le tee (couleur simple) : pas de carré plus foncé
+        MQ[key] = new THREE.MeshLambertMaterial({ map });
+      }
+      return MQ[key];
+    }
     function blenderMannequin(st, variant) {
-      const g = MANNEQUIN.clone(true), tee = `#${new THREE.Color(variant ? st.fg : st.bg).getHexString()}`;
+      const g = MANNEQUIN.clone(true), [tee, ink] = (variant ? [st.fg, st.bg] : [st.bg, st.fg]).map((c) => `#${new THREE.Color(c).getHexString()}`);
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
         ob.material = n === "Tee_Noir" ? (MQ[tee] ||= new THREE.MeshLambertMaterial({ color: tee }))
+          : n === "Tee_Marque_Texte" ? chestMat(st, tee, ink)
           : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
       });
       return g;
