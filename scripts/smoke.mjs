@@ -203,6 +203,8 @@ await check("fraul walk : toucher la vitrine pour entrer", async () => {
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
   await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(800);
+  // Les mannequins viennent du modèle Blender de Rhamone (25 oct.), pas du dessin de secours.
+  if ((await page.locator("[data-mannequin]").getAttribute("data-mannequin")) !== "blender") throw new Error("mannequin Blender non chargé");
   await shot("11-boutique");
 });
 
