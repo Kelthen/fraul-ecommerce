@@ -122,17 +122,19 @@ export function WalkExperience({ data, startBrand }: Props) {
           <div className="stage" id="stage">
             <canvas id="gl" aria-label="Fraul Walk, promenade devant les boutiques" />
             <div className="w-top">
-              {/* Icônes rondes bordeaux (choix de Rhamone, 21 oct.) : ✕ quitter, loupe chercher, sac = panier. */}
+              {/* Icônes bordeaux sans cercle (Rhamone, 24 oct.) : ✕ dans un coin, loupe et sac côte à côte dans l'autre. */}
               <button className="ic" id="wQuit" type="button" aria-label="Quitter le mall">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>
-              <button className="ic" id="wSearch" type="button" aria-label="Chercher une marque ou une pièce">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-              </button>
-              <Link className="ic" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7z" /><path d="M9 8a3 3 0 0 1 6 0" /></svg>
-                {count > 0 && <span className="ic-n">{count}</span>}
-              </Link>
+              <div className="ic-pair">
+                <button className="ic" id="wSearch" type="button" aria-label="Chercher une marque ou une pièce">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                </button>
+                <Link className="ic" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>
+                  {count > 0 && <span className="ic-n">{count}</span>}
+                </Link>
+              </div>
             </div>
             <div className="hud">
               <div className="intro" id="intro">
@@ -234,7 +236,7 @@ export function WalkExperience({ data, startBrand }: Props) {
           <div className="s-in sizes" id="iSizes" />
           <div className="s-in s-act">
             <button className="add" id="iAdd" type="button">
-              <svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7z" /><path d="M9 8a3 3 0 0 1 6 0" /></svg>
+              <svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>
               Au panier
             </button>
             <button className="s-more" id="iPage" type="button" aria-label="Voir l'article en grand, toutes ses photos">
