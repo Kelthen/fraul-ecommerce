@@ -263,6 +263,19 @@ await check("fraul walk : dans chaque rayon, son nom en haut, en entier, sous la
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
 });
 
+await check("fraul walk : la Caisse avant la sortie quand le sac n'est pas vide", async () => {
+  const n = Number((await page.locator("#count").textContent()).split("/")[1]);
+  await page.locator("#walk").evaluate((el, n) => {
+    if (Number(el.dataset.stops) !== n + 3) throw new Error(`sac rempli : ${el.dataset.stops} étapes (attendu ${n + 3}, avec la Caisse)`);
+    const track = el.querySelector("#walkTrack");
+    el.scrollTop = ((n + 2.1) / (n + 3)) * (track.offsetHeight - el.clientHeight);
+  }, n);
+  await page.locator("#caisse:not([hidden])").waitFor({ timeout: 10000 });
+  if (!(await page.locator("#caisse .c-lines li").count())) throw new Error("la Caisse n'affiche pas le contenu du sac");
+  await page.waitForTimeout(2500);
+  await shot("12c-caisse");
+});
+
 await check("fraul walk : sortie du mall", async () => {
   await page.locator("#walk").evaluate((el) => (el.scrollTop = el.scrollHeight));
   await page.locator("#outro:not([hidden])").waitFor({ timeout: 10000 });
