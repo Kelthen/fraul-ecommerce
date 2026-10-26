@@ -67,7 +67,9 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
         <>
           <div className="f-top">
             <p className="eyebrow">{item.brand} · {catLabel(item.cat)}</p>
-            <button className="close" type="button" ref={closeBtn} onClick={onClose}>Fermer</button>
+            <button className="ic" type="button" aria-label="Fermer" ref={closeBtn} onClick={onClose}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
           </div>
           <div className="f-body" ref={sheet}>
             <ProductGallery key={item.slug} name={item.n} views={views(item)} className="f-gal" />
@@ -81,9 +83,10 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
                 ))}
               </div>
               <div className="f-act">
-                <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}>Au panier</button>
+                {/* Style « Signature » choisi par Rhamone (21 oct.) : panier bordeaux avec sac, cœur rond, lien vers la fiche. */}
+                <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}><svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>Au panier</button>
                 <EnvieButton compact item={{ slug: item.slug, name: item.n, brand: item.brand, category: item.cat, cost: item.p, color: item.c, accent: item.a, photo: item.photos?.front }} />
-                <Link className="pill ghost" href={`/produit/${item.slug}`}>Fiche complète</Link>
+                <Link className="f-more" href={`/produit/${item.slug}`}>Fiche complète <span aria-hidden="true">→</span></Link>
               </div>
             </div>
             {sections.map((s) => (

@@ -107,6 +107,10 @@ export function WalkExperience({ data, startBrand }: Props) {
     return () => {
       walk.destroy();
       walkRef.current = null;
+      // Au retour sur le Walk (ex. « Fiche complète » puis retour), Next garde l'état de la page mais le moteur
+      // repart de zéro : une fiche restée ouverte ne pourrait plus être fermée (Rhamone, 21 oct.). On la referme.
+      setFiche(null);
+      setConcierge(null);
       document.body.style.overflow = prevOverflow;
     };
   }, [data, startBrand, router]);
@@ -118,16 +122,19 @@ export function WalkExperience({ data, startBrand }: Props) {
           <div className="stage" id="stage">
             <canvas id="gl" aria-label="Fraul Walk, promenade devant les boutiques" />
             <div className="w-top">
-              <button className="pill ghost" id="wQuit" type="button">
-                Quitter
+              {/* Icônes bordeaux sans cercle (Rhamone, 24 oct.) : ✕ dans un coin, loupe et sac côte à côte dans l'autre. */}
+              <button className="ic" id="wQuit" type="button" aria-label="Quitter le mall">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>
-              <button className="w-search" id="wSearch" type="button" aria-label="Chercher une marque ou une pièce">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-                <span>Chercher</span>
-              </button>
-              <Link className="pill ghost cart-chip" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
-                Panier {count}
-              </Link>
+              <div className="ic-pair">
+                <button className="ic" id="wSearch" type="button" aria-label="Chercher une marque ou une pièce">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                </button>
+                <Link className="ic" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>
+                  {count > 0 && <span className="ic-n">{count}</span>}
+                </Link>
+              </div>
             </div>
             <div className="hud">
               <div className="intro" id="intro">
@@ -185,20 +192,27 @@ export function WalkExperience({ data, startBrand }: Props) {
       <div className="store" id="store" hidden role="dialog" aria-modal="true" aria-labelledby="sTitle">
         <canvas id="sgl" aria-label="Intérieur de la boutique" />
         <div className="s-top">
-          <button className="pill ghost" id="sQuit" type="button">
-            Sortir
+          {/* ✕ au centre de la boutique (sortir), ← dans un rayon (revenir au centre) : seul moyen de sortir (Rhamone, 21 oct.). */}
+          <button className="ic s-quit" id="sQuit" type="button" aria-label="Sortir de la boutique">
+            <svg className="x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            <svg className="back" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
           </button>
           <span className="s-title" id="sTitle">
             Boutique
           </span>
+          <button className="ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+          </button>
         </div>
         <div className="s-bottom" id="sBottom" hidden>
-          <p className="s-hint">Choisis un rayon, on t&apos;y emmène.</p>
-          <div className="s-cats" id="sCats" />
-          <button className="con-link" id="sCon" type="button">
-            Pas trouvé ? <b>Fraul Finds te le trouve →</b>
+          {/* Rayons en liste verticale sur le décor, façon menu de jeu (Rhamone, 21 oct.) ; aussi dans chaque rayon,
+              dans un coin (22 oct.) : en bas à gauche sur PC, repliée derrière « Rayons » sur téléphone. */}
+          <p className="s-label">Rayons</p>
+          <button className="s-tog" id="sTog" type="button" aria-expanded="false" aria-controls="sCats">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            Rayons
           </button>
-          <p className="s-back">↑ Fais défiler vers l&apos;arrière pour sortir</p>
+          <div className="s-cats" id="sCats" />
         </div>
         <button className="s-arrow l" id="sPrev" type="button" hidden aria-label="Article précédent">
           ‹
@@ -206,9 +220,6 @@ export function WalkExperience({ data, startBrand }: Props) {
         <button className="s-arrow r" id="sNext" type="button" hidden aria-label="Article suivant">
           ›
         </button>
-        <p className="s-swipe" id="sSwipe" hidden>
-          Glisse pour défiler, touche pour voir en grand
-        </p>
         <section className="s-info" id="sInfo" hidden aria-label="Article sorti du rayon">
           <div className="s-in s-ir">
             <div style={{ minWidth: 0 }}>
@@ -217,6 +228,7 @@ export function WalkExperience({ data, startBrand }: Props) {
             </div>
             <span className="s-price" id="iPrice" />
           </div>
+          <div className="s-in s-else" id="iElse" />
           <div className="s-in s-ir">
             <div className="dots" id="iDots" />
             <span className="i-count" id="iCount" />
@@ -224,16 +236,16 @@ export function WalkExperience({ data, startBrand }: Props) {
           <div className="s-in sizes" id="iSizes" />
           <div className="s-in s-act">
             <button className="add" id="iAdd" type="button">
+              <svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>
               Au panier
             </button>
-            <button className="pill ghost" id="iPage" type="button" aria-label="Voir l'article en grand, toutes ses photos">
+            <button className="s-more" id="iPage" type="button" aria-label="Voir l'article en grand, toutes ses photos">
               En grand
             </button>
-            <button className="pill ghost" id="iClose" type="button" aria-label="Tourner l'article de près">
+            <button className="s-more" id="iClose" type="button" aria-label="Tourner l'article de près">
               Tourner
             </button>
           </div>
-          <div className="s-chips" id="sChips" />
         </section>
       </div>
 
@@ -253,8 +265,8 @@ export function WalkExperience({ data, startBrand }: Props) {
               <p className="eyebrow">Fraul Finds · Sur demande</p>
               <h2 id="conTitle">Demande une pièce</h2>
             </div>
-            <button className="close" type="button" onClick={() => walkRef.current?.closeConcierge()}>
-              Fermer
+            <button className="ic" type="button" aria-label="Fermer" onClick={() => walkRef.current?.closeConcierge()}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
             </button>
           </div>
         </div>
@@ -273,8 +285,8 @@ export function WalkExperience({ data, startBrand }: Props) {
               <p className="eyebrow">Marques et pièces</p>
               <h2>Trouver</h2>
             </div>
-            <button className="close" id="dirClose" type="button">
-              Fermer
+            <button className="ic" id="dirClose" type="button" aria-label="Fermer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
             </button>
           </div>
           <label className="sr-only" htmlFor="dirq">

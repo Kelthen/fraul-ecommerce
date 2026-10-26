@@ -9,11 +9,11 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --test src/models/**/*.test.ts src/walk/models/*.test.ts",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "check": "npm run lint && node scripts/dead-css.mjs && npm run typecheck && npm test && npm run build",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
-    "next": "16.4.0",
+    "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "three": "^0.128.0"
@@ -24,7 +24,7 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.128.0",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.2",
     "playwright": "^1.56.1",
     "sharp": "^0.35.5",
     "typescript": "^5"

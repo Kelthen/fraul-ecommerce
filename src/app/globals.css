@@ -51,9 +51,6 @@ p { margin: 0; }
 .todo { color: var(--bordeaux); font-style: italic; }
 
 /* Sections sombres ponctuelles (accent) */
-.dark { background: var(--ink); color: var(--pearl); }
-.dark h1, .dark h2, .dark h3 { color: var(--ivory); }
-.dark .eyebrow, .dark .muted { color: #b5aea5; }
 
 /* Boutons */
 .pill {
@@ -67,7 +64,6 @@ p { margin: 0; }
 .pill.solid:hover { background: #7d0a12; }
 .pill.ghost, .pill.line { border: 1.5px solid var(--ink); color: var(--ink); background: transparent; }
 .pill.ghost:hover, .pill.line:hover { background: var(--ink); color: var(--ivory); }
-.dark .pill.ghost { border-color: rgba(234, 224, 200, 0.5); color: var(--ivory); }
 .pill.ink { background: var(--ink); color: var(--ivory); }
 .pill[disabled] { opacity: 0.45; cursor: not-allowed; }
 .link { font: 700 11px/1 var(--body); letter-spacing: 0.2em; text-transform: uppercase; color: inherit; border-bottom: 1px solid currentColor; padding-bottom: 4px; text-decoration: none; }
@@ -104,7 +100,7 @@ p { margin: 0; }
 @media (min-width: 900px) { .sec { padding-block: 96px 32px; } }
 .light { background: var(--bg); color: var(--text); }
 .pearl { background: var(--surface-2); color: var(--ink); }
-.sec.light, .sec.pearl, .sec.dark { padding-block: 72px; }
+.sec.light, .sec.pearl { padding-block: 72px; }
 .head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 24px; }
 .head h2 { font-size: clamp(38px, 8vw, 72px); line-height: 0.95; margin-top: 8px; }
 .head p { max-width: 40ch; }
@@ -254,7 +250,6 @@ p { margin: 0; }
 /* Photos du fournisseur (pas encore détourées) : la photo remplit le cadre, sans ombre portée. */
 .pic.photo { background: #fff; }
 .pic.photo img { width: 100%; height: 100%; object-fit: cover; filter: none; }
-.pdp-photos { display: grid; gap: 10px; }
 .pdp-stage.photo { background: #fff; }
 .pdp-stage.photo img { width: 100%; height: 100%; object-fit: contain; }
 .thumbs { display: flex; gap: 8px; overflow-x: auto; }
@@ -283,6 +278,40 @@ p { margin: 0; }
 .steps li.now::before { box-shadow: 0 0 0 6px rgba(104, 2, 9, 0.18); }
 .steps b { display: block; color: var(--ink); font-weight: 600; }
 .steps span { color: var(--muted); font-size: 13px; }
+/* Suivi de commande : fourchette, phrase de l'étape en cours, remboursement (PARCOURS-COMMANDE §7) */
+.link-btn { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
+.track-res { display: grid; gap: 18px; }
+.track-eta { font-family: var(--display); font-size: clamp(22px, 4.5vw, 30px); line-height: 1.2; color: var(--ink); }
+.track-eta b { color: var(--bordeaux); font-weight: 500; }
+.steps .track-live { display: block; color: var(--ink); animation: track-in .6s cubic-bezier(.16, 1, .3, 1) both; }
+.steps .track-live::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 8px; border-radius: 50%; background: var(--bordeaux); vertical-align: middle; animation: track-pulse 1.6s ease-in-out infinite; }
+@keyframes track-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes track-pulse { 50% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .steps .track-live, .steps .track-live::after { animation: none; } }
+.track-refund { padding: 12px 14px; border-left: 2px solid var(--bordeaux); background: rgba(104, 2, 9, 0.05); font-size: 14px; }
+.track-lines { list-style: none; margin: 0; padding: 14px 0 0; border-top: 1px solid var(--line); display: grid; gap: 6px; font-size: 14px; }
+/* Mon compte → Mes commandes */
+.orders { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 8px; }
+.order-row { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; color: inherit; text-decoration: none; }
+.order-row .o-id { font-weight: 600; letter-spacing: 0.08em; }
+.order-row .o-stage { justify-self: end; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bordeaux); }
+.order-row .o-stage.done { color: var(--muted); }
+.order-row .o-meta { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+/* E-mails de commande (aperçu) */
+.mails { display: grid; gap: 28px; margin: 28px 0 72px; }
+@media (min-width: 900px) { .mails { grid-template-columns: 1fr 1fr; } }
+.mail { display: grid; gap: 8px; min-width: 0; }
+.mail-box { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; }
+.mail-subj { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mail-subj span { color: var(--muted); }
+.mail-body { display: grid; gap: 12px; justify-items: start; padding: 22px 20px 26px; background: var(--ivory); }
+.mail-brand { margin: 0; font-family: var(--display); letter-spacing: 0.3em; color: var(--wine); }
+.mail-body h2 { font-size: 28px; margin: 0; }
+.mail-body p { margin: 0; font-size: 15px; }
+.mail-body ul { margin: 0; padding-left: 18px; font-size: 14px; }
+/* Mes envies : pièce plus en vente */
+.envie-card.gone .pic { opacity: .45; filter: grayscale(1); }
+.envie-card .gone-note { color: var(--bordeaux); font-size: 12px; }
 
 /* Cercle */
 .circle { display: grid; gap: 20px; padding: 40px 24px; border-radius: 24px; background: var(--wine); color: var(--pearl); }

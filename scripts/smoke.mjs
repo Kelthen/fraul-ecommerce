@@ -77,6 +77,23 @@ await check("envies : garder une pièce, la retrouver, la retirer", async () => 
   await page.locator(".envies-empty").waitFor({ timeout: 5000 });
 });
 
+await check("suivi : 4 étapes, fourchette, remboursement, code invalide refusé, e-mails", async () => {
+  await page.goto(BASE + "/suivi?code=frl%201031", { waitUntil: "networkidle" });
+  await page.locator(".track-eta").waitFor({ timeout: 5000 });
+  if ((await page.locator(".steps li").count()) !== 4) throw new Error("le suivi n'a pas 4 étapes");
+  if (!/entre le .+ et le /.test(await page.locator(".track-eta").textContent())) throw new Error("pas de fourchette de livraison");
+  if ((await page.locator('.steps li[aria-current="step"] b').textContent()) !== "En transit") throw new Error("mauvaise étape en cours");
+  if (!(await page.locator(".track-refund").count())) throw new Error("la pièce remboursée n'apparaît pas");
+  await shot("06e-suivi");
+  await page.fill("#track-code", "ABC");
+  await page.getByRole("button", { name: "Suivre" }).click();
+  await page.locator("#track-err").waitFor({ timeout: 3000 });
+  await page.goto(BASE + "/suivi/e-mails", { waitUntil: "networkidle" });
+  await page.locator(".mail").nth(3).waitFor({ timeout: 5000 });
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("les e-mails débordent en largeur");
+});
+
 await check("compte (démo) : création avec code, mauvais code refusé, déconnexion", async () => {
   await page.goto(BASE + "/compte", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Créer un compte" }).click();
@@ -94,6 +111,7 @@ await check("compte (démo) : création avec code, mauvais code refusé, déconn
   await page.getByRole("button", { name: "Valider" }).click();
   await page.locator(".account").waitFor({ timeout: 5000 });
   await shot("06d-mon-compte");
+  if ((await page.locator(".order-row").count()) !== 3) throw new Error("Mes commandes : 3 commandes de démo attendues");
   await page.getByRole("button", { name: "Se déconnecter" }).click();
   await page.waitForURL(BASE + "/");
 });
@@ -183,22 +201,34 @@ await check("fraul walk : toucher la vitrine pour entrer", async () => {
   await page.waitForTimeout(1800);
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(800);
   await shot("11-boutique");
 });
 
-await check("fraul walk : rayon puis retour en arrière", async () => {
+await check("fraul walk : rayon, défiler ne fait pas sortir, ← revient au centre, ✕ fait sortir", async () => {
   await page.locator("#sCats .s-cat").nth(1).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await shot("12-rayon");
+  // Dans un rayon, sur téléphone : la liste des rayons est repliée derrière « Rayons », le rayon ouvert y est surligné (Rhamone, 22 oct.).
+  if (await page.locator("#sCats").isVisible()) throw new Error("dans un rayon, la liste des rayons n'est pas repliée");
+  await page.locator("#sTog").click();
+  if ((await page.locator("#sCats .s-cat.on").count()) !== 1) throw new Error("dans un rayon, le rayon ouvert n'est pas surligné");
+  await shot("12a-rayon-liste-ouverte");
+  await page.locator("#sTog").click();
   await page.locator("#iAdd").click();
+  // Aucun défilement ne fait sortir d'une boutique (Rhamone, 21 oct.).
   await page.mouse.move(195, 400);
-  await page.mouse.wheel(0, -300);                 // arrière : retour au centre
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
-  await page.waitForTimeout(1000);
-  await page.mouse.wheel(0, -300);                 // arrière au centre : on sort
+  await page.mouse.wheel(0, -300);
+  await page.waitForTimeout(800);
+  if (await page.locator("#sInfo").isHidden()) throw new Error("défiler a fait quitter le rayon");
+  if ((await page.locator("#sQuit").getAttribute("aria-label")) !== "Revenir au centre de la boutique") throw new Error("dans un rayon, le bouton du haut n'est pas ←");
+  await page.locator("#sQuit").click();            // ← : retour au centre
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#sCats .s-cat.on").count()) !== 1) throw new Error("le rayon visité n'est pas surligné dans la liste");
+  await page.waitForTimeout(600);
+  await page.locator("#sQuit").click();            // ✕ : on sort
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
   await page.waitForTimeout(1500);
   await shot("12b-sorti-de-la-boutique");
@@ -238,7 +268,7 @@ await check("retour : annuaire, focus piégé, Échap", async () => {
 await check("retour : fiche en grand → zoom → rayon → boutique → mall → page précédente", async () => {
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous la boutique");
   await page.locator("#sCats .s-cat").nth(0).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
@@ -255,7 +285,7 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   if ((await page.locator("#iClose").textContent()) !== "Tourner") throw new Error("retour n'a pas rangé le zoom");
   if (await page.locator("#sInfo").isHidden()) throw new Error("retour a fermé le rayon au lieu du zoom");
   await back();
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await shot("14-retour-centre-boutique");
   await back();
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
@@ -322,13 +352,15 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
   const before = await page.locator("#bname").innerText();
   let t = Date.now();
   await page.locator("#enter").click();
-  await page.locator("#sBottom:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   const tIn = Date.now() - t;
   t = Date.now();
   await page.locator("#sCats .s-cat").first().click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   const tRayon = Date.now() - t;
-  await page.locator("#sQuit").click();
+  await page.locator("#sQuit").click(); // ← : centre de la boutique
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#sQuit").click(); // ✕ : sortir
   t = Date.now();
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
   const tOut = Date.now() - t;
@@ -378,10 +410,34 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);    // toucher la vitrine = entrer
   await page.locator("#sCats .s-cat").first().waitFor({ state: "visible", timeout: 20000 });
+  // Même gabarit pour toutes les boutiques : les 6 rayons partout, même vides (Rhamone, 19 oct.).
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
-  if (rayons.join() !== "Hoodies et sweats") throw new Error(`rayons affichés : ${rayons.join(", ")}`);
-  await page.locator("#sCats .s-cat").first().click();
-  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  if (rayons.length !== 6 || !rayons.includes("Hoodies et sweats")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
+  if (await page.locator("#store #sCon, #store .s-back").count()) throw new Error("Fraul Finds ou l'aide « défiler » encore dans la boutique");
+  // En haut de la boutique : retour et loupe en icônes ; la loupe ouvre la recherche par-dessus la boutique.
+  if ((await page.locator("#sQuit").innerText()).trim()) throw new Error("le bouton retour de la boutique a encore du texte");
+  await page.locator("#sSearch").click();
+  await page.locator("#dir:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#dirClose").click();
+  await page.locator("#dir").waitFor({ state: "hidden", timeout: 5000 });
+  if (await page.locator("#store").isHidden()) throw new Error("fermer la recherche a fermé la boutique");
+  await page.locator("#sCats .s-cat", { hasText: "Sneakers" }).click();
+  await page.locator("#sInfo.empty:not([hidden])").waitFor({ timeout: 20000 });
+  if ((await page.locator("#iName").textContent()) !== "Rien ici pour l'instant.") throw new Error("rayon vide mal affiché");
+  if (await page.locator("#iAdd").isVisible()) throw new Error("bouton Au panier dans un rayon vide");
+  await shot("14a-rayon-vide");
+  if ((await page.locator("#iElse .s-cat").count()) < 1) throw new Error("rayon vide : pas de proposition chez d'autres marques");
+  const other = await page.locator("#iElse .s-cat").first().textContent();
+  await page.locator("#iElse .s-cat").first().click();
+  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
+  if (!(await page.locator("#sTitle").textContent()).startsWith(other)) throw new Error(`n'est pas allé chez ${other}`);
+  if (!(await page.locator("#iBrand").textContent()).includes("Sneakers")) throw new Error("pas arrivé au rayon sneakers de l'autre marque");
+  await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1200);
+  await page.locator("#enter").click();
+  await page.locator("#sCats .s-cat", { hasText: "Hoodies et sweats" }).click();
+  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await shot("14-boutique-travis-scott");
   const cut = await page.evaluate(() => [...document.querySelectorAll("#sInfo .s-act > *, #iPrice")].some((el) => el.getBoundingClientRect().right > innerWidth + 1));
@@ -402,6 +458,89 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   const first = await page.locator("#fName").textContent();
   await page.locator("#fiche .f-rel li button").first().click();
   await page.waitForFunction((t) => document.querySelector("#fName")?.textContent !== t, first);
+});
+
+// PC (Rhamone, 21 oct. : écran blanc et lenteur sur grand écran, la molette changeait de boutique).
+for (const [w, h, dpr] of [[1920, 1080, 1], [2560, 1440, 1.5]]) {
+  await check(`PC ${w}×${h} : image pas trop lourde, molette, carte graphique qui décroche`, async () => {
+    const dctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
+    const pc = await dctx.newPage();
+    pc.on("pageerror", (e) => errors.push(`pageerror (PC) : ${e.message}`));
+    try {
+      await pc.goto(BASE + "/walk/trapstar", { waitUntil: "networkidle" }); // 2e boutique : le cran suivant mène à la 3e
+      await pc.locator("#aisle:not([hidden])").waitFor({ timeout: 30000 });
+      await pc.waitForTimeout(1200);
+      const px = await pc.locator("#gl").evaluate((c) => c.width * c.height);
+      if (px > 2.6e6) throw new Error(`mall dessiné en ${(px / 1e6).toFixed(1)} millions de points (2,4 au plus)`);
+      // Un cran de molette = une boutique (Rhamone, 21 oct.), dans les deux sens.
+      const shop = await pc.locator("#bname").innerText();
+      const idx = async () => Number((await pc.locator("#count").innerText()).match(/\d+/)[0]);
+      const i0 = await idx();
+      await pc.mouse.move(w / 2, h / 2);
+      await pc.mouse.wheel(0, 100); await pc.waitForTimeout(1800);
+      if ((await idx()) !== i0 + 1) throw new Error(`un cran vers le bas : boutique ${i0} → ${await idx()} (attendu ${i0 + 1})`);
+      await pc.mouse.wheel(0, -100); await pc.waitForTimeout(1800);
+      if ((await idx()) !== i0) throw new Error(`un cran vers le haut : retour à ${await idx()} (attendu ${i0})`);
+      // Entrer, ouvrir un rayon : la molette ne fait jamais sortir ; on sort par ← puis ✕, devant la même boutique.
+      await pc.locator("#enter").click();
+      await pc.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 30000 });
+      const spx = await pc.locator("#sgl").evaluate((c) => c.width * c.height);
+      if (spx > 2.6e6) throw new Error(`boutique dessinée en ${(spx / 1e6).toFixed(1)} millions de points`);
+      await pc.locator("#sCats .s-cat").first().click();
+      await pc.locator("#sInfo:not([hidden])").waitFor({ timeout: 30000 });
+      for (let k = 0; k < 10; k++) { await pc.mouse.wheel(0, -120); await pc.waitForTimeout(70); }
+      await pc.waitForTimeout(800);
+      if (await pc.locator("#store").isHidden()) throw new Error("la molette a fait sortir de la boutique");
+      await pc.screenshot({ path: `${OUT}/20-pc-${w}.png` });
+      // Sur PC, la liste des rayons reste ouverte en bas à gauche, sans toucher la fiche de l'article.
+      const list = await pc.locator("#sCats").boundingBox(), info = await pc.locator("#sInfo .s-in").first().boundingBox();
+      if (!list || list.x > 40 || list.x + list.width > info.x) throw new Error("sur PC, la liste des rayons n'est pas dans le coin bas-gauche");
+      await pc.locator("#sQuit").click();
+      await pc.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+      await pc.locator("#sQuit").click();
+      await pc.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+      await pc.waitForTimeout(600);
+      const after = await pc.locator("#bname").innerText();
+      if (after !== shop) throw new Error(`en sortant, autre boutique : ${shop} → ${after}`);
+      // La carte graphique décroche puis revient : le mall se redessine (pas d'écran blanc, pas de version sans 3D).
+      await pc.locator("#gl").evaluate((c) => { const x = c.getContext("webgl2") || c.getContext("webgl"); window.__lose = x.getExtension("WEBGL_lose_context"); window.__lose.loseContext(); });
+      await pc.waitForTimeout(500);
+      await pc.evaluate(() => window.__lose.restoreContext());
+      await pc.waitForTimeout(1500);
+      if (await pc.locator("#walk.nogl").count()) throw new Error("après le retour de la carte graphique, le mall est passé sans 3D");
+      await pc.screenshot({ path: `${OUT}/21-pc-${w}-apres-decrochage.png` });
+      // Elle ne revient pas : au bout de 4 s, la version sans 3D (jamais un écran blanc).
+      await pc.locator("#gl").evaluate(() => window.__lose.loseContext());
+      await pc.locator("#walk.nogl").waitFor({ timeout: 8000 });
+    } finally { await dctx.close(); }
+  });
+}
+await check("fiche en grand → « Fiche complète » → retour au Walk : « Fermer » marche toujours", async () => {
+  // Bug vu par Rhamone (21 oct.) : la fiche restait ouverte au retour et « Fermer » ne répondait plus.
+  await page.goto(BASE + "/walk/trapstar", { waitUntil: "networkidle" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(800);
+  await page.locator("#enter").click();
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#sCats .s-cat").first().click();
+  await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+  await page.locator("#iPage").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#fiche a", { hasText: "Fiche complète" }).click();
+  await page.waitForURL(/\/produit\//, { timeout: 15000 });
+  await page.goBack();
+  await page.waitForURL(/\/walk/, { timeout: 15000 });
+  await page.waitForTimeout(2500);
+  if (await page.locator("#fiche:not([hidden])").count()) throw new Error("la fiche est restée ouverte au retour");
+  // Le moteur repart : on peut rouvrir une fiche et la fermer.
+  if (await page.locator("#store:not([hidden])").count() === 0) await page.locator("#enter").click();
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden]), #sInfo:not([hidden])").first().waitFor({ timeout: 20000 });
+  if (await page.locator("#sInfo:not([hidden])").count() === 0) { await page.locator("#sCats .s-cat").first().click(); await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 }); }
+  await page.locator("#iPage").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
+  await page.locator("#fiche .f-top .ic").click();
+  await page.locator("#fiche:not([hidden])").waitFor({ state: "detached", timeout: 5000 }).catch(() => {});
+  if (await page.locator("#fiche:not([hidden])").count()) throw new Error("« Fermer » ne ferme pas la fiche après le retour");
 });
 
 await browser.close();
