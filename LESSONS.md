@@ -301,6 +301,11 @@
 - **Cause :** corriger par-dessus au lieu de corriger à la source ; aucune vérification du code mort.
 - **Règle :** on modifie la règle existante à sa place, on supprime ce qu'on remplace, et on retire le style de tout élément supprimé. `npm run check` lance `scripts/dead-css.mjs`, qui refuse une classe CSS inutilisée. Avant une PR, relire son propre diff pour y chercher les restes.
 
+### L-52 — Bot Telegram : aucun bouton ne reste après validation, et on ne change jamais les boutons sous le doigt
+- **Projet / date :** Fraul, 2026-10-22
+- **Ce qui s'est passé :** Serge : « les boutons de validation ne doivent pas rester après une validation, ils peuvent être corrompus lors d'une mauvaise manipulation ». À l'essai, un faux bouton « ✔︎ reçu » et des « ↩️ » restaient affichés ; puis « Corriger » remplaçait les boutons du message par « Oui / Non », Telegram décalait le message et « Oui » tombait sous le doigt : « reçu » et « envoyé » ont été défaits d'un coup.
+- **Cause :** l'état était affiché par des boutons, et la confirmation modifiait un message que l'utilisateur était en train de toucher.
+- **Règle :** l'état se lit dans le texte ; un bouton n'existe que pour la prochaine action et disparaît une fois faite. Une confirmation se pose dans un **nouveau message** en bas du fil. Chaque bouton qui défait quelque chose porte l'étape qu'il défait (un double-tap ne défait pas deux étapes). Un geste réversible a une fenêtre courte (15 min), puis son bouton est effacé.
 
 ### L-53 — Un vêtement sur un portant se montre de côté, sur un vrai cintre
 - **Projet / date :** Fraul, 2026-10-22
