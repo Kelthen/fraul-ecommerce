@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code nettoyé)_
+_Dernière mise à jour : 2026-10-26 par serge (relais des commandes mergé, #29)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -61,12 +61,12 @@ _Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code n
 
 - **Boutons « Signature »** (choix de Rhamone, 21 oct.) : dans la fiche en grand et sous l'article d'un rayon, « Au panier » bordeaux avec un sac (44 px de haut), cœur « Envie » rond, « Fiche complète → », « En grand » et « Tourner » en liens ; sur PC, la fiche ne s'étire plus. Code CSS mort retiré ; `npm run check` refuse désormais une classe CSS inutilisée — rhamon
 - **Sécurité** (22 oct.) : Next.js 16.4.0 → **16.4.2**, qui corrige une faille critique (exécution de code à distance via l'optimisation d'images) et un déni de service ; `npm audit` : 0 faille — rhamon
+- **Relais des commandes** (PR #29, mergée le 26 oct.) : chaque commande payée arrive dans le groupe Telegram de l'équipe (blocs à coller dans WeChat, sans prix ni adresse ; une ligne d'état par fournisseur) ; « 📤 J'ai envoyé à … », l'expéditeur coche « 已收到 Reçu » sur sa fiche `/f/…` (bouton « reçu » de secours dans Telegram) ; `/afaire` ; code de suivi « FRL-… → code » avec carte de vérification ; « ↩️ Corriger » 15 min avec question dans un nouveau message ; tableau de bord `/admin/commandes` (connexion par code Telegram). Migrations 0004 à 0007 appliquées. **Réglages Telegram et Supabase seulement sur la preview** (pas encore en production). Reste : relier le suivi client (#27) aux commandes de la base, tests RLS de la 0004, remplacer la vue `supplier_order_lines` — serge
 
 ## 🔄 En cours
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| Relais des commandes : bot Telegram de Jean Paul, tableau de bord `/admin/commandes` (3 piles), commande test, fiche d'expédition `/f/…`. 21 oct. : message de commande avec une ligne d'état par fournisseur (⏳ à transférer / ✅ transféré par… / 📥 reçu), `/afaire`, ↩️ 15 min, groupe Telegram d'équipe (`TELEGRAM_ALLOWED_USERS`). 22 oct. : l'expéditeur coche « 已收到 Reçu » sur sa fiche (Jean Paul garde un bouton de secours), plus aucun bouton après validation, « ↩️ Corriger » avec confirmation qui s'efface après 15 min, carte de suivi qui avertit s'il manque un colis. Migrations 0004 à 0007 **appliquées**. Testé sur la preview : connexion, commande test FRL-2026-000001, boutons transféré/reçu | serge | `feat/serge/commandes-telegram` | 2026-10-21 |
 | Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Fraul Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
