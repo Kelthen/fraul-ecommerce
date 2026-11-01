@@ -5,3 +5,6 @@ export const ENTRANCE_TEXT: [string, string] = ["COME IN.", "TAKE UR CLOTHES."];
 
 /** Enseigne du comptoir « Finds » (pièces sur demande), au centre du mall (nom choisi par Rhamone, 18 oct. 2026). */
 export const CONCIERGE_TEXT = { title: "Finds", sub: "Sur demande" };
+
+/** Enseigne du comptoir de la Caisse, dernier arrêt avant la sortie (décision de Rhamone, 18 oct. 2026). */
+export const CAISSE_TEXT = { title: "La Caisse", sub: "Ton sac avant de sortir" };

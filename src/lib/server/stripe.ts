@@ -1,0 +1,70 @@
+import "server-only";
+import { createHmac, timingSafeEqual } from "node:crypto";
+import { need } from "./env";
+
+// Stripe par son API REST, côté serveur uniquement. Pas de dépendance en plus : de simples requêtes fetch,
+// comme pour Telegram et Supabase. La clé (sk_ / rk_) ne quitte jamais le serveur.
+
+const API = "https://api.stripe.com/v1";
+
+export const stripeKey = () => need("STRIPE_SECRET_KEY");
+/** Mode test (clé sk_test_ / rk_test_) : aucun vrai argent. */
+export const stripeTestMode = () => /^(sk|rk)_test_/.test(stripeKey());
+
+async function call<T>(path: string, init: { method?: "GET" | "POST"; form?: URLSearchParams; idempotencyKey?: string } = {}): Promise<T> {
+  const res = await fetch(`${API}/${path}`, {
+    method: init.method ?? "GET",
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${stripeKey()}`,
+      ...(init.form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+      ...(init.idempotencyKey ? { "Idempotency-Key": init.idempotencyKey } : {}),
+    },
+    body: init.form?.toString(),
+  });
+  const json = (await res.json()) as T & { error?: { message?: string } };
+  if (!res.ok) throw new Error(`Stripe (${res.status}) : ${json.error?.message ?? "erreur"}`);
+  return json;
+}
+
+type ShippingDetails = {
+  name: string | null;
+  address: { line1: string | null; line2: string | null; city: string | null; postal_code: string | null; country: string | null; state: string | null };
+} | null;
+
+export type CheckoutSession = {
+  id: string;
+  url: string | null;
+  status: "open" | "complete" | "expired";
+  payment_status: "paid" | "unpaid" | "no_payment_required";
+  amount_total: number | null;
+  currency: string | null;
+  payment_intent: string | null;
+  metadata: Record<string, string>;
+  customer_details: { email: string | null; name: string | null; phone: string | null } | null;
+  /** Selon la version de l'API, l'adresse est ici… */
+  collected_information?: { shipping_details: ShippingDetails } | null;
+  /** … ou là (anciennes versions). */
+  shipping_details?: ShippingDetails;
+};
+
+export const createCheckoutSession = (form: URLSearchParams, idempotencyKey: string) =>
+  call<CheckoutSession>("checkout/sessions", { method: "POST", form, idempotencyKey });
+
+export const getCheckoutSession = (id: string) => call<CheckoutSession>(`checkout/sessions/${encodeURIComponent(id)}`);
+
+/** Adresse de livraison de la session, quelle que soit la version de l'API. */
+export const shippingOf = (s: CheckoutSession): ShippingDetails => s.collected_information?.shipping_details ?? s.shipping_details ?? null;
+
+/**
+ * Vérifie l'en-tête Stripe-Signature d'un webhook (HMAC SHA-256 de « horodatage.corps »), à 5 min près.
+ * https://docs.stripe.com/webhooks#verify-manually
+ */
+export function verifyWebhook(rawBody: string, header: string | null, secret: string, now = Date.now()): boolean {
+  if (!header) return false;
+  const parts = header.split(",").map((p) => p.split("=") as [string, string]);
+  const t = Number(parts.find(([k]) => k === "t")?.[1]);
+  if (!Number.isFinite(t) || Math.abs(now / 1000 - t) > 300) return false;
+  const want = Buffer.from(createHmac("sha256", secret).update(`${t}.${rawBody}`).digest("hex"));
+  return parts.some(([k, v]) => k === "v1" && v?.length === want.length && timingSafeEqual(Buffer.from(v), want));
+}

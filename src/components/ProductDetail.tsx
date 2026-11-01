@@ -5,16 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Product } from "@/lib/catalog";
 import { accentFor } from "@/lib/catalog/demo";
+import { COLOR_NAMES } from "@/lib/catalog/palette";
 import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { GarmentArt } from "./GarmentArt";
 import { ProductGallery, photoViews } from "./product/ProductGallery";
 import { EnvieButton } from "./EnvieButton";
 
-const COLOR_NAMES: Record<string, string> = {
-  "#F1ECE0": "Écru", "#141416": "Noir", "#680209": "Bordeaux", "#420A0D": "Vin", "#6B6766": "Gris anthracite",
-  "#EAE0C8": "Perle", "#202833": "Marine", "#9A938A": "Pierre", "#2B2A2C": "Charbon", "#C9BFAA": "Sable",
-};
 
 type Props = { product: Product; categoryLabel: string; brandWord: string };
 

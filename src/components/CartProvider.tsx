@@ -27,6 +27,8 @@ type CartCtx = {
   setQty: (index: number, qty: number) => void;
   setSize: (index: number, size: string) => void;
   remove: (index: number) => void;
+  /** Vide le panier (après un paiement réussi). */
+  clear: () => void;
   toast: (msg: string) => void;
 };
 
@@ -77,6 +79,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [toast],
   );
 
+  const clear = useCallback(() => setLines([]), []);
+
   const value = useMemo<CartCtx>(
     () => ({
       lines,
@@ -85,9 +89,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setQty: (i, qty) => setLines((p) => (qty <= 0 ? p.filter((_, k) => k !== i) : p.map((l, k) => (k === i ? { ...l, qty } : l)))),
       setSize: (i, size) => setLines((p) => p.map((l, k) => (k === i ? { ...l, size } : l))),
       remove: (i) => setLines((p) => p.filter((_, k) => k !== i)),
+      clear,
       toast,
     }),
-    [lines, add, toast],
+    [lines, add, clear, toast],
   );
 
   return (

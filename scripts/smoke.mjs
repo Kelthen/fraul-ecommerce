@@ -203,6 +203,8 @@ await check("walk : toucher la vitrine pour entrer", async () => {
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
   await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(800);
+  // Les mannequins viennent du modèle Blender de Rhamone (25 oct.), pas du dessin de secours.
+  if ((await page.locator("[data-mannequin]").getAttribute("data-mannequin")) !== "blender") throw new Error("mannequin Blender non chargé");
   await shot("11-boutique");
 });
 
@@ -232,6 +234,44 @@ await check("walk : rayon, défiler ne fait pas sortir, ← revient au centre, �
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
   await page.waitForTimeout(1500);
   await shot("12b-sorti-de-la-boutique");
+});
+
+await check("walk : la Caisse avant la sortie quand le sac n'est pas vide", async () => {
+  const n = Number((await page.locator("#count").textContent()).split("/")[1]);
+  await page.locator("#walk").evaluate((el, n) => {
+    if (Number(el.dataset.stops) !== n + 3) throw new Error(`sac rempli : ${el.dataset.stops} étapes (attendu ${n + 3}, avec la Caisse)`);
+    const track = el.querySelector("#walkTrack");
+    el.scrollTop = ((n + 2.1) / (n + 3)) * (track.offsetHeight - el.clientHeight);
+  }, n);
+  await page.locator("#caisse:not([hidden])").waitFor({ timeout: 10000 });
+  if (!(await page.locator("#caisse .c-lines li").count())) throw new Error("la Caisse n'affiche pas le contenu du sac");
+  await page.waitForTimeout(2500);
+  await shot("12c-caisse");
+});
+
+// Un mot ne doit jamais en cacher un autre (Rhamone, 25 oct. : « PANTALONS » sous le titre, crochet au milieu de « HOODIES ») :
+// dans un rayon, son nom est en haut, sous la marque, en entier ; les panneaux 3D des rayons ne s'affichent plus.
+await check("walk : dans chaque rayon, son nom en haut, en entier, sous la marque", async () => {
+  await goShop(1);
+  await page.waitForTimeout(1800);
+  const box = await page.locator("#gl").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  for (const label of ["T-shirts", "Hoodies et sweats", "Pantalons", "Casquettes"]) {
+    if (await page.locator("#sTog").isVisible()) await page.locator("#sTog").click();
+    await page.locator("#sCats .s-cat", { hasText: label }).click();
+    await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+    await page.waitForTimeout(700);
+    await shot(`12d-titre-${label.split(" ")[0].toLowerCase()}`);
+    const t = await page.locator("#sTitle").evaluate((el) => ({ text: el.textContent, cut: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1 }));
+    if (t.text.split("\n")[1] !== label) throw new Error(`rayon ${label} : titre « ${t.text} »`);
+    if (t.cut) throw new Error(`rayon ${label} : titre coupé`);
+  }
+  await page.locator("#sQuit").click();
+  await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  if (!(await page.locator("#sTitle").textContent()).endsWith("· Boutique")) throw new Error("au centre, le titre n'est pas revenu à « · Boutique »");
+  await page.locator("#sQuit").click();
+  await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
 });
 
 await check("walk : sortie du mall", async () => {
