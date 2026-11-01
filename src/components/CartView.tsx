@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { startCheckout } from "@/app/panier/actions";
 import type { CategoryId } from "@/lib/catalog";
 import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
@@ -8,6 +10,8 @@ import { GarmentArt } from "./GarmentArt";
 
 export function CartView() {
   const { lines, setQty, setSize, remove } = useCart();
+  const [paying, setPaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   if (!lines.length) {
     return (
       <div className="empty">
@@ -63,10 +67,28 @@ export function CartView() {
         <div className="line"><span>Total estimé</span><span className="total"><Price costs={lines} /></span></div>
         <PriceNote />
         {missingSize && <p className="todo">Choisis une taille pour chaque article.</p>}
-        <button className="pill solid" type="button" disabled>
-          Paiement bientôt disponible
+        <button
+          className="pill solid"
+          type="button"
+          disabled={missingSize || paying}
+          onClick={async () => {
+            setPaying(true);
+            setError(null);
+            // Seulement des identifiants et des quantités : le serveur recalcule chaque prix.
+            const r = await startCheckout(lines.map((l) => ({ slug: l.slug, size: l.size, color: l.color, qty: l.qty }))).catch(() => ({
+              error: "Le paiement ne répond pas. Réessaie dans un instant.",
+            }));
+            if ("url" in r) window.location.assign(r.url);
+            else {
+              setError(r.error);
+              setPaying(false);
+            }
+          }}
+        >
+          {paying ? "Ouverture du paiement…" : "Payer"}
         </button>
-        <p className="muted" style={{ fontSize: 12 }}>Le paiement sécurisé (mode test) arrive dans la prochaine étape du projet.</p>
+        {error && <p className="todo" role="alert">{error}</p>}
+        <p className="muted" style={{ fontSize: 12 }}>Paiement sécurisé par Stripe. L&apos;adresse de livraison se remplit à l&apos;étape suivante.</p>
       </div>
     </>
   );

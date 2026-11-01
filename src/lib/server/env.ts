@@ -8,7 +8,7 @@ import { parseAllowedUsers } from "@/models/relay/access";
 /** Adresse publique du projet Supabase `fraul` (pas un secret). */
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://rqrdccsxyyufqlenmpct.supabase.co";
 
-function need(name: string): string {
+export function need(name: string): string {
   // Les valeurs collées dans Vercel portent parfois un espace ou un retour à la ligne : on les retire.
   const v = process.env[name]?.trim();
   if (!v) throw new MissingSetting(name);
@@ -41,6 +41,15 @@ export const sessionKey = () => createHash("sha256").update(`fraul-admin-session
 export function missingSettings(): string[] {
   return ["SUPABASE_SERVICE_ROLE_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID"].filter((n) => !process.env[n]?.trim());
 }
+
+/** Secret de signature des webhooks Stripe (`whsec_…`) ; absent tant que le webhook n'est pas créé dans Stripe. */
+export const stripeWebhookSecret = () => process.env.STRIPE_WEBHOOK_SECRET?.trim() || null;
+
+/**
+ * Réglages manquants pour encaisser : Stripe, plus la base et Telegram (sans eux, la commande payée
+ * ne serait ni enregistrée ni transmise à Fraul). Tant qu'il en manque, le bouton « Payer » reste fermé.
+ */
+export const missingPaymentSettings = (): string[] => [...(process.env.STRIPE_SECRET_KEY?.trim() ? [] : ["STRIPE_SECRET_KEY"]), ...missingSettings()];
 
 /** Forme attendue du code d'accès Telegram (chiffres, deux-points, 30 caractères ou plus), sans jamais l'afficher. */
 export function botTokenLooksValid(): boolean {
