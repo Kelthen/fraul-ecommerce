@@ -17,6 +17,8 @@ export type MallLayout<D = Record<string, number>> = {
   slots: Slot[];
   /** Comptoir Fraul Finds (pièces sur demande) : arrêt après les `after` premières boutiques (décision de Rhamone, 18 oct. 2026). */
   concierge: { after: number; slot: Slot };
+  /** Comptoir « La Caisse », dernier arrêt avant la sortie quand le sac n'est pas vide (décision de Rhamone, 18 oct. 2026). */
+  caisse: Slot;
   entry: PathNode;
   exit: PathNode;
   /** Dimensions propres au mode (utilisées pour construire les murs, le sol, le plafond). */

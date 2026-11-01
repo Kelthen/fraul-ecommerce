@@ -49,6 +49,8 @@ export function layoutT(n: number): MallLayout<TDims> {
     // Vers la 10e boutique (Rhamone, 18 oct. 2026 : « quand tu commences à être fatigué ») : au bout droit de la barre,
     // on se retourne vers le centre, face au comptoir posé à droite du « F ».
     concierge: { after: c.stem + c.low + 2, slot: { x: CONCIERGE_R, z: CENTER_Z, nx: 1, nz: 0 } },
+    // Contre le mur gauche du bas du tronc (pas de vitrine à cet endroit), juste avant les portes.
+    caisse: { x: -STEM_X + 1.6, z: STEM_END - 4.2, nx: 1, nz: 0 },
     entry: { p: [0, STEM_END + 9], l: [0, 2.2, 18] },
     exit: { p: [0, STEM_END + 9], l: [0, 2.2, STEM_END + 40] },
     dims: { SLOT, CEIL, STEM_X, STEM_END, BAR_X, BAR_Z },
