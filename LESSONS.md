@@ -301,9 +301,20 @@
 - **Cause :** corriger par-dessus au lieu de corriger à la source ; aucune vérification du code mort.
 - **Règle :** on modifie la règle existante à sa place, on supprime ce qu'on remplace, et on retire le style de tout élément supprimé. `npm run check` lance `scripts/dead-css.mjs`, qui refuse une classe CSS inutilisée. Avant une PR, relire son propre diff pour y chercher les restes.
 
+### L-52 — Bot Telegram : aucun bouton ne reste après validation, et on ne change jamais les boutons sous le doigt
+- **Projet / date :** Fraul, 2026-10-22
+- **Ce qui s'est passé :** Serge : « les boutons de validation ne doivent pas rester après une validation, ils peuvent être corrompus lors d'une mauvaise manipulation ». À l'essai, un faux bouton « ✔︎ reçu » et des « ↩️ » restaient affichés ; puis « Corriger » remplaçait les boutons du message par « Oui / Non », Telegram décalait le message et « Oui » tombait sous le doigt : « reçu » et « envoyé » ont été défaits d'un coup.
+- **Cause :** l'état était affiché par des boutons, et la confirmation modifiait un message que l'utilisateur était en train de toucher.
+- **Règle :** l'état se lit dans le texte ; un bouton n'existe que pour la prochaine action et disparaît une fois faite. Une confirmation se pose dans un **nouveau message** en bas du fil. Chaque bouton qui défait quelque chose porte l'étape qu'il défait (un double-tap ne défait pas deux étapes). Un geste réversible a une fenêtre courte (15 min), puis son bouton est effacé.
 
 ### L-53 — Un vêtement sur un portant se montre de côté, sur un vrai cintre
 - **Projet / date :** Fraul, 2026-10-22
 - **Ce qui s'est passé :** maquettes du portant refusées trois fois : vêtements de face dans le rayon, cintre posé sur la capuche, crochet qui « ne ressemble pas à un cintre ». Rhamone : « le cintre prend les épaules, la capuche est derrière, le crochet sort du cou » ; « je t'ai envoyé plein de photos pour que tu te réfères à ça ».
 - **Cause :** dessiné de tête au lieu de partir des photos de vraies boutiques envoyées par Rhamone.
 - **Règle :** dans un rayon, les hauts sont serrés **de côté** (manche et flanc, jamais le devant ni le logo) ; seule la pièce touchée sort et se met de face. Le cintre est caché dans les épaules ; seul un crochet fin en « ? » sort du col et passe par-dessus la barre ; la capuche tombe dans le dos. Avant de dessiner un objet réel, relire les photos de référence de l'humain et montrer une maquette d'abord.
+
+### L-54 — Un mot ne doit jamais en cacher un autre
+- **Projet / date :** Fraul, 2026-10-25
+- **Ce qui s'est passé :** dans le rayon Pantalons, le panneau 3D « PANTALONS » passait sous le nom de la boutique ; dans Hoodies, le crochet de la pièce choisie coupait « HOODIES ». Rhamone : « c'est des trucs que tu dois vérifier ».
+- **Cause :** les textes dessinés dans la 3D bougent avec la caméra ; personne ne vérifiait qu'ils ne passaient pas sous les textes et boutons de l'écran.
+- **Règle :** un texte important ne vit pas dans la 3D quand l'écran affiche autre chose par-dessus : il passe dans l'interface (titre), et la 3D garde au plus un filigrane derrière les objets. Regarder chaque capture du test en cherchant un mot coupé ou recouvert ; le test téléphone vérifie le titre de chaque rayon.

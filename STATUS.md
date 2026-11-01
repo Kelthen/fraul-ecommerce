@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code nettoyé)_
+_Dernière mise à jour : 2026-11-01 par rhamon (paiement Stripe, mode test)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -63,11 +63,13 @@ _Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code n
 - **Sécurité** (22 oct.) : Next.js 16.4.0 → **16.4.2**, qui corrige une faille critique (exécution de code à distance via l'optimisation d'images) et un déni de service ; `npm audit` : 0 faille — rhamon
 - **Mannequins modélisés dans Blender par Rhamone** (25 oct.) : ils remplacent les mannequins dessinés, dans les vitrines du mall et dans les boutiques. Tee à la couleur de la marque avec **son nom sur la poitrine**, jean noir délavé, baskets, socle. Fichier allégé pour téléphone (22 000 triangles au lieu de 166 000, 323 Ko) par `node scripts/prep-mannequin.mjs` (source : `assets-src/models/fraul_mannequin.glb`) ; le mannequin dessiné reste en secours si le modèle ne charge pas — rhamon
 - **La Caisse** (25 oct., reprend la PR #17 sur le code actuel) : dernier arrêt du mall avant les portes, **seulement si le sac n'est pas vide**. Comptoir de Blender (arches cannelées, comptoir bordeaux, lampe, portable) avec l'enseigne « La Caisse » ; à l'écran, le contenu du sac, le total, « Droits et taxes inclus » et le bouton « Passer à la caisse » (vers le panier). Les panneaux ENTRÉE / SORTIE au sol sont près des portes — rhamon
+- **Relais des commandes** (PR #29, mergée le 26 oct.) : chaque commande payée arrive dans le groupe Telegram de l'équipe (blocs à coller dans WeChat, sans prix ni adresse ; une ligne d'état par fournisseur) ; « 📤 J'ai envoyé à … », l'expéditeur coche « 已收到 Reçu » sur sa fiche `/f/…` (bouton « reçu » de secours dans Telegram) ; `/afaire` ; code de suivi « FRL-… → code » avec carte de vérification ; « ↩️ Corriger » 15 min avec question dans un nouveau message ; tableau de bord `/admin/commandes` (connexion par code Telegram). Migrations 0004 à 0007 appliquées. **Réglages Telegram et Supabase seulement sur la preview** (pas encore en production). Reste : relier le suivi client (#27) aux commandes de la base, tests RLS de la 0004, remplacer la vue `supplier_order_lines` — serge
 
 ## 🔄 En cours
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
+| Paiement Stripe : bouton « Payer » du panier → page de paiement Stripe → page « Merci » qui enregistre la commande et l'envoie à Fraul sur Telegram ; webhook Stripe en secours (attend `STRIPE_WEBHOOK_SECRET`). Clés test sur les previews, clés live en production (1er nov.) | rhamon | `feat/rhamon/paiement-stripe` | 2026-11-01 |
 | Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Fraul Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
@@ -77,10 +79,10 @@ _Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code n
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → ✅ modes de mall (31 boutiques) → ✅ portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
 5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
-6. Plusieurs fournisseurs + Fraul Finds : **Serge a validé le 18 oct.** avec 2 corrections de sécurité, intégrées dans `docs/FOURNISSEURS-MULTIPLES.md` (migration **0004**). Reste : écrire les tests RLS listés, puis appliquer la 0004 (Rhamone ou Serge)
+6. Plusieurs fournisseurs + Fraul Finds : **Serge a validé le 18 oct.** ; migration **0004 appliquée le 21 oct.** (avec la PR #29). Reste : écrire les tests RLS listés dans `docs/FOURNISSEURS-MULTIPLES.md`, et remplacer la vue `supplier_order_lines` par une fonction (alerte « SECURITY DEFINER » de Supabase) — serge
 7. Plus tard : retirer `customers.whatsapp` et le canal `whatsapp` (validé par Serge le 18 oct.)
-8. Supabase : inviter Serge dans l'organisation, puis brancher le site (variables d'environnement dans Vercel) — rhamon
-9. Paiement Stripe en mode test
+8. Supabase : brancher le site (catalogue, comptes). Le relais des commandes (#29) lit déjà la base côté serveur (clé service dans Vercel, preview seulement) — serge + rhamon
+9. Paiement Stripe en mode test : en cours (`feat/rhamon/paiement-stripe`). Ensuite : webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
 10. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
 11. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
 
@@ -101,9 +103,13 @@ _Dernière mise à jour : 2026-10-21 par rhamon (boutons « Signature », code n
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-01 | **Stripe** : compte créé. Clés **test** sur les previews, clés **live** (clé restreinte `rk_live`) en production seulement. Le bouton « Payer » reste fermé tant que la base et Telegram ne sont pas réglés là où on paie (jamais un paiement sans commande enregistrée). Au paiement, seuls les pays de la zone du visiteur sont proposés (le prix payé correspond à l'adresse). Un seul « Fournisseur principal » au lancement. | Rhamone |
 | 2026-10-28 | **Décors Blender (façade, galerie, boutique en modules) : non retenus.** On garde le décor et l'architecture d'origine du Walk (mall en T, boutique dessinée) ; les modèles de Rhamone peuvent seulement inspirer des améliorations de ce décor. **Retenus : le mannequin v2 et la Caisse.** PR #39 et #40 fermées, #41 remplacée. | Rhamone |
+| 2026-10-25 | **Un mot ne cache jamais un autre.** Dans un rayon, son nom s'affiche en haut sous la marque (« TRAPSTAR / PANTALONS ») ; sur le mur, il devient un grand **filigrane presque invisible** derrière les vêtements (idée de Rhamone). Le panneau « CHAPEAUX » devient « CASQUETTES », comme dans la liste. Le test téléphone vérifie chaque rayon. | Rhamone |
 | 2026-10-24 | **Icônes du Walk sans cercle**, en bordeaux (remplace « icônes rondes bordeaux » du 21 oct.) : ✕ dans un coin, **loupe et sac côte à côte dans l'autre coin** (plus de loupe au centre). Sac redessiné (anses bien visibles, ne ressemble plus à une poubelle). | Rhamone |
+| 2026-10-22 | **Aucun bouton ne reste après une validation** (risque de mauvaise manipulation) ; « Corriger » demande confirmation et disparaît après 15 min. **L'expéditeur coche lui-même « reçu »** sur sa fiche d'expédition (option 1), Jean Paul garde le bouton « reçu » en secours (option 2). Le code de suivi garde ses deux étapes (envoyer, puis ✅ Confirmer) : c'est la vérification. | Serge |
 | 2026-10-22 | **Portant réaliste** : dans un rayon, les hauts sont serrés **de côté** (jamais le devant) ; le cintre est caché dans les épaules, seul un crochet fin en « ? » sort du **cou** (pas de la capuche, qui tombe dans le dos) ; la pièce touchée sort du rang et se met de face. Liste verticale des rayons dans chaque rayon, dans un coin (PC : en bas à gauche ; téléphone : bouton replié). Maquette v4 validée. | Rhamone |
+| 2026-10-21 | **Bot des commandes : on doit voir ce qui est déjà transféré et ce qui reste.** Chaque message de commande montre une ligne d'état par fournisseur (⏳ / ✅ transféré par… / 📥 reçu), le titre change quand tout est transféré ; `/afaire` liste ce qui reste ; ↩️ annule un geste pendant 15 min. **Groupe Telegram d'équipe** (Serge, Rhamone, puis Jean Paul) au lieu d'une conversation privée : seuls les comptes de `TELEGRAM_ALLOWED_USERS` peuvent agir. | Serge |
 | 2026-10-21 | **Style des boutons : « Signature »** (panier bordeaux avec sac, cœur rond, liens soulignés), 44 px de haut, partout dans le Walk. **Navigation** : ✕ pour quitter, ← pour revenir d'un cran ; aucun défilement ne fait sortir d'une boutique ; un cran de molette = une boutique ; rayons en liste verticale (style GTA) ; panier par boutique (« le sac de la boutique ») lié à la Caisse. Plus tard, les rayons suivront les vrais produits de chaque marque (pas d'« Accessoires » sans accessoires). | Rhamone |
 | 2026-10-19 | **Parcours de commande validé par Rhamone** (✅ avec ses ajouts : phrase + fourchette de livraison, fiche minimale par lien qui expire avec image en secours, bot verrouillé sur le compte de Jean Paul, blocs à copier en chinois/bilingue). **Plan B (retards, changement de fournisseur, remboursements) et paiement des fournisseurs : à la fin** (Serge). Alerte à Fraul à 4 jours si un colis fournisseur manque. | Serge + Rhamone |
 | 2026-10-19 | **Parcours d'une commande** (`docs/PARCOURS-COMMANDE.md`) : le site envoie chaque commande à **Fraul sur Telegram** ; Fraul transfère à chaque fournisseur un bloc sans prix ni adresse client ; les fournisseurs envoient leurs colis à **un seul expéditeur** (ami de Fraul) qui **regroupe** et donne **un seul code de suivi par client**. Client : Payée → En cours de traitement → En transit → Livrée. Niveaux 1 à 3 pour grandir sans déborder Fraul. Remplace le portail fournisseur WeChat. **Telegram confirmé ; le code de suivi passe par Fraul** (couple « FRL → code », carte de vérification, ✅ Confirmer, code unique) ; l'adresse arrive chez l'expéditeur par une **fiche d'expédition** transférée par Fraul. | Serge |

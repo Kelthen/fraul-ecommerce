@@ -432,3 +432,29 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .af-field [aria-invalid="true"] { border-color: var(--bordeaux); }
 .af-err { color: var(--bordeaux); font-size: 12px; }
 .af-small { font-size: 12px; color: var(--muted); }
+
+/* ── Tableau de bord des commandes et fiche d'expédition (zone de Serge) ── */
+.admin-msg { background: var(--pearl, #EAE0C8); padding: 10px 14px; border-radius: 10px; margin: 12px 0; }
+.admin-acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.admin-acts form { margin: 0; }
+.admin-login { display: grid; gap: 14px; max-width: 420px; margin-top: 16px; }
+.admin-code { display: grid; gap: 8px; }
+.admin-code input { font: inherit; font-size: 1.4rem; letter-spacing: 0.2em; padding: 10px 12px; border: 1.5px solid var(--ink); border-radius: 10px; background: transparent; }
+.admin-pile { margin-top: 28px; }
+.admin-pile h2 { font-size: 1.1rem; margin-bottom: 10px; }
+.pile-en_retard h2 { color: var(--bordeaux); }
+.admin-order { border: 1px solid rgba(10, 10, 12, 0.12); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+.admin-order header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.admin-order ul { margin: 8px 0; padding-left: 18px; }
+.sheet-card { max-width: 520px; margin: 0 auto; border: 1.5px solid var(--ink); border-radius: 16px; padding: 22px; }
+.sheet-number { font-size: clamp(1.8rem, 9vw, 2.6rem); font-weight: 700; letter-spacing: 0.04em; margin: 6px 0; word-break: break-all; }
+.sheet-card h2 { font-size: 1rem; margin: 20px 0 6px; }
+.sheet-card address { font-style: normal; font-size: 1.15rem; line-height: 1.5; }
+.sheet-parcels { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.sheet-parcels > li { border: 1px solid var(--stone); border-radius: 12px; padding: 12px 14px; }
+.sheet-parcels > li.is-received { background: var(--pearl); border-color: var(--pearl); }
+.sheet-parcel-head { display: flex; justify-content: space-between; gap: 10px; margin: 0 0 6px; }
+.sheet-items { margin: 0 0 10px; padding-left: 18px; font-size: 0.95rem; line-height: 1.45; }
+.sheet-btn { width: 100%; min-height: 48px; font-size: 1.05rem; }
+.sheet-undo { font-size: 0.9rem; text-decoration: underline; }
+.sheet-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
