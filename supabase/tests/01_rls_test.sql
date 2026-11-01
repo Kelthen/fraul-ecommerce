@@ -4,7 +4,7 @@ select 'sans RLS: '||count(*) from pg_tables where schemaname='public' and not r
 select 'regles: '||count(*) from pg_policies;
 -- Données de test (en superutilisateur, comme le serveur)
 insert into auth.users values ('11111111-1111-1111-1111-111111111111'), ('22222222-2222-2222-2222-222222222222'), ('33333333-3333-3333-3333-333333333333');
-insert into customer_groups (id, name) values ('aaaaaaaa-0000-0000-0000-000000000001', 'Cercle Fraul');
+insert into customer_groups (id, name) values ('aaaaaaaa-0000-0000-0000-000000000001', 'Cercle TakeUrClothes');
 insert into customers (id, email) values ('11111111-1111-1111-1111-111111111111', 'a@test'), ('22222222-2222-2222-2222-222222222222', 'b@test');
 insert into brands (id, slug, name) values ('bbbbbbbb-0000-0000-0000-000000000001', 'nike', 'Nike');
 insert into categories (id, code, slug, name, slot) values ('cccccccc-0000-0000-0000-000000000001', 'tee', 't-shirts', '{"fr":"T-shirts"}', 'top');

@@ -8,7 +8,7 @@ import { useEnvies } from "./EnviesProvider";
 import { IconBag, IconBrands, IconHeart, IconHome, IconOutfit, IconSearch, IconUser, IconWalk } from "./Icons";
 
 const NAV = [
-  { href: "/walk", label: "Fraul Walk", walk: true },
+  { href: "/walk", label: "Walk", walk: true },
   { href: "/#nouveautes", label: "Nouveautés" },
   { href: "/marques", label: "Marques" },
   { href: "/tenue", label: "Crée ta tenue" },
@@ -26,8 +26,8 @@ export function SiteHeader() {
   return (
     <header className="top">
       <div className="wrap top-in">
-        <Link className="logo" href="/" aria-label="Fraul, accueil">
-          Fraul
+        <Link className="logo" href="/" aria-label="TakeUrClothes, accueil">
+          TakeUrClothes
         </Link>
         <nav className="nav" aria-label="Navigation principale">
           {NAV.map((n) => (

@@ -20,7 +20,7 @@ export default function Page() {
             </p>
           ),
         },
-        { title: "Paiement", body: <p>Le paiement est traité par un prestataire sécurisé ; Fraul ne conserve aucune donnée de carte. <Todo>prestataire, moment du débit</Todo></p> },
+        { title: "Paiement", body: <p>Le paiement est traité par un prestataire sécurisé ; TakeUrClothes ne conserve aucune donnée de carte. <Todo>prestataire, moment du débit</Todo></p> },
         { title: "Livraison et douane", body: <p>Voir la page <a href="/livraison">Livraison et douane</a>. <Todo>qui paie les droits de douane</Todo></p> },
         { title: "Droit de rétractation", body: <p>Voir la page <a href="/retours">Retours et remboursements</a>.</p> },
         { title: "Garanties et litiges", body: <p><Todo>garanties légales, médiation, droit applicable</Todo></p> },

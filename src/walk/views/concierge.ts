@@ -1,4 +1,4 @@
-// Comptoir « Fraul Finds » (pièces sur demande), au pied du grand « F » au centre du mall : on y demande une pièce
+// Comptoir « Finds » (pièces sur demande), au pied du grand « TUC » au centre du mall : on y demande une pièce
 // introuvable dans les boutiques (décision de Rhamone, 18 oct. 2026). Texte : src/content/walk.ts.
 import type * as T from "three";
 

@@ -4,7 +4,7 @@ import { getBrands } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Toutes les marques",
-  description: "Toutes les marques Fraul de A à Z. Streetwear et luxe authentiques, une boutique par marque.",
+  description: "Toutes les marques TakeUrClothes de A à Z. Streetwear et luxe authentiques, une boutique par marque.",
   alternates: { canonical: "/marques" },
 };
 

@@ -1,7 +1,7 @@
 # Parcours d'une commande : du paiement au colis chez le client
 
 > **Zone de Serge** (commandes, fournisseurs, expédition). Écrit le 19 oct. 2026 (heure de Toronto) avec Serge.
-> **Remplace la partie 2 de `docs/FOURNISSEUR-COMMANDES.md`** (portail WeChat pour le fournisseur) : Fraul devient le relais, le fournisseur n'a pas de portail.
+> **Remplace la partie 2 de `docs/FOURNISSEUR-COMMANDES.md`** (portail WeChat pour le fournisseur) : TakeUrClothes devient le relais, le fournisseur n'a pas de portail.
 > S'appuie sur `docs/FOURNISSEURS-MULTIPLES.md` (offres par fournisseur, migration 0004 validée, non appliquée) et y ajoute ce qui manque (§4, §6).
 > Rien n'est codé ni appliqué. Réponses de Rhamone bienvenues en « 🗣️ Rhamone ».
 
@@ -12,96 +12,96 @@
 | Qui | Rôle | Outil |
 |---|---|---|
 | **Client** | Commande et paie sur le site, suit son colis | Le site + e-mails |
-| **Fraul** | Reçoit chaque commande, la transfère aux bons fournisseurs, gère les problèmes | **Telegram** (+ tableau de bord du site) |
-| **Fournisseurs** (plusieurs, ex. 10 pour Nike) | Reçoivent de Fraul les articles à préparer, envoient leur colis à l'expéditeur | Leur habitude (WeChat) |
-| **Expéditeur** (un seul, ami de Fraul, pour tous les fournisseurs) | Reçoit les colis des fournisseurs, **regroupe tout ce qui va au même client**, expédie, renvoie **un seul code de suivi** à Fraul | Sa messagerie habituelle (fiche d'expédition reçue de Fraul) ; page personnelle plus tard (niveau 2) |
+| **TakeUrClothes** | Reçoit chaque commande, la transfère aux bons fournisseurs, gère les problèmes | **Telegram** (+ tableau de bord du site) |
+| **Fournisseurs** (plusieurs, ex. 10 pour Nike) | Reçoivent de TakeUrClothes les articles à préparer, envoient leur colis à l'expéditeur | Leur habitude (WeChat) |
+| **Expéditeur** (un seul, ami de TakeUrClothes, pour tous les fournisseurs) | Reçoit les colis des fournisseurs, **regroupe tout ce qui va au même client**, expédie, renvoie **un seul code de suivi** à TakeUrClothes | Sa messagerie habituelle (fiche d'expédition reçue de TakeUrClothes) ; page personnelle plus tard (niveau 2) |
 
 Règles :
 - **Un client = un seul colis = un seul code de suivi**, même si sa commande vient de plusieurs fournisseurs.
-- **Les fournisseurs n'ont jamais l'adresse du client** ni nos prix de vente : seulement les articles, leur référence et le **numéro de commande Fraul à écrire sur le colis**.
+- **Les fournisseurs n'ont jamais l'adresse du client** ni nos prix de vente : seulement les articles, leur référence et le **numéro de commande TakeUrClothes à écrire sur le colis**.
 - **Seul l'expéditeur a l'adresse du client.**
-- **Un seul numéro partout** : `FRL-2026-000123` (messages, colis, suivi, tableau de bord).
+- **Un seul numéro partout** : `TUC-2026-000123` (messages, colis, suivi, tableau de bord).
 - **Le site est la seule référence** ; Telegram ne sert qu'à prévenir.
 
 ## 2. Le parcours
 
 ```
 1. Client paie                          → site : « En cours de traitement »   (e-mail au client)
-2. Message Telegram à Fraul             (1 bloc pour Fraul + 1 bloc « à transférer » par fournisseur)
-3. Fraul transfère chaque bloc à son fournisseur, touche « Transféré » dans Telegram
-4. Chaque fournisseur envoie son colis à l'expéditeur (n° FRL écrit dessus)
-   Fraul transfère aussi la FICHE D'EXPÉDITION (image) à l'expéditeur
-5. L'expéditeur reçoit les colis (n° FRL dessus) ; tout est là → il colle la fiche, expédie
-6. Il renvoie « FRL-123 → code » à Fraul ; Fraul le transfère au bot, vérifie la carte,
+2. Message Telegram à TakeUrClothes             (1 bloc pour TakeUrClothes + 1 bloc « à transférer » par fournisseur)
+3. TakeUrClothes transfère chaque bloc à son fournisseur, touche « Transféré » dans Telegram
+4. Chaque fournisseur envoie son colis à l'expéditeur (n° TUC écrit dessus)
+   TakeUrClothes transfère aussi la FICHE D'EXPÉDITION (image) à l'expéditeur
+5. L'expéditeur reçoit les colis (n° TUC dessus) ; tout est là → il colle la fiche, expédie
+6. Il renvoie « TUC-123 → code » à TakeUrClothes ; TakeUrClothes le transfère au bot, vérifie la carte,
    touche ✅ Confirmer                                     → site : « En transit »   (e-mail au client après 15 min)
 7. Suivi automatique du transporteur (17TRACK) : douane, en livraison… → « Livrée »
 ```
 
 ### Ce que voit le client (4 étapes seulement)
 **Payée → En cours de traitement → En transit (suivi) → Livrée.**
-Le détail interne (transmise aux fournisseurs, colis reçus 1/2…) reste dans le tableau de bord de Fraul.
+Le détail interne (transmise aux fournisseurs, colis reçus 1/2…) reste dans le tableau de bord de TakeUrClothes.
 « Temps réel » = mis à jour à chaque scan du transporteur (départ, douane, livraison), pas un point GPS : on l'écrit honnêtement sur la page de suivi.
 
-### Le message Telegram à Fraul (exemple)
+### Le message Telegram à TakeUrClothes (exemple)
 ```
-🛍 Nouvelle commande FRL-2026-000123 — payée 358 USD (marge estimée : …)
+🛍 Nouvelle commande TUC-2026-000123 — payée 358 USD (marge estimée : …)
 Client : prénom + ville (l'adresse complète est sur la page de l'expéditeur)
 
 ── À transférer au fournisseur A ──  (en chinois, sans prix)
-订单 FRL-2026-000123 · 请寄给发货人
+订单 TUC-2026-000123 · 请寄给发货人
 • Tech Fleece noir · L · 1 pc · réf A-88213 · [lien] · [photo]
 • Hoodie Trapstar noir · M · 1 pc · réf A-77102 · [lien] · [photo]
 
 ── À transférer au fournisseur B ──
-订单 FRL-2026-000123 · 请寄给发货人
+订单 TUC-2026-000123 · 请寄给发货人
 • Casquette … · taille unique · 1 pc · réf B-501 · [lien] · [photo]
 
 ── Fiche d'expédition (image, à transférer à l'expéditeur) ──
-FRL-2026-000123 (très grand + code-barres)
+TUC-2026-000123 (très grand + code-barres)
 Nom, adresse complète, téléphone du client (caractères latins, intitulés en chinois)
 2 colis attendus : fournisseur A (2 articles) · fournisseur B (1 article)
 
 [ ✅ Transféré à A ]  [ ✅ Transféré à B ]  [ 📦 Fiche envoyée ]  [ ⚠️ Rupture ]
 ```
 
-### Codes de suivi : ne jamais se tromper de client (décision de Serge, 19 oct. : le code passe par Fraul)
-1. L'expéditeur envoie **toujours le couple** « FRL-123 → code » (le n° est sur la fiche collée au colis).
-2. Fraul **transfère ce message au bot** (un ou plusieurs couples d'un coup). Fraul ne choisit jamais la commande à la main.
-3. Pour chaque couple, le bot affiche une **carte de vérification** : code → FRL-123 · prénom + initiale · ville · nombre d'articles + photos. Rien n'est enregistré avant **✅ Confirmer**.
+### Codes de suivi : ne jamais se tromper de client (décision de Serge, 19 oct. : le code passe par TakeUrClothes)
+1. L'expéditeur envoie **toujours le couple** « TUC-123 → code » (le n° est sur la fiche collée au colis).
+2. TakeUrClothes **transfère ce message au bot** (un ou plusieurs couples d'un coup). TakeUrClothes ne choisit jamais la commande à la main.
+3. Pour chaque couple, le bot affiche une **carte de vérification** : code → TUC-123 · prénom + initiale · ville · nombre d'articles + photos. Rien n'est enregistré avant **✅ Confirmer**.
 4. Le site **refuse** : code déjà utilisé sur une autre commande (unique), n° de commande inconnu ou ayant déjà un code, format de code inconnu.
-5. Au **premier scan du transporteur** (17TRACK), si le pays de destination ne correspond pas à la commande → alerte à Fraul.
+5. Au **premier scan du transporteur** (17TRACK), si le pays de destination ne correspond pas à la commande → alerte à TakeUrClothes.
 6. **15 minutes pour corriger** : l'e-mail « En transit » part au client après ce délai ; bouton « Annuler » pendant ce temps.
 
-## 3. Grandir sans que Fraul soit débordé
+## 3. Grandir sans que TakeUrClothes soit débordé
 
 | Niveau | Quand | Ce qui change |
 |---|---|---|
 | **1. Lancement** | jusqu'à ~20 commandes/jour (estimation) | 1 message Telegram par commande, comme ci-dessus |
-| **2. Croissance** | au-delà | **1 récap par fournisseur et par jour** (ex. 18 h heure de Chine) au lieu d'un message par commande ; l'expéditeur colle ses codes en lot (« FRL-123 → code ») |
-| **3. Gros volume** | plus tard | Le récap part **directement** aux fournisseurs (robot WeCom) ; Fraul (ou un assistant, rôle `ops`) ne gère plus que les problèmes |
+| **2. Croissance** | au-delà | **1 récap par fournisseur et par jour** (ex. 18 h heure de Chine) au lieu d'un message par commande ; l'expéditeur colle ses codes en lot (« TUC-123 → code ») |
+| **3. Gros volume** | plus tard | Le récap part **directement** aux fournisseurs (robot WeCom) ; TakeUrClothes (ou un assistant, rôle `ops`) ne gère plus que les problèmes |
 
 Le niveau 2 est prévu dès la construction : passer de 1 à 2 = un réglage, pas un recodage.
 
-**Tableau de bord de Fraul, 3 piles :** « à transférer », « en attente de colis / de suivi », « en retard ».
+**Tableau de bord de TakeUrClothes, 3 piles :** « à transférer », « en attente de colis / de suivi », « en retard ».
 **Alertes automatiques** : commande non transférée sous 24 h ; colis d'un fournisseur pas reçu par l'expéditeur sous X jours ; pas de code de suivi sous X jours ; colis bloqué chez le transporteur.
 
 ## 4. Plusieurs fournisseurs : ne jamais se tromper d'article ni de prix
 
 S'appuie sur `supplier_offers` (migration 0004, `docs/FOURNISSEURS-MULTIPLES.md`). Rappel et ajouts :
-- Chaque variante (produit × taille × couleur) a **son code Fraul** et **ses offres** : fournisseur, sa référence, son lien, son prix ¥, stock, délai, **date de dernière vérification**.
+- Chaque variante (produit × taille × couleur) a **son code TakeUrClothes** et **ses offres** : fournisseur, sa référence, son lien, son prix ¥, stock, délai, **date de dernière vérification**.
 - **Prix client** = calculé sur le fournisseur de référence : un seul prix, qui ne dépend pas du fournisseur choisi.
-- **À la commande**, le site propose l'offre la moins chère en stock dans le délai ; Fraul confirme. Fournisseur, référence et coût réel sont **figés sur la ligne** (`offer_id`, `supplier_id`, `unit_cost`) : si un prix change ensuite, la commande garde les bons chiffres. Contrôle du **prix plancher** avec le coût réel avant l'envoi.
+- **À la commande**, le site propose l'offre la moins chère en stock dans le délai ; TakeUrClothes confirme. Fournisseur, référence et coût réel sont **figés sur la ligne** (`offer_id`, `supplier_id`, `unit_cost`) : si un prix change ensuite, la commande garde les bons chiffres. Contrôle du **prix plancher** avec le coût réel avant l'envoi.
 - ➕ **Ajouts de Serge (19 oct.)** :
   - offre **non vérifiée depuis X jours** → signalée ;
-  - **hausse de prix** d'un fournisseur → alerte à Fraul ;
+  - **hausse de prix** d'un fournisseur → alerte à TakeUrClothes ;
   - variante **sans aucune offre en stock** → **masquée automatiquement** sur le site ;
   - commande **découpée par fournisseur** automatiquement (un bloc « à transférer » chacun).
 
 ## 5. Choix par défaut (à confirmer par Serge)
 
-1. ✅ **Telegram** pour prévenir Fraul (gratuit, instantané, boutons) ; e-mail en secours. — *confirmé par Serge le 19 oct.*
-2. ✅ **Le code de suivi passe par Fraul** au lancement : l'expéditeur l'envoie à Fraul, Fraul l'envoie au site avec un bouton (vérification ci-dessus). Page de l'expéditeur au niveau 2. — *confirmé par Serge le 19 oct.*
-3. ✅ **L'adresse arrive chez l'expéditeur par la fiche d'expédition** (image transférée par Fraul). — *oui de Serge le 19 oct., en attente de la validation de Rhamone*
+1. ✅ **Telegram** pour prévenir TakeUrClothes (gratuit, instantané, boutons) ; e-mail en secours. — *confirmé par Serge le 19 oct.*
+2. ✅ **Le code de suivi passe par TakeUrClothes** au lancement : l'expéditeur l'envoie à TakeUrClothes, TakeUrClothes l'envoie au site avec un bouton (vérification ci-dessus). Page de l'expéditeur au niveau 2. — *confirmé par Serge le 19 oct.*
+3. ✅ **L'adresse arrive chez l'expéditeur par la fiche d'expédition** (image transférée par TakeUrClothes). — *oui de Serge le 19 oct., en attente de la validation de Rhamone*
 4. ✅ **« En cours de traitement » dès le paiement.** — *oui de Serge le 19 oct., en attente de la validation de Rhamone*
 
 > **Rhamone : Serge attend ta validation sur l'ensemble de ce document avant qu'on construise.** Réponds ✅ / ⛔ / ➕ en « 🗣️ Rhamone » ou en commentaire sur la PR.
@@ -116,7 +116,7 @@ create table order_parcels (
   order_id    uuid not null references orders (id) on delete cascade,
   supplier_id uuid not null references suppliers (id),
   status      parcel_status not null default 'expected',
-  forwarded_at timestamptz,          -- Fraul a transféré le bloc au fournisseur
+  forwarded_at timestamptz,          -- TakeUrClothes a transféré le bloc au fournisseur
   received_at  timestamptz,          -- l'expéditeur a coché le colis
   unique (order_id, supplier_id)
 );
@@ -148,7 +148,7 @@ Un seul `shipments` par commande (= un code de suivi par client) ; l'adresse vie
 - **Livraison estimée dès le paiement**, calculée sur le fournisseur le plus lent + le délai de la zone. ➕ Serge : afficher une **fourchette** (« entre le 28 oct. et le 2 nov. »), plus honnête qu'une date (douane).
 
 ### 7.2 Un fournisseur lent ne bloque pas le colis — **plan B à la fin** (décision de Serge, 19 oct.)
-- **Dès le lancement** : seulement les offres en stock et vérifiées récemment ; **note par fournisseur** (taux de retard), les moins fiables passent derrière dans le choix de l'offre ; **alerte à Fraul à 4 jours** si un colis fournisseur n'est pas chez l'expéditeur (Serge : 7 jours est trop tard vu l'objectif < 10 j de bout en bout vers les USA).
+- **Dès le lancement** : seulement les offres en stock et vérifiées récemment ; **note par fournisseur** (taux de retard), les moins fiables passent derrière dans le choix de l'offre ; **alerte à TakeUrClothes à 4 jours** si un colis fournisseur n'est pas chez l'expéditeur (Serge : 7 jours est trop tard vu l'objectif < 10 j de bout en bout vers les USA).
 - **Plus tard, en dernière étape** (plan B, à 7 jours) : a) changer de fournisseur pour l'article en retard ; b) sinon e-mail au client avec 3 choix (attendre / recevoir le reste en 2 colis, frais pour nous / être remboursé de l'article) ; c) sans réponse sous 48 h : envoi de ce qui est là + remboursement de l'article. Le site **propose**, Jean Paul **confirme** tout remboursement.
 - Rupture après paiement : e-mail « article indisponible, remboursé » + ligne dans le suivi ; une pièce de « Mes envies » sans offre s'affiche « plus disponible ».
 
@@ -157,7 +157,7 @@ Un seul `shipments` par commande (= un code de suivi par client) ; l'adresse vie
 - **Lien sécurisé qui expire** (7 jours au plus après l'expédition, chaque ouverture enregistrée) **au lieu de l'image**. ⚠️ Serge : un site hors de Chine (Vercel) peut être lent, bloqué ou signalé dans WeChat en Chine continentale → **tester avec le vrai expéditeur** ; garder l'**image en secours** si le lien ne s'ouvre pas.
 - Message Telegram : prénom + ville seulement. **Accord de confidentialité** signé par l'expéditeur. Page Confidentialité + mention RGPD (adresses européennes envoyées en Chine) **à faire vérifier par le juriste**. Niveau 2 : l'expéditeur imprime l'étiquette depuis sa page.
 
-### 7.4 Telegram = Jean Paul seulement (CEO de Fraul) — ✅
+### 7.4 Telegram = Jean Paul seulement (CEO de TakeUrClothes) — ✅
 - Le bot **ne répond qu'au compte Telegram de Jean Paul** (verrouillé côté serveur, tout autre compte ignoré).
 - Chaque bloc « à transférer » a un bouton **Copier**, en texte simple, **en chinois ou bilingue** (à confirmer avec Jean Paul), à coller tel quel dans WeChat. Le lien de la fiche d'expédition passe aussi par WeChat.
 

@@ -29,7 +29,7 @@ async function baseUrl(): Promise<string> {
 
 export async function startCheckout(lines: unknown): Promise<{ url: string } | { error: string }> {
   if (missingPaymentSettings().length) return { error: "Le paiement n'est pas encore ouvert. Reviens très vite !" };
-  const z = (await cookies()).get("fraul_zone")?.value;
+  const z = (await cookies()).get("tuc_zone")?.value;
   const zone: ZoneId = z && z in ZONES ? (z as ZoneId) : DEFAULT_ZONE;
 
   const found = new Map<string, PayableProduct & { image?: { front: string } }>();

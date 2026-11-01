@@ -21,7 +21,7 @@ const FIELDS: { k: ConciergeField; label: string; hint?: string; type?: string; 
 ];
 
 /**
- * Formulaire « Fraul Finds » : une pièce sur demande (page /sur-demande et comptoir du Walk).
+ * Formulaire « Finds » : une pièce sur demande (page /sur-demande et comptoir du Walk).
  * Démo : la demande est vérifiée mais pas envoyée (pas d'e-mail réel avant le branchement de Supabase).
  */
 export function ConciergeForm({ brand = "", brandFromUrl = false, className }: Props) {

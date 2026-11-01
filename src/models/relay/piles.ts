@@ -1,4 +1,4 @@
-// Tableau de bord de Fraul : chaque commande payée tombe dans une pile (docs/PARCOURS-COMMANDE.md §3).
+// Tableau de bord de TakeUrClothes : chaque commande payée tombe dans une pile (docs/PARCOURS-COMMANDE.md §3).
 // « à transférer » → « en attente » (colis ou code de suivi) → expédiée ; « en retard » passe devant tout.
 // Pur : l'heure est passée en paramètre (testé dans piles.test.ts).
 

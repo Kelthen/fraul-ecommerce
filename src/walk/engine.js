@@ -1,4 +1,4 @@
-// Fraul Walk — moteur 3D du mall et des boutiques.
+// Walk — moteur 3D du mall et des boutiques.
 // Porté depuis la démo V2 (demo/fraul-demo-v2.html) en gardant le même rendu ;
 // ce qui change : three.js vient du projet (plus de CDN), les données viennent
 // du catalogue, le panier et la navigation sont ceux du site, et tout se nettoie
@@ -25,7 +25,7 @@ let MANNEQUIN = null;
 let CAISSE = null;
 
 /**
- * Démarre le Fraul Walk dans `root`.
+ * Démarre le Walk dans `root`.
  * @param {HTMLElement} root
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
  *                    onAdd, onExit, onFallback, onFiche, onConcierge, startShop, startStore,
@@ -85,7 +85,7 @@ export function startWalk(root, o) {
 
   /* ===== Mémoire légère (ce téléphone) : gestes déjà faits, dernière boutique regardée ===== */
   // Un texte d'aide disparaît dès que le geste a été fait une fois (Rhamone : « moins de texte »).
-  const MEM = "fraul.walk.v1";
+  const MEM = "tuc.walk.v1";
   const mem = (() => { try { const m = JSON.parse(localStorage.getItem(MEM) || "{}"); return m && typeof m === "object" ? m : {}; } catch { return {}; } })();
   if (!Array.isArray(mem.seen)) mem.seen = [];
   const remember = (patch) => { Object.assign(mem, patch); try { localStorage.setItem(MEM, JSON.stringify(mem)); } catch { /* ignoré */ } };
@@ -153,7 +153,7 @@ export function startWalk(root, o) {
   });
   on(window, "keydown", (e) => { if (e.key === "Escape" && !dir.hidden) { e.stopImmediatePropagation(); closeDir(); } });
 
-  /* ===== Fraul Finds, pièces sur demande (formulaire dessiné par React) : une couche, retour = fermer ===== */
+  /* ===== Finds, pièces sur demande (formulaire dessiné par React) : une couche, retour = fermer ===== */
   let conFrom = null;
   function openConcierge(brand) {
     if (hasLayer("concierge")) return;
@@ -163,7 +163,7 @@ export function startWalk(root, o) {
   }
   on($("#conBtn"), "click", () => openConcierge(null));
   on($("#conStopBtn"), "click", () => openConcierge(null));
-  // Écouteur posé avant ceux de la boutique : Échap ferme d'abord Fraul Finds.
+  // Écouteur posé avant ceux de la boutique : Échap ferme d'abord Finds.
   on(window, "keydown", (e) => { if (e.key === "Escape" && hasLayer("concierge")) { e.stopImmediatePropagation(); closeLayer("concierge"); } });
 
   /* ===== three.js chargé à l'ouverture (bundle du projet, pas de CDN) ===== */
@@ -429,7 +429,7 @@ export function startWalk(root, o) {
   }
 
   /* ===== Le mall en T =====
-     Plan : docs/fraul-walk-plan-T.png. On entre par le bas du tronc, on regarde une
+     Plan : docs/walk-plan-T.png. On entre par le bas du tronc, on regarde une
      boutique à la fois (vitrines toujours à droite), on fait le tour de la barre du T
      autour de la pièce centrale, puis on redescend vers la sortie. */
   const SHOPS = o.shops.map((s) => s.style);
@@ -446,7 +446,7 @@ export function startWalk(root, o) {
 
   let MALL = null, progress = 0, curShop = 0, curKey = null, walkOpen = false, storeOpen = false;
   const walkEl = $("#walk"), track = $("#walkTrack");
-  // Pour le test téléphone : nombre d'étapes et place de Fraul Finds dans le parcours.
+  // Pour le test téléphone : nombre d'étapes et place de Finds dans le parcours.
   const sizeTrack = () => { track.style.height = (LAST() * 90 + 100) + "vh"; walkEl.dataset.stops = String(LAST()); };
   sizeTrack(); walkEl.dataset.conAfter = String(LAYOUT.concierge.after);
   const prog = $("#prog");
@@ -491,7 +491,7 @@ export function startWalk(root, o) {
     if (MALL) MALL.kick();
   }
   on(walkEl, "scroll", onWalkScroll, { passive: true });
-  // Un point d'arrêt par étape (entrée, chaque vitrine, Fraul Finds, sortie) : un cran de molette ou un glisser = une boutique,
+  // Un point d'arrêt par étape (entrée, chaque vitrine, Finds, sortie) : un cran de molette ou un glisser = une boutique,
   // avec un court glissé qui garde l'effet de marche (Rhamone, 21 oct.). Le défilement s'y cale tout seul (walk.css).
   function placeSnaps() {
     track.querySelectorAll(".snap").forEach((el) => el.remove());
@@ -609,7 +609,7 @@ export function startWalk(root, o) {
     add(scene, new THREE.BoxGeometry(STEM_X - 2.6, CEIL, 0.4), wallM, -(STEM_X + 2.6) / 2, CEIL / 2, STEM_END);
     add(scene, new THREE.BoxGeometry(STEM_X - 2.6, CEIL, 0.4), wallM, (STEM_X + 2.6) / 2, CEIL / 2, STEM_END);
     add(scene, new THREE.BoxGeometry(5.2, CEIL - 3.6, 0.4), wallM, 0, 3.6 + (CEIL - 3.6) / 2, STEM_END);
-    // Portes en verre « Welcome to Fraul Center » qui s'écartent à l'approche (src/walk/views/entrance.ts)
+    // Portes en verre « Come in. Take ur clothes. » qui s'écartent à l'approche (src/walk/views/entrance.ts)
     const entrance = createEntrance(THREE, { z: STEM_END, width: 5.2, height: 3.6, lines: ENTRANCE_TEXT, serif: o.fonts.serif });
     scene.add(entrance.group);
     add(scene, new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ color: DL.night ? SKY : 0xffffff }), 0, 5, STEM_END + 14, Math.PI); // dehors : le jour, ou le ciel du soir
@@ -638,20 +638,24 @@ export function startWalk(root, o) {
     }
     caisseObj.visible = withCaisse;
 
-    // Pièce centrale : grand « F » Fraul sur un socle, entouré d'arbres en pot
+    // Pièce centrale : grand « TUC » sur un socle, entouré d'arbres en pot
     const C = new THREE.Group(); C.position.set(0, 0, -16); scene.add(C);
-    // Comptoir Fraul Finds au pied du « F », tourné vers l'entrée (src/walk/views/concierge.ts), placé par le mode
+    // Comptoir Finds au pied du « TUC », tourné vers l'entrée (src/walk/views/concierge.ts), placé par le mode
     const desk = createConciergeDesk(THREE, { ...LAYOUT.concierge.slot, ...CONCIERGE_TEXT, serif: o.fonts.serif, sans: o.fonts.sans }).group;
     scene.add(desk);
-    // Le comptoir cache les vitrines derrière lui : le toucher ouvre Fraul Finds, jamais la boutique cachée.
+    // Le comptoir cache les vitrines derrière lui : le toucher ouvre Finds, jamais la boutique cachée.
     const deskHits = []; desk.traverse((m) => { if (m.isMesh) { m.userData.desk = true; deskHits.push(m); } });
     add(C, new THREE.CylinderGeometry(3.1, 3.3, 0.6, 48), std(0xe8e1d4, 0.35), 0, 0.3, 0);
     add(C, new THREE.CylinderGeometry(2.6, 2.6, 0.04, 48), std(0x680209, 0.4), 0, 0.62, 0);
     const fM = std(0x680209, 0.22, 0.35);
-    const F = new THREE.Group(); F.position.y = 0.62; C.add(F);
-    add(F, new THREE.BoxGeometry(0.75, 4.4, 0.75), fM, -0.75, 2.2, 0);
-    add(F, new THREE.BoxGeometry(2.7, 0.75, 0.75), fM, 0.2, 4.03, 0);
-    add(F, new THREE.BoxGeometry(2.0, 0.65, 0.75), fM, -0.15, 2.6, 0);
+    // « TUC » en volume, chaque lettre faite de barres (w large, h haute, t épaisseur du trait).
+    // Tourné vers l'arrêt Finds (côté droit du centre) : c'est de là qu'on le voit de face.
+    const F = new THREE.Group(); F.position.y = 0.62; F.rotation.y = Math.PI / 2; C.add(F);
+    const w = 1.7, h = 3.8, t = 0.55, d = 0.75, bar = (bw, bh, x, y) => add(F, new THREE.BoxGeometry(bw, bh, d), fM, x, y, 0);
+    const [xT, xU, xC] = [-2.05, 0, 2.05];
+    bar(w, t, xT, h - t / 2); bar(t, h - t, xT, (h - t) / 2); // T
+    bar(t, h, xU - w / 2 + t / 2, h / 2); bar(t, h, xU + w / 2 - t / 2, h / 2); bar(w - 2 * t, t, xU, t / 2); // U
+    bar(t, h, xC - w / 2 + t / 2, h / 2); bar(w - t, t, xC + t / 2, h - t / 2); bar(w - t, t, xC + t / 2, t / 2); // C
     const leafA = lam(0x6b7a55), leafB = lam(0x56653f), trunkM = lam(0x7a6450), potM = std(0xdcd3c4, 0.5);
     [[-5.5, -3.5], [5.5, -3.5], [-5.5, 3.5], [5.5, 3.5]].forEach(([x, z], k) => {
       const t = new THREE.Group(); t.position.set(x, 0, z); C.add(t);
@@ -977,7 +981,7 @@ export function startWalk(root, o) {
     const wallSign = [
       add(new THREE.BoxGeometry(3.2, 2.4, 0.08), basic({ color: new THREE.Color(st.bg) }), 0, 2.15, -15.95),
       add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st), transparent: true }), 0, 2.4, -15.9),
-      add(new THREE.PlaneGeometry(1.6, 0.15), basic({ map: U.labelTex("FRAUL · BOUTIQUE", st.fg), transparent: true, opacity: 0.6 }), 0, 1.65, -15.9),
+      add(new THREE.PlaneGeometry(1.6, 0.15), basic({ map: U.labelTex("TAKEURCLOTHES · BOUTIQUE", st.fg), transparent: true, opacity: 0.6 }), 0, 1.65, -15.9),
     ];
 
     const decoMat = {}, deco = (type, c, a) => decoMat[type + c + a] || (decoMat[type + c + a] = new THREE.MeshLambertMaterial({ map: U.itemTexture(type, c, a, false, st), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
@@ -1232,7 +1236,7 @@ export function startWalk(root, o) {
   // (Rhamone, 21 oct. : « tu reviens là où t'étais, c'est bien », mais plus rien ne répondait).
   storeEl.hidden = true; dir.hidden = true; ["#sBottom", "#sInfo", "#sPrev", "#sNext"].forEach((s) => ($(s).hidden = true));
   $("#veil").style.opacity = 0;
-  const RESUME = "fraul.walk.resume";
+  const RESUME = "tuc.walk.resume";
   let back = null;
   try { back = JSON.parse(sessionStorage.getItem(RESUME) || "null"); sessionStorage.removeItem(RESUME); } catch { /* stockage indisponible */ }
   const fresh = back && back.brand && Date.now() - back.at < 30 * 60e3 && (!o.startStore || o.startStore === back.brand)
@@ -1260,7 +1264,7 @@ export function startWalk(root, o) {
     },
     destroy() {
       // Mémorise la boutique et le rayon ouverts, pour y revenir si l'on revient sur le Walk dans la même visite.
-      try { sessionStorage.setItem("fraul.walk.resume", JSON.stringify({ brand: storeEl.hidden ? null : sBrand, cat: sCat, at: Date.now() })); } catch { /* ignoré */ }
+      try { sessionStorage.setItem("tuc.walk.resume", JSON.stringify({ brand: storeEl.hidden ? null : sBrand, cat: sCat, at: Date.now() })); } catch { /* ignoré */ }
       dead = true;
       life.abort();
       if (MALL) MALL.dispose();

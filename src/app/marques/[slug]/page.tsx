@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps<"/marques/[slug]">)
   if (!brand) return {};
   return {
     title: `${brand.name} — boutique`,
-    description: `La boutique ${brand.name} chez Fraul : t-shirts, hoodies, pantalons, sneakers et accessoires. Pièces authentiques, suivi de commande à chaque étape.`,
+    description: `La boutique ${brand.name} chez TakeUrClothes : t-shirts, hoodies, pantalons, sneakers et accessoires. Pièces authentiques, suivi de commande à chaque étape.`,
     alternates: { canonical: `/marques/${brand.slug}` },
   };
 }

@@ -15,7 +15,7 @@ export type PathNode = { p: [number, number]; l: [number, number, number] };
 /** Ce qu'un mode de mall calcule pour n boutiques : vitrines dans l'ordre de la promenade, entrée, sortie. */
 export type MallLayout<D = Record<string, number>> = {
   slots: Slot[];
-  /** Comptoir Fraul Finds (pièces sur demande) : arrêt après les `after` premières boutiques (décision de Rhamone, 18 oct. 2026). */
+  /** Comptoir Finds (pièces sur demande) : arrêt après les `after` premières boutiques (décision de Rhamone, 18 oct. 2026). */
   concierge: { after: number; slot: Slot };
   /** Comptoir « La Caisse », dernier arrêt avant la sortie quand le sac n'est pas vide (décision de Rhamone, 18 oct. 2026). */
   caisse: Slot;

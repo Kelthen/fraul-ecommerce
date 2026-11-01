@@ -8,12 +8,12 @@ import { DbError, db, eq } from "./db";
 import { relayOrder } from "./relay";
 import { getCheckoutSession, shippingOf, type CheckoutSession } from "./stripe";
 
-// Commande payée sur Stripe → commande dans la base → message Telegram à Fraul (docs/PARCOURS-COMMANDE.md §2).
+// Commande payée sur Stripe → commande dans la base → message Telegram à TakeUrClothes (docs/PARCOURS-COMMANDE.md §2).
 // Appelé par la page « merci » ET par le webhook Stripe : le premier arrivé enregistre, l'autre retrouve la commande.
 
 /** Version des CGV acceptée (pages légales encore en brouillon, à faire valider par un juriste). */
 export const TERMS_VERSION = "2026-11-01-brouillon";
-/** Au lancement, un seul fournisseur ; Fraul répartira ensuite entre ses fournisseurs (FOURNISSEURS-MULTIPLES.md). */
+/** Au lancement, un seul fournisseur ; TakeUrClothes répartira ensuite entre ses fournisseurs (FOURNISSEURS-MULTIPLES.md). */
 const MAIN_SUPPLIER = "Fournisseur principal";
 const DAY = 86_400_000;
 const SHEET_DAYS_BEFORE_SHIPPING = 21; // même durée que la commande test du relais
@@ -76,7 +76,7 @@ async function record(s: CheckoutSession, baseUrl: string): Promise<Fulfilled> {
   const priced = zone in ZONES ? priceCart(requested, zone, (slug) => products.get(slug)) : null;
   const ship = shippingOf(s);
   if (!priced?.ok || !ship?.address.country || !countriesOf(zone).includes(ship.address.country)) {
-    // Ne devrait jamais arriver (panier vérifié avant le paiement) : on garde la trace pour Fraul.
+    // Ne devrait jamais arriver (panier vérifié avant le paiement) : on garde la trace pour TakeUrClothes.
     console.error("[paiement] session incohérente", s.id, priced, ship?.address.country);
   }
 
@@ -104,7 +104,7 @@ async function record(s: CheckoutSession, baseUrl: string): Promise<Fulfilled> {
   const total = s.amount_total ?? (priced?.ok ? priced.total : 0);
   const currency = (s.currency ?? (priced?.ok ? priced.currency : "usd")).toUpperCase();
   const [order] = await db.insert<{ id: string; number: string }>("orders", {
-    email: s.customer_details?.email ?? "inconnu@fraul.invalid",
+    email: s.customer_details?.email ?? "inconnu@takeurclothes.invalid",
     status: "paid",
     is_demo: s.id.startsWith("cs_test_"),
     currency,

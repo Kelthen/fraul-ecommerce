@@ -6,7 +6,7 @@ import { ClearCart } from "@/components/ClearCart";
 import { fulfillCheckout, type Fulfilled } from "@/lib/server/orders";
 
 // Retour de Stripe après le paiement. La page vérifie le paiement auprès de Stripe (jamais l'adresse seule),
-// enregistre la commande et prévient Fraul sur Telegram. Le webhook Stripe fait la même chose en secours.
+// enregistre la commande et prévient TakeUrClothes sur Telegram. Le webhook Stripe fait la même chose en secours.
 export const metadata: Metadata = { title: "Merci", robots: { index: false, follow: false } };
 // Une session de paiement par visite : rien à pré-rendre.
 export const instant = false;

@@ -1,15 +1,18 @@
-// Codes de commande et codes de suivi : lecture des messages que Fraul transfère au bot.
+// Codes de commande et codes de suivi : lecture des messages que TakeUrClothes transfère au bot.
 // Règle (docs/PARCOURS-COMMANDE.md §2) : un code de suivi arrive TOUJOURS collé à un numéro de commande,
-// « FRL-2026-000123 → LP123456789CN ». Fraul ne choisit jamais la commande à la main.
+// « TUC-2026-000123 → LP123456789CN ». TakeUrClothes ne choisit jamais la commande à la main.
 // Pur : aucune base, aucun réseau (testé dans codes.test.ts).
 
-/** Numéro de commande Fraul rangé. Accepte « FRL-2026-000123 », « frl 2026 123 » et l'ancien format court « FRL-1042 ». */
+/**
+ * Numéro de commande TakeUrClothes rangé. Accepte « TUC-2026-000123 », « tuc 2026 123 » et l'ancien format court « TUC-1042 ».
+ * Les commandes passées avant le changement de nom (1er nov. 2026) gardent leur préfixe « FRL » : on les lit encore.
+ */
 export function normalizeOrderNumber(raw: string): string | null {
   const s = raw.trim().toUpperCase();
-  const long = s.match(/^FRL[\s-]*(20\d{2})[\s-]*(\d{1,6})$/);
-  if (long) return `FRL-${long[1]}-${long[2].padStart(6, "0")}`;
-  const short = s.match(/^FRL[\s-]*(\d{3,8})$/);
-  return short ? `FRL-${short[1]}` : null;
+  const long = s.match(/^(TUC|FRL)[\s-]*(20\d{2})[\s-]*(\d{1,6})$/);
+  if (long) return `${long[1]}-${long[2]}-${long[3].padStart(6, "0")}`;
+  const short = s.match(/^(TUC|FRL)[\s-]*(\d{3,8})$/);
+  return short ? `${short[1]}-${short[2]}` : null;
 }
 
 /**
@@ -24,11 +27,11 @@ export function normalizeTrackingCode(raw: string): string | null {
 export type TrackingPair = { order: string; code: string };
 export type ParseResult = { pairs: TrackingPair[]; rejected: string[] };
 
-const ORDER_IN_LINE = /FRL[\s-]*(?:20\d{2}[\s-]*\d{1,6}|\d{3,8})/i;
+const ORDER_IN_LINE = /(?:TUC|FRL)[\s-]*(?:20\d{2}[\s-]*\d{1,6}|\d{3,8})/i;
 
 /**
  * Lit un message : une paire par ligne, séparateurs libres (→, ->, :, =, espace).
- * Une ligne sans numéro FRL, ou sans code valable, est rejetée (jamais devinée).
+ * Une ligne sans numéro TUC, ou sans code valable, est rejetée (jamais devinée).
  * Une même commande citée deux fois avec deux codes différents : les deux lignes sont rejetées.
  */
 export function parseTrackingMessage(text: string): ParseResult {

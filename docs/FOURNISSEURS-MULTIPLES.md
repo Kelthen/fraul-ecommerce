@@ -1,4 +1,4 @@
-# Plusieurs fournisseurs par article + Fraul Finds (pièces sur demande) : proposition pour Serge
+# Plusieurs fournisseurs par article + Finds (pièces sur demande) : proposition pour Serge
 
 > **Zone de Serge** (fournisseur, commandes, SQL). Proposition écrite par Rhamone (avec son Claude) le 18 oct. 2026.
 > **Rien n'est appliqué** : le SQL ci-dessous est une proposition à relire, modifier ou refuser. Réponds sous chaque partie en « 🗣️ Serge ».
@@ -9,7 +9,7 @@
 - **Une personne à part** s'occupe de l'expédition (réception, colis, code de suivi).
 - Pour chaque article vendu, **on doit retrouver en interne quel fournisseur le vend** (et à quel prix).
 - **Le client ne voit jamais les fournisseurs.**
-- **Fraul Finds** (« Sur demande », ex-Conciergerie) : un visiteur décrit une pièce introuvable, l'équipe la cherche chez les fournisseurs et lui répond par e-mail.
+- **Finds** (« Sur demande », ex-Conciergerie) : un visiteur décrit une pièce introuvable, l'équipe la cherche chez les fournisseurs et lui répond par e-mail.
 
 ## Ce qui existe aujourd'hui (schéma 0001)
 
@@ -41,9 +41,9 @@ Nouvelle table `supplier_offers` : une ligne par **variante × fournisseur**.
 - **Prix affiché au client** : calculé sur le coût de référence (comme aujourd'hui). Le client ne voit qu'un prix.
 - **À l'envoi au fournisseur** (statut `sent_to_supplier`), on choisit l'offre :
   - par défaut : la moins chère **en stock** dont le délai tient dans l'objectif de la zone (USA/UK < 10 j, Canada < 14 j, France ~14 j) ;
-  - Fraul peut changer à la main.
+  - TakeUrClothes peut changer à la main.
 - On fige sur la ligne : `order_items.offer_id`, `supplier_id` (déjà là) et `unit_cost` (le vrai coût payé).
-- **Prix plancher (R5)** : contrôle refait avec le vrai coût de l'offre choisie. Si on passerait sous coût + marge minimale, alerte à Fraul avant d'envoyer.
+- **Prix plancher (R5)** : contrôle refait avec le vrai coût de l'offre choisie. Si on passerait sous coût + marge minimale, alerte à TakeUrClothes avant d'envoyer.
 
 ### 3. La personne de l'expédition
 
@@ -57,9 +57,9 @@ Nouvelle table `supplier_offers` : une ligne par **variante × fournisseur**.
 | Client | ses commandes, son suivi. **Jamais** `suppliers`, `supplier_offers`, `unit_cost`. |
 | Fournisseur | ses offres et SES lignes de commande via la vue `supplier_order_lines` : **ni prix de vente ni coût** (correction de Serge), rien des autres fournisseurs. |
 | Expédition | les envois qui lui sont attribués. |
-| Fraul / équipe | tout. |
+| TakeUrClothes / équipe | tout. |
 
-### 5. Fraul Finds : les demandes de pièces
+### 5. Finds : les demandes de pièces
 
 Nouvelle table `concierge_requests` : `email`, `item`, `brand`, `size`, `link`, `note`, `status` (`new` → `searching` → `found` / `not_found` → `answered`), `assigned_to`, `found_offer_id`, `customer_id` (si connecté).
 - **Écriture uniquement côté serveur** (clé service), après captcha Turnstile et limite de débit (ex. 5 demandes / heure / adresse IP). Aucune politique d'insertion pour `anon`.
@@ -124,7 +124,7 @@ revoke all on public.supplier_order_lines from anon;
 grant select on public.supplier_order_lines to authenticated;
 -- Si le contrôle de sécurité Supabase signale la vue, la remplacer par une fonction RPC qui renvoie les mêmes colonnes.
 
--- Fraul Finds : demandes de pièces (insertion par le serveur uniquement, après captcha et limite de débit).
+-- Finds : demandes de pièces (insertion par le serveur uniquement, après captcha et limite de débit).
 create type concierge_status as enum ('new', 'searching', 'found', 'not_found', 'answered');
 create table concierge_requests (
   id             uuid primary key default gen_random_uuid(),
@@ -156,8 +156,8 @@ create policy "équipe gère" on concierge_requests for all using (public.is_tea
 
 ## Réponses de Serge (18 oct. 2026)
 
-1. **Choix de l'offre** : le site **propose** la moins chère en stock dans le délai de la zone, **Fraul confirme d'une touche** (il peut changer). Tout automatique plus tard, quand on aura confiance.
-2. **Prix affiché** : sur le **fournisseur de référence** (`priority = 1`). Le prix plancher à l'envoi protège la marge. ➕ **Alerte à Fraul** si l'offre de référence n'est plus en stock, ou si l'offre choisie dépasse la référence de plus de 10 %.
+1. **Choix de l'offre** : le site **propose** la moins chère en stock dans le délai de la zone, **TakeUrClothes confirme d'une touche** (il peut changer). Tout automatique plus tard, quand on aura confiance.
+2. **Prix affiché** : sur le **fournisseur de référence** (`priority = 1`). Le prix plancher à l'envoi protège la marge. ➕ **Alerte à TakeUrClothes** si l'offre de référence n'est plus en stock, ou si l'offre choisie dépasse la référence de plus de 10 %.
 3. **Personne de l'expédition** : elle passe par le **lien WeChat** du portail, qui la connecte à un vrai compte `courier` **sans mot de passe** (lien de connexion) : simple pour elle, et `handled_by` + RLS fonctionnent.
 
 **Application** : avec les 2 corrections, la 0004 peut être appliquée (par Rhamone ou Serge, qui a accès à l'organisation Supabase), après ajout des tests RLS ci-dessus.

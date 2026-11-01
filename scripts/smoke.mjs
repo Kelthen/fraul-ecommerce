@@ -78,7 +78,7 @@ await check("envies : garder une pièce, la retrouver, la retirer", async () => 
 });
 
 await check("suivi : 4 étapes, fourchette, remboursement, code invalide refusé, e-mails", async () => {
-  await page.goto(BASE + "/suivi?code=frl%201031", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/suivi?code=tuc%201031", { waitUntil: "networkidle" });
   await page.locator(".track-eta").waitFor({ timeout: 5000 });
   if ((await page.locator(".steps li").count()) !== 4) throw new Error("le suivi n'a pas 4 étapes");
   if (!/entre le .+ et le /.test(await page.locator(".track-eta").textContent())) throw new Error("pas de fourchette de livraison");
@@ -171,12 +171,12 @@ await check("prix : devise de la zone, groupe de test, ligne de confirmation", a
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
   const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 31;
   const track = el.querySelector("#walkTrack");
-  // Étapes du parcours (walk-path.ts) : entrée, boutiques avec Fraul Finds après les `conAfter` premières, sortie.
+  // Étapes du parcours (walk-path.ts) : entrée, boutiques avec Finds après les `conAfter` premières, sortie.
   const stops = Number(el.dataset.stops) || n + 1, after = Number(el.dataset.conAfter ?? Infinity);
   el.scrollTop = ((k + 1 + (k >= after ? 1 : 0) + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
 }, k);
 
-await check("fraul walk : mall en T, 31 boutiques", async () => {
+await check("walk : mall en T, 31 boutiques", async () => {
   await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
   await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(2500);
@@ -196,7 +196,7 @@ await check("fraul walk : mall en T, 31 boutiques", async () => {
   await shot("10e-walk-31e-boutique");
 });
 
-await check("fraul walk : toucher la vitrine pour entrer", async () => {
+await check("walk : toucher la vitrine pour entrer", async () => {
   await goShop(1);
   await page.waitForTimeout(1800);
   const box = await page.locator("#gl").boundingBox();
@@ -208,7 +208,7 @@ await check("fraul walk : toucher la vitrine pour entrer", async () => {
   await shot("11-boutique");
 });
 
-await check("fraul walk : rayon, défiler ne fait pas sortir, ← revient au centre, ✕ fait sortir", async () => {
+await check("walk : rayon, défiler ne fait pas sortir, ← revient au centre, ✕ fait sortir", async () => {
   await page.locator("#sCats .s-cat").nth(1).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
@@ -236,7 +236,7 @@ await check("fraul walk : rayon, défiler ne fait pas sortir, ← revient au cen
   await shot("12b-sorti-de-la-boutique");
 });
 
-await check("fraul walk : la Caisse avant la sortie quand le sac n'est pas vide", async () => {
+await check("walk : la Caisse avant la sortie quand le sac n'est pas vide", async () => {
   const n = Number((await page.locator("#count").textContent()).split("/")[1]);
   await page.locator("#walk").evaluate((el, n) => {
     if (Number(el.dataset.stops) !== n + 3) throw new Error(`sac rempli : ${el.dataset.stops} étapes (attendu ${n + 3}, avec la Caisse)`);
@@ -251,7 +251,7 @@ await check("fraul walk : la Caisse avant la sortie quand le sac n'est pas vide"
 
 // Un mot ne doit jamais en cacher un autre (Rhamone, 25 oct. : « PANTALONS » sous le titre, crochet au milieu de « HOODIES ») :
 // dans un rayon, son nom est en haut, sous la marque, en entier ; les panneaux 3D des rayons ne s'affichent plus.
-await check("fraul walk : dans chaque rayon, son nom en haut, en entier, sous la marque", async () => {
+await check("walk : dans chaque rayon, son nom en haut, en entier, sous la marque", async () => {
   await goShop(1);
   await page.waitForTimeout(1800);
   const box = await page.locator("#gl").boundingBox();
@@ -274,7 +274,7 @@ await check("fraul walk : dans chaque rayon, son nom en haut, en entier, sous la
   await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
 });
 
-await check("fraul walk : sortie du mall", async () => {
+await check("walk : sortie du mall", async () => {
   await page.locator("#walk").evaluate((el) => (el.scrollTop = el.scrollHeight));
   await page.locator("#outro:not([hidden])").waitFor({ timeout: 10000 });
   await page.waitForTimeout(1500);
@@ -335,28 +335,28 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   await page.waitForURL((u) => !u.pathname.startsWith("/walk"), { timeout: 10000 });
 });
 
-await check("Fraul Finds : une pièce sur demande (page, puis dans le mall)", async () => {
+await check("Finds : une pièce sur demande (page, puis dans le mall)", async () => {
   await page.goto(BASE + "/sur-demande?marque=Nike", { waitUntil: "networkidle" });
   if ((await page.locator("input[name=brand]").inputValue()) !== "Nike") throw new Error("marque non préremplie");
   await page.getByRole("button", { name: "Envoyer ma demande" }).click();
   if ((await page.locator(".cf-err").count()) < 2) throw new Error("erreurs non affichées (article, e-mail)");
   await page.locator("input[name=item]").fill("Tech Fleece vert sapin");
   await page.locator("input[name=email]").fill("test@exemple.com");
-  await shot("17-fraul-finds");
+  await shot("17-finds");
   await page.getByRole("button", { name: "Envoyer ma demande" }).click();
   await page.locator(".concierge-done").waitFor({ timeout: 5000 });
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   if (wide) throw new Error("la page déborde en largeur");
   await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
   await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
-  await page.locator("#walk").evaluate((el) => {   // arrêt Fraul Finds, en haut du tronc
+  await page.locator("#walk").evaluate((el) => {   // arrêt Finds, en haut du tronc
     const track = el.querySelector("#walkTrack"), after = Number(el.dataset.conAfter), stops = Number(el.dataset.stops);
     el.scrollTop = ((after + 1 + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
   });
   await page.locator("#conStop:not([hidden])").waitFor({ timeout: 10000 });
   await page.waitForTimeout(7000); // saut long (vers la 10e boutique) : la caméra glisse jusqu'au comptoir
-  await shot("18a-fraul-finds-comptoir");
-  // Toucher le comptoir ouvre Fraul Finds, jamais la boutique cachée derrière (retour de Rhamone, 18 oct.)
+  await shot("18a-finds-comptoir");
+  // Toucher le comptoir ouvre Finds, jamais la boutique cachée derrière (retour de Rhamone, 18 oct.)
   const gl = await page.locator("#gl").boundingBox();
   await page.mouse.click(gl.x + gl.width / 2, gl.y + gl.height * 0.41);
   await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
@@ -365,8 +365,8 @@ await check("Fraul Finds : une pièce sur demande (page, puis dans le mall)", as
   await page.locator("#concierge").waitFor({ state: "hidden", timeout: 5000 });
   await page.locator("#conStopBtn").click();
   await page.locator("#concierge:not([hidden])").waitFor({ timeout: 5000 });
-  if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous Fraul Finds");
-  await shot("18-fraul-finds-mall");
+  if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous Finds");
+  await shot("18-finds-mall");
   await back();
   await page.locator("#concierge").waitFor({ state: "hidden", timeout: 5000 });
   if (!page.url().endsWith("/walk")) throw new Error(`retour a quitté le Walk : ${page.url()}`);
@@ -453,7 +453,7 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   // Même gabarit pour toutes les boutiques : les 6 rayons partout, même vides (Rhamone, 19 oct.).
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
   if (rayons.length !== 6 || !rayons.includes("Hoodies et sweats")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
-  if (await page.locator("#store #sCon, #store .s-back").count()) throw new Error("Fraul Finds ou l'aide « défiler » encore dans la boutique");
+  if (await page.locator("#store #sCon, #store .s-back").count()) throw new Error("Finds ou l'aide « défiler » encore dans la boutique");
   // En haut de la boutique : retour et loupe en icônes ; la loupe ouvre la recherche par-dessus la boutique.
   if ((await page.locator("#sQuit").innerText()).trim()) throw new Error("le bouton retour de la boutique a encore du texte");
   await page.locator("#sSearch").click();

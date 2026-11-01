@@ -1,4 +1,4 @@
-# CLAUDE.md — Manuel de travail Kelthen · Fraul e-commerce
+# CLAUDE.md — Manuel de travail Kelthen · TakeUrClothes e-commerce
 
 > Chargé automatiquement au début de chaque session Claude Code. **Ce fichier prime sur tes habitudes.**
 > Deux humains, chacun avec son propre Claude, travaillent sur ce repo. Tu es l'un des deux Claude.
@@ -10,7 +10,7 @@
 
 | Humain | Compte GitHub | `git config user.name` | Pages / zones de départ |
 |---|---|---|---|
-| **rhamon** (Rhamone, responsable, souvent sur téléphone) | `RhamonK` | `Kelthen` (forcé par le hook de démarrage, L-49 ; identifier par le compte GitHub) | Fraul Walk (3D), accueil, design |
+| **rhamon** (Rhamone, responsable, souvent sur téléphone) | `RhamonK` | `Kelthen` (forcé par le hook de démarrage, L-49 ; identifier par le compte GitHub) | Walk (3D), accueil, design |
 | **serge** (valide les plans) | `sergesanou` | à compléter | Logistique, fournisseur, WeChat, commandes |
 
 - Identifie ton humain au début : compare `git config user.name` et le compte GitHub à cette table. Si rien ne correspond, demande-lui qui il est.
@@ -115,7 +115,7 @@ demande → vérification (§2) → plan court → OK de l'humain
 
 ## 7. Stack et commandes
 
-- Next.js 16 (App Router, Cache Components) + TypeScript strict + CSS maison (`src/app/globals.css`, pas de Tailwind). three.js pour le Fraul Walk (`src/walk/`). Supabase (schéma prêt dans `supabase/migrations/`, pas encore branché). Vercel, projet `fraul-ecommerce`, équipe Kelthen (`main` → prod, chaque PR → preview).
+- Next.js 16 (App Router, Cache Components) + TypeScript strict + CSS maison (`src/app/globals.css`, pas de Tailwind). three.js pour le Walk (`src/walk/`). Supabase (schéma prêt dans `supabase/migrations/`, pas encore branché). Vercel, projet `fraul-ecommerce`, équipe Kelthen (`main` → prod, chaque PR → preview).
 - Cette version de Next.js a changé : lire `node_modules/next/dist/docs/` avant d'utiliser une API (voir `AGENTS.md`).
 - Fuseau, langue et localisation du client : voir STATUS.md « Infos client ». Utilise toujours ce fuseau pour les dates (L-19).
 
@@ -140,11 +140,11 @@ npm start & npm run smoke -- http://localhost:3000   # test téléphone, 3D comp
 
 ---
 
-## 9. Le projet Fraul
+## 9. Le projet TakeUrClothes
 
 ### Le client et le but
 
-Commerçant (Fraul) qui achète vêtements/chaussures en Chine et revend en ligne
+Commerçant (TakeUrClothes) qui achète vêtements/chaussures en Chine et revend en ligne
 aux USA, au Canada, au Royaume-Uni, en France et en Belgique. 100 % en ligne. Voyage souvent → **on ne bloque pas le travail sur lui** (voir plus bas).
 - **Prix personnalisés par client** via des groupes de remise (voir « Stratégie
   de prix » plus bas).
@@ -184,12 +184,12 @@ On reste sur une **vente e-commerce classique**. Le « privé » n'est qu'une co
   >
   > 🗣️ **Serge, 13 oct. 2026 — ✅ R3 validé.**
   >
-  > 🗣️ **Serge, 18 oct. 2026 — ✅ remplacé par « tout par e-mail »** (décision de Rhamone du 17 oct.). Condition : le lien d'invitation est copiable depuis le tableau de bord, pour que Fraul puisse aussi le coller dans WhatsApp.
-- Fraul peut changer le groupe d'un client à tout moment depuis son tableau de bord.
+  > 🗣️ **Serge, 18 oct. 2026 — ✅ remplacé par « tout par e-mail »** (décision de Rhamone du 17 oct.). Condition : le lien d'invitation est copiable depuis le tableau de bord, pour que TakeUrClothes puisse aussi le coller dans WhatsApp.
+- TakeUrClothes peut changer le groupe d'un client à tout moment depuis son tableau de bord.
 
-**3. Lancement par la clientèle WhatsApp existante de Fraul — deux sortes de liens**
-- **Lien d'invitation personnel** (distribué par Fraul): le client contacte Fraul sur WhatsApp → Fraul touche « Inviter » dans le tableau de bord, choisit le groupe → lien unique (`fraul.com/i/K7P2Q`) collé dans la conversation → le client crée son compte → groupe attaché pour toujours. **Usage unique**: partagé, il ne sert à rien.
-- **Lien de parrainage** (pour faire propager le site): chaque client a le sien. Le filleul a une **petite remise fixe** (ex. −10 % sur la 1re commande), le parrain gagne du crédit. Les grosses remises restent dans les mains de Fraul, qui peut faire monter un filleul de groupe plus tard.
+**3. Lancement par la clientèle WhatsApp existante de TakeUrClothes — deux sortes de liens**
+- **Lien d'invitation personnel** (distribué par TakeUrClothes): le client contacte TakeUrClothes sur WhatsApp → TakeUrClothes touche « Inviter » dans le tableau de bord, choisit le groupe → lien unique (`takeurclothes.com/i/K7P2Q`) collé dans la conversation → le client crée son compte → groupe attaché pour toujours. **Usage unique**: partagé, il ne sert à rien.
+- **Lien de parrainage** (pour faire propager le site): chaque client a le sien. Le filleul a une **petite remise fixe** (ex. −10 % sur la 1re commande), le parrain gagne du crédit. Les grosses remises restent dans les mains de TakeUrClothes, qui peut faire monter un filleul de groupe plus tard.
 - **Visiteur sans lien**: prix catalogue de sa zone + « −10 % sur ta 1re commande en créant un compte » (même remise que le parrainage).
 - **Pas de code promo public ni de code par zone affiché sur le site.** Exception: codes influenceurs (petite remise, durée limitée, commission).
 - Plus tard: génération des liens automatisée via l'API WhatsApp Business.
@@ -221,7 +221,7 @@ Montserrat. Référence : LuisaViaRoma. Haut de gamme, **beau mais léger**
 
 ### Le site (Next.js, voir README.md)
 
-- **Le Fraul Walk est le cœur du site**, pas une option : un shopping
+- **Le Walk est le cœur du site**, pas une option : un shopping
   immersif, comme une sortie. L'accueil est l'entrée du mall (`/walk`,
   `/walk/[marque]`), moteur 3D dans `src/walk/` (three.js chargé à l'ouverture).
 - **Aucun pays affiché nulle part** sur le site (décision du 2026-10-12). Les

@@ -14,7 +14,7 @@ export default async function Home() {
 
   return (
     <>
-      {/* Entrée du mall : le Fraul Walk est l'expérience principale du site. */}
+      {/* Entrée du mall : le Walk est l'expérience principale du site. */}
       <section className="mall-hero" aria-labelledby="hero-title">
         <div className="mall-scene" aria-hidden="true">
           <span className="ceil" />
@@ -32,7 +32,7 @@ export default async function Home() {
         </div>
         <div className="mall-copy">
           <div className="wrap">
-            <p className="eyebrow">Fraul Walk · Drop 001</p>
+            <p className="eyebrow">Walk · Drop 001</p>
             <h1 id="hero-title">
               Le shopping
               <br />
@@ -189,7 +189,7 @@ export default async function Home() {
       <section className="wrap" aria-labelledby="circle-title">
         <div className="circle">
           <div>
-            <p className="eyebrow">Le cercle Fraul</p>
+            <p className="eyebrow">Le cercle TakeUrClothes</p>
             <h2 id="circle-title" style={{ marginTop: 8 }}>Les drops avant tout le monde.</h2>
           </div>
           <CircleForm />

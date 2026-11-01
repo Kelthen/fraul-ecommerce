@@ -1,4 +1,4 @@
-// « La Caisse » : comptoir bordeaux à plateau perle, enseigne au mur, sac Fraul et terminal posés dessus.
+// « La Caisse » : comptoir bordeaux à plateau perle, enseigne au mur, sac TakeUrClothes et terminal posés dessus.
 // Dernier arrêt du parcours avant les portes (src/walk/models/walk-path.ts). Texte : src/content/walk.ts.
 import type * as T from "three";
 
@@ -42,7 +42,7 @@ export function createCaisse(THREE: typeof T, { x, z, nx, nz, title, sub, serif,
   g.add(sign);
   box(2.7, 0.04, 0.06, brass, 0, 2.2, -0.6);
 
-  // Sac Fraul (ivoire, anses bordeaux) et terminal de paiement sur le plateau.
+  // Sac TakeUrClothes (ivoire, anses bordeaux) et terminal de paiement sur le plateau.
   const bag = new THREE.Group();
   bag.position.set(-0.8, 1.11, 0.05);
   bag.rotation.y = 0.35;

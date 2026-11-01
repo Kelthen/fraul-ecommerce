@@ -340,13 +340,13 @@ export async function todoList(): Promise<TodoOrder[]> {
 }
 
 /**
- * Message texte de Jean Paul : on y cherche des couples « FRL-… → code ».
- * Dans un groupe, l'équipe discute aussi : on ne répond que si le message parle d'une commande (« FRL »).
+ * Message texte de Jean Paul : on y cherche des couples « TUC-… → code ».
+ * Dans un groupe, l'équipe discute aussi : on ne répond que si le message parle d'une commande (« TUC »).
  */
 export async function handleTrackingText(chat: number, text: string, inGroup: boolean): Promise<void> {
   const parsed = parseTrackingMessage(text);
   const pairs = parsed.pairs;
-  const rejected = inGroup ? parsed.rejected.filter((l) => /FRL/i.test(l)) : parsed.rejected;
+  const rejected = inGroup ? parsed.rejected.filter((l) => /TUC|FRL/i.test(l)) : parsed.rejected;
   if (!pairs.length && !rejected.length) return;
   for (const p of pairs) {
     const o = await loadOrderByNumber(p.order);
@@ -438,7 +438,7 @@ export async function decideSubmission(chat: number, subId: string, decision: "o
   await db.remove("shipments", `order_id=${eq(o.id)}&tracking_code=${eq(sub.tracking_code)}`);
   await db.update("tracking_submissions", `id=${eq(sub.id)}`, { status: "cancelled", cancelled_at: new Date().toISOString(), decided_by: who, undo_until: null });
   await refreshOrderStatus((await loadOrder(o.id))!);
-  if (sub.card_message_id) await editText(chat, sub.card_message_id, `↩️ Annulé${who ? ` par ${esc(who)}` : ""} : ${o.number} n'a plus de code de suivi. Renvoie le bon couple « FRL → code ».`);
+  if (sub.card_message_id) await editText(chat, sub.card_message_id, `↩️ Annulé${who ? ` par ${esc(who)}` : ""} : ${o.number} n'a plus de code de suivi. Renvoie le bon couple « TUC → code ».`);
   return "Annulé.";
 }
 
@@ -527,7 +527,7 @@ export async function createTestOrder(baseUrl: string): Promise<string> {
   }
 
   const [order] = await db.insert<{ id: string }>("orders", {
-    email: "demo@fraul.invalid",
+    email: "demo@takeurclothes.invalid",
     status: "paid",
     is_demo: true,
     currency,

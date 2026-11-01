@@ -27,10 +27,10 @@ export default function ShippingSheetPage({ params, searchParams }: PageProps<"/
 const COUNTRY: Record<string, string> = { FR: "France", BE: "Belgium", US: "United States", CA: "Canada", GB: "United Kingdom" };
 
 const RESULTS: Record<string, string> = {
-  ok: "✓ 已记录 Saved — Fraul is notified.",
+  ok: "✓ 已记录 Saved — TakeUrClothes is notified.",
   undone: "↩︎ 已撤销 Undone.",
   already: "这个包裹已经记录了 This parcel was already marked as received.",
-  late: `超过 ${UNDO_MINUTES} 分钟，请联系 Fraul · More than ${UNDO_MINUTES} min: please contact Fraul.`,
+  late: `超过 ${UNDO_MINUTES} 分钟，请联系 TakeUrClothes · More than ${UNDO_MINUTES} min: please contact TakeUrClothes.`,
   expired: "链接已过期 · This link has expired.",
   invalid: "链接无效 · Invalid link.",
   error: "暂时无法保存，请重试 · Could not save, try again.",
@@ -111,9 +111,9 @@ async function Sheet({ params, searchParams }: Props) {
         </p>
       ) : (
         <p className="admin-msg">
-          全部收到 ✓ 合并成一个包裹发出，然后把「订单号 → 快递单号」发给 Fraul。
+          全部收到 ✓ 合并成一个包裹发出，然后把「订单号 → 快递单号」发给 TakeUrClothes。
           <br />
-          All here ✓ Ship ONE parcel, then send “order number → tracking number” to Fraul.
+          All here ✓ Ship ONE parcel, then send “order number → tracking number” to TakeUrClothes.
         </p>
       )}
 

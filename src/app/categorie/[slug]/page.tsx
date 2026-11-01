@@ -11,7 +11,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/categorie/[slug]">): Promise<Metadata> {
   const cat = await getCategoryBySlug((await params).slug);
   if (!cat) return {};
-  return { title: cat.label, description: `${cat.label} streetwear et luxe, toutes marques, chez Fraul.`, alternates: { canonical: `/categorie/${cat.slug}` } };
+  return { title: cat.label, description: `${cat.label} streetwear et luxe, toutes marques, chez TakeUrClothes.`, alternates: { canonical: `/categorie/${cat.slug}` } };
 }
 
 export default async function CategoryPage({ params }: PageProps<"/categorie/[slug]">) {

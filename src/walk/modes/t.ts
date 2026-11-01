@@ -1,4 +1,4 @@
-// Mode « T » (docs/fraul-walk-plan-T.png) : on entre par le bas du tronc, vitrines toujours à droite,
+// Mode « T » (docs/walk-plan-T.png) : on entre par le bas du tronc, vitrines toujours à droite,
 // on monte le tronc, on fait le tour de la barre, on redescend. Le T s'allonge s'il y a plus de boutiques.
 import { CEIL, SLOT, type MallLayout, type Slot } from "../models/mall-layout.ts";
 
@@ -8,7 +8,7 @@ export type TDims = { SLOT: number; CEIL: number; STEM_X: number; STEM_END: numb
 const BASE = { stem: 4, low: 3, end: 3, top: 7 };
 const STEM_X = 7;
 const BAR_Z = -32;
-/** Centre du mall (grand « F ») et distance du comptoir Fraul Finds (src/walk/views/concierge.ts) à ce centre. */
+/** Centre du mall (grand « TUC ») et distance du comptoir Finds (src/walk/views/concierge.ts) à ce centre. */
 export const CENTER_Z = -16;
 export const CONCIERGE_R = 3.6;
 
@@ -47,7 +47,7 @@ export function layoutT(n: number): MallLayout<TDims> {
   return {
     slots: s,
     // Vers la 10e boutique (Rhamone, 18 oct. 2026 : « quand tu commences à être fatigué ») : au bout droit de la barre,
-    // on se retourne vers le centre, face au comptoir posé à droite du « F ».
+    // on se retourne vers le centre, face au comptoir posé à droite du « TUC ».
     concierge: { after: c.stem + c.low + 2, slot: { x: CONCIERGE_R, z: CENTER_Z, nx: 1, nz: 0 } },
     // Contre le mur gauche du bas du tronc (pas de vitrine à cet endroit), juste avant les portes.
     caisse: { x: -STEM_X + 1.6, z: STEM_END - 4.2, nx: 1, nz: 0 },

@@ -14,7 +14,7 @@ type AccountCtx = {
 };
 
 const Ctx = createContext<AccountCtx | null>(null);
-const KEY = "fraul.account.demo.v1";
+const KEY = "tuc.account.demo.v1";
 
 export function AccountProvider({ children }: { children: React.ReactNode }) {
   const [account, setAccount] = useState<DemoAccount | null>(null);

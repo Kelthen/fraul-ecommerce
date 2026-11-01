@@ -124,7 +124,7 @@ export function WalkExperience({ data, startBrand }: Props) {
       <div className="walk" id="walk" hidden>
         <div className="walk-track" id="walkTrack">
           <div className="stage" id="stage">
-            <canvas id="gl" aria-label="Fraul Walk, promenade devant les boutiques" />
+            <canvas id="gl" aria-label="Walk, promenade devant les boutiques" />
             <div className="w-top">
               {/* Icônes bordeaux sans cercle (Rhamone, 24 oct.) : ✕ dans un coin, loupe et sac côte à côte dans l'autre. */}
               <button className="ic" id="wQuit" type="button" aria-label="Quitter le mall">
@@ -142,14 +142,14 @@ export function WalkExperience({ data, startBrand }: Props) {
             </div>
             <div className="hud">
               <div className="intro" id="intro">
-                <p className="eyebrow">Fraul Walk</p>
+                <p className="eyebrow">Walk</p>
                 <h1>Le mall</h1>
                 <p>Fais défiler pour avancer d&apos;une boutique à l&apos;autre. Touche une vitrine pour entrer.</p>
                 <p className="scroll-hint">↓ Fais défiler pour entrer dans le mall</p>
               </div>
               <div className="outro con-stop" id="conStop" hidden>
                 <p className="eyebrow">Au centre du mall</p>
-                <h2>Fraul Finds</h2>
+                <h2>Finds</h2>
                 <p className="c-sum">Une pièce introuvable dans les boutiques ? Décris-la, on te la trouve chez nos fournisseurs.</p>
                 <div className="acts">
                   <button className="pill solid" id="conStopBtn" type="button">
@@ -206,7 +206,7 @@ export function WalkExperience({ data, startBrand }: Props) {
                   </button>
                 </div>
                 <button className="con-link" id="conBtn" type="button">
-                  Une pièce introuvable ? <b>Fraul Finds →</b>
+                  Une pièce introuvable ? <b>Finds →</b>
                 </button>
                 <div className="prog" id="prog" />
               </div>
@@ -289,7 +289,7 @@ export function WalkExperience({ data, startBrand }: Props) {
         <div className="o-head">
           <div className="r">
             <div>
-              <p className="eyebrow">Fraul Finds · Sur demande</p>
+              <p className="eyebrow">Finds · Sur demande</p>
               <h2 id="conTitle">Demande une pièce</h2>
             </div>
             <button className="ic" type="button" aria-label="Fermer" onClick={() => walkRef.current?.closeConcierge()}>
@@ -333,7 +333,7 @@ export function WalkExperience({ data, startBrand }: Props) {
             <path d="M41 20c3 5 15 5 18 0" fill="none" stroke="#EAE0C8" strokeWidth="2" />
           </svg>
         </div>
-        <b>Fraul Walk</b>
+        <b>Walk</b>
       </div>
     </div>
   );

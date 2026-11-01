@@ -10,7 +10,7 @@ export const LOCK_MS = 60_000;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 /** Mots de passe trop courants (échantillon) : refusés même s'ils sont assez longs. */
-const COMMON = ["motdepasse", "password", "azertyuiop", "qwertyuiop", "1234567890", "0123456789", "fraulfraul", "iloveyou12"];
+const COMMON = ["motdepasse", "password", "azertyuiop", "qwertyuiop", "1234567890", "0123456789", "takeurclothes", "iloveyou12"];
 
 export const normalizeEmail = (s: string) => s.trim().toLowerCase();
 export const isEmail = (s: string) => s.length <= 254 && EMAIL.test(normalizeEmail(s));

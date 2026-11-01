@@ -5,7 +5,7 @@ import { answerCallback, editText, sendMessage } from "@/lib/server/telegram";
 import { commandOf, isGroupChat } from "@/models/relay/access";
 import { todoButtons, todoMessage } from "@/models/relay/messages";
 
-// Webhook du bot Telegram de Fraul (docs/PARCOURS-COMMANDE.md §2, §7.4).
+// Webhook du bot Telegram de TakeUrClothes (docs/PARCOURS-COMMANDE.md §2, §7.4).
 // Sécurité : 1) en-tête secret posé par Telegram ; 2) une seule conversation écoutée (Jean Paul, ou le groupe
 // de l'équipe) ; 3) seuls les comptes autorisés agissent (TELEGRAM_ALLOWED_USERS). Tout le reste est ignoré.
 // On répond toujours 200 pour que Telegram ne renvoie pas en boucle.
@@ -36,7 +36,7 @@ const HELP = [
   "• Sous chaque commande : touche <b>📤 J'ai envoyé à …</b> quand le bloc est collé dans WeChat. L'expéditeur coche lui-même chaque colis reçu sur sa fiche (bouton <b>📥</b> en secours). Le haut du message montre ce qui reste. <b>↩️ Corriger</b> (15 min) demande confirmation.",
   "• /afaire : la liste de tout ce qui reste à envoyer ou à recevoir.",
   "• Code de suivi : transfère le message de l'expéditeur ou écris",
-  "<code>FRL-2026-000123 → LP123456789CN</code>",
+  "<code>TUC-2026-000123 → LP123456789CN</code>",
   "(une ligne par commande). Je montre une carte à vérifier avant d'enregistrer.",
 ].join("\n");
 

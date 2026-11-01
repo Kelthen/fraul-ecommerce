@@ -21,13 +21,13 @@ type PricingCtx = {
 };
 
 const Ctx = createContext<PricingCtx | null>(null);
-const TEST_KEY = "fraul.test.pricing";
+const TEST_KEY = "tuc.test.pricing";
 const isZone = (z: unknown): z is ZoneId => typeof z === "string" && z in ZONES;
 const isGroup = (g: unknown): g is GroupId => typeof g === "string" && g in GROUPS;
 const fmtCache = new Map<string, Intl.NumberFormat>();
 
 function readCookieZone(): ZoneId | null {
-  const m = document.cookie.match(/(?:^|;\s*)fraul_zone=([a-z]+)/);
+  const m = document.cookie.match(/(?:^|;\s*)tuc_zone=([a-z]+)/);
   return m && isZone(m[1]) ? m[1] : null;
 }
 

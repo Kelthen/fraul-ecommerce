@@ -47,7 +47,7 @@ export const stripeWebhookSecret = () => process.env.STRIPE_WEBHOOK_SECRET?.trim
 
 /**
  * Réglages manquants pour encaisser : Stripe, plus la base et Telegram (sans eux, la commande payée
- * ne serait ni enregistrée ni transmise à Fraul). Tant qu'il en manque, le bouton « Payer » reste fermé.
+ * ne serait ni enregistrée ni transmise à TakeUrClothes). Tant qu'il en manque, le bouton « Payer » reste fermé.
  */
 export const missingPaymentSettings = (): string[] => [...(process.env.STRIPE_SECRET_KEY?.trim() ? [] : ["STRIPE_SECRET_KEY"]), ...missingSettings()];
 

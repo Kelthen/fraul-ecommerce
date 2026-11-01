@@ -6,7 +6,7 @@ import { findDemoOrder } from "@/models/orders/demo";
 import { lineLabel } from "@/models/orders/emails";
 import { STAGES, normalizeCode, trackingView, type Order } from "@/models/orders/tracking";
 
-const DEMO_CODES = ["FRL-1042", "FRL-1031", "FRL-1017"];
+const DEMO_CODES = ["TUC-1042", "TUC-1031", "TUC-1017"];
 const day = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 
 type Found = { code: string; order?: Order };
@@ -26,7 +26,7 @@ export function TrackView() {
     setStep(-1);
     if (!c) {
       setFound(null);
-      setError("Un code Fraul commence par FRL, par exemple FRL-1042.");
+      setError("Un code TakeUrClothes commence par TUC, par exemple TUC-1042.");
       return;
     }
     setError("");
@@ -34,7 +34,7 @@ export function TrackView() {
     setFound({ code: c, order: findDemoOrder(c, Date.now()) });
   };
 
-  // Lien d'un e-mail ou de « Mes commandes » : /suivi?code=FRL-1042
+  // Lien d'un e-mail ou de « Mes commandes » : /suivi?code=TUC-1042
   useEffect(() => {
     const c = new URLSearchParams(location.search).get("code");
     if (c) look(c); // eslint-disable-line react-hooks/set-state-in-effect -- lecture unique de l'adresse au chargement
@@ -57,7 +57,7 @@ export function TrackView() {
         </p>
         <form className="track-form" onSubmit={(e) => { e.preventDefault(); look(code); }}>
           <label className="sr-only" htmlFor="track-code">Code de suivi</label>
-          <input id="track-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="FRL-1042" autoComplete="off" aria-invalid={error ? true : undefined} aria-describedby={error ? "track-err" : undefined} />
+          <input id="track-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="TUC-1042" autoComplete="off" aria-invalid={error ? true : undefined} aria-describedby={error ? "track-err" : undefined} />
           <button className="pill solid" type="submit">Suivre</button>
         </form>
         {error && <p className="cf-err" id="track-err" role="alert" style={{ marginTop: 10 }}>{error}</p>}

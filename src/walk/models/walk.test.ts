@@ -41,7 +41,7 @@ test("parcours : entrée à 0 %, sortie à 100 %", () => {
   assert.deepEqual([b.x, b.z, b.shop], [EXIT.p[0], EXIT.p[1], AT_EXIT]);
 });
 
-test("Fraul Finds : un arrêt vers la 10e boutique, face au comptoir, entre deux boutiques", () => {
+test("Finds : un arrêt vers la 10e boutique, face au comptoir, entre deux boutiques", () => {
   const { after, slot } = MALL.concierge;
   const pt = pathAt(progressForConcierge(N, MALL), N, 10, MALL);
   assert.equal(pt.shop, AT_CONCIERGE);
@@ -49,7 +49,7 @@ test("Fraul Finds : un arrêt vers la 10e boutique, face au comptoir, entre deux
   assert.equal(pathAt(progressForShop(after - 1, N, MALL), N, 10, MALL).shop, after - 1);
   assert.equal(pathAt(progressForShop(after, N, MALL), N, 10, MALL).shop, after);
   assert.ok(after >= 9 && after <= 11, `arrêt après ${after} boutiques`);
-  // Le comptoir est au pied du « F » (centre du mall, z = -16), tourné vers la caméra.
+  // Le comptoir est au pied du « TUC » (centre du mall, z = -16), tourné vers la caméra.
   assert.ok(Math.hypot(slot.x, slot.z + 16) < 4.5);
 });
 
@@ -61,7 +61,7 @@ test("sauter à une boutique la met face à la caméra", () => {
   }
 });
 
-test("points d'arrêt : un par étape, dans l'ordre entrée → boutiques et Fraul Finds → sortie (un cran = une boutique)", () => {
+test("points d'arrêt : un par étape, dans l'ordre entrée → boutiques et Finds → sortie (un cran = une boutique)", () => {
   const seen = Array.from({ length: N + 3 }, (_, j) => pathAt(stopProgress(j, N), N, 10, MALL).shop);
   const shops = seen.filter((k) => k >= 0);
   assert.deepEqual(shops, Array.from({ length: N }, (_, k) => k), "chaque boutique a exactement un arrêt, dans l'ordre");

@@ -1,7 +1,7 @@
 import type { CategoryId } from "./types";
 
 // Tracés des dessins provisoires (repris de la démo V2), partagés par le site
-// (SVG) et par le Fraul Walk (textures canvas).
+// (SVG) et par le Walk (textures canvas).
 export const GARMENT_PATHS: Record<CategoryId, string> = {
   tee: "M30 8 L42 4 Q50 13 58 4 L70 8 L93 27 L81 41 L72 34 L72 106 L28 106 L28 34 L19 41 L7 27 Z",
   hoodie: "M31 10 Q50 -3 69 10 L93 34 L86 98 L76 97 L74 48 L74 106 L26 106 L26 48 L24 97 L14 98 L7 34 Z",

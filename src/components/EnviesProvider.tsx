@@ -14,7 +14,7 @@ type EnviesCtx = {
 };
 
 const Ctx = createContext<EnviesCtx | null>(null);
-const KEY = "fraul.envies.v1";
+const KEY = "tuc.envies.v1";
 
 export function EnviesProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useCart();

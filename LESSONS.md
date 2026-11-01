@@ -168,153 +168,153 @@
 
 ---
 
-## Leçons Fraul (à partir d'octobre 2026)
+## Leçons TakeUrClothes (à partir d'octobre 2026)
 
 ### L-28 — Client souvent absent : on n'attend pas, on regroupe
-- **Projet / date :** Fraul, 2026-10-12
+- **Projet / date :** TakeUrClothes, 2026-10-12
 - **Ce qui s'est passé :** le client voyage souvent ; attendre ses réponses aurait bloqué le démarrage.
 - **Cause :** dépendance à un interlocuteur peu joignable.
 - **Règle :** avance avec des éléments marqués `[À FOURNIR : …]`, regroupe les questions en un seul message (STATUS.md « Bloqué — attend le client ») et note les choix faits à sa place « décidé par l'équipe, à confirmer ».
 
 ### L-29 — Deux sessions Claude en parallèle : lire `main` et utiliser le kit existant
-- **Projet / date :** Fraul, 2026-10-12
+- **Projet / date :** TakeUrClothes, 2026-10-12
 - **Ce qui s'est passé :** une session a poussé une démo et un CLAUDE.md sur `main` pendant qu'une autre écrivait le sien sur sa branche (conflit). La même session a reconstruit le kit de démarrage depuis le PDF du bilan au lieu de copier le vrai kit de NBW (`playbook/starter/`).
 - **Cause :** pas de lecture de `main` ni du repo NBW avant d'écrire des fichiers partagés.
 - **Règle :** avant d'écrire un fichier partagé (CLAUDE.md, STATUS.md, config), lis `origin/main` ; avant de « refaire » un outil d'équipe, cherche-le dans les autres repos Kelthen (`kelthen/network4bwomen/playbook`, `kelthen/website-starter`) et copie-le.
 
 ### L-30 — Un vieux serveur qui tourne encore donne de faux bugs
-- **Projet / date :** Fraul, 2026-10-12
-- **Ce qui s'est passé :** le test du Fraul Walk a échoué (fichiers introuvables, erreurs 500) parce que l'ancien `next start` servait l'ancienne version après un nouveau build.
+- **Projet / date :** TakeUrClothes, 2026-10-12
+- **Ce qui s'est passé :** le test du Walk a échoué (fichiers introuvables, erreurs 500) parce que l'ancien `next start` servait l'ancienne version après un nouveau build.
 - **Cause :** serveur non arrêté avant le build.
 - **Règle :** arrête tout serveur Next.js avant chaque build ou test de fumée.
 
 ### L-31 — Tester la sécurité dans le même ordre que la vraie plateforme
-- **Projet / date :** Fraul, 2026-10-12
+- **Projet / date :** TakeUrClothes, 2026-10-12
 - **Ce qui s'est passé :** un test RLS donnait un faux échec : les droits étaient accordés après la migration au lieu d'avant, comme le fait Supabase.
 - **Cause :** test local qui n'imitait pas l'ordre de Supabase.
 - **Règle :** les tests de `supabase/tests/` imitent Supabase (droits par défaut accordés avant la migration) ; ne conclus jamais à une faille ou à son absence sans ce montage.
 
 ### L-32 — Aucune trace d'IA dans Git et GitHub
-- **Projet / date :** Fraul, 2026-10-12
+- **Projet / date :** TakeUrClothes, 2026-10-12
 - **Ce qui s'est passé :** les commits de la PR #1 étaient signés « Claude » avec « Co-Authored-By » et un lien de session, et la PR finissait par « Generated with Claude Code ». Rhamone a demandé de tout retirer avant le merge.
 - **Cause :** signatures ajoutées par défaut par l'outil.
 - **Règle :** auteur Git `Kelthen`, aucune ligne « Co-Authored-By », « Generated with… » ni lien de session dans les commits, PR et commentaires. Vérifie avant chaque push : `git log origin/main..HEAD --format='%an%n%B' | grep -iE "^claude$|co-authored|generated with|claude-session|claude\.ai/code"` doit être vide.
 - **Ajout (2026-10-12) :** un commit poussé depuis une autre session (Serge) portait encore « Co-Authored-By ». Garde-fou automatique : `.githooks/commit-msg` retire ces lignes, activé par le hook de session (`git config core.hooksPath .githooks`). Ne jamais le désactiver.
 
 ### L-33 — L'avis d'un humain n'est pas un ordre pour l'autre
-- **Projet / date :** Fraul, 2026-10-12
+- **Projet / date :** TakeUrClothes, 2026-10-12
 - **Ce qui s'est passé :** en notant les remarques de Rhamone sur la stratégie de prix de Serge, Claude a écrit « l'avis de Rhamone l'emporte ». Rhamone : « je suis pas dictateur, juste des contre-propositions et explications pour Serge ».
 - **Cause :** Claude a transformé un avis en décision finale.
 - **Règle :** quand un humain réagit à la proposition de l'autre, note-le comme **contre-proposition avec sa raison**, laisse la place à une réponse (« 🗣️ <nom> » sous le bloc) et écris « discussion ouverte » dans STATUS. On peut construire sur une base provisoire, mais rien n'est figé tant que l'autre n'a pas répondu.
 
 ### L-34 — Une nouvelle catégorie touche aussi le Walk
-- **Projet / date :** Fraul, 2026-10-17
+- **Projet / date :** TakeUrClothes, 2026-10-17
 - **Ce qui s'est passé :** en préparant l'ajout de 6 catégories, on a vu que chaque rayon d'une boutique du Walk a un portant placé à la main (`src/walk/models/store-layout.ts`). Un rayon sans portant fait planter la boutique.
 - **Cause :** la liste des catégories du site était envoyée telle quelle au moteur 3D.
 - **Règle :** le Walk ne reçoit que les catégories qui ont un portant (`src/walk/data.ts`). Toute nouvelle catégorie : dessin dans `art.ts`, puis portant dans `store-layout.ts` si elle doit apparaître en boutique, puis `npm run smoke`.
 
 ### L-35 — Une marque peut n'avoir que deux produits
-- **Projet / date :** Fraul, 2026-10-18
+- **Projet / date :** TakeUrClothes, 2026-10-18
 - **Ce qui s'est passé :** avec les vrais produits du fournisseur, Travis Scott n'a qu'un hoodie et un short. Sa boutique 3D proposait quand même tous les rayons ; ouvrir un rayon vide faisait planter le panneau article.
 - **Cause :** la démo donnait 6 articles à chaque marque dans chaque rayon ; le moteur supposait qu'un rayon n'est jamais vide.
 - **Règle :** la boutique n'affiche que les rayons qui ont au moins un article (`stocked()` dans `src/walk/engine.js`) ; `npm run smoke` ouvre la boutique d'une marque qui a peu d'articles. Pour importer de nouvelles photos : `node scripts/import-catalogue.mjs <dossier>`, jamais d'édition à la main des fichiers générés.
 
 ### L-38 — Des cases de grille égales demandent `minmax(0, 1fr)`
-- **Projet / date :** Fraul, 2026-10-18
+- **Projet / date :** TakeUrClothes, 2026-10-18
 - **Ce qui s'est passé :** sur la page Marques, les pastilles ERD et Saint Michael étaient plus grosses que les autres : leur nom très espacé élargissait leur colonne.
 - **Cause :** une colonne `1fr` ne descend pas sous la largeur de son contenu.
 - **Règle :** pour une grille de cases égales, `repeat(n, minmax(0, 1fr))` et `min-width: 0` sur la case. `npm run smoke` vérifie que la page Marques ne déborde pas en largeur. (Numéro L-38 : L-36 et L-37 sont prises par la PR #10.)
 
 ### L-39 — Ne jamais écrire en dur le nombre de boutiques
-- **Projet / date :** Fraul, 2026-10-18
+- **Projet / date :** TakeUrClothes, 2026-10-18
 - **Ce qui s'est passé :** le mall, ses tests et le test téléphone supposaient 27 boutiques. Avec 31 marques, les boutiques 28 à 31 n'avaient pas de vitrine et le Walk aurait planté.
 - **Cause :** le plan du T (`SLOTS`) et le test (`n = 27`) étaient écrits pour un nombre fixe.
 - **Règle :** le nombre de boutiques vient toujours de la liste des marques ; le plan est calculé par le mode de mall (`src/walk/modes/`), et les tests lisent le compteur affiché. Après tout ajout de marque : `npm test` puis `npm run smoke` (la dernière boutique est testée).
 
 ### L-40 — Une vraie photo doit apparaître partout où le produit apparaît
-- **Projet / date :** Fraul, 2026-10-18
+- **Projet / date :** TakeUrClothes, 2026-10-18
 - **Ce qui s'est passé :** les photos du fournisseur s'affichaient sur les fiches et les cartes, mais pas dans les boutiques 3D du Walk, qui dessinaient tous les articles. Rhamone : « dans les boutiques, je vois pas les vrais produits que je t'ai envoyés ». Les sacs semblaient aussi sortir de leur vitrine en verre, trop basse.
 - **Cause :** les données envoyées au Walk ne contenaient pas les photos ; et on avait décidé seul de garder les dessins dans le Walk.
 - **Règle :** quand un produit a une photo, elle s'affiche partout où il apparaît (cartes, fiche, tenue, Walk, panier à terme). Si on choisit de ne pas l'afficher quelque part, on le dit à l'humain et on attend son avis. Vérifier chaque vue 3D sous l'angle de la caméra du visiteur, pas seulement en plan.
 
 ### L-41 — L'outil ajoute une signature aux descriptions de PR
-- **Projet / date :** Fraul, 2026-10-18
+- **Projet / date :** TakeUrClothes, 2026-10-18
 - **Ce qui s'est passé :** les PR #7 à #14 finissaient par « Generated by Claude Code » et un lien de session, ajoutés automatiquement à la création, alors que la règle L-32 l'interdit. Retirés à la main le 18 oct.
 - **Cause :** l'outil de création de PR ajoute cette ligne de lui-même ; une modification ultérieure, elle, ne la remet pas.
 - **Règle :** juste après avoir créé une PR, relire sa description et retirer toute signature ou lien de session (modifier la description). Le vérifier aussi avant d'annoncer la PR à l'humain.
 
 ### L-42 — Un nouveau bouton peut pousser la barre hors de l'écran
-- **Projet / date :** Fraul, 2026-10-18
+- **Projet / date :** TakeUrClothes, 2026-10-18
 - **Ce qui s'est passé :** en ajoutant « En grand » à la barre d'un article dans la boutique 3D, le bouton « Tourner » sortait de l'écran à 390 px, et le prix était coupé, parce que la rangée trop large élargissait toute la barre.
 - **Cause :** libellés longs en majuscules espacées, sans `min-width: 0` sur les enfants de la grille (même piège que L-38).
 - **Règle :** après tout ajout de bouton ou de libellé, regarder la capture téléphone (390 px) ; libellés courts (« Au panier ») ; `min-width: 0` sur les enfants d'une grille. `npm run smoke` vérifie que les boutons et le prix restent dans l'écran.
 
 ### L-43 — Le vocabulaire du site : cool, classe, posé
-- **Projet / date :** Fraul, 2026-10-18
-- **Ce qui s'est passé :** le comptoir « Demande un article » s'appelait « Conciergerie ». Rhamone : « trop normal ; pour le vocabulaire du site on doit être cool, classe et posé, pas trop archaïque ». Renommé « Fraul Finds » (sous-titre « Sur demande »).
+- **Projet / date :** TakeUrClothes, 2026-10-18
+- **Ce qui s'est passé :** le comptoir « Demande un article » s'appelait « Conciergerie ». Rhamone : « trop normal ; pour le vocabulaire du site on doit être cool, classe et posé, pas trop archaïque ». Renommé « Finds » (sous-titre « Sur demande »).
 - **Cause :** nom choisi seul, dans un registre hôtelier vieillot.
 - **Règle :** tout nom ou libellé visible (comptoir, bouton, rubrique) est court, moderne et posé ; un mot anglais de la culture streetwear est permis s'il reste clair. Pour un nouveau nom, proposer 3 ou 4 choix à Rhamone avant de l'écrire partout.
 
 ### L-44 — Ce qui cache une vitrine doit aussi « attraper » le toucher
-- **Projet / date :** Fraul, 2026-10-18
-- **Ce qui s'est passé :** à l'arrêt Fraul Finds, toucher le comptoir faisait entrer dans la boutique ERD, cachée derrière lui. Rhamone : « ça n'a pas de sens, c'est pas ergonomique ». L'arrêt était aussi trop tôt (5e place au lieu de 10e).
+- **Projet / date :** TakeUrClothes, 2026-10-18
+- **Ce qui s'est passé :** à l'arrêt Finds, toucher le comptoir faisait entrer dans la boutique ERD, cachée derrière lui. Rhamone : « ça n'a pas de sens, c'est pas ergonomique ». L'arrêt était aussi trop tôt (5e place au lieu de 10e).
 - **Cause :** le toucher ne testait que les façades des boutiques, pas les objets posés devant.
-- **Règle :** tout objet 3D placé devant une zone touchable fait partie du test de toucher et a sa propre action. Le test téléphone touche le comptoir et vérifie qu'aucune boutique ne s'ouvre. Placer un arrêt là où le visiteur en a besoin (Fraul Finds : quand il commence à fatiguer, vers la 10e boutique).
+- **Règle :** tout objet 3D placé devant une zone touchable fait partie du test de toucher et a sa propre action. Le test téléphone touche le comptoir et vérifie qu'aucune boutique ne s'ouvre. Placer un arrêt là où le visiteur en a besoin (Finds : quand il commence à fatiguer, vers la 10e boutique).
 
 ### L-45 — Épater sans saouler : jamais plus d'une seconde entre un toucher et les produits
-- **Projet / date :** Fraul, 2026-10-18
+- **Projet / date :** TakeUrClothes, 2026-10-18
 - **Ce qui s'est passé :** entrer dans une boutique faisait zoomer puis « marcher » depuis la porte (4 s), sortir refaisait la marche à l'envers, aller à un rayon prenait 1 à 3 s. Rhamone : « c'est un peu trop prise de tête… je veux pas qu'on se croie dans un film, c'est un site après tout ».
 - **Cause :** l'effet « on y est » avait été mis avant la vitesse d'accès aux produits.
 - **Règle :** entre un toucher et ce que le visiteur veut voir, une seconde au plus (fondu ou trajet court). Les effets restent là où ils ne bloquent rien (promenade au défilement, vitrines vivantes, lumière). Le test téléphone mesure entrer, aller à un rayon et sortir.
 
 ### L-46 — La signature d'IA s'ajoute aussi aux commentaires
-- **Projet / date :** Fraul, 2026-10-19
+- **Projet / date :** TakeUrClothes, 2026-10-19
 - **Ce qui s'est passé :** les commentaires « 🗣️ Rhamone » sur la PR #26 finissaient par « Generated by Claude Code », ajouté automatiquement à l'envoi. Serge l'a remarqué (règle de Rhamone : aucune trace d'IA).
 - **Cause :** l'outil qui poste un commentaire ajoute cette ligne de lui-même, comme pour les descriptions de PR (L-41).
 - **Règle :** après chaque commentaire posté sur GitHub, le relire et retirer la signature en le modifiant (la modification, elle, ne la remet pas). Vérifier sur le commentaire en ligne.
 
 ### L-47 — Dans un rayon, la photo d'abord ; pas de mode d'emploi
-- **Projet / date :** Fraul, 2026-10-19
+- **Projet / date :** TakeUrClothes, 2026-10-19
 - **Ce qui s'est passé :** dans un rayon du Walk, le nom de l'article (gros, sur 2 lignes) prenait plus de place que la photo, et une phrase « Glisse pour défiler, touche pour voir en grand » clignotait en haut. Rhamone : la photo doit être grande, le nom sur une ligne, et « l'instinct humain fera le reste ».
 - **Cause :** on a donné autant de poids au texte qu'au produit, et on a expliqué des gestes déjà évidents (flèches, glisser).
 - **Règle :** sur un écran produit, la photo occupe la plus grande place (environ 70 % de la largeur sur téléphone) ; nom sur une ligne, en taille modérée ; pas de texte d'aide pour un geste évident. Vérifier chaque rayon (vêtements, sneakers, casquettes, sacs) sur une capture téléphone avant la PR. Ne pas étendre un retour au-delà de ce qui est demandé : « Travis Scott est mal présenté » voulait dire « il n'y a qu'un bouton de rayon, il en faut 6 comme ailleurs » (même gabarit pour toutes les boutiques), pas « changer le décor » (changement fait puis annulé le 19 oct.) ; en cas de doute, demander (L-07).
 
 ### L-48 — Plan et go avant de retirer ou d'ajouter quoi que ce soit
-- **Projet / date :** Fraul, 2026-10-20
+- **Projet / date :** TakeUrClothes, 2026-10-20
 - **Ce qui s'est passé :** sur un retour de capture, j'ai changé le décor de toutes les boutiques, retiré deux lignes et inventé un affichage de rayon vide sans montrer de plan. Rhamone : « je ne comprends pas pourquoi tu enlèves les choses sans proposer de plan ni attendre mon go ».
 - **Cause :** j'ai pris une capture annotée pour un ordre complet, et j'ai comblé moi-même les trous.
 - **Règle :** même pour une petite chose, lister ce que je vais retirer, ajouter ou choisir à sa place, avec des options quand c'est un choix, et attendre le go. Rien n'est poussé sur une PR avant ce go ; un brouillon va sur une branche `wip/` sans PR.
 ### L-49 — Tester sur PC aussi, et l'auteur des commits n'est jamais « Claude »
-- **Projet / date :** Fraul, 2026-10-21
+- **Projet / date :** TakeUrClothes, 2026-10-21
 - **Ce qui s'est passé :** sur PC, le mall devenait blanc et ramait, et la molette changeait de boutique en sortant d'une boutique ; le test automatique ne regardait que le téléphone. Un commit de fusion a aussi été signé « Claude » (réglage par défaut des sessions cloud).
 - **Cause :** image dessinée jusqu'à ×1,75 sur grand écran, aucun plan B si la carte graphique décroche, molette continue non bloquée ; auteur Git laissé par défaut.
 - **Règle :** chaque changement du Walk passe le test téléphone ET le test PC (`npm run smoke`, 1920 et 2560 px). Image limitée à ~2,4 millions de points. L'auteur Git est forcé à Kelthen au démarrage, et les hooks `.githooks/pre-commit` et `pre-merge-commit` refusent tout commit signé « Claude ».
 ### L-50 — Un retour sur le Walk recrée le moteur : l'écran doit suivre
-- **Projet / date :** Fraul, 2026-10-21
+- **Projet / date :** TakeUrClothes, 2026-10-21
 - **Ce qui s'est passé :** fiche en grand → « Fiche complète » → retour au Walk : la boutique et la fiche s'affichaient comme avant, mais rien ne répondait (« Fermer » mort).
 - **Cause :** Next garde l'écran d'une page quand on y revient, alors que le moteur 3D, lui, est détruit puis recréé à neuf : l'écran et le moteur ne disaient plus la même chose.
 - **Règle :** tout ce que le moteur affiche est remis à zéro à son démarrage, et ce qu'on veut retrouver (boutique, rayon) est rouvert par le moteur lui-même. Le test téléphone passe par « Fiche complète » puis retour et vérifie « Fermer ».
 
 ### L-51 — Nettoyer en changeant : modifier la règle existante, retirer le code mort
-- **Projet / date :** Fraul, 2026-10-21
+- **Projet / date :** TakeUrClothes, 2026-10-21
 - **Ce qui s'est passé :** pour changer les boutons, j'ai ajouté des règles CSS à la fin du fichier qui écrasaient les anciennes, et des styles d'éléments retirés (#28) étaient restés. Rhamone : « tu ne debug pas, tu ne clean pas le code ».
 - **Cause :** corriger par-dessus au lieu de corriger à la source ; aucune vérification du code mort.
 - **Règle :** on modifie la règle existante à sa place, on supprime ce qu'on remplace, et on retire le style de tout élément supprimé. `npm run check` lance `scripts/dead-css.mjs`, qui refuse une classe CSS inutilisée. Avant une PR, relire son propre diff pour y chercher les restes.
 
 ### L-52 — Bot Telegram : aucun bouton ne reste après validation, et on ne change jamais les boutons sous le doigt
-- **Projet / date :** Fraul, 2026-10-22
+- **Projet / date :** TakeUrClothes, 2026-10-22
 - **Ce qui s'est passé :** Serge : « les boutons de validation ne doivent pas rester après une validation, ils peuvent être corrompus lors d'une mauvaise manipulation ». À l'essai, un faux bouton « ✔︎ reçu » et des « ↩️ » restaient affichés ; puis « Corriger » remplaçait les boutons du message par « Oui / Non », Telegram décalait le message et « Oui » tombait sous le doigt : « reçu » et « envoyé » ont été défaits d'un coup.
 - **Cause :** l'état était affiché par des boutons, et la confirmation modifiait un message que l'utilisateur était en train de toucher.
 - **Règle :** l'état se lit dans le texte ; un bouton n'existe que pour la prochaine action et disparaît une fois faite. Une confirmation se pose dans un **nouveau message** en bas du fil. Chaque bouton qui défait quelque chose porte l'étape qu'il défait (un double-tap ne défait pas deux étapes). Un geste réversible a une fenêtre courte (15 min), puis son bouton est effacé.
 
 ### L-53 — Un vêtement sur un portant se montre de côté, sur un vrai cintre
-- **Projet / date :** Fraul, 2026-10-22
+- **Projet / date :** TakeUrClothes, 2026-10-22
 - **Ce qui s'est passé :** maquettes du portant refusées trois fois : vêtements de face dans le rayon, cintre posé sur la capuche, crochet qui « ne ressemble pas à un cintre ». Rhamone : « le cintre prend les épaules, la capuche est derrière, le crochet sort du cou » ; « je t'ai envoyé plein de photos pour que tu te réfères à ça ».
 - **Cause :** dessiné de tête au lieu de partir des photos de vraies boutiques envoyées par Rhamone.
 - **Règle :** dans un rayon, les hauts sont serrés **de côté** (manche et flanc, jamais le devant ni le logo) ; seule la pièce touchée sort et se met de face. Le cintre est caché dans les épaules ; seul un crochet fin en « ? » sort du col et passe par-dessus la barre ; la capuche tombe dans le dos. Avant de dessiner un objet réel, relire les photos de référence de l'humain et montrer une maquette d'abord.
 
 ### L-54 — Un mot ne doit jamais en cacher un autre
-- **Projet / date :** Fraul, 2026-10-25
+- **Projet / date :** TakeUrClothes, 2026-10-25
 - **Ce qui s'est passé :** dans le rayon Pantalons, le panneau 3D « PANTALONS » passait sous le nom de la boutique ; dans Hoodies, le crochet de la pièce choisie coupait « HOODIES ». Rhamone : « c'est des trucs que tu dois vérifier ».
 - **Cause :** les textes dessinés dans la 3D bougent avec la caméra ; personne ne vérifiait qu'ils ne passaient pas sous les textes et boutons de l'écran.
 - **Règle :** un texte important ne vit pas dans la 3D quand l'écran affiche autre chose par-dessus : il passe dans l'interface (titre), et la 3D garde au plus un filigrane derrière les objets. Regarder chaque capture du test en cherchant un mot coupé ou recouvert ; le test téléphone vérifie le titre de chaque rayon.

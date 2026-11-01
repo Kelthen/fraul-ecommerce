@@ -14,10 +14,10 @@ const sans = Montserrat({ variable: "--font-sans", subsets: ["latin"], style: ["
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "Fraul — le mall streetwear et luxe", template: "%s · Fraul" },
+  title: { default: "TakeUrClothes — le mall streetwear et luxe", template: "%s · TakeUrClothes" },
   description:
     "Streetwear et luxe 100 % authentiques, une boutique par marque, drops limités et suivi de commande à chaque étape.",
-  openGraph: { type: "website", siteName: "Fraul", locale: "fr_FR" },
+  openGraph: { type: "website", siteName: "TakeUrClothes", locale: "fr_FR" },
   robots: SITE_LIVE ? { index: true, follow: true } : { index: false, follow: false },
 };
 
@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 const orgJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Fraul",
+  name: "TakeUrClothes",
   url: SITE_URL,
 };
 
