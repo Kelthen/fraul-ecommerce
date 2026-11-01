@@ -24,11 +24,11 @@ import {
 import { orderStatusOf, pileOf } from "./piles.ts";
 
 test("numéros de commande : formats long et court, jamais deviné", () => {
-  assert.equal(normalizeOrderNumber("FRL-2026-000123"), "FRL-2026-000123");
-  assert.equal(normalizeOrderNumber("frl 2026 123"), "FRL-2026-000123");
-  assert.equal(normalizeOrderNumber("FRL-1042"), "FRL-1042");
+  assert.equal(normalizeOrderNumber("TUC-2026-000123"), "TUC-2026-000123");
+  assert.equal(normalizeOrderNumber("tuc 2026 123"), "TUC-2026-000123");
+  assert.equal(normalizeOrderNumber("TUC-1042"), "TUC-1042");
   assert.equal(normalizeOrderNumber("1042"), null);
-  assert.equal(normalizeOrderNumber("FRL-"), null);
+  assert.equal(normalizeOrderNumber("TUC-"), null);
 });
 
 test("codes de suivi : formats courants acceptés, mots refusés", () => {
@@ -40,29 +40,35 @@ test("codes de suivi : formats courants acceptés, mots refusés", () => {
 });
 
 test("un message transféré : une paire par ligne, séparateurs libres", () => {
-  const r = parseTrackingMessage("FRL-2026-000123 → LP123456789CN\nfrl-1042: YT2412345678901234\nFRL 2026 7 = 1Z999AA10123456784");
+  const r = parseTrackingMessage("TUC-2026-000123 → LP123456789CN\ntuc-1042: YT2412345678901234\nTUC 2026 7 = 1Z999AA10123456784");
   assert.deepEqual(r.pairs, [
-    { order: "FRL-2026-000123", code: "LP123456789CN" },
-    { order: "FRL-1042", code: "YT2412345678901234" },
-    { order: "FRL-2026-000007", code: "1Z999AA10123456784" },
+    { order: "TUC-2026-000123", code: "LP123456789CN" },
+    { order: "TUC-1042", code: "YT2412345678901234" },
+    { order: "TUC-2026-000007", code: "1Z999AA10123456784" },
   ]);
   assert.deepEqual(r.rejected, []);
 });
 
-test("jamais de commande devinée : ligne sans numéro FRL ou sans code → rejetée", () => {
-  const r = parseTrackingMessage("LP123456789CN\nFRL-2026-000123\nFRL-2026-000124 LP111111111CN LP222222222CN");
+test("commandes d'avant le changement de nom : le préfixe FRL est encore lu, tel quel", () => {
+  assert.equal(normalizeOrderNumber("frl 2026 12"), "FRL-2026-000012");
+  assert.deepEqual(parseTrackingMessage("FRL-2026-000012 → LP123456789CN").pairs, [{ order: "FRL-2026-000012", code: "LP123456789CN" }]);
+  assert.equal(normalizeOrderNumber("ABC-2026-000012"), null);
+});
+
+test("jamais de commande devinée : ligne sans numéro TUC ou sans code → rejetée", () => {
+  const r = parseTrackingMessage("LP123456789CN\nTUC-2026-000123\nTUC-2026-000124 LP111111111CN LP222222222CN");
   assert.deepEqual(r.pairs, []);
   assert.equal(r.rejected.length, 3);
 });
 
 test("même commande avec deux codes différents → les deux refusés", () => {
-  const r = parseTrackingMessage("FRL-2026-000123 → LP123456789CN\nFRL-2026-000123 → LP999999999CN\nFRL-2026-000124 → LP555555555CN");
-  assert.deepEqual(r.pairs, [{ order: "FRL-2026-000124", code: "LP555555555CN" }]);
+  const r = parseTrackingMessage("TUC-2026-000123 → LP123456789CN\nTUC-2026-000123 → LP999999999CN\nTUC-2026-000124 → LP555555555CN");
+  assert.deepEqual(r.pairs, [{ order: "TUC-2026-000124", code: "LP555555555CN" }]);
   assert.equal(r.rejected.length, 2);
 });
 
 const order: RelayOrder = {
-  number: "FRL-2026-000123",
+  number: "TUC-2026-000123",
   isDemo: true,
   total: "358 USD",
   margin: "142 USD",
@@ -78,7 +84,7 @@ const order: RelayOrder = {
 
 test("bloc à transférer : ni prix, ni adresse, ni nom du client", () => {
   const b = supplierBlock(order.number, order.parcels[0]);
-  assert.match(b, /FRL-2026-000123/);
+  assert.match(b, /TUC-2026-000123/);
   assert.match(b, /A-88213/);
   for (const secret of ["358", "142", "USD", "Awa", "Paris"]) assert.ok(!b.includes(secret), secret);
 });
@@ -100,7 +106,7 @@ test("boutons : seulement la prochaine étape ; ↩️ Corriger 15 min, avec con
   assert.equal(b[1][0].data, "rcv:p2", "secours si l'expéditeur ne coche pas");
   assert.equal(b[1][1].data, "unq:p2", "↩️ demande d'abord confirmation");
   assert.equal(orderButtons(order, t + 20 * 60_000)[1].length, 1, "plus de ↩️ après 15 min");
-  const q = undoQuestion("FRL-2026-000123", { id: "p2", supplier: "Fournisseur B" }, "forwarded");
+  const q = undoQuestion("TUC-2026-000123", { id: "p2", supplier: "Fournisseur B" }, "forwarded");
   assert.match(q.text, /annuler « envoyé au fournisseur » pour <b>Fournisseur B<\/b>/);
   assert.deepEqual(q.buttons.flat().map((x) => x.data), ["unf:p2:f", "keep:p2"], "l'étape est dans le bouton (double-tap sans effet)");
   const uuid = "123e4567-e89b-12d3-a456-426614174000";
@@ -115,11 +121,11 @@ test("aucun bouton qui reste après validation", () => {
   const justNow = { parcels: [{ ...done.parcels[0], receivedAt: "2026-10-23T17:55:00Z", receivedBy: "l'expéditeur" }] };
   assert.deepEqual(orderButtons(justNow, t), [[{ text: "↩️ Corriger : Fournisseur A", data: "unq:p1" }]], "seulement Corriger, 15 min");
   assert.deepEqual(undoButtons("s1"), [[{ text: "↩️ Corriger (15 min)", data: "undq:s1" }]]);
-  assert.deepEqual(undoCodeQuestion("LP1", "FRL-1", "s1").buttons.flat().map((x) => x.data), ["undo:s1", "keepc:s1"]);
+  assert.deepEqual(undoCodeQuestion("LP1", "TUC-1", "s1").buttons.flat().map((x) => x.data), ["undo:s1", "keepc:s1"]);
 });
 
 test("carte de suivi : avertit s'il manque un colis, ne promet rien au client", () => {
-  const card = { number: "FRL-2026-000123", firstName: "Awa", city: "Paris", articles: 2, isDemo: false };
+  const card = { number: "TUC-2026-000123", firstName: "Awa", city: "Paris", articles: 2, isDemo: false };
   assert.match(trackingCard("LP123456789CN", { ...card, missing: ["Fournisseur B"] }), /⚠️ Pas encore reçu chez l'expéditeur : <b>Fournisseur B<\/b>/);
   assert.ok(!trackingCard("LP123456789CN", { ...card, missing: [] }).includes("⚠️"));
   const c = confirmedCard("LP123456789CN", card, "Serge");
@@ -141,7 +147,7 @@ test("lignes d'état et titre : ce qui est fait, par qui, ce qui reste", () => {
   assert.match(l, /📤 <b>Fournisseur B<\/b> : envoyé au fournisseur 21 oct\. à 12:04 \(Serge\)/, "heure de Toronto");
   assert.match(orderTitle(order), /Nouvelle commande/);
   const all = { ...order, parcels: order.parcels.map((p) => ({ ...p, forwardedAt: "2026-10-21T16:04:00Z" })) };
-  assert.match(orderTitle(all), /Tout envoyé aux fournisseurs · FRL-2026-000123/);
+  assert.match(orderTitle(all), /Tout envoyé aux fournisseurs · TUC-2026-000123/);
   const recv = { ...order, parcels: order.parcels.map((p) => ({ ...p, forwardedAt: "2026-10-21T16:04:00Z", receivedAt: "2026-10-23T13:00:00Z" })) };
   assert.match(orderTitle(recv), /Tous les colis reçus/);
   assert.match(parcelStatusLine({ ...order.parcels[0], supplier: "<A>", receivedAt: "2026-10-23T13:00:00Z", receivedBy: "Rha<mone" }), /📥 <b>&lt;A&gt;<\/b> : reçu chez l'expéditeur .*\(Rha&lt;mone\)/);
@@ -152,15 +158,15 @@ test("/afaire : à transférer, puis à recevoir ; liens en groupe, boutons sino
   assert.equal(messageLink(6639441546, 42), null, "conversation privée : pas de lien");
   assert.equal(messageLink(null, null), null);
   const list = [
-    { orderId: "o1", number: "FRL-2026-000002", isDemo: true, link: null, toForward: ["A", "B"], toReceive: [] },
-    { orderId: "o2", number: "FRL-2026-000005", isDemo: false, link: "https://t.me/c/1/9", toForward: ["A"], toReceive: ["B"] },
+    { orderId: "o1", number: "TUC-2026-000002", isDemo: true, link: null, toForward: ["A", "B"], toReceive: [] },
+    { orderId: "o2", number: "TUC-2026-000005", isDemo: false, link: "https://t.me/c/1/9", toForward: ["A"], toReceive: ["B"] },
   ];
   const m = todoMessage(list);
   assert.match(m, /3 blocs à envoyer aux fournisseurs/);
-  assert.match(m, /FRL-2026-000002 \(test\) → A, B/);
-  assert.match(m, /<a href="https:\/\/t\.me\/c\/1\/9">FRL-2026-000005<\/a> → A/);
+  assert.match(m, /TUC-2026-000002 \(test\) → A, B/);
+  assert.match(m, /<a href="https:\/\/t\.me\/c\/1\/9">TUC-2026-000005<\/a> → A/);
   assert.match(m, /1 colis attendu chez l'expéditeur/);
-  assert.deepEqual(todoButtons(list), [[{ text: "🔁 FRL-2026-000002", data: "rsd:o1" }]]);
+  assert.deepEqual(todoButtons(list), [[{ text: "🔁 TUC-2026-000002", data: "rsd:o1" }]]);
   assert.match(todoMessage([]), /Rien en attente/);
 });
 
@@ -171,12 +177,12 @@ test("accès : conversation privée ou groupe, comptes autorisés", () => {
   assert.ok(isGroupChat(-100123) && !isGroupChat(42));
   assert.equal(commandOf("/afaire@FraulservicesBot"), "/afaire");
   assert.equal(commandOf("/AIDE stp"), "/aide");
-  assert.equal(commandOf("FRL-2026-000001 → LP123456789CN"), null);
+  assert.equal(commandOf("TUC-2026-000001 → LP123456789CN"), null);
 });
 
 test("carte de vérification : prénom + ville seulement", () => {
-  const c = trackingCard("LP123456789CN", { number: "FRL-2026-000123", firstName: "Awa", city: "Paris", articles: 2, isDemo: false });
-  assert.match(c.replace(/<[^>]+>/g, ""), /FRL-2026-000123 · Awa · Paris · 2 articles/);
+  const c = trackingCard("LP123456789CN", { number: "TUC-2026-000123", firstName: "Awa", city: "Paris", articles: 2, isDemo: false });
+  assert.match(c.replace(/<[^>]+>/g, ""), /TUC-2026-000123 · Awa · Paris · 2 articles/);
   assert.equal(esc("a<b"), "a&lt;b");
 });
 

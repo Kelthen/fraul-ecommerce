@@ -28,7 +28,7 @@ export function AccountView() {
 
       <section className="acc-card" aria-labelledby="acc-mails">
         <h2 id="acc-mails">E-mails</h2>
-        <p className="muted">Commandes, livraisons et réponses de Fraul Finds : toujours par e-mail.</p>
+        <p className="muted">Commandes, livraisons et réponses de Finds : toujours par e-mail.</p>
         <label className="acc-check">
           <input type="checkbox" checked={account.marketing} onChange={(e) => setMarketing(e.target.checked)} />
           <span>Recevoir les nouveautés et les drops (modifiable à tout moment)</span>

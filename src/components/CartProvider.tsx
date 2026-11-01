@@ -31,7 +31,7 @@ type CartCtx = {
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "fraul.cart.v2"; // v2 : les lignes gardent le coût, plus un prix figé
+const KEY = "tuc.cart.v2"; // v2 : les lignes gardent le coût, plus un prix figé
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);

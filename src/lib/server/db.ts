@@ -40,7 +40,7 @@ export class DbError extends Error {
 const enc = encodeURIComponent;
 
 export const db = {
-  /** `select("orders", "select=id,number&number=eq.FRL-…")` */
+  /** `select("orders", "select=id,number&number=eq.TUC-…")` */
   select: <T = Row>(table: string, query: string) => call<T[]>(`${table}?${query}`),
 
   async one<T = Row>(table: string, query: string): Promise<T | null> {

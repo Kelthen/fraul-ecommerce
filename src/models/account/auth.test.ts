@@ -12,7 +12,7 @@ test("e-mail", () => {
 test("mot de passe : longueur, trop courant, e-mail dedans, répétitif", () => {
   assert.match(passwordProblem("court")!, /10/);
   assert.match(passwordProblem("monPassword2026")!, /courant/);
-  assert.match(passwordProblem("rhamon-2026-fraul!", "rhamon@exemple.com")!, /e-mail/);
+  assert.match(passwordProblem("rhamon-2026-tuc!", "rhamon@exemple.com")!, /e-mail/);
   assert.match(passwordProblem("aaaaaaaaaaab")!, /répétitif/);
   assert.equal(passwordProblem("Velours-Bordeaux-19"), null);
 });

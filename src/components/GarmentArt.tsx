@@ -3,7 +3,7 @@ import { GARMENT_PATHS } from "@/lib/catalog/art";
 import { DARK } from "@/lib/catalog/demo";
 
 // Dessins provisoires, en attendant les vraies photos détourées (face / dos).
-// Repris de la démo V2 pour garder le même rendu partout (site et Fraul Walk).
+// Repris de la démo V2 pour garder le même rendu partout (site et Walk).
 
 type Props = {
   type: CategoryId;

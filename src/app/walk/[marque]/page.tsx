@@ -11,7 +11,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/walk/[marque]">): Promise<Metadata> {
   const brand = await getBrand((await params).marque);
   return brand
-    ? { title: `Boutique ${brand.name} — Fraul Walk`, alternates: { canonical: `/marques/${brand.slug}` } }
+    ? { title: `Boutique ${brand.name} — Walk`, alternates: { canonical: `/marques/${brand.slug}` } }
     : {};
 }
 

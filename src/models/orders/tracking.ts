@@ -69,7 +69,7 @@ export type OrderLine = {
 };
 
 export type Order = {
-  /** Numéro lisible, aussi code de suivi Fraul (ex. FRL-1042). */
+  /** Numéro lisible, aussi code de suivi TakeUrClothes (ex. TUC-1042). */
   id: string;
   paidAt: number;
   shippedAt?: number;
@@ -98,8 +98,8 @@ export function trackingView(o: Order, timeZone?: string): TrackingView {
   };
 }
 
-/** Code tapé par le client → forme rangée (« frl 1042 » → « FRL-1042 »). Null si ce n'est pas un code Fraul. */
+/** Code tapé par le client → forme rangée (« tuc 1042 » → « TUC-1042 »). Null si ce n'est pas un code TakeUrClothes. */
 export function normalizeCode(raw: string): string | null {
-  const m = raw.trim().toUpperCase().match(/^FRL[\s-]*(\d{3,8})$/);
-  return m ? `FRL-${m[1]}` : null;
+  const m = raw.trim().toUpperCase().match(/^TUC[\s-]*(\d{3,8})$/);
+  return m ? `TUC-${m[1]}` : null;
 }

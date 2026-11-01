@@ -26,12 +26,12 @@ export function OrderEmails() {
             <div className="mail-box">
               <p className="mail-subj"><b>{m.subject}</b> <span>{m.preheader}</span></p>
               <div className="mail-body">
-                <p className="mail-brand">FRAUL</p>
+                <p className="mail-brand">TAKEURCLOTHES</p>
                 <h2>{m.title}</h2>
                 {m.body.map((t) => <p key={t}>{t}</p>)}
                 {m.lines.length > 0 && <ul>{m.lines.map((l) => <li key={l.name}>{lineLabel(l)}</li>)}</ul>}
                 <Link className="pill solid" href={m.cta.href}>{m.cta.label}</Link>
-                {k === "unavailable" && <Link className="link" href="/sur-demande">Fraul Finds</Link>}
+                {k === "unavailable" && <Link className="link" href="/sur-demande">Finds</Link>}
               </div>
             </div>
           </article>

@@ -51,9 +51,9 @@ test("vue du suivi : étape, phrase, remboursement, pas de fourchette une fois l
 });
 
 test("code de suivi : tolère minuscules et espaces, refuse le reste", () => {
-  assert.equal(normalizeCode(" frl 1042 "), "FRL-1042");
-  assert.equal(normalizeCode("FRL-1042"), "FRL-1042");
-  for (const bad of ["", "1042", "FRL-", "ABC-1042", "FRL-12<script>"]) assert.equal(normalizeCode(bad), null, bad);
+  assert.equal(normalizeCode(" tuc 1042 "), "TUC-1042");
+  assert.equal(normalizeCode("TUC-1042"), "TUC-1042");
+  for (const bad of ["", "1042", "TUC-", "ABC-1042", "TUC-12<script>"]) assert.equal(normalizeCode(bad), null, bad);
 });
 
 test("e-mails : 4 sortes, jamais de pays ni de prix barré, toujours un lien", () => {

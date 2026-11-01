@@ -7,14 +7,14 @@ import { loadPaidOrders, type OrderRow } from "@/lib/server/relay";
 import { PILES, pileOf, type PileId } from "@/models/relay/piles";
 import { clearTestOrders, connectBot, newTestOrder, requestCode, resend, signOut, verifyCode } from "./actions";
 
-// Tableau de bord des commandes de Fraul (docs/PARCOURS-COMMANDE.md §3) : 3 piles + expédiées.
+// Tableau de bord des commandes de TakeUrClothes (docs/PARCOURS-COMMANDE.md §3) : 3 piles + expédiées.
 // Version de démo : connexion par code Telegram, commande test, branchement du bot.
 export const metadata: Metadata = { title: "Commandes", robots: { index: false, follow: false } };
 
 export default function OrdersAdminPage({ searchParams }: PageProps<"/admin/commandes">) {
   return (
     <section className="sec wrap admin" style={{ paddingTop: 40 }}>
-      <p className="eyebrow">Fraul · équipe</p>
+      <p className="eyebrow">TakeUrClothes · équipe</p>
       <h1 className="h2">Commandes</h1>
       <Suspense fallback={<p className="muted">Chargement…</p>}>
         <Gate searchParams={searchParams} />
@@ -55,7 +55,7 @@ function Login({ msg, waiting }: { msg: string | null; waiting: boolean }) {
   return (
     <div className="admin-login">
       {msg && <p className="admin-msg">{msg}</p>}
-      <p className="muted">Accès réservé. Le code de connexion arrive sur le Telegram de Fraul.</p>
+      <p className="muted">Accès réservé. Le code de connexion arrive sur le Telegram de TakeUrClothes.</p>
       <form action={requestCode}>
         <button className={`pill ${waiting ? "ghost" : "solid"}`}>{waiting ? "Renvoyer un code" : "Recevoir un code sur Telegram"}</button>
       </form>

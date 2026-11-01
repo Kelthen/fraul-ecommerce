@@ -1,4 +1,4 @@
-# Fraul — Architecture cible (plan à valider)
+# TakeUrClothes — Architecture cible (plan à valider)
 
 > Statut : **PROPOSITION** — à valider par Rhamone puis Serge avant toute ligne
 > de code. Rédigé le 2026-10-12. Les points marqués ⚠️ sont des risques ou des
@@ -15,7 +15,7 @@
 | Anti-robots | **Cloudflare Turnstile** (captcha invisible) + limitation de débit | Pas de puzzle pénible pour les vrais clients. |
 | Emails | **Resend** (transactionnel) | Confirmation, expédition, livraison. |
 | Suivi colis | Saisie du code par le livreur + **API 17TRACK** | 17TRACK suit les transporteurs chinois et internationaux. |
-| Fraul Walk 3D | Garde la démo actuelle, branchée sur le vrai catalogue | Optionnel, chargé à la demande, **jamais** sur le chemin d'achat. |
+| Walk 3D | Garde la démo actuelle, branchée sur le vrai catalogue | Optionnel, chargé à la demande, **jamais** sur le chemin d'achat. |
 
 **Pays servis** : USA, Canada, Royaume-Uni, France, Belgique.
 
@@ -23,12 +23,12 @@
 aux USA, au Canada ou au Royaume-Uni, Shopify Managed Markets (Global-e) gère
 taxes, TVA/IOSS et douane payée d'avance (DDP). On garderait alors Shopify
 comme moteur (panier, paiement, taxes, commandes) et notre site Next.js comme
-vitrine (Fraul Walk, design, SEO). Le prix par client reste chez nous (Shopify
+vitrine (Walk, design, SEO). Le prix par client reste chez nous (Shopify
 ne le fait qu'en Plus). Le schéma ci-dessous s'adapte : `orders`/`payments`
 deviennent une copie des commandes Shopify.
 
 **Pourquoi pas Shopify / WooCommerce seuls ?** Le cœur du projet, c'est le **prix
-personnalisé par client** + le **flux fournisseur** + le **Fraul Walk**. Shopify
+personnalisé par client** + le **flux fournisseur** + le **Walk**. Shopify
 ne fait les prix par client qu'avec Shopify Plus (très cher) et contraint le
 3D ; WooCommerce empile des plugins (lent, failles fréquentes). Un projet sur
 mesure bien découpé est ici plus simple *et* plus solide.
@@ -67,7 +67,7 @@ Argent : toujours en **entiers** (centimes) + code devise. Toutes les tables ont
 
 | Table | Champs principaux | Notes |
 |---|---|---|
-| `brands` | slug, name, style (jsonb = le `PRESET` de la démo), active | Une ligne = une boutique Fraul Walk générée. |
+| `brands` | slug, name, style (jsonb = le `PRESET` de la démo), active | Une ligne = une boutique Walk générée. |
 | `categories` | slug, parent_id, name (jsonb fr/en), slot, position | T-shirts, Hoodies et sweats, Vestes et manteaux, Pantalons, Shorts, Chaussettes, Sneakers, Casquettes, Lunettes, Montres, Bijoux, Accessoires (liste du site : `src/lib/catalog/demo.ts`). |
 | `products` | brand_id, category_id, supplier_id, supplier_ref, slug, title / description (jsonb fr/en), status (`draft`/`active`/`archived`), seo_title, seo_description | Descriptions **réécrites** (voir SEO). |
 | `product_images` | product_id, path, view (`front`/`back`/`detail`), position, alt (jsonb) | Photos détourées, versions AVIF/WebP générées. |
@@ -114,7 +114,7 @@ Omnibus). Mention prévue sur la fiche produit et dans les CGV.
 | Table | Champs | Notes |
 |---|---|---|
 | `carts` / `cart_items` | customer_id ou session anonyme, variant_id, qty | Pas de prix stocké : recalculé à chaque affichage. |
-| `orders` | number (`FRL-2026-000123`), customer_id, status, currency, subtotal, shipping, duties, total, price_snapshot (jsonb : règles appliquées), shipping_address (copie), terms_version | **Copie figée** au moment de l'achat. |
+| `orders` | number (`TUC-2026-000123`), customer_id, status, currency, subtotal, shipping, duties, total, price_snapshot (jsonb : règles appliquées), shipping_address (copie), terms_version | **Copie figée** au moment de l'achat. |
 | `order_items` | order_id, variant_id, qty, unit_price, unit_cost, title (copie) | Marge calculable par ligne. |
 | `payments` | order_id, provider (`stripe`, ou `shopify` si hybride), provider_ref, amount, status | |
 | `payment_events` | provider_event_id (**unique**), payload, processed_at | Un webhook reçu deux fois n'est traité qu'une fois. |
@@ -146,12 +146,12 @@ en_attente_paiement → payée → envoyée_fournisseur → confirmée_fournisse
 ## 3. Le site, page par page
 
 **Public (indexé par Google)**
-- `/fr` `/en` : accueil (Nouveautés, marques, catégories, invitation Fraul Walk).
+- `/fr` `/en` : accueil (Nouveautés, marques, catégories, invitation Walk).
 - `/fr/marques` + `/fr/marques/[marque]` : annuaire A–Z + page marque.
 - `/fr/[categorie]` : listes filtrables (taille, couleur, marque, prix).
 - `/fr/produit/[slug]` : fiche produit (photos face/dos, tailles, prix, livraison estimée par pays).
 - `/fr/suivi` : suivi de commande (code ou lien reçu), animation.
-- `/fr/walk` : Fraul Walk 3D (chargé à la demande).
+- `/fr/walk` : Walk 3D (chargé à la demande).
 - Pages légales (section 7), FAQ, contact.
 
 **Client connecté** : compte, adresses, commandes, suivi, préférences,
@@ -218,8 +218,8 @@ clients et groupes, commandes, remboursements, synchro fournisseur, journal.
 - `sitemap.xml` automatique, `robots.txt`, images avec `alt` fr/en, Open Graph
   pour les partages WhatsApp / Instagram.
 - **Core Web Vitals** au vert sur mobile : images AVIF/WebP redimensionnées,
-  polices auto-hébergées, three.js **jamais** chargé hors Fraul Walk.
-- Le Fraul Walk n'est pas lisible par Google : chaque boutique a son
+  polices auto-hébergées, three.js **jamais** chargé hors Walk.
+- Le Walk n'est pas lisible par Google : chaque boutique a son
   **équivalent HTML** (page marque).
 - Flux **Google Merchant Center** (Shopping) avec le prix public par pays.
 - Visibilité IA : données structurées propres, page « À propos » claire,
@@ -269,7 +269,7 @@ Pages prévues, en fr et en en :
 | **P1 Catalogue + SEO** | Import des données démo, pages marques/catégories/produits, fr/en, sitemap, données structurées | Preview + score Lighthouse mobile |
 | **P2 Achat** | Comptes, prix personnalisés, panier, Stripe, emails | Commande test de bout en bout |
 | **P3 Logistique** | Portails fournisseur/livreur, notifications, suivi animé, 17TRACK | Test avec le vrai livreur |
-| **P4 Automatisation** | Synchro fournisseur automatique, Fraul Walk branché au vrai catalogue | Preview |
+| **P4 Automatisation** | Synchro fournisseur automatique, Walk branché au vrai catalogue | Preview |
 | **P5 Bonus** | Assistant IA, avis, emailing, programme fidélité | Au cas par cas |
 
 Chaque phase = des tâches attribuées dans `STATUS.md` et des PR séparées,

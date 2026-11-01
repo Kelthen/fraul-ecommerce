@@ -19,7 +19,7 @@ Le cahier des charges demande une réécriture en **Vite + TypeScript sans frame
 
 **Recommandation : on garde Next.js et on applique le rangement MVC demandé.** Ce qui rend le site « facile à modifier en deux clics », c'est que chaque chose ait un seul fichier, au nom clair. Changer d'outil n'apporte rien de plus ici. Le vrai désordre aujourd'hui, c'est `src/walk/engine.js` (931 lignes qui font tout). C'est lui qu'on découpe en priorité.
 
-> ⛔ **Contradiction à trancher.** Le cahier dit « Walk toujours optionnel ». La décision du 2026-10-12 (STATUS.md) dit : « Le Fraul Walk est le cœur du site, pas une option. »
+> ⛔ **Contradiction à trancher.** Le cahier dit « Walk toujours optionnel ». La décision du 2026-10-12 (STATUS.md) dit : « Le Walk est le cœur du site, pas une option. »
 > Ce plan garde la décision : le Walk reste l'entrée principale. La **liste classique** ne sert que de **repli** : téléphone sans 3D, mode économie de données, mouvement réduit. Si tu veux autre chose, dis-le et je change le plan.
 
 ---
@@ -200,7 +200,7 @@ Le choix se fait à un seul endroit : `hooks/useFallbackMode.ts`.
 **Panier en tiroir** (sans paiement) :
 - Il glisse depuis la droite (depuis le bas sur téléphone) quand on ajoute un article, ou quand on touche l'icône panier.
 - Contenu : lignes avec photo, taille, quantité ; total ; bouton « Voir le panier » vers `/panier` (la page reste).
-- Stockage : `localStorage` (`fraul.cart.v1`, déjà utilisé), via `models/cart.ts`.
+- Stockage : `localStorage` (`tuc.cart.v1`, déjà utilisé), via `models/cart.ts`.
 - C'est une couche comme les autres : **le bouton retour le ferme**, focus piégé, Échap (même code que la partie 1).
 
 **Fiche produit** :

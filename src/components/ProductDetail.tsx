@@ -34,7 +34,7 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
         <ProductGallery name={product.name} views={photoViews(product.image)} />
       ) : (
       <div className="pdp-stage">
-        <span className="ghost-word" aria-hidden="true">Fraul</span>
+        <span className="ghost-word" aria-hidden="true">TakeUrClothes</span>
         <GarmentArt
           key={`${front}-${color}`}
           className="art flip"
@@ -121,7 +121,7 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
 
         <Link className="pdp-walk" href={`/walk/${product.brandSlug}`}>
           <span>
-            <span className="eyebrow">Fraul Walk</span>
+            <span className="eyebrow">Walk</span>
             <br />
             <b>Voir dans la boutique {product.brandName}</b>
           </span>

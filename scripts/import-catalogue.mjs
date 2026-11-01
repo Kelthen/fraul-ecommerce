@@ -48,7 +48,7 @@ const PART_NAME = { veste: "veste", pantalon: "pantalon" };
 const catalogue = JSON.parse(await readFile(path.join(src, "catalogue.json"), "utf8"));
 
 // 1. Copie sous des noms uniques, puis optimisation par le script du projet.
-const stage = await mkdtemp(path.join(tmpdir(), "fraul-photos-"));
+const stage = await mkdtemp(path.join(tmpdir(), "tuc-photos-"));
 for (const p of catalogue)
   for (const ph of p.photos) await copyFile(path.join(src, ph.file), path.join(stage, `${p.brand_slug}-${p.slug}-${ph.view}.jpg`));
 execFileSync("node", ["scripts/optimize-images.mjs", stage, LIB, "--max", "1600"], { stdio: "inherit" });

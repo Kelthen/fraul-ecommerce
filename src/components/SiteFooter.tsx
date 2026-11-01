@@ -6,13 +6,13 @@ export function SiteFooter() {
       <div className="wrap">
         <div className="foot-grid">
           <div>
-            <p className="logo" style={{ marginBottom: 12 }}>Fraul</p>
+            <p className="logo" style={{ marginBottom: 12 }}>TakeUrClothes</p>
             <p>Streetwear et luxe, à parcourir comme une vraie promenade de boutiques.</p>
           </div>
           <div>
             <h3>Boutique</h3>
             <ul>
-              <li><Link href="/walk">Fraul Walk</Link></li>
+              <li><Link href="/walk">Walk</Link></li>
               <li><Link href="/#nouveautes">Nouveautés</Link></li>
               <li><Link href="/marques">Marques</Link></li>
               <li><Link href="/tenue">Crée ta tenue</Link></li>
@@ -21,7 +21,7 @@ export function SiteFooter() {
           <div>
             <h3>Aide</h3>
             <ul>
-              <li><Link href="/sur-demande">Fraul Finds : une pièce sur demande</Link></li>
+              <li><Link href="/sur-demande">Finds : une pièce sur demande</Link></li>
               <li><Link href="/suivi">Suivi de commande</Link></li>
               <li><Link href="/livraison">Livraison et douane</Link></li>
               <li><Link href="/retours">Retours et remboursements</Link></li>
@@ -35,7 +35,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="foot-legal">
-          <span>© 2026 Fraul</span>
+          <span>© 2026 TakeUrClothes</span>
           <span style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px" }}>
             <Link href="/mentions-legales">Mentions légales</Link>
             <Link href="/cgv">CGV</Link>

@@ -22,7 +22,7 @@ export type Brand = {
   slug: string;
   name: string;
   style: BrandStyle;
-  /** Présente comme boutique dans le Fraul Walk. */
+  /** Présente comme boutique dans le Walk. */
   inWalk: boolean;
 };
 

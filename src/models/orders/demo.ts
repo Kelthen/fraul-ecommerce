@@ -7,7 +7,7 @@ const DAY = 86_400_000;
 export function demoOrders(now: number): Order[] {
   return [
     {
-      id: "FRL-1042",
+      id: "TUC-1042",
       paidAt: now - 1 * DAY,
       zone: "us",
       step: "preparing",
@@ -17,7 +17,7 @@ export function demoOrders(now: number): Order[] {
       ],
     },
     {
-      id: "FRL-1031",
+      id: "TUC-1031",
       paidAt: now - 6 * DAY,
       shippedAt: now - 2 * DAY,
       zone: "us",
@@ -28,7 +28,7 @@ export function demoOrders(now: number): Order[] {
       ],
     },
     {
-      id: "FRL-1017",
+      id: "TUC-1017",
       paidAt: now - 16 * DAY,
       shippedAt: now - 12 * DAY,
       deliveredAt: now - 5 * DAY,

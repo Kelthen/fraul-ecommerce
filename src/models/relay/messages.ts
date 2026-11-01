@@ -1,5 +1,5 @@
-// Textes du bot Telegram de Jean Paul (Fraul) : message de commande, blocs à envoyer aux fournisseurs, carte de vérification.
-// docs/PARCOURS-COMMANDE.md §2 et §7 : Fraul voit prix et marge ; les blocs « à transférer » n'ont
+// Textes du bot Telegram de Jean Paul (TakeUrClothes) : message de commande, blocs à envoyer aux fournisseurs, carte de vérification.
+// docs/PARCOURS-COMMANDE.md §2 et §7 : TakeUrClothes voit prix et marge ; les blocs « à transférer » n'ont
 // ni prix ni adresse du client ; la fiche d'expédition passe par un lien qui expire.
 // Pur : HTML Telegram (parse_mode=HTML), aucune base, aucun réseau (testé dans messages.test.ts).
 
@@ -111,7 +111,7 @@ export function orderMessage(o: RelayOrder): string {
     "\n<b>── Fiche d'expédition (pour l'expéditeur) ──</b>",
     `<pre>${esc(`发货单 Shipping sheet ${o.number}\n${o.sheetUrl}`)}</pre>`,
     `Lien valable jusqu'au ${esc(o.sheetExpires)}. L'expéditeur y coche chaque colis reçu ; je préviens ici.`,
-    "\nQuand l'expéditeur envoie le code de suivi, transfère-moi son message (« FRL-… → code »).",
+    "\nQuand l'expéditeur envoie le code de suivi, transfère-moi son message (« TUC-… → code »).",
   ].join("\n");
   return [head, ...blocks, sheet].join("\n");
 }
@@ -262,5 +262,5 @@ export const REFUSALS = {
   codeUsed: (c: string, other: string) => `⛔ Le code <code>${esc(c)}</code> est déjà enregistré sur ${esc(other)}.`,
   notReady: (n: string) => `⛔ ${esc(n)} n'est pas encore payée ou a été annulée.`,
   unreadable: (lines: string[]) =>
-    `⚠️ Je n'ai pas compris ${lines.length > 1 ? "ces lignes" : "cette ligne"} (il faut « FRL-… → code ») :\n${lines.map((l) => `• ${esc(l)}`).join("\n")}`,
+    `⚠️ Je n'ai pas compris ${lines.length > 1 ? "ces lignes" : "cette ligne"} (il faut « TUC-… → code ») :\n${lines.map((l) => `• ${esc(l)}`).join("\n")}`,
 };

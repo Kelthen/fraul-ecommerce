@@ -1,7 +1,7 @@
-/* Fraul — système visuel « old money », version claire : le blanc ivoire met
+/* TakeUrClothes — système visuel « old money », version claire : le blanc ivoire met
    les vêtements en valeur ; bordeaux, vin, perle et pierre servent d'accents. */
 :root {
-  /* Couleurs fixes de la charte Fraul */
+  /* Couleurs fixes de la charte TakeUrClothes */
   --ink: #0a0a0c;
   --wine: #420a0d;
   --bordeaux: #680209;
@@ -71,7 +71,7 @@ p { margin: 0; }
 /* En-tête */
 .top { position: sticky; top: 0; z-index: 40; background: rgba(255, 254, 247, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .top-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
-.logo { font: 600 18px/1 var(--display); letter-spacing: 0.34em; text-transform: uppercase; color: var(--ink); text-decoration: none; }
+.logo { font: 600 19px/1 var(--display); letter-spacing: 0.02em; /* « TakeUrClothes » tel quel : en capitales espacées, il ne tient pas sur un téléphone */ color: var(--ink); text-decoration: none; }
 .nav { display: none; gap: 4px; }
 .nav a { font: 600 11px/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; padding: 12px 14px; border-radius: 999px; color: var(--muted); }
 .nav a:hover, .nav a[aria-current="page"] { color: var(--ink); background: var(--surface); }
@@ -382,7 +382,7 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .grid.rel .nm { font-size: 12px; }
 @media (min-width: 900px) { .grid.rel { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 22px 14px; } }
 
-/* Fraul Finds : une pièce sur demande (page /sur-demande et comptoir du Walk) */
+/* Finds : une pièce sur demande (page /sur-demande et comptoir du Walk) */
 .concierge-page { display: grid; gap: 32px; padding-top: 48px; }
 @media (min-width: 900px) { .concierge-page { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; } }
 .concierge-intro h1 { font-size: clamp(42px, 8vw, 72px); line-height: 1; margin-top: 8px; }

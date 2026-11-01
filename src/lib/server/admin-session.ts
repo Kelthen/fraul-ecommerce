@@ -8,8 +8,8 @@ import { sendMessage } from "./telegram";
 // (le compte de Jean Paul, ou le groupe de l'équipe). Pas de mot de passe à retenir, pas de variable de plus.
 // ⚠️ Provisoire : la vraie connexion (Supabase Auth + double vérification, ARCHITECTURE §4) remplacera ceci.
 
-const PENDING = "fraul_admin_code";
-const SESSION = "fraul_admin";
+const PENDING = "tuc_admin_code";
+const SESSION = "tuc_admin";
 const CODE_MINUTES = 5;
 const SESSION_HOURS = 12;
 
@@ -20,7 +20,7 @@ const cookieOpts = { httpOnly: true, secure: true, sameSite: "strict" as const, 
 export async function sendLoginCode(): Promise<void> {
   const code = String(randomInt(0, 100_000_000)).padStart(8, "0");
   const exp = Date.now() + CODE_MINUTES * 60_000;
-  await sendMessage(adminChatId(), `🔐 Code de connexion au tableau de bord Fraul : <code>${code}</code>\nValable ${CODE_MINUTES} min. Ne le donne à personne.`);
+  await sendMessage(adminChatId(), `🔐 Code de connexion au tableau de bord TakeUrClothes : <code>${code}</code>\nValable ${CODE_MINUTES} min. Ne le donne à personne.`);
   (await cookies()).set(PENDING, `${exp}.${sign(`code|${code}|${exp}`)}`, { ...cookieOpts, maxAge: CODE_MINUTES * 60 });
 }
 

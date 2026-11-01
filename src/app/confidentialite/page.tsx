@@ -10,7 +10,7 @@ export default function Page() {
       title="Politique de confidentialité"
       sections={[
         { title: "Responsable du traitement", body: <p><Todo>entité et contact</Todo></p> },
-        { title: "Données collectées", body: <p>Compte, commandes, adresses de livraison, préférences et consentements. Aucune donnée de carte bancaire n&apos;est conservée par Fraul.</p> },
+        { title: "Données collectées", body: <p>Compte, commandes, adresses de livraison, préférences et consentements. Aucune donnée de carte bancaire n&apos;est conservée par TakeUrClothes.</p> },
         { title: "Finalités et bases légales", body: <p><Todo>exécution des commandes, obligations légales, intérêt légitime, consentement</Todo></p> },
         { title: "Destinataires", body: <p>Prestataire de paiement, transporteur, fournisseur pour la préparation des commandes. <Todo>liste exacte et pays de traitement</Todo></p> },
         { title: "Durées de conservation", body: <p><Todo>durées par type de donnée</Todo></p> },

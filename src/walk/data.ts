@@ -5,7 +5,7 @@ import type { WalkData, WalkItem } from "./WalkExperience";
 /** Une boutique du mall n'affiche que les rayons qui ont un portant placé (store-layout.ts). */
 const inStore = (cat: string) => cat in RACKS;
 
-/** Données compactes envoyées au Fraul Walk (calculées au build). */
+/** Données compactes envoyées au Walk (calculées au build). */
 export async function getWalkData(): Promise<WalkData> {
   const [shops, brands, products] = await Promise.all([getWalkBrands(), getBrands(), getProducts()]);
   const items: WalkData["items"] = {};

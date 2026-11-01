@@ -169,7 +169,7 @@
 ## Leçons ajoutées après NBW
 
 ### L-28 — Aucune trace d'IA dans Git et GitHub
-- **Projet / date :** Fraul, 2026-10-12
+- **Projet / date :** TakeUrClothes, 2026-10-12
 - **Ce qui s'est passé :** les commits de la PR #1 étaient signés « Claude » avec « Co-Authored-By » et un lien de session, et la PR finissait par « Generated with Claude Code ». Rhamone a demandé de tout retirer avant le merge.
 - **Cause :** signatures ajoutées par défaut par l'outil.
 - **Règle :** auteur Git `Kelthen`, aucune ligne « Co-Authored-By », « Generated with… » ni lien de session dans les commits, PR et commentaires. Vérifie avant chaque push : `git log origin/main..HEAD --format='%an%n%B' | grep -iE "^claude$|co-authored|generated with|claude-session|claude\.ai/code"` doit être vide.

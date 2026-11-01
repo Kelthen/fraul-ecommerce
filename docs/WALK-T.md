@@ -1,10 +1,10 @@
-# Fraul Walk en T — plan à valider
+# Walk en T — plan à valider
 
 > Statut : **CONSTRUIT** (2026-10-12), d'après le dessin de Rhamone. Choix par défaut
 > ci-dessous à confirmer.
 > **Mis à jour le 2026-10-18** : le T est devenu un **mode de mall** parmi d'autres à venir, et il compte
 > désormais **une vitrine par marque** (31 aujourd'hui). Voir « Modes de mall » plus bas.
-> Plan vu du dessus : `docs/fraul-walk-plan-T.png`.
+> Plan vu du dessus : `docs/walk-plan-T.png`.
 
 ## Ce que j'ai compris
 
@@ -17,7 +17,7 @@
   restent **toujours du même côté** (à droite), donc on voit chaque boutique
   exactement une fois.
 - Au **milieu de la barre** (le rouge du dessin) : une **pièce centrale**, un
-  grand « F » Fraul sculpté sur un socle, entouré d'arbres en pot.
+  grand « TUC » sculpté sur un socle, entouré d'arbres en pot.
 - Le dessin comptait environ 25 vitrines : le T a été construit pour nos 27 marques
   de départ. **Toutes les marques** ont leur boutique dans le mall : avec 31 marques
   (ajout de Travis Scott, Saint Michael, ERD, Polo Ralph Lauren), le T s'allonge tout seul.
@@ -40,13 +40,13 @@ Avec les 31 marques d'aujourd'hui :
 
 ## Entrée (2026-10-18)
 
-- Au bas du tronc : **deux portes en verre** avec « WELCOME TO / FRAUL CENTER » gravé dessus. Elles
+- Au bas du tronc : **deux portes en verre** avec « COME IN. / TAKE UR CLOTHES. » gravé dessus. Elles
   s'écartent quand on approche (le texte se coupe en deux), en entrant comme en sortant.
 - Fichiers : `src/walk/views/entrance.ts` (portes, distance d'ouverture) et `src/content/walk.ts` (texte).
 
-## Fraul Finds, pièces sur demande (2026-10-18)
+## Finds, pièces sur demande (2026-10-18)
 
-- Arrêt du parcours **vers la 10e boutique** (après le 2e arrêt du bout droit de la barre), face au comptoir « Fraul Finds · Sur demande » posé à droite du grand « F » ; le toucher ouvre le formulaire (il passe devant les vitrines cachées derrière) (`concierge` dans le plan du mode ; `AT_CONCIERGE` dans `src/walk/models/walk-path.ts`). Comptoir 3D : `src/walk/views/concierge.ts` ; enseigne : `CONCIERGE_TEXT` dans `src/content/walk.ts`.
+- Arrêt du parcours **vers la 10e boutique** (après le 2e arrêt du bout droit de la barre), face au comptoir « Finds · Sur demande » posé à droite du grand « TUC » ; le toucher ouvre le formulaire (il passe devant les vitrines cachées derrière) (`concierge` dans le plan du mode ; `AT_CONCIERGE` dans `src/walk/models/walk-path.ts`). Comptoir 3D : `src/walk/views/concierge.ts` ; enseigne : `CONCIERGE_TEXT` dans `src/content/walk.ts`.
 - « Demande une pièce » ouvre le formulaire par-dessus le mall (couche « concierge » : le retour du téléphone la ferme). Même formulaire sur `/sur-demande`.
 
 ## Vitrines vivantes et heure du jour (2026-10-18)
@@ -96,7 +96,7 @@ Avec les 31 marques d'aujourd'hui :
 ## Choix par défaut, à confirmer
 
 1. **Sens du tour** : vitrines toujours **à droite** (comme sur le plan) ?
-2. **Pièce centrale** : grand « F » sculpté + arbres en pot ? Ou plutôt une
+2. **Pièce centrale** : grand « TUC » sculpté + arbres en pot ? Ou plutôt une
    fontaine, une grande plante, un écran du drop en cours ?
 3. **Ordre des marques** : alphabétique, ou les marques phares au début du
    tronc (là où tout le monde passe) ?

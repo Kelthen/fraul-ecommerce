@@ -74,7 +74,7 @@ export function orderEmail(kind: EmailKind, o: Order, opts: { timeZone?: string;
           "Désolé : cette pièce n'est plus disponible chez nos fournisseurs.",
           "Elle t'est remboursée sur ton moyen de paiement (quelques jours selon ta banque).",
           kept.length ? end(`Le reste de ta commande suit son cours, livraison prévue ${win}`) : "Ta commande ne contenait qu'elle : elle est remboursée en entier.",
-          "Tu la veux quand même ? Fraul Finds la cherche pour toi.",
+          "Tu la veux quand même ? Finds la cherche pour toi.",
         ],
       };
     }
