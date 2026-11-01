@@ -746,6 +746,8 @@ export function startWalk(root, o) {
   // Sur téléphone, dans un rayon, la liste est repliée derrière « Rayons » (la photo passe avant).
   function foldCats(shut) { const open = !shut; $("#sBottom").classList.toggle("open", open); $("#sTog").setAttribute("aria-expanded", String(open)); }
   on($("#sTog"), "click", () => foldCats($("#sBottom").classList.contains("open")));
+  // Titre du haut : « Marque · Boutique » au centre ; dans un rayon, la marque puis le nom du rayon dessous.
+  const title = (cat) => { $("#sTitle").textContent = cat ? `${sBrand}\n${catLabel(cat)}` : `${sBrand} · Boutique`; };
   function btn(cls, text, data) { const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = text; Object.assign(b.dataset, data); return b; }
   async function openStore(brand, { fromWalk = false } = {}) {
     const ok = await ensureThree();
@@ -760,7 +762,7 @@ export function startWalk(root, o) {
     storeEl.hidden = false; storeOpen = true; trapUpdate();
     $("#sQuit").focus({ preventScroll: true });
     openLayer("store", closeStore); // sortir = retour direct devant la vitrine, sans marcher jusqu'à la porte
-    $("#sTitle").textContent = `${brand} · Boutique`;
+    title();
     const cats = $("#sCats"); cats.textContent = ""; rayons().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     // On arrive directement au centre, devant le choix des rayons (plus de marche depuis la porte).
     STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
@@ -776,7 +778,7 @@ export function startWalk(root, o) {
   }
   // Rayon : animé = on marche jusqu'au centre ; sinon on remet juste l'état (la boutique se ferme derrière).
   function closeRayon(anim) {
-    sCat = null; STORE.setActive(null); sUI("walk");
+    sCat = null; STORE.setActive(null); title(); sUI("walk");
     if (anim) STORE.walk("hub", () => sUI("hub"));
   }
   function goZone(cat) {
@@ -784,7 +786,7 @@ export function startWalk(root, o) {
     gesture("rayon");
     openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
-    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
+    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); title(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
   }
   // Même gabarit pour toutes les boutiques : les mêmes rayons partout, même vides (Rhamone, 19 oct.).
   const rayons = () => CATS.filter(([id]) => id in CAR);
@@ -956,10 +958,21 @@ export function startWalk(root, o) {
     [[-2.6, -1.6, 0.45, 0], [2.6, -1.6, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
 
     // Signalétique
-    [["T-SHIRTS", -6, -6.4], ["HOODIES", -6, -12.4], ["CHAPEAUX", 6, -4.8], ["PANTALONS", 6, -11.9]].forEach(([t, wx, z]) =>
-      add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true }), wx - Math.sign(wx) * 0.02, 2.85, z, wx < 0 ? Math.PI / 2 : -Math.PI / 2));
-    [-3.75, 3.75].forEach((x) => add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex("SNEAKERS"), transparent: true }), x, 2.62, -15.97));
-    add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex("ACCESSOIRES"), transparent: true }), 0, 1.6, -9.62);
+    // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
+    // filigrane presque invisible, derrière les vêtements (idée de Rhamone) : un mot ne doit jamais en cacher un autre
+    // (25 oct. : « PANTALONS » sous le titre, le crochet de la pièce choisie au milieu de « HOODIES »).
+    const sign = (cat, t, x, y, z, ry) => { const m = add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true, depthWrite: false }), x, y, z, ry); m.userData = { cat, y }; return m; };
+    const signs = [["tee", "T-SHIRTS", -6, -6.4], ["hoodie", "HOODIES", -6, -12.4], ["cap", "CASQUETTES", 6, -4.8], ["pants", "PANTALONS", 6, -11.9]]
+      .map(([cat, t, wx, z]) => sign(cat, t, wx - Math.sign(wx) * (cat === "cap" ? 0.06 : 0.02), 2.85, z, wx < 0 ? Math.PI / 2 : -Math.PI / 2));
+    [-3.75, 3.75].forEach((x) => signs.push(sign("sneaker", "SNEAKERS", x, 2.62, -15.97)));
+    signs.push(sign("bag", "ACCESSOIRES", 0, 1.6, -9.62));
+    function watermark(cat) {
+      signs.forEach((m) => {
+        const on = m.userData.cat === cat, big = on && cat !== "bag" && cat !== "sneaker";
+        m.visible = !cat || on; m.material.opacity = cat ? 0.1 : 1;
+        m.position.y = big ? 1.3 : m.userData.y; m.scale.setScalar(big ? 2.4 : 1);
+      });
+    }
 
     const gm = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), gData.length), dmy = new THREE.Object3D();
     gData.forEach(([x, y, z, sx, sy, sz, c], k) => { dmy.position.set(x, y, z); dmy.scale.set(sx, sy, sz); dmy.updateMatrix(); gm.setMatrixAt(k, dmy.matrix); gm.setColorAt(k, new THREE.Color(c)); });
@@ -1108,7 +1121,7 @@ export function startWalk(root, o) {
       brand: st.name, place, walk, resize,
       /** Prépare l'affichage (shaders) en coulisse, pour que la première image soit immédiate à l'entrée. */
       warm() { try { place("hub"); renderer.compile(scene, camera); } catch { /* ignoré */ } },
-      setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
+      setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; watermark(cat); if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
       focus: (cat) => Math.round(cars[cat].target),
       count: (cat) => cars[cat].items.length,
       item: (cat, k) => cars[cat].items[k],
