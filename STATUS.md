@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-10-26 par serge (relais des commandes mergé, #29)_
+_Dernière mise à jour : 2026-11-01 par rhamon (paiement Stripe, mode test)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -67,6 +67,7 @@ _Dernière mise à jour : 2026-10-26 par serge (relais des commandes mergé, #29
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
+| Paiement Stripe : bouton « Payer » du panier → page de paiement Stripe → page « Merci » qui enregistre la commande et l'envoie à Fraul sur Telegram ; webhook Stripe en secours (attend `STRIPE_WEBHOOK_SECRET`). Clés test sur les previews, clés live en production (1er nov.) | rhamon | `feat/rhamon/paiement-stripe` | 2026-11-01 |
 | Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Fraul Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
@@ -79,7 +80,7 @@ _Dernière mise à jour : 2026-10-26 par serge (relais des commandes mergé, #29
 6. Plusieurs fournisseurs + Fraul Finds : **Serge a validé le 18 oct.** ; migration **0004 appliquée le 21 oct.** (avec la PR #29). Reste : écrire les tests RLS listés dans `docs/FOURNISSEURS-MULTIPLES.md`, et remplacer la vue `supplier_order_lines` par une fonction (alerte « SECURITY DEFINER » de Supabase) — serge
 7. Plus tard : retirer `customers.whatsapp` et le canal `whatsapp` (validé par Serge le 18 oct.)
 8. Supabase : brancher le site (catalogue, comptes). Le relais des commandes (#29) lit déjà la base côté serveur (clé service dans Vercel, preview seulement) — serge + rhamon
-9. Paiement Stripe en mode test
+9. Paiement Stripe en mode test : en cours (`feat/rhamon/paiement-stripe`). Ensuite : webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
 10. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
 11. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de Fraul le lien du site fournisseur — Serge
 
@@ -100,6 +101,7 @@ _Dernière mise à jour : 2026-10-26 par serge (relais des commandes mergé, #29
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-01 | **Stripe** : compte créé. Clés **test** sur les previews, clés **live** (clé restreinte `rk_live`) en production seulement. Le bouton « Payer » reste fermé tant que la base et Telegram ne sont pas réglés là où on paie (jamais un paiement sans commande enregistrée). Au paiement, seuls les pays de la zone du visiteur sont proposés (le prix payé correspond à l'adresse). Un seul « Fournisseur principal » au lancement. | Rhamone |
 | 2026-10-25 | **Un mot ne cache jamais un autre.** Dans un rayon, son nom s'affiche en haut sous la marque (« TRAPSTAR / PANTALONS ») ; sur le mur, il devient un grand **filigrane presque invisible** derrière les vêtements (idée de Rhamone). Le panneau « CHAPEAUX » devient « CASQUETTES », comme dans la liste. Le test téléphone vérifie chaque rayon. | Rhamone |
 | 2026-10-24 | **Icônes du Walk sans cercle**, en bordeaux (remplace « icônes rondes bordeaux » du 21 oct.) : ✕ dans un coin, **loupe et sac côte à côte dans l'autre coin** (plus de loupe au centre). Sac redessiné (anses bien visibles, ne ressemble plus à une poubelle). | Rhamone |
 | 2026-10-22 | **Aucun bouton ne reste après une validation** (risque de mauvaise manipulation) ; « Corriger » demande confirmation et disparaît après 15 min. **L'expéditeur coche lui-même « reçu »** sur sa fiche d'expédition (option 1), Jean Paul garde le bouton « reçu » en secours (option 2). Le code de suivi garde ses deux étapes (envoyer, puis ✅ Confirmer) : c'est la vérification. | Serge |
