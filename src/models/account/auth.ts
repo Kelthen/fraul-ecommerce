@@ -1,6 +1,5 @@
 // Comptes clients : e-mail + mot de passe, avec un code envoyé par e-mail (décision de Rhamone, 17 oct. 2026).
-// Ce module ne fait que vérifier ce que le visiteur tape ; le vrai contrôle se fera côté serveur
-// (Supabase Auth, captcha Turnstile, limites d'essais : zone de Serge, voir docs/POUR-SERGE.md §2.4).
+// Ce module vérifie ce que le visiteur tape ; le vrai contrôle est chez Supabase Auth (captcha Turnstile, limites d'essais).
 
 export const PASSWORD_MIN = 10;
 export const CODE_LENGTH = 6;
@@ -25,6 +24,23 @@ export function passwordProblem(pw: string, email = ""): string | null {
   if (local.length >= 4 && low.includes(local)) return "Évite d'y mettre ton e-mail.";
   if (new Set(pw).size < 5) return "Trop répétitif.";
   return null;
+}
+
+export type AuthProblem = "bad-credentials" | "not-confirmed" | "bad-code" | "weak-password" | "rate-limit" | "captcha" | "email-unavailable" | "network" | "unknown";
+
+/** Message pour le visiteur. Jamais de quoi deviner si une adresse a déjà un compte. */
+export function authErrorMessage(p: AuthProblem): string {
+  return {
+    "bad-credentials": "E-mail ou mot de passe incorrect.",
+    "not-confirmed": "Confirme d'abord ton adresse avec le code reçu.",
+    "bad-code": "Ce code ne correspond pas, ou il a expiré.",
+    "weak-password": "Choisis un autre mot de passe.",
+    "rate-limit": "Trop d'essais. Réessaie dans quelques minutes.",
+    captcha: "La vérification a échoué. Réessaie.",
+    "email-unavailable": "L'envoi d'e-mails est indisponible pour l'instant. Réessaie plus tard.",
+    network: "Pas de réponse. Vérifie ta connexion, puis réessaie.",
+    unknown: "Ça n'a pas marché. Réessaie dans un instant.",
+  }[p];
 }
 
 /** Le code reçu par e-mail : 6 chiffres (espaces tolérés). */

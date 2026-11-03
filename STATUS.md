@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-03 par serge (suivi client relié aux vraies commandes)_
+_Dernière mise à jour : 2026-11-03 par serge (comptes clients branchés sur Supabase Auth)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -66,6 +66,7 @@ _Dernière mise à jour : 2026-11-03 par serge (suivi client relié aux vraies c
 - **Relais des commandes** (PR #29, mergée le 26 oct.) : chaque commande payée arrive dans le groupe Telegram de l'équipe (blocs à coller dans WeChat, sans prix ni adresse ; une ligne d'état par fournisseur) ; « 📤 J'ai envoyé à … », l'expéditeur coche « 已收到 Reçu » sur sa fiche `/f/…` (bouton « reçu » de secours dans Telegram) ; `/afaire` ; code de suivi « FRL-… → code » avec carte de vérification ; « ↩️ Corriger » 15 min avec question dans un nouveau message ; tableau de bord `/admin/commandes` (connexion par code Telegram). Migrations 0004 à 0007 appliquées. **Réglages Telegram et Supabase seulement sur la preview** (pas encore en production). Reste : tests RLS de la 0004, remplacer la vue `supplier_order_lines` — serge
 - **Paiement Stripe** (PR #44, mergée le 1er nov.) : bouton « Payer » du panier → page de paiement Stripe → page « Merci » qui enregistre la commande et l'envoie à TakeUrClothes sur Telegram ; webhook Stripe en secours (attend `STRIPE_WEBHOOK_SECRET`). Clés test sur les previews, clés live en production (1er nov.) — rhamon
 - **Suivi relié aux vraies commandes** (3 nov.) : `/suivi` lit la base avec le **numéro et l'e-mail de la commande** (les numéros se suivent, le numéro seul laisserait voir la commande d'un autre). Accepte `TUC-2026-000123`. L'étape vient des colis et du transport. Commandes de démo seulement hors production. « Mes commandes » reste en démo jusqu'au branchement des comptes — serge
+- **Comptes branchés sur Supabase Auth** (3 nov.) : création avec code à 6 chiffres, connexion, mot de passe oublié, déconnexion. **Mes commandes** lit les vraies commandes de l'adresse confirmée. Choix des e-mails nouveautés et acceptation des CGV enregistrés dans `consents`. Captcha Turnstile prêt, actif dès que sa clé est posée. Limites d'essais : celles de Supabase Auth. Sans clé publique (local), les écrans restent en démo — serge
 
 ## 🔄 En cours
 
@@ -87,6 +88,7 @@ _Dernière mise à jour : 2026-11-03 par serge (suivi client relié aux vraies c
 10. Paiement Stripe : en ligne (#44). Ensuite : message clair + alerte Telegram si la base ne répond pas après un paiement ; webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
 11. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
 12. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de TakeUrClothes le lien du site fournisseur — Serge
+13. Comptes, réglages Supabase à faire **avant le merge** (e-mails réservés à l'équipe sinon) : Resend en SMTP, modèles « Confirm signup » et « Reset password » avec `{{ .Token }}` en français, code à 6 chiffres, mot de passe de 10 caractères minimum, « Confirm email » activé. Turnstile : `NEXT_PUBLIC_TURNSTILE_SITE_KEY` dans Vercel, puis secret dans Supabase → Attack Protection. Restent : 2FA admin et partenaires, Turnstile sur Finds quand le formulaire enverra pour de vrai — serge
 
 ## ⏳ Bloqué — attend le client
 

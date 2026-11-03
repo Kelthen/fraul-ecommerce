@@ -104,7 +104,7 @@ async function record(s: CheckoutSession, baseUrl: string): Promise<Fulfilled> {
   const total = s.amount_total ?? (priced?.ok ? priced.total : 0);
   const currency = (s.currency ?? (priced?.ok ? priced.currency : "usd")).toUpperCase();
   const [order] = await db.insert<{ id: string; number: string }>("orders", {
-    email: s.customer_details?.email ?? "inconnu@takeurclothes.invalid",
+    email: (s.customer_details?.email ?? "inconnu@takeurclothes.invalid").trim().toLowerCase(), // « Mon compte » retrouve les commandes par e-mail
     status: "paid",
     is_demo: s.id.startsWith("cs_test_"),
     currency,
