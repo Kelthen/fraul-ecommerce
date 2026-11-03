@@ -68,10 +68,89 @@ insert into product_variants (id, product_id, sku, color_name, size, supplier_co
 insert into order_items (order_id, variant_id, supplier_id, title, color_name, size, qty, unit_price, unit_cost)
   values ('dddddddd-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000001', 'A', 'Noir', 'M', 1, 1000, 6000);
 set role authenticated; set request.jwt.claim.sub = '44444444-4444-4444-4444-444444444444';
-select 'livreur voit expéditions: '||count(*) from shipments;     -- attendu 1
+select 'livreur voit expéditions non attribuées: '||count(*) from shipments;     -- attendu 0 (0004)
 select 'livreur voit commandes: '||count(*) from orders;          -- attendu 0
 reset role;
 set role authenticated; set request.jwt.claim.sub = '55555555-5555-5555-5555-555555555555';
-select 'fournisseur voit ses lignes: '||count(*) from order_items; -- attendu 1
+select 'fournisseur lit order_items en direct: '||count(*) from order_items; -- attendu 0 (0004)
 select 'fournisseur voit commandes: '||count(*) from orders;      -- attendu 0
+reset role;
+
+-- Migrations 0004 et 0009 : fournisseurs multiples, expédition, Finds (docs/FOURNISSEURS-MULTIPLES.md, demandé par Serge)
+insert into auth.users values ('66666666-6666-6666-6666-666666666666'), ('77777777-7777-7777-7777-777777777777');
+insert into suppliers (id, name) values ('eeeeeeee-0000-0000-0000-000000000002', 'Autre fournisseur');
+insert into staff (user_id, role) values ('66666666-6666-6666-6666-666666666666', 'courier');
+insert into staff (user_id, role, supplier_id) values ('77777777-7777-7777-7777-777777777777', 'supplier', 'eeeeeeee-0000-0000-0000-000000000002');
+update shipments set handled_by = '44444444-4444-4444-4444-444444444444';
+select set_config('test.shipment', (select id::text from shipments limit 1), false) is not null as _ \gset
+insert into supplier_offers (variant_id, supplier_id, cost) values ('ffffffff-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000001', 6000);
+insert into concierge_requests (email, item) values ('c@test', 'Une pièce rare');
+
+-- Fournisseur : ses lignes par la fonction, jamais les prix
+set role authenticated; set request.jwt.claim.sub = '55555555-5555-5555-5555-555555555555';
+do $$ begin
+  if (select count(*) from public.supplier_order_lines()) = 1 then raise notice 'OK: le fournisseur reçoit sa ligne'; else raise notice 'ECHEC: le fournisseur ne reçoit pas sa ligne'; end if;
+  if (select count(*) from order_items) = 0 then raise notice 'OK: le fournisseur ne lit pas order_items en direct (ni unit_price, ni unit_cost)'; else raise notice 'ECHEC: le fournisseur lit order_items'; end if;
+  if (select count(*) from supplier_offers) = 1 then raise notice 'OK: le fournisseur voit son offre'; else raise notice 'ECHEC: offre du fournisseur'; end if;
+end $$;
+reset role;
+do $$ begin
+  if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+             where n.nspname = 'public' and p.proname = 'supplier_order_lines'
+               and pg_get_function_result(p.oid) ~ 'unit_(price|cost)') then
+    raise notice 'ECHEC: la fonction expose un prix';
+  else raise notice 'OK: la fonction ne renvoie ni unit_price ni unit_cost'; end if;
+end $$;
+
+-- Autre fournisseur : rien
+set role authenticated; set request.jwt.claim.sub = '77777777-7777-7777-7777-777777777777';
+do $$ begin
+  if (select count(*) from public.supplier_order_lines()) = 0 then raise notice 'OK: un autre fournisseur ne reçoit aucune ligne'; else raise notice 'ECHEC: fuite de lignes vers un autre fournisseur'; end if;
+  if (select count(*) from supplier_offers) = 0 then raise notice 'OK: un autre fournisseur ne voit pas les offres'; else raise notice 'ECHEC: fuite d''offres'; end if;
+end $$;
+reset role;
+
+-- Visiteur : pas d'appel à la fonction
+set role anon;
+do $$ begin
+  begin perform public.supplier_order_lines(); raise notice 'ECHEC: un visiteur appelle supplier_order_lines';
+  exception when insufficient_privilege then raise notice 'OK: un visiteur ne peut pas appeler supplier_order_lines'; end;
+end $$;
+reset role;
+
+-- Livreur attribué : lit et met à jour son envoi, ajoute un événement
+set role authenticated; set request.jwt.claim.sub = '44444444-4444-4444-4444-444444444444';
+do $$ declare n int; begin
+  if (select count(*) from shipments) = 1 then raise notice 'OK: le livreur attribué lit son envoi'; else raise notice 'ECHEC: le livreur attribué ne lit pas son envoi'; end if;
+  update shipments set status = 'shipped'; get diagnostics n = row_count;
+  if n = 1 then raise notice 'OK: le livreur attribué met à jour son envoi'; else raise notice 'ECHEC: mise à jour du livreur attribué'; end if;
+  insert into shipment_events (shipment_id, status, occurred_at) select id, 'shipped', now() from shipments;
+  raise notice 'OK: le livreur attribué ajoute un événement';
+end $$;
+reset role;
+
+-- Autre livreur : ni lecture, ni mise à jour, ni événement
+set role authenticated; set request.jwt.claim.sub = '66666666-6666-6666-6666-666666666666';
+do $$ declare n int; begin
+  if (select count(*) from shipments) = 0 then raise notice 'OK: un autre livreur ne lit pas cet envoi'; else raise notice 'ECHEC: un autre livreur lit cet envoi'; end if;
+  if (select count(*) from shipment_events) = 0 then raise notice 'OK: un autre livreur ne lit pas ses événements'; else raise notice 'ECHEC: un autre livreur lit les événements'; end if;
+  update shipments set status = 'delivered'; get diagnostics n = row_count;
+  if n = 0 then raise notice 'OK: un autre livreur ne modifie pas cet envoi'; else raise notice 'ECHEC: un autre livreur a modifié cet envoi'; end if;
+  begin
+    insert into shipment_events (shipment_id, status, occurred_at) values (current_setting('test.shipment')::uuid, 'delivered', now());
+    raise notice 'ECHEC: un autre livreur a ajouté un événement';
+  exception when insufficient_privilege then raise notice 'OK: un autre livreur n''ajoute pas d''événement'; end;
+end $$;
+reset role;
+
+-- Client : rien sur les offres ni sur les demandes Finds
+set role authenticated; set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+do $$ begin
+  if (select count(*) from supplier_offers) = 0 then raise notice 'OK: un client ne lit pas supplier_offers'; else raise notice 'ECHEC: un client lit supplier_offers'; end if;
+  if (select count(*) from concierge_requests) = 0 then raise notice 'OK: un client ne lit pas concierge_requests'; else raise notice 'ECHEC: un client lit concierge_requests'; end if;
+  begin
+    insert into concierge_requests (email, item) values ('x@test', 'Essai direct');
+    raise notice 'ECHEC: un client écrit dans concierge_requests';
+  exception when insufficient_privilege then raise notice 'OK: un client n''écrit pas dans concierge_requests'; end;
+end $$;
 reset role;
