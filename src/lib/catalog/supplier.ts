@@ -300,5 +300,157 @@ export const SUPPLIER_PRODUCTS: SupplierProduct[] = [
       "details": []
     },
     "note": "Photos petites : demander les originaux."
+  },
+  {
+    "slug": "team-wang-veste-col-montant-noire",
+    "brand": "Team Wang",
+    "category": "jacket",
+    "name": "Veste noire col montant, bords effilochés",
+    "color": "#141416",
+    "image": {
+      "front": "team-wang-veste-col-montant-noire-face",
+      "details": [
+        "team-wang-veste-col-montant-noire-detail-1",
+        "team-wang-veste-col-montant-noire-detail-2",
+        "team-wang-veste-col-montant-noire-detail-3",
+        "team-wang-veste-col-montant-noire-detail-4",
+        "team-wang-veste-col-montant-noire-detail-5",
+        "team-wang-veste-col-montant-noire-detail-6"
+      ]
+    },
+    "note": "Pas de vue de dos complète (seulement l'étiquette de nuque). Photos de 800 px : demander les originaux."
+  },
+  {
+    "slug": "polo-ralph-lauren-bomber-velours-violet",
+    "brand": "Polo Ralph Lauren",
+    "category": "jacket",
+    "name": "Bomber varsity en velours côtelé violet, patch « P »",
+    "color": "#420A0D",
+    "image": {
+      "front": "polo-ralph-lauren-bomber-velours-violet-face",
+      "back": "polo-ralph-lauren-bomber-velours-violet-dos",
+      "details": [
+        "polo-ralph-lauren-bomber-velours-violet-detail-1",
+        "polo-ralph-lauren-bomber-velours-violet-detail-2",
+        "polo-ralph-lauren-bomber-velours-violet-detail-3",
+        "polo-ralph-lauren-bomber-velours-violet-detail-4",
+        "polo-ralph-lauren-bomber-velours-violet-detail-5",
+        "polo-ralph-lauren-bomber-velours-violet-detail-6",
+        "polo-ralph-lauren-bomber-velours-violet-detail-7"
+      ]
+    }
+  },
+  {
+    "slug": "erl-hoodie-zippe-e-california-76",
+    "brand": "ERL",
+    "category": "hoodie",
+    "name": "Hoodie zippé marine délavé, « E » appliqué (dos « California 76 »)",
+    "color": "#2B2A2C",
+    "image": {
+      "front": "erl-hoodie-zippe-e-california-76-face",
+      "back": "erl-hoodie-zippe-e-california-76-dos",
+      "details": [
+        "erl-hoodie-zippe-e-california-76-detail-1",
+        "erl-hoodie-zippe-e-california-76-detail-2",
+        "erl-hoodie-zippe-e-california-76-detail-3",
+        "erl-hoodie-zippe-e-california-76-detail-4",
+        "erl-hoodie-zippe-e-california-76-detail-5"
+      ]
+    }
+  },
+  {
+    "slug": "satoshi-nakamoto-pull-gaufre-blanc",
+    "brand": "Satoshi Nakamoto",
+    "category": "hoodie",
+    "name": "Pull gaufré blanc, grand logo noir",
+    "color": "#F1ECE0",
+    "image": {
+      "front": "satoshi-nakamoto-pull-gaufre-blanc-face",
+      "back": "satoshi-nakamoto-pull-gaufre-blanc-dos",
+      "details": [
+        "satoshi-nakamoto-pull-gaufre-blanc-detail-1",
+        "satoshi-nakamoto-pull-gaufre-blanc-detail-2",
+        "satoshi-nakamoto-pull-gaufre-blanc-detail-3",
+        "satoshi-nakamoto-pull-gaufre-blanc-detail-4"
+      ]
+    }
+  },
+  {
+    "slug": "represent-tshirt-manches-superposees-romance",
+    "brand": "Represent",
+    "category": "tee",
+    "name": "T-shirt manches longues superposées, ange et pégase « Romance »",
+    "color": "#6B6766",
+    "image": {
+      "front": "represent-tshirt-manches-superposees-romance-face",
+      "back": "represent-tshirt-manches-superposees-romance-dos",
+      "details": [
+        "represent-tshirt-manches-superposees-romance-detail-1",
+        "represent-tshirt-manches-superposees-romance-detail-2",
+        "represent-tshirt-manches-superposees-romance-detail-3",
+        "represent-tshirt-manches-superposees-romance-detail-4",
+        "represent-tshirt-manches-superposees-romance-detail-5",
+        "represent-tshirt-manches-superposees-romance-detail-6",
+        "represent-tshirt-manches-superposees-romance-detail-7"
+      ]
+    }
+  },
+  {
+    "slug": "represent-hoodie-zippe-gnr-london",
+    "brand": "Represent",
+    "category": "hoodie",
+    "name": "Hoodie zippé « Guns N' Roses London », croix à crânes cloutée",
+    "color": "#6B6766",
+    "image": {
+      "front": "represent-hoodie-zippe-gnr-london-face",
+      "back": "represent-hoodie-zippe-gnr-london-dos",
+      "details": [
+        "represent-hoodie-zippe-gnr-london-detail-1",
+        "represent-hoodie-zippe-gnr-london-detail-2",
+        "represent-hoodie-zippe-gnr-london-detail-3",
+        "represent-hoodie-zippe-gnr-london-detail-4",
+        "represent-hoodie-zippe-gnr-london-detail-5",
+        "represent-hoodie-zippe-gnr-london-detail-6"
+      ]
+    }
+  },
+  {
+    "slug": "represent-hoodie-zippe-owners-club",
+    "brand": "Represent",
+    "category": "hoodie",
+    "name": "Hoodie zippé « Owners Club », dégradé terracotta",
+    "color": "#9A938A",
+    "image": {
+      "front": "represent-hoodie-zippe-owners-club-face",
+      "details": [
+        "represent-hoodie-zippe-owners-club-detail-1",
+        "represent-hoodie-zippe-owners-club-detail-2",
+        "represent-hoodie-zippe-owners-club-detail-3",
+        "represent-hoodie-zippe-owners-club-detail-4",
+        "represent-hoodie-zippe-owners-club-detail-5",
+        "represent-hoodie-zippe-owners-club-detail-6",
+        "represent-hoodie-zippe-owners-club-detail-7"
+      ]
+    },
+    "note": "Pas de vue de dos complète (seulement la capuche)."
+  },
+  {
+    "slug": "represent-hoodie-taupe-1993-rep",
+    "brand": "Represent",
+    "category": "hoodie",
+    "name": "Hoodie gris taupe « 1993 REP RESENT »",
+    "color": "#6B6766",
+    "image": {
+      "front": "represent-hoodie-taupe-1993-rep-face",
+      "back": "represent-hoodie-taupe-1993-rep-dos",
+      "details": [
+        "represent-hoodie-taupe-1993-rep-detail-1",
+        "represent-hoodie-taupe-1993-rep-detail-2",
+        "represent-hoodie-taupe-1993-rep-detail-3",
+        "represent-hoodie-taupe-1993-rep-detail-4",
+        "represent-hoodie-taupe-1993-rep-detail-5",
+        "represent-hoodie-taupe-1993-rep-detail-6"
+      ]
+    }
   }
 ];

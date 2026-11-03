@@ -213,6 +213,378 @@ export const IMAGES = {
     "w": 385,
     "h": 378,
     "quality": "Basse"
+  },
+  "team-wang-veste-col-montant-noire-face": {
+    "src": "/images/library/team-wang-veste-col-montant-noire-face.jpg",
+    "w": 800,
+    "h": 800,
+    "quality": "Correcte"
+  },
+  "team-wang-veste-col-montant-noire-detail-1": {
+    "src": "/images/library/team-wang-veste-col-montant-noire-detail-1.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-veste-col-montant-noire-detail-2": {
+    "src": "/images/library/team-wang-veste-col-montant-noire-detail-2.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-veste-col-montant-noire-detail-3": {
+    "src": "/images/library/team-wang-veste-col-montant-noire-detail-3.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-veste-col-montant-noire-detail-4": {
+    "src": "/images/library/team-wang-veste-col-montant-noire-detail-4.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-veste-col-montant-noire-detail-5": {
+    "src": "/images/library/team-wang-veste-col-montant-noire-detail-5.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-veste-col-montant-noire-detail-6": {
+    "src": "/images/library/team-wang-veste-col-montant-noire-detail-6.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-face": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-face.jpg",
+    "w": 1279,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-dos": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-dos.jpg",
+    "w": 1279,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-detail-1": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-detail-1.jpg",
+    "w": 959,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-detail-2": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-detail-2.jpg",
+    "w": 959,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-detail-3": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-detail-3.jpg",
+    "w": 903,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-detail-4": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-detail-4.jpg",
+    "w": 959,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-detail-5": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-detail-5.jpg",
+    "w": 903,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-detail-6": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-detail-6.jpg",
+    "w": 903,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-bomber-velours-violet-detail-7": {
+    "src": "/images/library/polo-ralph-lauren-bomber-velours-violet-detail-7.jpg",
+    "w": 903,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "erl-hoodie-zippe-e-california-76-face": {
+    "src": "/images/library/erl-hoodie-zippe-e-california-76-face.jpg",
+    "w": 1320,
+    "h": 1320,
+    "quality": "Bonne"
+  },
+  "erl-hoodie-zippe-e-california-76-dos": {
+    "src": "/images/library/erl-hoodie-zippe-e-california-76-dos.jpg",
+    "w": 1320,
+    "h": 1320,
+    "quality": "Bonne"
+  },
+  "erl-hoodie-zippe-e-california-76-detail-1": {
+    "src": "/images/library/erl-hoodie-zippe-e-california-76-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "erl-hoodie-zippe-e-california-76-detail-2": {
+    "src": "/images/library/erl-hoodie-zippe-e-california-76-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "erl-hoodie-zippe-e-california-76-detail-3": {
+    "src": "/images/library/erl-hoodie-zippe-e-california-76-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "erl-hoodie-zippe-e-california-76-detail-4": {
+    "src": "/images/library/erl-hoodie-zippe-e-california-76-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "erl-hoodie-zippe-e-california-76-detail-5": {
+    "src": "/images/library/erl-hoodie-zippe-e-california-76-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-pull-gaufre-blanc-face": {
+    "src": "/images/library/satoshi-nakamoto-pull-gaufre-blanc-face.jpg",
+    "w": 1200,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-pull-gaufre-blanc-dos": {
+    "src": "/images/library/satoshi-nakamoto-pull-gaufre-blanc-dos.jpg",
+    "w": 1200,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-pull-gaufre-blanc-detail-1": {
+    "src": "/images/library/satoshi-nakamoto-pull-gaufre-blanc-detail-1.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-pull-gaufre-blanc-detail-2": {
+    "src": "/images/library/satoshi-nakamoto-pull-gaufre-blanc-detail-2.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-pull-gaufre-blanc-detail-3": {
+    "src": "/images/library/satoshi-nakamoto-pull-gaufre-blanc-detail-3.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-pull-gaufre-blanc-detail-4": {
+    "src": "/images/library/satoshi-nakamoto-pull-gaufre-blanc-detail-4.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-face": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-face.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-dos": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-dos.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-detail-1": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-detail-2": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-detail-3": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-detail-4": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-detail-5": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-detail-6": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-tshirt-manches-superposees-romance-detail-7": {
+    "src": "/images/library/represent-tshirt-manches-superposees-romance-detail-7.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-face": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-face.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-dos": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-dos.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-detail-1": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-detail-2": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-detail-3": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-detail-4": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-detail-5": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-gnr-london-detail-6": {
+    "src": "/images/library/represent-hoodie-zippe-gnr-london-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-face": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-face.jpg",
+    "w": 960,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-detail-1": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-detail-2": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-detail-3": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-detail-4": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-detail-5": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-detail-6": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-zippe-owners-club-detail-7": {
+    "src": "/images/library/represent-hoodie-zippe-owners-club-detail-7.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-face": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-face.jpg",
+    "w": 960,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-dos": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-dos.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-detail-1": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-detail-2": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-detail-3": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-detail-4": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-detail-5": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "represent-hoodie-taupe-1993-rep-detail-6": {
+    "src": "/images/library/represent-hoodie-taupe-1993-rep-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
   }
 } as const satisfies Record<string, LibraryImage>;
 

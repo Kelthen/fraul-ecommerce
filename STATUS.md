@@ -22,15 +22,15 @@ _Dernière mise à jour : 2026-11-01 par rhamon (nouveau nom : TakeUrClothes)_
 | Langue du site | Français (anglais prévu) | 2026-10-12 |
 | Email / téléphone publics | [À FOURNIR] | |
 | Domaine | [À FOURNIR] | |
-| Source des données | Code : 23 vrais produits avec photos (`src/lib/catalog/supplier.ts`, généré par `scripts/import-catalogue.mjs` depuis le classement de Rhamone, coûts **fictifs**) + catalogue de démo (`src/lib/catalog/demo.ts`). Base Supabase créée mais vide et pas encore branchée | 2026-10-18 |
+| Source des données | Code : 31 vrais produits avec photos (`src/lib/catalog/supplier.ts`, généré par `scripts/import-catalogue.mjs` depuis le classement de Rhamone, coûts **fictifs**) + catalogue de démo (`src/lib/catalog/demo.ts`). Base Supabase créée mais vide et pas encore branchée | 2026-10-18 |
 | Base de données | Supabase, projet `fraul` (`rqrdccsxyyufqlenmpct`, USA Est), plan gratuit, organisation « kelthenrift-prog's Org » — Serge pas encore membre | 2026-10-13 |
 
 ## ✅ En ligne (preview, pas encore en production)
-
+- **8 nouveaux articles réels pour tester le rendu** (3 nov. 2026, test de rendu, pas pour la mise en ligne) : 4 de **Represent** (hoodie gris taupe « 1993 REP RESENT », hoodie zippé « Owners Club », hoodie zippé « Guns N' Roses London », t-shirt manches superposées « Romance »), 1 **Polo Ralph Lauren** (bomber varsity en velours côtelé violet), et **3 nouvelles marques** dans l'annuaire et le mall (boutiques 32 à 34) : **ERL** (hoodie zippé marine « E »), **Satoshi Nakamoto** (pull gaufré blanc), **Team Wang** (veste noire col montant). Chaque fiche a face, dos (sauf Team Wang et Owners Club : pas de vue de dos complète) et 4 à 7 détails ; coûts fictifs comme les autres. Ajoutés avec un script additif : relancer `scripts/import-catalogue.mjs` sans ces articles dans le classement les effacerait — rhamon
 - Règles de démarrage + kit NBW (CLAUDE.md, STATUS.md, LESSONS.md, briefing, modèle de PR, notifications, script photos) — rhamon
 - Architecture cible — `docs/ARCHITECTURE.md`
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
-- Walk en T : **une boutique par marque (31)**, le T s'allonge tout seul ; la forme du mall est un « mode » (`src/walk/modes/`, le T aujourd'hui), version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/WALK-T.md`
+- Walk en T : **une boutique par marque (34 depuis le 3 nov. ; 31 avant)**, le T s'allonge tout seul ; la forme du mall est un « mode » (`src/walk/modes/`, le T aujourd'hui), version claire, toucher la vitrine pour entrer, défiler en arrière pour sortir — `docs/WALK-T.md`
 - Schéma de base de données vide, sécurité ligne par ligne testée — `supabase/migrations/`
 - Supabase : migration **0003 emplacements de tenue** appliquée (cap, glasses, neck, watch, layer, socks), alignée sur `src/lib/catalog/types.ts` — serge
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
