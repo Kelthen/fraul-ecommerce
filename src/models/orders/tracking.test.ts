@@ -2,7 +2,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { demoOrders } from "./demo.ts";
-import { EMAIL_KINDS, orderEmail } from "./emails.ts";
+import { EMAIL_KINDS, lineLabel, orderEmail } from "./emails.ts";
+import { isClosed, orderFromRow, stepFromRow, type TrackingRow } from "./from-db.ts";
 import { STAGES, STEPS, TRANSIT_DAYS, deliveryWindow, formatWindow, normalizeCode, trackingView } from "./tracking.ts";
 
 const DAY = 86_400_000;
@@ -53,7 +54,51 @@ test("vue du suivi : étape, phrase, remboursement, pas de fourchette une fois l
 test("code de suivi : tolère minuscules et espaces, refuse le reste", () => {
   assert.equal(normalizeCode(" tuc 1042 "), "TUC-1042");
   assert.equal(normalizeCode("TUC-1042"), "TUC-1042");
+  assert.equal(normalizeCode("TUC-2026-000123"), "TUC-2026-000123");
+  assert.equal(normalizeCode("tuc 2026 123"), "TUC-2026-000123");
+  assert.equal(normalizeCode("FRL-2026-000008"), "FRL-2026-000008");
   for (const bad of ["", "1042", "TUC-", "ABC-1042", "TUC-12<script>"]) assert.equal(normalizeCode(bad), null, bad);
+});
+
+const row = (over: Partial<TrackingRow> = {}): TrackingRow => ({
+  number: "TUC-2026-000123",
+  status: "paid",
+  created_at: "2026-11-03T12:00:00Z",
+  price_snapshot: { zone: "ca" },
+  order_items: [{ title: "Hoodie", size: "M", qty: 2 }],
+  order_parcels: [{ forwarded_at: null, received_at: null }],
+  shipments: [],
+  ...over,
+});
+const parcel = (forwarded_at: string | null, received_at: string | null) => ({ forwarded_at, received_at });
+const T = "2026-11-04T12:00:00Z";
+
+test("base → suivi : l'étape suit les colis, puis le transport", () => {
+  assert.equal(stepFromRow(row()), "paid");
+  assert.equal(stepFromRow(row({ order_parcels: [parcel(T, null), parcel(null, null)] })), "preparing");
+  assert.equal(stepFromRow(row({ order_parcels: [parcel(T, T), parcel(T, null)] })), "preparing");
+  assert.equal(stepFromRow(row({ order_parcels: [parcel(T, T), parcel(T, T)] })), "gathered");
+  assert.equal(stepFromRow(row({ status: "supplier_confirmed" })), "preparing");
+  assert.equal(stepFromRow(row({ shipments: [{ status: "shipped", shipped_at: T, delivered_at: null }] })), "shipped");
+  assert.equal(stepFromRow(row({ shipments: [{ status: "customs", shipped_at: T, delivered_at: null }] })), "customs");
+  assert.equal(stepFromRow(row({ shipments: [{ status: "delivered", shipped_at: T, delivered_at: T }] })), "delivered");
+  assert.equal(stepFromRow(row({ status: "shipped" })), "shipped", "le statut de la commande suffit si l'envoi manque");
+});
+
+test("base → suivi : le client ne reçoit ni adresse, ni prix, ni fournisseur", () => {
+  const o = orderFromRow(row({ shipments: [{ status: "shipped", shipped_at: T, delivered_at: null }] }));
+  assert.deepEqual(Object.keys(o).sort(), ["deliveredAt", "id", "lines", "paidAt", "shippedAt", "step", "zone"]);
+  assert.equal(o.id, "TUC-2026-000123");
+  assert.equal(o.zone, "ca");
+  assert.equal(o.shippedAt, Date.parse(T));
+  assert.deepEqual(o.lines, [{ name: "Hoodie", brand: "", size: "M", qty: 2 }]);
+  assert.equal(lineLabel(o.lines[0]), "Hoodie · M · ×2");
+});
+
+test("base → suivi : zone inconnue = zone par défaut, commande annulée = plus de suivi", () => {
+  assert.ok(orderFromRow(row({ price_snapshot: {} })).zone);
+  assert.ok(orderFromRow(row({ price_snapshot: { zone: "xx" } })).zone !== ("xx" as string));
+  assert.ok(isClosed("cancelled") && isClosed("refunded") && !isClosed("paid"));
 });
 
 test("e-mails : 4 sortes, jamais de pays ni de prix barré, toujours un lien", () => {

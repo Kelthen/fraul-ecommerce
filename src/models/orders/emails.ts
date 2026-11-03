@@ -19,7 +19,7 @@ export type OrderEmail = {
 };
 
 /** « Nike · Air Max 90 · 42 », une ligne par pièce. */
-export const lineLabel = (l: OrderLine) => `${l.brand} · ${l.name}${l.size ? ` · ${l.size}` : ""}${l.qty > 1 ? ` · ×${l.qty}` : ""}`;
+export const lineLabel = (l: OrderLine) => `${l.brand ? `${l.brand} · ` : ""}${l.name}${l.size ? ` · ${l.size}` : ""}${l.qty > 1 ? ` · ×${l.qty}` : ""}`;
 
 /** `refunded` : la pièce retirée, pour l'e-mail « article indisponible ». */
 export function orderEmail(kind: EmailKind, o: Order, opts: { timeZone?: string; refunded?: OrderLine } = {}): OrderEmail {

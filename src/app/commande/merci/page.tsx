@@ -69,7 +69,7 @@ async function Thanks({ searchParams }: { searchParams: PageProps<"/commande/mer
         Tes pièces passent en préparation. Garde ton numéro pour suivre ton colis.
       </p>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24 }}>
-        <Link className="pill solid" href="/suivi">Suivre ma commande</Link>
+        <Link className="pill solid" href={`/suivi?code=${r.number}`}>Suivre ma commande</Link>
         <Link className="pill ghost" href="/walk">Retour au mall</Link>
       </div>
     </>
