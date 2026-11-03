@@ -29,6 +29,8 @@ const PRESET: Record<string, Omit<BrandStyle, "name">> = {
   "Satoshi Nakamoto": { bg: "#F3EEE2", fg: "#141416", font: "sansX", sp: 0.04, up: true },
   "Team Wang": { bg: "#111113", fg: "#EAE0C8", font: "sansL", sp: 0.32, up: true },
   "Polo Ralph Lauren": { bg: "#202833", fg: "#EAE0C8", font: "serifI", sp: 0.02, up: false },
+  "Protocol Index": { bg: "#E6DCC4", fg: "#141416", font: "sansL", sp: 0.2, up: true },
+  Vale: { bg: "#420A0D", fg: "#EAE0C8", font: "sansX", sp: 0.12, up: true },
 };
 
 const AUTO_BG = ["#111113", "#680209", "#E6DCC4", "#202833", "#420A0D", "#F3EEE2", "#2B2A2C", "#5F5B59"];
@@ -82,12 +84,12 @@ export const slugify = (s: string) =>
 export const ALL_BRANDS = [
   "Adidas", "Amiri", "Arc’teryx", "Broken Planet", "Carhartt WIP", "Chrome Hearts", "Cole Buxton",
   "Corteiz", "Denim Tears", "ERD", "ERL", "Essentials", "Fear of God", "Gallery Dept.", "Hellstar", "Jordan",
-  "Moncler", "New Balance", "Nike", "Off-White", "Palm Angels", "Polo Ralph Lauren", "Represent", "Rhude",
-  "Saint Michael", "Satoshi Nakamoto", "Sp5der", "Stone Island", "Stüssy", "Syna World", "Team Wang", "The North Face", "Trapstar", "Travis Scott",
+  "Moncler", "New Balance", "Nike", "Off-White", "Palm Angels", "Polo Ralph Lauren", "Protocol Index", "Represent", "Rhude",
+  "Saint Michael", "Satoshi Nakamoto", "Sp5der", "Stone Island", "Stüssy", "Syna World", "Team Wang", "The North Face", "Trapstar", "Travis Scott", "Vale",
 ];
 
 /** Marques ajoutées avec les photos du fournisseur (oct.-nov. 2026) : pas de produits de démo, seulement leurs vrais produits. */
-export const REAL_PRODUCTS_ONLY = ["ERD", "ERL", "Polo Ralph Lauren", "Saint Michael", "Satoshi Nakamoto", "Team Wang", "Travis Scott"];
+export const REAL_PRODUCTS_ONLY = ["ERD", "ERL", "Polo Ralph Lauren", "Protocol Index", "Saint Michael", "Satoshi Nakamoto", "Team Wang", "Travis Scott", "Vale"];
 
 /** Marques phares : en tête du parcours du mall (début du tronc du T, là où tout le monde passe). */
 const FEATURED = ["Nike", "Trapstar", "Corteiz", "Stüssy", "Represent", "Palm Angels", "Essentials", "Carhartt WIP"];

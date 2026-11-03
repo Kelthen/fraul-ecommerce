@@ -585,6 +585,636 @@ export const IMAGES = {
     "w": 1200,
     "h": 900,
     "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-face": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-face.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-dos": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-dos.jpg",
+    "w": 960,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-1": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-2": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-3": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-4": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-5": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-6": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-7": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-7.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-manhattan-athl-div-detail-8": {
+    "src": "/images/library/vale-hoodie-manhattan-athl-div-detail-8.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-face": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-face.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-dos": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-dos.jpg",
+    "w": 960,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-detail-1": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-detail-2": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-detail-3": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-detail-4": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-detail-5": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-detail-6": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-chaines-croix-valley-detail-7": {
+    "src": "/images/library/vale-hoodie-chaines-croix-valley-detail-7.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-violet-army-of-dreams-face": {
+    "src": "/images/library/vale-hoodie-zippe-violet-army-of-dreams-face.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-violet-army-of-dreams-dos": {
+    "src": "/images/library/vale-hoodie-zippe-violet-army-of-dreams-dos.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-violet-army-of-dreams-detail-1": {
+    "src": "/images/library/vale-hoodie-zippe-violet-army-of-dreams-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-violet-army-of-dreams-detail-2": {
+    "src": "/images/library/vale-hoodie-zippe-violet-army-of-dreams-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-violet-army-of-dreams-detail-3": {
+    "src": "/images/library/vale-hoodie-zippe-violet-army-of-dreams-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-violet-army-of-dreams-detail-4": {
+    "src": "/images/library/vale-hoodie-zippe-violet-army-of-dreams-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-violet-army-of-dreams-detail-5": {
+    "src": "/images/library/vale-hoodie-zippe-violet-army-of-dreams-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-face": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-face.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-dos": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-dos.jpg",
+    "w": 1280,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-detail-1": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-detail-2": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-detail-3": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-detail-4": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-detail-5": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-detail-6": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-hoodie-zippe-gris-athletic-dept-14-detail-7": {
+    "src": "/images/library/vale-hoodie-zippe-gris-athletic-dept-14-detail-7.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-pull-manches-superposees-skull-face": {
+    "src": "/images/library/vale-pull-manches-superposees-skull-face.jpg",
+    "w": 1280,
+    "h": 1280,
+    "quality": "Bonne"
+  },
+  "vale-pull-manches-superposees-skull-dos": {
+    "src": "/images/library/vale-pull-manches-superposees-skull-dos.jpg",
+    "w": 1280,
+    "h": 1280,
+    "quality": "Bonne"
+  },
+  "vale-pull-manches-superposees-skull-detail-1": {
+    "src": "/images/library/vale-pull-manches-superposees-skull-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-pull-manches-superposees-skull-detail-2": {
+    "src": "/images/library/vale-pull-manches-superposees-skull-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-pull-manches-superposees-skull-detail-3": {
+    "src": "/images/library/vale-pull-manches-superposees-skull-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-pull-manches-superposees-skull-detail-4": {
+    "src": "/images/library/vale-pull-manches-superposees-skull-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "vale-pull-manches-superposees-skull-detail-5": {
+    "src": "/images/library/vale-pull-manches-superposees-skull-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-face": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-face.jpg",
+    "w": 1280,
+    "h": 1351,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-dos": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-dos.jpg",
+    "w": 1280,
+    "h": 1330,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-1": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-detail-1.jpg",
+    "w": 1119,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-2": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-detail-2.jpg",
+    "w": 766,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-3": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-detail-3.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-4": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-detail-4.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-5": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-detail-5.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-6": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-detail-6.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-7": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-noir-delave-detail-7.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-face": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-face.jpg",
+    "w": 1329,
+    "h": 1280,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-dos": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-dos.jpg",
+    "w": 1280,
+    "h": 1341,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-1": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-1.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-2": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-2.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-3": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-3.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-4": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-4.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-5": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-6": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-6.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-7": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-7.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-8": {
+    "src": "/images/library/satoshi-nakamoto-hoodie-zippe-gris-damier-detail-8.jpg",
+    "w": 900,
+    "h": 1200,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-face": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-face.jpg",
+    "w": 1215,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-dos": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-dos.jpg",
+    "w": 1246,
+    "h": 1600,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-detail-1": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-detail-1.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-detail-2": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-detail-2.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-detail-3": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-detail-3.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-detail-4": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-detail-4.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-detail-5": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-detail-5.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "protocol-index-hoodie-zippe-army-detail-6": {
+    "src": "/images/library/protocol-index-hoodie-zippe-army-detail-6.jpg",
+    "w": 1200,
+    "h": 900,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-pull-zippe-cotes-creme-face": {
+    "src": "/images/library/polo-ralph-lauren-pull-zippe-cotes-creme-face.jpg",
+    "w": 1080,
+    "h": 1080,
+    "quality": "Correcte"
+  },
+  "polo-ralph-lauren-pull-zippe-cotes-creme-dos": {
+    "src": "/images/library/polo-ralph-lauren-pull-zippe-cotes-creme-dos.jpg",
+    "w": 1080,
+    "h": 1080,
+    "quality": "Correcte"
+  },
+  "polo-ralph-lauren-pull-zippe-cotes-creme-detail-1": {
+    "src": "/images/library/polo-ralph-lauren-pull-zippe-cotes-creme-detail-1.jpg",
+    "w": 1200,
+    "h": 800,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-pull-zippe-cotes-creme-detail-2": {
+    "src": "/images/library/polo-ralph-lauren-pull-zippe-cotes-creme-detail-2.jpg",
+    "w": 1200,
+    "h": 800,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-pull-zippe-cotes-creme-detail-3": {
+    "src": "/images/library/polo-ralph-lauren-pull-zippe-cotes-creme-detail-3.jpg",
+    "w": 1200,
+    "h": 800,
+    "quality": "Bonne"
+  },
+  "polo-ralph-lauren-pull-zippe-cotes-creme-detail-4": {
+    "src": "/images/library/polo-ralph-lauren-pull-zippe-cotes-creme-detail-4.jpg",
+    "w": 1200,
+    "h": 801,
+    "quality": "Bonne"
+  },
+  "team-wang-cardigan-jacquard-rouge-face": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-face.jpg",
+    "w": 1080,
+    "h": 1080,
+    "quality": "Correcte"
+  },
+  "team-wang-cardigan-jacquard-rouge-dos": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-dos.jpg",
+    "w": 1080,
+    "h": 1080,
+    "quality": "Correcte"
+  },
+  "team-wang-cardigan-jacquard-rouge-detail-1": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-detail-1.jpg",
+    "w": 1080,
+    "h": 1080,
+    "quality": "Correcte"
+  },
+  "team-wang-cardigan-jacquard-rouge-detail-2": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-detail-2.jpg",
+    "w": 1200,
+    "h": 800,
+    "quality": "Bonne"
+  },
+  "team-wang-cardigan-jacquard-rouge-detail-3": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-detail-3.jpg",
+    "w": 1200,
+    "h": 800,
+    "quality": "Bonne"
+  },
+  "team-wang-cardigan-jacquard-rouge-detail-4": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-detail-4.jpg",
+    "w": 1200,
+    "h": 800,
+    "quality": "Bonne"
+  },
+  "team-wang-cardigan-jacquard-rouge-detail-5": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-detail-5.jpg",
+    "w": 1200,
+    "h": 800,
+    "quality": "Bonne"
+  },
+  "team-wang-cardigan-jacquard-rouge-detail-6": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-detail-6.jpg",
+    "w": 1200,
+    "h": 801,
+    "quality": "Bonne"
+  },
+  "team-wang-cardigan-jacquard-rouge-detail-7": {
+    "src": "/images/library/team-wang-cardigan-jacquard-rouge-detail-7.jpg",
+    "w": 1200,
+    "h": 801,
+    "quality": "Bonne"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-face": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-face.jpg",
+    "w": 800,
+    "h": 800,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-dos": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-dos.jpg",
+    "w": 800,
+    "h": 800,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-1": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-1.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-2": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-2.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-3": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-3.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-4": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-4.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-5": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-5.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-6": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-6.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-7": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-7.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-8": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-8.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-cordon-genoux-dechires-detail-9": {
+    "src": "/images/library/team-wang-pantalon-large-cordon-genoux-dechires-detail-9.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-poches-zippees-face": {
+    "src": "/images/library/team-wang-pantalon-large-poches-zippees-face.jpg",
+    "w": 904,
+    "h": 1124,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-poches-zippees-dos": {
+    "src": "/images/library/team-wang-pantalon-large-poches-zippees-dos.jpg",
+    "w": 904,
+    "h": 1124,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-poches-zippees-detail-1": {
+    "src": "/images/library/team-wang-pantalon-large-poches-zippees-detail-1.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-poches-zippees-detail-2": {
+    "src": "/images/library/team-wang-pantalon-large-poches-zippees-detail-2.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-large-poches-zippees-detail-3": {
+    "src": "/images/library/team-wang-pantalon-large-poches-zippees-detail-3.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-plis-anneau-ourlet-effiloche-face": {
+    "src": "/images/library/team-wang-pantalon-plis-anneau-ourlet-effiloche-face.jpg",
+    "w": 800,
+    "h": 800,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-plis-anneau-ourlet-effiloche-dos": {
+    "src": "/images/library/team-wang-pantalon-plis-anneau-ourlet-effiloche-dos.jpg",
+    "w": 800,
+    "h": 800,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-1": {
+    "src": "/images/library/team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-1.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-2": {
+    "src": "/images/library/team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-2.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
+  },
+  "team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-3": {
+    "src": "/images/library/team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-3.jpg",
+    "w": 800,
+    "h": 600,
+    "quality": "Correcte"
   }
 } as const satisfies Record<string, LibraryImage>;
 

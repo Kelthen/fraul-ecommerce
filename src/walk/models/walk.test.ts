@@ -12,7 +12,7 @@ const MALL = layoutT(N);
 const { slots: SLOTS, entry: ENTRY, exit: EXIT } = MALL;
 
 test("le T a une vitrine par marque (27 au départ, 31 aujourd'hui), toutes tournées vers l'allée", () => {
-  for (const n of [27, 29, 31, 35]) assert.equal(layoutT(n).slots.length >= n, true, `${n} boutiques`);
+  for (const n of [27, 29, 31, 35, 36]) assert.equal(layoutT(n).slots.length >= n, true, `${n} boutiques`);
   assert.equal(layoutT(27).slots.length, 27);
   assert.equal(SLOTS.length, N);
   for (const s of SLOTS) assert.equal(Math.abs(s.nx) + Math.abs(s.nz), 1);
@@ -25,8 +25,8 @@ test("le plan de 27 boutiques n'a pas bougé (mêmes vitrines qu'avant les modes
   assert.deepEqual(layoutT(27).dims.BAR_X, 33);
 });
 
-test("deux vitrines ne se chevauchent jamais, même à 35 boutiques", () => {
-  for (const n of [27, 31, 35]) {
+test("deux vitrines ne se chevauchent jamais, même à 36 boutiques", () => {
+  for (const n of [27, 31, 35, 36]) {
     const s: Slot[] = layoutT(n).slots;
     for (let i = 0; i < s.length; i++) for (let j = i + 1; j < s.length; j++) {
       const same = s[i].nx === s[j].nx && s[i].nz === s[j].nz && (s[i].nx ? s[i].x === s[j].x : s[i].z === s[j].z);

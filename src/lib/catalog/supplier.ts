@@ -452,5 +452,255 @@ export const SUPPLIER_PRODUCTS: SupplierProduct[] = [
         "represent-hoodie-taupe-1993-rep-detail-6"
       ]
     }
+  },
+  {
+    "slug": "vale-hoodie-manhattan-athl-div",
+    "brand": "Vale",
+    "category": "hoodie",
+    "name": "Hoodie écru taché, patch « Manhattan Athl. Div » violet (VSU)",
+    "color": "#C9BFAA",
+    "image": {
+      "front": "vale-hoodie-manhattan-athl-div-face",
+      "back": "vale-hoodie-manhattan-athl-div-dos",
+      "details": [
+        "vale-hoodie-manhattan-athl-div-detail-1",
+        "vale-hoodie-manhattan-athl-div-detail-2",
+        "vale-hoodie-manhattan-athl-div-detail-3",
+        "vale-hoodie-manhattan-athl-div-detail-4",
+        "vale-hoodie-manhattan-athl-div-detail-5",
+        "vale-hoodie-manhattan-athl-div-detail-6",
+        "vale-hoodie-manhattan-athl-div-detail-7",
+        "vale-hoodie-manhattan-athl-div-detail-8"
+      ]
+    }
+  },
+  {
+    "slug": "vale-hoodie-chaines-croix-valley",
+    "brand": "Vale",
+    "category": "hoodie",
+    "name": "Hoodie écru, chaînes et croix imprimées « Valley », manches dégradées",
+    "color": "#C9BFAA",
+    "image": {
+      "front": "vale-hoodie-chaines-croix-valley-face",
+      "back": "vale-hoodie-chaines-croix-valley-dos",
+      "details": [
+        "vale-hoodie-chaines-croix-valley-detail-1",
+        "vale-hoodie-chaines-croix-valley-detail-2",
+        "vale-hoodie-chaines-croix-valley-detail-3",
+        "vale-hoodie-chaines-croix-valley-detail-4",
+        "vale-hoodie-chaines-croix-valley-detail-5",
+        "vale-hoodie-chaines-croix-valley-detail-6",
+        "vale-hoodie-chaines-croix-valley-detail-7"
+      ]
+    }
+  },
+  {
+    "slug": "vale-hoodie-zippe-violet-army-of-dreams",
+    "brand": "Vale",
+    "category": "hoodie",
+    "name": "Hoodie zippé violet délavé « Valley Army of Dreams », écussons sur la manche",
+    "color": "#202833",
+    "image": {
+      "front": "vale-hoodie-zippe-violet-army-of-dreams-face",
+      "back": "vale-hoodie-zippe-violet-army-of-dreams-dos",
+      "details": [
+        "vale-hoodie-zippe-violet-army-of-dreams-detail-1",
+        "vale-hoodie-zippe-violet-army-of-dreams-detail-2",
+        "vale-hoodie-zippe-violet-army-of-dreams-detail-3",
+        "vale-hoodie-zippe-violet-army-of-dreams-detail-4",
+        "vale-hoodie-zippe-violet-army-of-dreams-detail-5"
+      ]
+    }
+  },
+  {
+    "slug": "vale-hoodie-zippe-gris-athletic-dept-14",
+    "brand": "Vale",
+    "category": "hoodie",
+    "name": "Hoodie zippé gris « Vale USA Athletic Dept 14 », panthère",
+    "color": "#9A938A",
+    "image": {
+      "front": "vale-hoodie-zippe-gris-athletic-dept-14-face",
+      "back": "vale-hoodie-zippe-gris-athletic-dept-14-dos",
+      "details": [
+        "vale-hoodie-zippe-gris-athletic-dept-14-detail-1",
+        "vale-hoodie-zippe-gris-athletic-dept-14-detail-2",
+        "vale-hoodie-zippe-gris-athletic-dept-14-detail-3",
+        "vale-hoodie-zippe-gris-athletic-dept-14-detail-4",
+        "vale-hoodie-zippe-gris-athletic-dept-14-detail-5",
+        "vale-hoodie-zippe-gris-athletic-dept-14-detail-6",
+        "vale-hoodie-zippe-gris-athletic-dept-14-detail-7"
+      ]
+    },
+    "note": "Les photos de studio le montrent plus sombre (kaki) que les photos de détail (gris clair) : vérifier le vrai coloris."
+  },
+  {
+    "slug": "vale-pull-manches-superposees-skull",
+    "brand": "Vale",
+    "category": "tee",
+    "name": "T-shirt manches longues gaufrées superposées, « VALE » et crâne",
+    "color": "#2B2A2C",
+    "image": {
+      "front": "vale-pull-manches-superposees-skull-face",
+      "back": "vale-pull-manches-superposees-skull-dos",
+      "details": [
+        "vale-pull-manches-superposees-skull-detail-1",
+        "vale-pull-manches-superposees-skull-detail-2",
+        "vale-pull-manches-superposees-skull-detail-3",
+        "vale-pull-manches-superposees-skull-detail-4",
+        "vale-pull-manches-superposees-skull-detail-5"
+      ]
+    }
+  },
+  {
+    "slug": "satoshi-nakamoto-hoodie-zippe-noir-delave",
+    "brand": "Satoshi Nakamoto",
+    "category": "hoodie",
+    "name": "Hoodie zippé noir délavé troué, logo « Satoshi Nakamoto » sur la poche",
+    "color": "#2B2A2C",
+    "image": {
+      "front": "satoshi-nakamoto-hoodie-zippe-noir-delave-face",
+      "back": "satoshi-nakamoto-hoodie-zippe-noir-delave-dos",
+      "details": [
+        "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-1",
+        "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-2",
+        "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-3",
+        "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-4",
+        "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-5",
+        "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-6",
+        "satoshi-nakamoto-hoodie-zippe-noir-delave-detail-7"
+      ]
+    }
+  },
+  {
+    "slug": "satoshi-nakamoto-hoodie-zippe-gris-damier",
+    "brand": "Satoshi Nakamoto",
+    "category": "hoodie",
+    "name": "Hoodie zippé gris très troué, lettres rouges sur damier noir, clous et cristaux",
+    "color": "#C9BFAA",
+    "image": {
+      "front": "satoshi-nakamoto-hoodie-zippe-gris-damier-face",
+      "back": "satoshi-nakamoto-hoodie-zippe-gris-damier-dos",
+      "details": [
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-1",
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-2",
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-3",
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-4",
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-5",
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-6",
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-7",
+        "satoshi-nakamoto-hoodie-zippe-gris-damier-detail-8"
+      ]
+    }
+  },
+  {
+    "slug": "protocol-index-hoodie-zippe-army",
+    "brand": "Protocol Index",
+    "category": "hoodie",
+    "name": "Hoodie zippé gris « ARMY », patch brodé, imprimés sur les manches",
+    "color": "#9A938A",
+    "image": {
+      "front": "protocol-index-hoodie-zippe-army-face",
+      "back": "protocol-index-hoodie-zippe-army-dos",
+      "details": [
+        "protocol-index-hoodie-zippe-army-detail-1",
+        "protocol-index-hoodie-zippe-army-detail-2",
+        "protocol-index-hoodie-zippe-army-detail-3",
+        "protocol-index-hoodie-zippe-army-detail-4",
+        "protocol-index-hoodie-zippe-army-detail-5",
+        "protocol-index-hoodie-zippe-army-detail-6"
+      ]
+    }
+  },
+  {
+    "slug": "polo-ralph-lauren-pull-zippe-cotes-creme",
+    "brand": "Polo Ralph Lauren",
+    "category": "jacket",
+    "name": "Pull zippé col montant en maille côtelée crème, poney brodé",
+    "color": "#F1ECE0",
+    "image": {
+      "front": "polo-ralph-lauren-pull-zippe-cotes-creme-face",
+      "back": "polo-ralph-lauren-pull-zippe-cotes-creme-dos",
+      "details": [
+        "polo-ralph-lauren-pull-zippe-cotes-creme-detail-1",
+        "polo-ralph-lauren-pull-zippe-cotes-creme-detail-2",
+        "polo-ralph-lauren-pull-zippe-cotes-creme-detail-3",
+        "polo-ralph-lauren-pull-zippe-cotes-creme-detail-4"
+      ]
+    }
+  },
+  {
+    "slug": "team-wang-cardigan-jacquard-rouge",
+    "brand": "Team Wang",
+    "category": "jacket",
+    "name": "Cardigan jacquard rouge, boutons dorés (existe aussi en beige)",
+    "color": "#680209",
+    "image": {
+      "front": "team-wang-cardigan-jacquard-rouge-face",
+      "back": "team-wang-cardigan-jacquard-rouge-dos",
+      "details": [
+        "team-wang-cardigan-jacquard-rouge-detail-1",
+        "team-wang-cardigan-jacquard-rouge-detail-2",
+        "team-wang-cardigan-jacquard-rouge-detail-3",
+        "team-wang-cardigan-jacquard-rouge-detail-4",
+        "team-wang-cardigan-jacquard-rouge-detail-5",
+        "team-wang-cardigan-jacquard-rouge-detail-6",
+        "team-wang-cardigan-jacquard-rouge-detail-7"
+      ]
+    },
+    "note": "Marque supposée (aucune étiquette visible, mêmes photos de studio que les pantalons Team Wang) : à confirmer. Le coloris beige n'a qu'une photo (avec le rouge)."
+  },
+  {
+    "slug": "team-wang-pantalon-large-cordon-genoux-dechires",
+    "brand": "Team Wang",
+    "category": "pants",
+    "name": "Pantalon noir large à plis, cordon, genoux déchirés, ourlet effiloché",
+    "color": "#141416",
+    "image": {
+      "front": "team-wang-pantalon-large-cordon-genoux-dechires-face",
+      "back": "team-wang-pantalon-large-cordon-genoux-dechires-dos",
+      "details": [
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-1",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-2",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-3",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-4",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-5",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-6",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-7",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-8",
+        "team-wang-pantalon-large-cordon-genoux-dechires-detail-9"
+      ]
+    }
+  },
+  {
+    "slug": "team-wang-pantalon-large-poches-zippees",
+    "brand": "Team Wang",
+    "category": "pants",
+    "name": "Pantalon noir large, taille élastique, poches zippées",
+    "color": "#141416",
+    "image": {
+      "front": "team-wang-pantalon-large-poches-zippees-face",
+      "back": "team-wang-pantalon-large-poches-zippees-dos",
+      "details": [
+        "team-wang-pantalon-large-poches-zippees-detail-1",
+        "team-wang-pantalon-large-poches-zippees-detail-2",
+        "team-wang-pantalon-large-poches-zippees-detail-3"
+      ]
+    }
+  },
+  {
+    "slug": "team-wang-pantalon-plis-anneau-ourlet-effiloche",
+    "brand": "Team Wang",
+    "category": "pants",
+    "name": "Pantalon noir à plis, anneau métallique à la ceinture, ourlet effiloché",
+    "color": "#141416",
+    "image": {
+      "front": "team-wang-pantalon-plis-anneau-ourlet-effiloche-face",
+      "back": "team-wang-pantalon-plis-anneau-ourlet-effiloche-dos",
+      "details": [
+        "team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-1",
+        "team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-2",
+        "team-wang-pantalon-plis-anneau-ourlet-effiloche-detail-3"
+      ]
+    }
   }
 ];
