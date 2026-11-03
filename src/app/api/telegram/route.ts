@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { adminChatId, allowedUsers, webhookSecret } from "@/lib/server/env";
 import { askUndoParcel, decideSubmission, handleTrackingText, markParcel, relayOrder, sweepExpiredUndo, todoList, undoParcel } from "@/lib/server/relay";
+import { sendDueShippedEmails } from "@/lib/server/mailer";
 import { answerCallback, editText, sendMessage } from "@/lib/server/telegram";
 import { commandOf, isGroupChat } from "@/models/relay/access";
 import { todoButtons, todoMessage } from "@/models/relay/messages";
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
     } catch {}
   } finally {
     await sweepExpiredUndo(base).catch((e) => console.warn("[nettoyage]", e));
+    await sendDueShippedEmails(base).catch((e) => console.warn("[e-mail]", e));
   }
   return ok();
 }

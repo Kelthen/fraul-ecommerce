@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { submitFinds } from "@/app/sur-demande/actions";
+import { Captcha } from "@/components/account/Captcha";
+import { TURNSTILE_SITE_KEY } from "@/lib/auth-client";
 import { LIMITS, validateRequest, type ConciergeField, type ConciergeRequest } from "@/models/concierge/request";
 
 type Props = {
@@ -22,7 +25,7 @@ const FIELDS: { k: ConciergeField; label: string; hint?: string; type?: string; 
 
 /**
  * Formulaire « Finds » : une pièce sur demande (page /sur-demande et comptoir du Walk).
- * Démo : la demande est vérifiée mais pas envoyée (pas d'e-mail réel avant le branchement de Supabase).
+ * La demande part dans la base et l'équipe est prévenue. En local, sans base, elle est seulement vérifiée.
  */
 export function ConciergeForm({ brand = "", brandFromUrl = false, className }: Props) {
   const id = useId();
@@ -34,6 +37,11 @@ export function ConciergeForm({ brand = "", brandFromUrl = false, className }: P
   }, [brandFromUrl]);
   const [errors, setErrors] = useState<Errors>({});
   const [sent, setSent] = useState<ConciergeRequest | null>(null);
+  const [demo, setDemo] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const onCaptcha = useCallback((t: string) => setCaptcha(t), []);
 
   if (sent)
     return (
@@ -46,7 +54,7 @@ export function ConciergeForm({ brand = "", brandFromUrl = false, className }: P
           {sent.size ? ` · ${sent.size}` : ""}
         </p>
         <p>Réponse par e-mail à {sent.email}.</p>
-        <p className="todo">Démo : la demande n&apos;est pas encore envoyée à l&apos;équipe (branchement prévu avec les comptes).</p>
+        {demo && <p className="todo">Démo : la demande n&apos;est pas encore envoyée à l&apos;équipe.</p>}
         <button className="pill ghost" type="button" onClick={() => setSent(null)}>Nouvelle demande</button>
       </div>
     );
@@ -60,9 +68,21 @@ export function ConciergeForm({ brand = "", brandFromUrl = false, className }: P
         e.preventDefault();
         const f = new FormData(e.currentTarget);
         const get = (k: string) => String(f.get(k) ?? "");
-        const r = validateRequest({ item: get("item"), brand: get("brand"), size: get("size"), link: get("link"), email: get("email"), note: get("note"), website: get("website") });
-        if (r.ok) { setErrors({}); setSent(r.value); }
-        else setErrors(r.errors);
+        const input = { item: get("item"), brand: get("brand"), size: get("size"), link: get("link"), email: get("email"), note: get("note"), website: get("website") };
+        const r = validateRequest(input);
+        if (!r.ok) { setErrors(r.errors); return; }
+        if (TURNSTILE_SITE_KEY && !captcha) { setErrors({ form: "Vérification en cours, réessaie dans une seconde." }); return; }
+        setErrors({});
+        setBusy(true);
+        void submitFinds(input, captcha)
+          .catch(() => ({ ok: false as const, errors: { form: "La demande n'est pas partie. Réessaie dans un instant." } }))
+          .then((res) => {
+            setBusy(false);
+            setCaptcha("");
+            setCaptchaKey((k) => k + 1); // un jeton de captcha ne sert qu'une fois
+            if (res.ok) { setDemo(res.ok === "demo"); setSent(res.value); }
+            else setErrors(res.errors);
+          });
       }}
     >
       {FIELDS.map(({ k, label, hint, type, area, required, auto }) => {
@@ -84,8 +104,9 @@ export function ConciergeForm({ brand = "", brandFromUrl = false, className }: P
         <label htmlFor={`${id}-website`}>Site web</label>
         <input id={`${id}-website`} name="website" tabIndex={-1} autoComplete="off" />
       </div>
+      <Captcha key={captchaKey} onToken={onCaptcha} />
       {errors.form && <p className="cf-err" role="alert">{errors.form}</p>}
-      <button className="pill solid" type="submit">Envoyer ma demande</button>
+      <button className="pill solid" type="submit" disabled={busy}>Envoyer ma demande</button>
       <p className="cf-small">On ne te demande ni paiement ni mot de passe. Ton e-mail sert seulement à te répondre.</p>
     </form>
   );

@@ -46,10 +46,15 @@ export function missingSettings(): string[] {
 export const stripeWebhookSecret = () => process.env.STRIPE_WEBHOOK_SECRET?.trim() || null;
 
 /**
- * Réglages manquants pour encaisser : Stripe, plus la base et Telegram (sans eux, la commande payée
- * ne serait ni enregistrée ni transmise à TakeUrClothes). Tant qu'il en manque, le bouton « Payer » reste fermé.
+ * Réglages manquants pour encaisser : le verrou PAYMENTS_OPEN, Stripe, plus la base et Telegram (sans eux, la commande
+ * payée ne serait ni enregistrée ni transmise à TakeUrClothes). Tant qu'il en manque, le bouton « Payer » reste fermé.
+ * Le verrou est un choix séparé : les clés peuvent être en place, le suivi et les comptes marchent, sans ouvrir la caisse.
  */
-export const missingPaymentSettings = (): string[] => [...(process.env.STRIPE_SECRET_KEY?.trim() ? [] : ["STRIPE_SECRET_KEY"]), ...missingSettings()];
+export const missingPaymentSettings = (): string[] => [
+  ...(process.env.PAYMENTS_OPEN?.trim() === "true" ? [] : ["PAYMENTS_OPEN"]),
+  ...(process.env.STRIPE_SECRET_KEY?.trim() ? [] : ["STRIPE_SECRET_KEY"]),
+  ...missingSettings(),
+];
 
 /** Forme attendue du code d'accès Telegram (chiffres, deux-points, 30 caractères ou plus), sans jamais l'afficher. */
 export function botTokenLooksValid(): boolean {

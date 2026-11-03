@@ -41,7 +41,7 @@ async function Thanks({ searchParams }: { searchParams: PageProps<"/commande/mer
       <>
         <p className="eyebrow">Paiement reçu</p>
         <h1 style={{ fontSize: "clamp(36px, 7vw, 64px)", lineHeight: 0.95, margin: "8px 0 18px" }}>On enregistre ta commande.</h1>
-        <p className="muted">Ça prend quelques secondes. Recharge la page, ou garde l&apos;e-mail de Stripe : ta commande est bien payée.</p>
+        <p className="muted">Ça prend plus de temps que prévu. Ton paiement n&apos;est pas perdu et l&apos;équipe est prévenue. Recharge la page dans un instant, et garde l&apos;e-mail de Stripe s&apos;il t&apos;en a envoyé un.</p>
       </>
     );
   }
