@@ -32,6 +32,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  env: { NEXT_PUBLIC_LIVE_SITE: process.env.VERCEL_ENV === "production" ? "1" : "" },
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
