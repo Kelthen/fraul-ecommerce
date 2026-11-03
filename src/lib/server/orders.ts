@@ -5,6 +5,7 @@ import { countriesOf, priceCart, unpackCart, type PayableProduct } from "@/model
 import { ZONES, type ZoneId } from "@/models/pricing/config";
 import { ensureSupplier, ensureVariant } from "./catalog-db";
 import { DbError, db, eq } from "./db";
+import { sendPaidEmail } from "./mailer";
 import { relayOrder } from "./relay";
 import { getCheckoutSession, shippingOf, type CheckoutSession } from "./stripe";
 
@@ -132,5 +133,6 @@ async function record(s: CheckoutSession, baseUrl: string): Promise<Fulfilled> {
 
   // Le paiement est enregistré : si Telegram ne répond pas, la commande reste visible dans le tableau de bord.
   await relayOrder(order.id, baseUrl).catch((e) => console.error("[paiement] message Telegram", e));
+  await sendPaidEmail(order.id, baseUrl);
   return { status: "ok", number: order.number, email: s.customer_details?.email ?? null };
 }

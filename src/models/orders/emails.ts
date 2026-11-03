@@ -1,5 +1,5 @@
 // Les 4 e-mails de commande (zone de Rhamone, docs/PARCOURS-COMMANDE.md §7) : textes seulement.
-// Rien n'est envoyé ici : l'envoi viendra avec Supabase (zone de Serge), qui réutilisera ces textes.
+// Rien n'est envoyé ici : l'envoi est dans src/lib/server/mailer.ts (Resend), qui réutilise ces textes.
 // Ton du site : cool, classe, posé (L-43). Aucun pays nommé, aucun prix barré.
 import { formatWindow, deliveryWindow, type Order, type OrderLine } from "./tracking.ts";
 
