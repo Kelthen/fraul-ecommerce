@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { lookupOrder } from "@/app/suivi/actions";
 import { lineLabel } from "@/models/orders/emails";
 import { STAGES, normalizeCode, trackingView, type Order } from "@/models/orders/tracking";
+import { useAccount } from "./AccountProvider";
 
 const DEMO_CODES = ["TUC-1042", "TUC-1031", "TUC-1017"];
 const day = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
@@ -16,6 +17,7 @@ type Found = { code: string; order?: Order; closed?: boolean };
  * Lit la base : numéro + e-mail de la commande. `demo` (hors production) : trois commandes d'exemple en plus.
  */
 export function TrackView({ demo = false }: { demo?: boolean }) {
+  const { account } = useAccount();
   const [code, setCode] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,6 +60,14 @@ export function TrackView({ demo = false }: { demo?: boolean }) {
     if (demo && n && DEMO_CODES.includes(n)) void look(c, ""); // eslint-disable-line react-hooks/set-state-in-effect -- lecture unique de l'adresse au chargement
     else setCode(n ?? c);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- une seule fois, au chargement
+
+  // Client connecté (lien de « Mes commandes ») : son e-mail est déjà connu.
+  useEffect(() => {
+    if (!account) return;
+    setEmail(account.email); // eslint-disable-line react-hooks/set-state-in-effect -- reprend le compte chargé du téléphone
+    const c = new URLSearchParams(location.search).get("code");
+    if (c && normalizeCode(c)) void look(c, account.email);
+  }, [account?.email]); // eslint-disable-line react-hooks/exhaustive-deps -- seulement quand le compte change
 
   const view = found?.order ? trackingView(found.order) : null;
   useEffect(() => {

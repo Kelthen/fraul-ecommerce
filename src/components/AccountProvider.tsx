@@ -1,53 +1,93 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { saveMarketing, syncAccount } from "@/app/compte/actions";
+import { authLive, refreshSession, signOutEverywhere, type Session } from "@/lib/auth-client";
 
-// Compte client en DÉMO : rien ne part sur un serveur, aucun mot de passe n'est gardé (même pas dans le navigateur).
-// Le vrai compte (Supabase Auth, code par e-mail, Turnstile) sera branché par Serge (docs/POUR-SERGE.md §2.4).
+// Compte client : Supabase Auth (e-mail + mot de passe + code par e-mail). Aucun mot de passe n'est gardé.
+// Sans clé publique (développement local), le compte reste une démo gardée sur le téléphone.
 
-export type DemoAccount = { email: string; since: number; marketing: boolean };
+export type Account = { email: string; since: number; marketing: boolean };
 type AccountCtx = {
-  account: DemoAccount | null;
+  account: Account | null;
+  /** Démo seulement. */
   signIn: (email: string) => void;
+  /** Vrai compte : garde la session après connexion ou code validé. */
+  adopt: (s: Session, acceptedTerms?: boolean) => Promise<void>;
   signOut: () => void;
   setMarketing: (on: boolean) => void;
+  /** Jeton à jour pour parler au serveur, ou null si la session est finie. */
+  token: () => Promise<string | null>;
 };
 
 const Ctx = createContext<AccountCtx | null>(null);
-const KEY = "tuc.account.demo.v1";
+const KEY = authLive ? "tuc.account.v1" : "tuc.account.demo.v1";
+const REFRESH_MARGIN = 60_000;
+
+type Stored = Account & { session?: Session };
+
+const write = (a: Stored | null) => {
+  try {
+    if (a) localStorage.setItem(KEY, JSON.stringify(a));
+    else localStorage.removeItem(KEY);
+  } catch {
+    /* stockage indisponible : le compte dure le temps de la page */
+  }
+};
 
 export function AccountProvider({ children }: { children: React.ReactNode }) {
-  const [account, setAccount] = useState<DemoAccount | null>(null);
+  const [stored, setStored] = useState<Stored | null>(null);
+
+  const save = useCallback((a: Stored | null) => {
+    setStored(a);
+    write(a);
+  }, []);
 
   useEffect(() => {
     try {
       const a = JSON.parse(localStorage.getItem(KEY) ?? "null");
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- lecture unique du stockage au montage
-      if (a && typeof a.email === "string") setAccount({ email: a.email, since: Number(a.since) || Date.now(), marketing: a.marketing === true });
+      if (a && typeof a.email === "string" && (!authLive || a.session)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- lecture unique du stockage au montage
+        setStored({ email: a.email, since: Number(a.since) || Date.now(), marketing: a.marketing === true, session: a.session });
+      }
     } catch {
       /* stockage indisponible : pas de compte */
     }
   }, []);
 
-  const save = useCallback((a: DemoAccount | null) => {
-    setAccount(a);
-    try {
-      if (a) localStorage.setItem(KEY, JSON.stringify(a));
-      else localStorage.removeItem(KEY);
-    } catch {
-      /* ignoré */
-    }
-  }, []);
-
-  const value = useMemo<AccountCtx>(
-    () => ({
-      account,
+  const value = useMemo<AccountCtx>(() => {
+    const token = async () => {
+      const s = stored?.session;
+      if (!s) return null;
+      if (s.expires_at - REFRESH_MARGIN > Date.now()) return s.access_token;
+      try {
+        const next = await refreshSession(s.refresh_token);
+        save({ ...stored, session: next });
+        return next.access_token;
+      } catch {
+        save(null);
+        return null;
+      }
+    };
+    return {
+      account: stored ? { email: stored.email, since: stored.since, marketing: stored.marketing } : null,
       signIn: (email) => save({ email, since: Date.now(), marketing: false }), // pas d'e-mails marketing sans accord (RGPD)
-      signOut: () => save(null),
-      setMarketing: (on) => account && save({ ...account, marketing: on }),
-    }),
-    [account, save],
-  );
+      adopt: async (session, acceptedTerms = false) => {
+        const profile = await syncAccount(session.access_token, acceptedTerms).catch(() => null);
+        save({ email: session.email, since: session.since, marketing: profile?.marketing === true, session });
+      },
+      signOut: () => {
+        if (stored?.session) void signOutEverywhere(stored.session.access_token);
+        save(null);
+      },
+      setMarketing: (on) => {
+        if (!stored) return;
+        save({ ...stored, marketing: on });
+        if (stored.session) void token().then((t) => { if (t) void saveMarketing(t, on); });
+      },
+      token,
+    };
+  }, [stored, save]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

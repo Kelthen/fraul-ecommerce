@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { authLive } from "@/lib/auth-client";
 import { useAccount } from "../AccountProvider";
 import { MyOrders } from "../orders/MyOrders";
 import { AuthForm } from "./AuthForm";
@@ -17,13 +18,13 @@ export function AccountView() {
       <p className="eyebrow">Mon compte</p>
       <h1>Bonjour</h1>
       <p className="muted">{account.email} · membre depuis le {since}</p>
-      <p className="todo">Démo : compte gardé sur ce téléphone seulement, rien n&apos;est envoyé.</p>
+      {!authLive && <p className="todo">Démo : compte gardé sur ce téléphone seulement, rien n&apos;est envoyé.</p>}
 
       <section className="acc-card" aria-labelledby="acc-orders">
         <h2 id="acc-orders">Mes commandes</h2>
-        <p className="todo">Démo : commandes d&apos;exemple.</p>
+        {!authLive && <p className="todo">Démo : commandes d&apos;exemple.</p>}
         <MyOrders />
-        <Link className="link" href="/suivi/e-mails">Voir les e-mails de commande</Link>
+        {!authLive && <Link className="link" href="/suivi/e-mails">Voir les e-mails de commande</Link>}
       </section>
 
       <section className="acc-card" aria-labelledby="acc-mails">

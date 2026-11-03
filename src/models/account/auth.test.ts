@@ -1,7 +1,7 @@
 // Tests des comptes : node --test src/models/account/auth.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { LOCK_MS, MAX_TRIES, failTry, isCode, isEmail, locked, noTries, passwordProblem } from "./auth.ts";
+import { LOCK_MS, MAX_TRIES, failTry, isCode, isEmail, locked, noTries, passwordProblem, authErrorMessage } from "./auth.ts";
 
 test("e-mail", () => {
   assert.ok(isEmail(" Client@Exemple.com "));
@@ -29,4 +29,10 @@ test("trop d'essais ratés : verrou d'une minute, puis on repart", () => {
   assert.ok(locked(t, 1000));
   assert.ok(!locked(t, 1000 + LOCK_MS + 1));
   assert.equal(failTry(t, 1000 + LOCK_MS + 1).n, 1);
+});
+
+test("messages d'erreur : un texte pour chaque problème, sans dire si le compte existe", () => {
+  const all = ["bad-credentials", "not-confirmed", "bad-code", "weak-password", "rate-limit", "captcha", "email-unavailable", "network", "unknown"] as const;
+  for (const p of all) assert.ok(authErrorMessage(p).length > 5, p);
+  assert.equal(authErrorMessage("bad-credentials"), "E-mail ou mot de passe incorrect.");
 });

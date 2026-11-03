@@ -3,14 +3,18 @@ import type { NextConfig } from "next";
 const dev = process.env.NODE_ENV !== "production";
 
 // Politique de sécurité du contenu : tout vient du site lui-même (polices
-// auto-hébergées, three.js dans le bundle). Pas de scripts tiers.
+// auto-hébergées, three.js dans le bundle). Seules exceptions : Supabase Auth
+// (comptes) et le captcha Turnstile de Cloudflare.
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://rqrdccsxyyufqlenmpct.supabase.co";
+const turnstile = "https://challenges.cloudflare.com";
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' ${turnstile}${dev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  `connect-src 'self'${dev ? " ws:" : ""}`,
+  `connect-src 'self' ${supabase}${dev ? " ws:" : ""}`,
+  `frame-src ${turnstile}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
