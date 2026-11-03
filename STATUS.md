@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-01 par rhamon (nouveau nom : TakeUrClothes)_
+_Dernière mise à jour : 2026-11-03 par serge (réponses aux questions fournisseur)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -85,7 +85,7 @@ _Dernière mise à jour : 2026-11-01 par rhamon (nouveau nom : TakeUrClothes)_
 9. ⚠️ **Supabase (plan gratuit) se met en pause après ~7 jours sans activité** : le 1er nov., un paiement test est passé chez Stripe sans être enregistré (base en pause, relancée le jour même). Avant le lancement : plan payant (≈ 25 $/mois) ou visite automatique quotidienne — décision de Rhamone attendue.
 10. Paiement Stripe : en ligne (#44). Ensuite : message clair + alerte Telegram si la base ne répond pas après un paiement ; webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
 11. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-12. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de TakeUrClothes le lien du site fournisseur — Serge
+12. ✅ Fournisseur + commandes + WeChat : 3 questions de `docs/FOURNISSEUR-COMMANDES.md` tranchées le 3 nov. Reste à obtenir le coût de chaque article — serge
 
 ## ⏳ Bloqué — attend le client
 
@@ -106,6 +106,7 @@ _Dernière mise à jour : 2026-11-01 par rhamon (nouveau nom : TakeUrClothes)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-03 | **Produits : le fournisseur envoie les photos sur WeChat**, importées avec `scripts/import-catalogue.mjs` (pas de fichier ni d'import par lien au départ). **Alerte marge à 10 %**, sur chaque nouveau coût saisi. | Serge |
 | 2026-11-01 | **Nouveau nom : TakeUrClothes** (domaine visé : takeurclothes.com), écrit « TakeUrClothes ». « Fraul Walk » → **Walk**, « Fraul Finds » → **Finds**. Portes d'entrée : « **Come in. / Take ur clothes.** » (remplace « Welcome to Fraul Center »). Au centre du mall : **« TUC »** en grand (remplace le « F »). Numéros de commande **TUC-2026-000123** ; les anciennes commandes gardent FRL- et restent lisibles par le bot. Restent « fraul » : le dépôt et le projet Vercel `fraul-ecommerce`, le projet Supabase `fraul`, le nom du bot Telegram, la démo archivée. Tout le reste (site, bot, tableau de bord, docs) est renommé. | Rhamone |
 | 2026-11-01 | **Stripe** : compte créé. Clés **test** sur les previews, clés **live** (clé restreinte `rk_live`) en production seulement. Le bouton « Payer » reste fermé tant que la base et Telegram ne sont pas réglés là où on paie (jamais un paiement sans commande enregistrée). Au paiement, seuls les pays de la zone du visiteur sont proposés (le prix payé correspond à l'adresse). Un seul « Fournisseur principal » au lancement. | Rhamone |
 | 2026-10-28 | **Décors Blender (façade, galerie, boutique en modules) : non retenus.** On garde le décor et l'architecture d'origine du Walk (mall en T, boutique dessinée) ; les modèles de Rhamone peuvent seulement inspirer des améliorations de ce décor. **Retenus : le mannequin v2 et la Caisse.** PR #39 et #40 fermées, #41 remplacée. | Rhamone |

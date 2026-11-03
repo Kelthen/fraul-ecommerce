@@ -73,3 +73,8 @@ Client paie → commande « payée »
 1. Niveau A ou B pour démarrer ? (A si le fournisseur peut envoyer un fichier, sinon B.)
 2. Seuil d'alerte marge : 10 % de hausse du coût, ça vous va ?
 3. Qui colle les messages WeChat au début : TakeUrClothes, ou la personne sur place ?
+
+> 🗣️ **Serge, 3 nov. 2026 :**
+> 1. ➕ **Ni A ni B au départ** : le fournisseur envoie les photos sur WeChat. Elles passent par `scripts/import-catalogue.mjs`, comme les premiers produits. Le coût de chaque article reste à obtenir à part : sans lui, le prix n'est pas calculable.
+> 2. ✅ **Alerte marge à 10 %.** Elle ne pourra se déclencher que lorsqu'un nouveau coût sera saisi, car rien n'arrive encore automatiquement du fournisseur.
+> 3. ✅ **Déjà tranché le 19 oct.** : Jean Paul transfère les blocs sur WeChat (STATUS, Décisions).
