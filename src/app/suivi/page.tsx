@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function TrackPage() {
   return (
     <section className="sec wrap" style={{ paddingTop: 48 }}>
-      <TrackView />
+      <TrackView demo={process.env.VERCEL_ENV !== "production"} />
     </section>
   );
 }

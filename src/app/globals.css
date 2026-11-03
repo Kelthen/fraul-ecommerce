@@ -267,8 +267,9 @@ p { margin: 0; }
 /* Suivi */
 .track-grid { display: grid; gap: 32px; }
 @media (min-width: 900px) { .track-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
-.track-form { display: flex; gap: 8px; margin-top: 20px; max-width: 480px; }
-.track-form input { flex: 1; min-height: 52px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); letter-spacing: 0.14em; }
+.track-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; max-width: 480px; }
+.track-form input[type="email"] { letter-spacing: normal; }
+.track-form input { flex: 1 1 200px; min-width: 0; min-height: 52px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); letter-spacing: 0.14em; }
 .steps { list-style: none; margin: 0; padding: 0 0 0 30px; position: relative; display: grid; gap: 26px; }
 .steps::before { content: ""; position: absolute; left: 8px; top: 6px; width: 2px; bottom: 6px; background: var(--line); }
 .steps .fill { position: absolute; left: 8px; top: 6px; width: 2px; background: var(--bordeaux); transition: height 1.2s cubic-bezier(.16, 1, .3, 1); }

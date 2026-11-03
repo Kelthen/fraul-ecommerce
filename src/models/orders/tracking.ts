@@ -2,6 +2,7 @@
 // une livraison estimée en fourchette dès le paiement (docs/PARCOURS-COMMANDE.md §7.1, validé par Serge le 19 oct. 2026).
 // Pur : aucune date « maintenant » cachée, tout est passé en paramètre (testable, et prêt pour la vraie base).
 import type { ZoneId } from "../pricing/config.ts";
+import { normalizeOrderNumber } from "../relay/codes.ts";
 
 export const STAGES = [
   { id: "payee", label: "Payée" },
@@ -69,7 +70,7 @@ export type OrderLine = {
 };
 
 export type Order = {
-  /** Numéro lisible, aussi code de suivi TakeUrClothes (ex. TUC-1042). */
+  /** Numéro lisible, aussi code de suivi TakeUrClothes (ex. TUC-2026-000123). */
   id: string;
   paidAt: number;
   shippedAt?: number;
@@ -98,8 +99,8 @@ export function trackingView(o: Order, timeZone?: string): TrackingView {
   };
 }
 
-/** Code tapé par le client → forme rangée (« tuc 1042 » → « TUC-1042 »). Null si ce n'est pas un code TakeUrClothes. */
-export function normalizeCode(raw: string): string | null {
-  const m = raw.trim().toUpperCase().match(/^TUC[\s-]*(\d{3,8})$/);
-  return m ? `TUC-${m[1]}` : null;
-}
+/**
+ * Code tapé par le client → forme rangée (« tuc 2026 123 » → « TUC-2026-000123 »). Null si ce n'est pas un code TakeUrClothes.
+ * Même lecture que le bot : ancien format court et commandes « FRL » d'avant le changement de nom compris.
+ */
+export const normalizeCode = (raw: string): string | null => normalizeOrderNumber(raw);

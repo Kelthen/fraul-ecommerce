@@ -2,43 +2,62 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { findDemoOrder } from "@/models/orders/demo";
+import { lookupOrder } from "@/app/suivi/actions";
 import { lineLabel } from "@/models/orders/emails";
 import { STAGES, normalizeCode, trackingView, type Order } from "@/models/orders/tracking";
 
 const DEMO_CODES = ["TUC-1042", "TUC-1031", "TUC-1017"];
 const day = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 
-type Found = { code: string; order?: Order };
+type Found = { code: string; order?: Order; closed?: boolean };
 
 /**
  * Suivi de commande : 4 étapes, une phrase sur l'étape en cours, livraison estimée en fourchette (PARCOURS-COMMANDE §7.1).
- * Démo : trois commandes d'exemple ; le vrai suivi lira la base quand Supabase sera branché.
+ * Lit la base : numéro + e-mail de la commande. `demo` (hors production) : trois commandes d'exemple en plus.
  */
-export function TrackView() {
+export function TrackView({ demo = false }: { demo?: boolean }) {
   const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
   const [found, setFound] = useState<Found | null>(null);
   const [error, setError] = useState("");
   const [step, setStep] = useState(-1);
 
-  const look = (raw: string) => {
+  const look = async (raw: string, mail: string) => {
     const c = normalizeCode(raw);
     setStep(-1);
     if (!c) {
       setFound(null);
-      setError("Un code TakeUrClothes commence par TUC, par exemple TUC-1042.");
+      setError("Un code TakeUrClothes commence par TUC, par exemple TUC-2026-000123.");
+      return;
+    }
+    setCode(c);
+    const isDemo = demo && DEMO_CODES.includes(c);
+    if (!isDemo && !mail.trim()) {
+      setFound(null);
+      setError("Ajoute l'e-mail utilisé pour la commande.");
       return;
     }
     setError("");
-    setCode(c);
-    setFound({ code: c, order: findDemoOrder(c, Date.now()) });
+    setBusy(true);
+    const r = await lookupOrder(c, mail).catch(() => ({ status: "error" as const }));
+    setBusy(false);
+    if (r.status === "error") {
+      setFound(null);
+      setError("Le suivi ne répond pas. Réessaie dans un instant.");
+      return;
+    }
+    setFound({ code: c, order: r.status === "found" ? r.order : undefined, closed: r.status === "closed" });
   };
 
-  // Lien d'un e-mail ou de « Mes commandes » : /suivi?code=TUC-1042
+  // Lien d'un e-mail ou de « Mes commandes » : /suivi?code=TUC-2026-000123 (le code est prêt, il reste l'e-mail).
   useEffect(() => {
     const c = new URLSearchParams(location.search).get("code");
-    if (c) look(c); // eslint-disable-line react-hooks/set-state-in-effect -- lecture unique de l'adresse au chargement
-  }, []);
+    if (!c) return;
+    const n = normalizeCode(c);
+    if (demo && n && DEMO_CODES.includes(n)) void look(c, ""); // eslint-disable-line react-hooks/set-state-in-effect -- lecture unique de l'adresse au chargement
+    else setCode(n ?? c);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- une seule fois, au chargement
 
   const view = found?.order ? trackingView(found.order) : null;
   useEffect(() => {
@@ -53,26 +72,32 @@ export function TrackView() {
         <p className="eyebrow">Suivi de commande</p>
         <h1 style={{ fontSize: "clamp(42px, 8vw, 72px)", lineHeight: 1, marginTop: 8 }}>Où est ma commande ?</h1>
         <p className="muted" style={{ marginTop: 12, maxWidth: "42ch" }}>
-          Ton code est dans l&apos;e-mail de confirmation et dans Mon compte.
+          Ton numéro s&apos;affiche à la fin du paiement. Entre-le avec l&apos;e-mail de ta commande.
         </p>
-        <form className="track-form" onSubmit={(e) => { e.preventDefault(); look(code); }}>
+        <form className="track-form" onSubmit={(e) => { e.preventDefault(); void look(code, email); }}>
           <label className="sr-only" htmlFor="track-code">Code de suivi</label>
-          <input id="track-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="TUC-1042" autoComplete="off" aria-invalid={error ? true : undefined} aria-describedby={error ? "track-err" : undefined} />
-          <button className="pill solid" type="submit">Suivre</button>
+          <input id="track-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="TUC-2026-000123" autoComplete="off" aria-invalid={error ? true : undefined} aria-describedby={error ? "track-err" : undefined} />
+          <label className="sr-only" htmlFor="track-email">E-mail de la commande</label>
+          <input id="track-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail de la commande" autoComplete="email" />
+          <button className="pill solid" type="submit" disabled={busy}>Suivre</button>
         </form>
         {error && <p className="cf-err" id="track-err" role="alert" style={{ marginTop: 10 }}>{error}</p>}
-        <p className="todo" style={{ marginTop: 14, fontSize: 13 }}>
-          Démo : essaie {DEMO_CODES.map((c, i) => (
-            <span key={c}>{i ? ", " : ""}<button type="button" className="link-btn" onClick={() => look(c)}>{c}</button></span>
-          ))}.
-        </p>
+        {demo && (
+          <p className="todo" style={{ marginTop: 14, fontSize: 13 }}>
+            Démo : essaie {DEMO_CODES.map((c, i) => (
+              <span key={c}>{i ? ", " : ""}<button type="button" className="link-btn" onClick={() => void look(c, "")}>{c}</button></span>
+            ))}.
+          </p>
+        )}
       </div>
 
       {found && (
         <div aria-live="polite" className="track-res">
           <p className="eyebrow" style={{ marginBottom: 6 }}>{found.code}</p>
-          {!found.order || !view ? (
-            <p className="muted">Aucune commande avec ce code. Vérifie l&apos;e-mail de confirmation, ou écris-nous en y répondant.</p>
+          {found.closed ? (
+            <p className="muted">Cette commande a été annulée ou remboursée. Une question ? Écris-nous.</p>
+          ) : !found.order || !view ? (
+            <p className="muted">Aucune commande avec ce numéro et cet e-mail. Vérifie les deux, puis réessaie.</p>
           ) : (
             <>
               <p className="track-eta">
