@@ -1,7 +1,7 @@
 // Tests des comptes : node --test src/models/account/auth.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { LOCK_MS, MAX_TRIES, failTry, isCode, isEmail, locked, noTries, passwordProblem, authErrorMessage } from "./auth.ts";
+import { LOCK_MS, MAX_TRIES, failTry, isCode, isEmail, locked, noTries, passwordProblem, authErrorMessage, termsToRecord } from "./auth.ts";
 
 test("e-mail", () => {
   assert.ok(isEmail(" Client@Exemple.com "));
@@ -35,4 +35,14 @@ test("messages d'erreur : un texte pour chaque problème, sans dire si le compte
   const all = ["bad-credentials", "not-confirmed", "bad-code", "weak-password", "rate-limit", "captcha", "email-unavailable", "network", "unknown"] as const;
   for (const p of all) assert.ok(authErrorMessage(p).length > 5, p);
   assert.equal(authErrorMessage("bad-credentials"), "E-mail ou mot de passe incorrect.");
+});
+
+test("CGV : la date de l'inscription fait foi, rien sans acceptation", () => {
+  const now = new Date("2026-11-03T18:00:00Z");
+  assert.equal(termsToRecord(false, "2026-11-03T12:00:00Z", now), "2026-11-03T12:00:00.000Z");
+  assert.equal(termsToRecord(true, undefined, now), "2026-11-03T18:00:00.000Z");
+  assert.equal(termsToRecord(false, undefined, now), null);
+  assert.equal(termsToRecord(false, "n'importe quoi", now), null);
+  assert.equal(termsToRecord(false, "2030-01-01T00:00:00Z", now), null, "une date à venir ne vaut rien");
+  assert.equal(termsToRecord(false, 123, now), null);
 });

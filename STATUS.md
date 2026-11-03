@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-03 par serge (verrou de caisse, alerte paiement)_
+_Dernière mise à jour : 2026-11-03 par serge (CGV et fiche client rattrapées)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -70,6 +70,7 @@ _Dernière mise à jour : 2026-11-03 par serge (verrou de caisse, alerte paiemen
 - **Relais des commandes** (PR #29, mergée le 26 oct.) : chaque commande payée arrive dans le groupe Telegram de l'équipe (blocs à coller dans WeChat, sans prix ni adresse ; une ligne d'état par fournisseur) ; « 📤 J'ai envoyé à … », l'expéditeur coche « 已收到 Reçu » sur sa fiche `/f/…` (bouton « reçu » de secours dans Telegram) ; `/afaire` ; code de suivi « FRL-… → code » avec carte de vérification ; « ↩️ Corriger » 15 min avec question dans un nouveau message ; tableau de bord `/admin/commandes` (connexion par code Telegram). Migrations 0004 à 0007 appliquées. **Réglages Telegram et Supabase seulement sur la preview** (pas encore en production). Reste : relier le suivi client (#27) aux commandes de la base — serge
 - **Paiement Stripe** (PR #44, mergée le 1er nov.) : bouton « Payer » du panier → page de paiement Stripe → page « Merci » qui enregistre la commande et l'envoie à TakeUrClothes sur Telegram ; webhook Stripe en secours (attend `STRIPE_WEBHOOK_SECRET`). Clés test sur les previews, clés live en production (1er nov.) — rhamon
 - **Sécurité de la base** (3 nov.) : la vue `supplier_order_lines` devient une fonction, mêmes colonnes et toujours sans prix (migration 0009 **à appliquer** ; elle fera disparaître l'erreur du contrôle Supabase). **Tests RLS de la 0004 écrits** : fournisseur, livreur, client. Les tests rejouent maintenant toutes les migrations — serge
+- **Comptes : CGV et fiche client rattrapées** (3 nov.) : l'acceptation part avec l'inscription et reste chez Supabase Auth ; la fiche client et les CGV sont enregistrées à la prochaine ouverture si la base ne répondait pas — serge
 - **Verrou de caisse et alerte de paiement** (3 nov.) : `PAYMENTS_OPEN` ouvre « Payer » ; si un paiement passe sans que la commande s'enregistre, le groupe Telegram reçoit le montant, l'e-mail et la session Stripe, et le client un message clair — serge
 
 ## 🔄 En cours

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { saveMarketing, syncAccount } from "@/app/compte/actions";
 import { authLive, refreshSession, signOutEverywhere, type Session } from "@/lib/auth-client";
 
@@ -55,25 +55,38 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const token = useCallback(async () => {
+    const s = stored?.session;
+    if (!s) return null;
+    if (s.expires_at - REFRESH_MARGIN > Date.now()) return s.access_token;
+    try {
+      const next = await refreshSession(s.refresh_token);
+      save({ ...stored, session: next });
+      return next.access_token;
+    } catch {
+      save(null);
+      return null;
+    }
+  }, [stored, save]);
+
+  // Une fois par ouverture : rattrape la fiche client et les CGV si la base ne répondait pas à l'inscription.
+  const synced = useRef(false);
+  useEffect(() => {
+    if (synced.current || !stored?.session) return;
+    synced.current = true;
+    void token()
+      .then((t) => (t ? syncAccount(t, false) : null))
+      .then((p) => { if (p) setStored((a) => (a ? { ...a, marketing: p.marketing } : a)); })
+      .catch(() => {});
+  }, [stored, token]);
+
   const value = useMemo<AccountCtx>(() => {
-    const token = async () => {
-      const s = stored?.session;
-      if (!s) return null;
-      if (s.expires_at - REFRESH_MARGIN > Date.now()) return s.access_token;
-      try {
-        const next = await refreshSession(s.refresh_token);
-        save({ ...stored, session: next });
-        return next.access_token;
-      } catch {
-        save(null);
-        return null;
-      }
-    };
     return {
       account: stored ? { email: stored.email, since: stored.since, marketing: stored.marketing } : null,
       signIn: (email) => save({ email, since: Date.now(), marketing: false }), // pas d'e-mails marketing sans accord (RGPD)
       adopt: async (session, acceptedTerms = false) => {
         const profile = await syncAccount(session.access_token, acceptedTerms).catch(() => null);
+        synced.current = true;
         save({ email: session.email, since: session.since, marketing: profile?.marketing === true, session });
       },
       signOut: () => {
@@ -87,7 +100,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       },
       token,
     };
-  }, [stored, save]);
+  }, [stored, save, token]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
