@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-03 par serge (CGV et fiche client rattrapées)_
+_Dernière mise à jour : 2026-11-03 par serge (visite quotidienne de Supabase)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -70,6 +70,7 @@ _Dernière mise à jour : 2026-11-03 par serge (CGV et fiche client rattrapées)
 - **Relais des commandes** (PR #29, mergée le 26 oct.) : chaque commande payée arrive dans le groupe Telegram de l'équipe (blocs à coller dans WeChat, sans prix ni adresse ; une ligne d'état par fournisseur) ; « 📤 J'ai envoyé à … », l'expéditeur coche « 已收到 Reçu » sur sa fiche `/f/…` (bouton « reçu » de secours dans Telegram) ; `/afaire` ; code de suivi « FRL-… → code » avec carte de vérification ; « ↩️ Corriger » 15 min avec question dans un nouveau message ; tableau de bord `/admin/commandes` (connexion par code Telegram). Migrations 0004 à 0007 appliquées. **Réglages Telegram et Supabase seulement sur la preview** (pas encore en production). Reste : relier le suivi client (#27) aux commandes de la base — serge
 - **Paiement Stripe** (PR #44, mergée le 1er nov.) : bouton « Payer » du panier → page de paiement Stripe → page « Merci » qui enregistre la commande et l'envoie à TakeUrClothes sur Telegram ; webhook Stripe en secours (attend `STRIPE_WEBHOOK_SECRET`). Clés test sur les previews, clés live en production (1er nov.) — rhamon
 - **Sécurité de la base** (3 nov.) : la vue `supplier_order_lines` devient une fonction, mêmes colonnes et toujours sans prix (migration 0009 **à appliquer** ; elle fera disparaître l'erreur du contrôle Supabase). **Tests RLS de la 0004 écrits** : fournisseur, livreur, client. Les tests rejouent maintenant toutes les migrations — serge
+- **Visite quotidienne de Supabase** (3 nov.) : tâche Vercel chaque matin vers `/api/quotidien`, pour éviter la pause du plan gratuit (décidé par l'équipe, à confirmer par Rhamone) — serge
 - **Comptes : CGV et fiche client rattrapées** (3 nov.) : l'acceptation part avec l'inscription et reste chez Supabase Auth ; la fiche client et les CGV sont enregistrées à la prochaine ouverture si la base ne répondait pas — serge
 - **Verrou de caisse et alerte de paiement** (3 nov.) : `PAYMENTS_OPEN` ouvre « Payer » ; si un paiement passe sans que la commande s'enregistre, le groupe Telegram reçoit le montant, l'e-mail et la session Stripe, et le client un message clair — serge
 
@@ -89,6 +90,8 @@ _Dernière mise à jour : 2026-11-03 par serge (CGV et fiche client rattrapées)
 6. ✅ Plusieurs fournisseurs + Finds : tests RLS écrits et vue remplacée par une fonction (migration 0009, 3 nov., à appliquer) — serge
 7. Plus tard : retirer `customers.whatsapp` et le canal `whatsapp` (validé par Serge le 18 oct.)
 8. Supabase : brancher le site (catalogue, comptes). Le relais des commandes (#29) lit déjà la base côté serveur (clé service dans Vercel, preview seulement) — serge + rhamon
+9. ⚠️ **Supabase (plan gratuit) se met en pause après ~7 jours sans activité** : le 1er nov., un paiement test est passé chez Stripe sans être enregistré (base en pause, relancée le jour même). Avant le lancement : plan payant (≈ 25 $/mois) ou visite automatique quotidienne — décision de Rhamone attendue. **Visite quotidienne prête (`/api/quotidien`, 3 nov.)**, le plan payant reste le choix le plus sûr pour la production.
+10. Paiement Stripe : en ligne (#44). Ensuite : message clair + alerte Telegram si la base ne répond pas après un paiement ; webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
 9. ⚠️ **Supabase (plan gratuit) se met en pause après ~7 jours sans activité** : le 1er nov., un paiement test est passé chez Stripe sans être enregistré (base en pause, relancée le jour même). Avant le lancement : plan payant (≈ 25 $/mois) ou visite automatique quotidienne — décision de Rhamone attendue.
 10. Paiement Stripe : en ligne (#44). Ensuite : webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
 11. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
