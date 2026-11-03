@@ -2,6 +2,7 @@
 
 import { verifiedUser } from "@/lib/server/customer";
 import { db, eq } from "@/lib/server/db";
+import { termsToRecord } from "@/models/account/auth";
 import { isClosed, orderFromRow, type TrackingRow } from "@/models/orders/from-db";
 import type { Order } from "@/models/orders/tracking";
 
@@ -11,13 +12,20 @@ const SELECT =
   "select=number,email,status,is_demo,created_at,price_snapshot," +
   "order_items(title,size,qty),order_parcels(forwarded_at,received_at),shipments(status,shipped_at,delivered_at)";
 
-/** Crée la fiche client au besoin ; `acceptedTerms` à la création du compte. Renvoie le choix e-mails nouveautés. */
+/**
+ * Crée la fiche client au besoin et note l'acceptation des CGV une seule fois.
+ * Rejoué à chaque ouverture du site : si la base ne répondait pas à l'inscription, rien n'est perdu.
+ * Renvoie le choix e-mails nouveautés.
+ */
 export async function syncAccount(token: unknown, acceptedTerms: unknown): Promise<{ marketing: boolean } | null> {
   try {
     const u = await verifiedUser(token);
     if (!u) return null;
     await db.insert("customers", { id: u.id, email: u.email }, "id");
-    if (acceptedTerms === true) await db.insert("consents", { customer_id: u.id, kind: "terms" });
+    const grantedAt = termsToRecord(acceptedTerms === true, u.termsAcceptedAt, new Date());
+    if (grantedAt && !(await db.one("consents", `select=id&customer_id=${eq(u.id)}&kind=eq.terms`))) {
+      await db.insert("consents", { customer_id: u.id, kind: "terms", granted_at: grantedAt });
+    }
     const on = await db.one("consents", `select=id&customer_id=${eq(u.id)}&kind=eq.marketing&revoked_at=is.null`);
     return { marketing: Boolean(on) };
   } catch (e) {
