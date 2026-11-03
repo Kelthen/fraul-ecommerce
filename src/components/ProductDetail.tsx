@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LIVE_SITE } from "@/lib/live-site";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Product } from "@/lib/catalog";
@@ -71,7 +72,7 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
         <div className="opt">
           <div className="opt-head">
             <span className="eyebrow">Taille</span>
-            <a className="link" href="#guide">Guide des tailles</a>
+            {!LIVE_SITE && <a className="link" href="#guide">Guide des tailles</a>}
           </div>
           <div className="sizes">
             {product.sizes.map((s) => (
@@ -126,14 +127,18 @@ export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
         </Link>
 
         <div className="notes">
-          <details id="guide">
-            <summary>Guide des tailles</summary>
-            <p className="todo">[À FOURNIR : guide des tailles {product.brandName}, avec les équivalences de pointures]</p>
-          </details>
-          <details>
-            <summary>Matière et entretien</summary>
-            <p className="todo">[À FOURNIR : composition et entretien, depuis la fiche fournisseur]</p>
-          </details>
+          {!LIVE_SITE && (
+            <>
+              <details id="guide">
+                <summary>Guide des tailles</summary>
+                <p className="todo">[À FOURNIR : guide des tailles {product.brandName}, avec les équivalences de pointures]</p>
+              </details>
+              <details>
+                <summary>Matière et entretien</summary>
+                <p className="todo">[À FOURNIR : composition et entretien, depuis la fiche fournisseur]</p>
+              </details>
+            </>
+          )}
           <details>
             <summary>Livraison et retours</summary>
             <p>

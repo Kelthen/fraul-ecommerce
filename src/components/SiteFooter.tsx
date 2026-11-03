@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LIVE_SITE } from "@/lib/live-site";
 
 export function SiteFooter() {
   return (
@@ -27,12 +28,14 @@ export function SiteFooter() {
               <li><Link href="/retours">Retours et remboursements</Link></li>
             </ul>
           </div>
-          <div>
-            <h3>Nous suivre</h3>
-            <ul>
-              <li><span className="todo">[À FOURNIR : liens réseaux sociaux]</span></li>
-            </ul>
-          </div>
+          {!LIVE_SITE && (
+            <div>
+              <h3>Nous suivre</h3>
+              <ul>
+                <li><span className="todo">[À FOURNIR : liens réseaux sociaux]</span></li>
+              </ul>
+            </div>
+          )}
         </div>
         <div className="foot-legal">
           <span>© 2026 TakeUrClothes</span>
