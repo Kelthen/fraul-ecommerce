@@ -55,3 +55,12 @@ export function failTry(t: Tries, now = Date.now()): Tries {
   const n = t.until && t.until <= now ? 1 : t.n + 1;
   return n >= MAX_TRIES ? { n: 0, until: now + LOCK_MS } : { n, until: 0 };
 }
+
+/**
+ * Date d'acceptation des CGV à enregistrer, ou null. La date gardée à l'inscription fait foi ;
+ * sinon, le visiteur vient d'accepter. Une valeur illisible ne vaut pas acceptation.
+ */
+export function termsToRecord(acceptedNow: boolean, savedAt: unknown, now: Date): string | null {
+  if (typeof savedAt === "string" && !Number.isNaN(Date.parse(savedAt)) && Date.parse(savedAt) <= now.getTime()) return new Date(savedAt).toISOString();
+  return acceptedNow ? now.toISOString() : null;
+}

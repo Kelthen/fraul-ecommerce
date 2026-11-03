@@ -4,8 +4,11 @@ import { COLOR_NAMES } from "@/lib/catalog/palette";
 import { countriesOf, priceCart, unpackCart, type PayableProduct } from "@/models/payment/checkout";
 import { ZONES, type ZoneId } from "@/models/pricing/config";
 import { ensureSupplier, ensureVariant } from "./catalog-db";
+import { unrecordedPaymentAlert } from "@/models/payment/alert";
 import { DbError, db, eq } from "./db";
+import { adminChatId } from "./env";
 import { relayOrder } from "./relay";
+import { sendMessage } from "./telegram";
 import { getCheckoutSession, shippingOf, type CheckoutSession } from "./stripe";
 
 // Commande payée sur Stripe → commande dans la base → message Telegram à TakeUrClothes (docs/PARCOURS-COMMANDE.md §2).
@@ -34,8 +37,27 @@ async function orderOfSession(sessionId: string): Promise<string | null> {
   return p?.orders.number ?? null;
 }
 
+/** Le paiement est passé mais rien n'est enregistré (base en pause, par exemple) : l'équipe doit le savoir tout de suite. */
+async function alertIfPaid(sessionId: string, known?: CheckoutSession): Promise<void> {
+  try {
+    const s = known ?? (await getCheckoutSession(sessionId));
+    if (s.payment_status === "paid") await sendMessage(adminChatId(), unrecordedPaymentAlert(s));
+  } catch (e) {
+    console.error("[paiement] alerte impossible", sessionId, e);
+  }
+}
+
 export async function fulfillCheckout(sessionId: string, baseUrl: string, known?: CheckoutSession): Promise<Fulfilled> {
   if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) return { status: "invalid" };
+  try {
+    return await fulfill(sessionId, baseUrl, known);
+  } catch (e) {
+    await alertIfPaid(sessionId, known);
+    throw e;
+  }
+}
+
+async function fulfill(sessionId: string, baseUrl: string, known?: CheckoutSession): Promise<Fulfilled> {
   const done = await orderOfSession(sessionId);
   const s = known ?? (await getCheckoutSession(sessionId));
   if (done) return { status: "ok", number: done, email: s.customer_details?.email ?? null };
