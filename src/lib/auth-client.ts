@@ -56,7 +56,9 @@ const toSession = (s: RawSession): Session => ({
 
 const security = (captcha?: string) => (captcha ? { gotrue_meta_security: { captcha_token: captcha } } : {});
 
-export const signUp = (email: string, password: string, captcha?: string) => call("signup", { email, password, ...security(captcha) });
+/** L'acceptation des CGV part avec l'inscription : Supabase la garde, même si notre base ne répond pas à ce moment. */
+export const signUp = (email: string, password: string, captcha?: string) =>
+  call("signup", { email, password, data: { terms_accepted_at: new Date().toISOString() }, ...security(captcha) });
 export const signInWithPassword = async (email: string, password: string, captcha?: string) =>
   toSession(await call<RawSession>("token?grant_type=password", { email, password, ...security(captcha) }));
 export const sendRecoveryCode = (email: string, captcha?: string) => call("recover", { email, ...security(captcha) });
