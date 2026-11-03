@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { demoOrders } from "./demo.ts";
+import { emailHtml, emailText } from "./email-html.ts";
 import { EMAIL_KINDS, lineLabel, orderEmail } from "./emails.ts";
 import { isClosed, orderFromRow, stepFromRow, type TrackingRow } from "./from-db.ts";
 import { STAGES, STEPS, TRANSIT_DAYS, deliveryWindow, formatWindow, normalizeCode, trackingView } from "./tracking.ts";
@@ -114,4 +115,16 @@ test("e-mails : 4 sortes, jamais de pays ni de prix barré, toujours un lien", (
   assert.equal(un.lines.length, 1);
   assert.equal(un.lines[0].name, "Casquette");
   assert.ok(!orderEmail("paid", transit).lines.some((l) => l.refundedAt), "la pièce remboursée sort de la liste");
+});
+
+test("e-mail mis en forme : lien complet, texte protégé, version texte", () => {
+  const [o] = demoOrders(paidAt);
+  const m = orderEmail("paid", { ...o, id: "TUC-2026-000123", lines: [{ name: "Hoodie <b>", brand: "", size: "M", qty: 1 }] });
+  const html = emailHtml(m, "https://exemple.com/");
+  assert.ok(html.includes('href="https://exemple.com/suivi?code=TUC-2026-000123"'));
+  assert.ok(html.includes("Hoodie &lt;b&gt; · M"));
+  assert.ok(!html.includes("Hoodie <b>"));
+  const text = emailText(m, "https://exemple.com");
+  assert.ok(text.includes("Suivre ma commande : https://exemple.com/suivi?code=TUC-2026-000123"));
+  assert.ok(text.includes("Hoodie <b> · M"));
 });
