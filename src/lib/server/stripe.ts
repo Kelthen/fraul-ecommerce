@@ -50,6 +50,9 @@ export type CheckoutSession = {
 export const createCheckoutSession = (form: URLSearchParams, idempotencyKey: string) =>
   call<CheckoutSession>("checkout/sessions", { method: "POST", form, idempotencyKey });
 
+/** Identifiant de la session de paiement d'un paiement Stripe, s'il y en a une. */
+export const sessionOfPaymentIntent = async (paymentIntent: string): Promise<string | null> =>
+  (await call<{ data: { id: string }[] }>(`checkout/sessions?payment_intent=${encodeURIComponent(paymentIntent)}&limit=1`)).data[0]?.id ?? null;
 export const getCheckoutSession = (id: string) => call<CheckoutSession>(`checkout/sessions/${encodeURIComponent(id)}`);
 
 /** Adresse de livraison de la session, quelle que soit la version de l'API. */

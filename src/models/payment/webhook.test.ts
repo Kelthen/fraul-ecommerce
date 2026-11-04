@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { test } from "node:test";
-import { isHandledEvent, verifySignature } from "./webhook.ts";
+import { isHandledEvent, isPaidEvent, verifySignature } from "./webhook.ts";
 
 const SECRET = "whsec_test";
 const NOW = 1_800_000_000_000;
@@ -29,9 +29,11 @@ test("signature refusée si elle a plus de 5 minutes, dans les deux sens", () =>
   assert.ok(!verifySignature(BODY, sign(BODY, T + 301), SECRET, NOW));
 });
 
-test("seuls les paiements réussis sont traités", () => {
-  assert.ok(isHandledEvent("checkout.session.completed"));
-  assert.ok(isHandledEvent("checkout.session.async_payment_succeeded"));
-  assert.ok(!isHandledEvent("checkout.session.expired"));
+test("événements : le paiement réussi enregistre la commande, les 4 autres ont leur traitement, le reste est ignoré", () => {
+  assert.ok(isPaidEvent("checkout.session.completed") && isPaidEvent("checkout.session.async_payment_succeeded"));
+  for (const t of ["checkout.session.async_payment_failed", "checkout.session.expired", "charge.refunded", "charge.dispute.created"]) {
+    assert.ok(isHandledEvent(t), t);
+    assert.ok(!isPaidEvent(t), t);
+  }
   assert.ok(!isHandledEvent("payment_intent.payment_failed"));
 });

@@ -1,7 +1,8 @@
 import { stripeWebhookSecret } from "@/lib/server/env";
 import { fulfillCheckout } from "@/lib/server/orders";
+import { handleStripeEvent } from "@/lib/server/payment-events";
 import type { CheckoutSession } from "@/lib/server/stripe";
-import { isHandledEvent, verifySignature } from "@/models/payment/webhook";
+import { isHandledEvent, isPaidEvent, verifySignature } from "@/models/payment/webhook";
 
 // Webhook Stripe : enregistre la commande même si le client ferme la page avant le retour « merci ».
 // Sécurité : signature vérifiée avec STRIPE_WEBHOOK_SECRET (whsec_…) ; sans elle, rien n'est traité.
@@ -14,9 +15,17 @@ export async function POST(request: Request) {
   const body = await request.text();
   if (!verifySignature(body, request.headers.get("stripe-signature"), secret)) return new Response("signature invalide", { status: 400 });
 
-  const event = JSON.parse(body) as { type: string; data: { object: CheckoutSession } };
+  const event = JSON.parse(body) as { id: string; type: string; livemode: boolean; data: { object: CheckoutSession } };
   if (!isHandledEvent(event.type)) return new Response("ignoré");
   const base = new URL(request.url).origin;
+  if (!isPaidEvent(event.type)) {
+    try {
+      return new Response(await handleStripeEvent(event, base));
+    } catch (e) {
+      console.error("[stripe] événement", event.type, e);
+      return new Response("erreur", { status: 500 }); // Stripe réessaie plus tard
+    }
+  }
   try {
     const r = await fulfillCheckout(event.data.object.id, base);
     // « pending » : la page « merci » est en train d'enregistrer ; Stripe renverra l'événement, sans risque de doublon.

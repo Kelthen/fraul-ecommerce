@@ -1,8 +1,13 @@
 // Webhook Stripe : signature et événements traités. Pur (testé dans webhook.test.ts).
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+/** Paiement réussi : la commande s'enregistre. */
+export const PAID_EVENTS = ["checkout.session.completed", "checkout.session.async_payment_succeeded"] as const;
+/** Autres événements traités (src/lib/server/payment-events.ts). */
+export const OTHER_EVENTS = ["checkout.session.async_payment_failed", "checkout.session.expired", "charge.refunded", "charge.dispute.created"] as const;
 /** Événements à cocher dans Stripe. Tout le reste reçoit « ignoré ». */
-export const WEBHOOK_EVENTS = ["checkout.session.completed", "checkout.session.async_payment_succeeded"] as const;
+export const WEBHOOK_EVENTS = [...PAID_EVENTS, ...OTHER_EVENTS];
+export const isPaidEvent = (type: string) => (PAID_EVENTS as readonly string[]).includes(type);
 export const isHandledEvent = (type: string) => (WEBHOOK_EVENTS as readonly string[]).includes(type);
 
 const TOLERANCE_S = 300;
