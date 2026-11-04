@@ -1,7 +1,7 @@
 // Tests de la fiche de boutique : node --test src/models/admin/boutique.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { boutiqueProblems, logoColor, moveToPlace, textOn, type BoutiqueInput } from "./boutique.ts";
+import { boutiqueProblems, contrast, logoColor, logoColors, moveToPlace, textOn, type BoutiqueInput } from "./boutique.ts";
 
 const LOGO = "https://abc.supabase.co/storage/v1/object/public/produits/2026-11/ab-12.png";
 const ok: BoutiqueInput = { name: "Corteiz", logo: LOGO, color: "#680209", place: 1, visible: true };
@@ -50,4 +50,35 @@ test("place dans le mall", () => {
   assert.deepEqual(moveToPlace(["a", "b", "c"], "a", 2), ["b", "a", "c"]);
   assert.deepEqual(moveToPlace(["a", "b", "c"], "a", 99), ["b", "c", "a"]);
   assert.deepEqual(moveToPlace(["a", "b"], "n", 2), ["a", "n", "b"]);
+});
+
+test("doublons de marque : même nom à la casse ou aux accents près", () => {
+  assert.match(boutiqueProblems({ ...ok, name: "gucci" }, ["Gucci"])[0], /déjà/);
+  assert.match(boutiqueProblems({ ...ok, name: "Stussy" }, ["Stüssy"])[0], /déjà/);
+  assert.deepEqual(boutiqueProblems({ ...ok, name: "Gucci 2" }, ["Gucci"]), []);
+});
+
+test("2 couleurs sans logo : le nom doit rester lisible ; avec un logo, le texte ne se voit pas", () => {
+  const sansLogo = { ...ok, logo: undefined };
+  assert.deepEqual(boutiqueProblems({ ...sansLogo, color: "#111113", textColor: "#FFFEF7" }, []), []);
+  assert.match(boutiqueProblems({ ...sansLogo, color: "#111113", textColor: "#222224" }, [])[0], /illisible/);
+  assert.deepEqual(boutiqueProblems({ ...ok, color: "#111113", textColor: "#222224" }, []), []);
+  assert.equal(boutiqueProblems({ ...sansLogo, textColor: "blanc" }, []).length, 1);
+});
+
+test("couleurs d'un logo : fond et texte tirés de ses 2 teintes, sans le blanc", () => {
+  const twoTones = logoColors([...px(700, 255, 255, 255), ...px(200, 200, 16, 32), ...px(100, 250, 220, 60)]);
+  assert.deepEqual(twoTones, { color: "#C81020", textColor: "#FADC3C" });
+});
+
+test("couleurs d'un logo : une seule teinte, le texte reste lisible", () => {
+  const { color, textColor } = logoColors([...px(800, 255, 255, 255), ...px(200, 200, 16, 32)]);
+  assert.equal(color, "#C81020");
+  assert.ok(contrast(color, textColor) >= 3);
+  assert.deepEqual(logoColors(px(100, 255, 255, 255)), { color: "#111113", textColor: "#FFFEF7" });
+});
+
+test("couleurs d'un logo : deux teintes trop proches, le texte ne prend pas la seconde", () => {
+  const { textColor } = logoColors([...px(600, 200, 16, 32), ...px(400, 180, 20, 40)]);
+  assert.equal(textColor, "#FFFEF7");
 });

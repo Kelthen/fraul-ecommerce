@@ -4,26 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { saveBoutiqueAction, uploadLogoAction } from "@/app/admin/boutiques/actions";
 import type { AdminBoutique } from "@/lib/server/admin-boutiques";
-import { logoColor, textOn } from "@/models/admin/boutique";
+import { readLogo } from "./logo";
 
 // Formulaire de boutique de l'admin, pensé pour le téléphone de Jean Paul. Le logo est réduit ici en PNG
-// (la transparence reste), et la couleur de la boutique en est tirée ; il peut la changer avant d'enregistrer.
-
-const LOGO_PX = 512;
-
-/** Réduit le logo et lit sa couleur. */
-async function readLogo(file: File): Promise<{ png: Blob; color: string }> {
-  const img = await createImageBitmap(file);
-  const scale = Math.min(1, LOGO_PX / Math.max(img.width, img.height));
-  const c = document.createElement("canvas");
-  c.width = Math.max(1, Math.round(img.width * scale));
-  c.height = Math.max(1, Math.round(img.height * scale));
-  const x = c.getContext("2d")!;
-  x.drawImage(img, 0, 0, c.width, c.height);
-  const color = logoColor(x.getImageData(0, 0, c.width, c.height).data);
-  const png = await new Promise<Blob>((ok, ko) => c.toBlob((b) => (b ? ok(b) : ko(new Error("logo illisible"))), "image/png"));
-  return { png, color };
-}
+// (la transparence reste), et les couleurs de la boutique en sont tirées ; il peut les changer avant d'enregistrer.
 
 export function BoutiqueForm({ boutique, total }: { boutique: AdminBoutique | null; total: number }) {
   const router = useRouter();
@@ -31,6 +15,7 @@ export function BoutiqueForm({ boutique, total }: { boutique: AdminBoutique | nu
   const [name, setName] = useState(boutique?.name ?? "");
   const [logo, setLogo] = useState(boutique?.logo ?? "");
   const [color, setColor] = useState(boutique?.color ?? "#111113");
+  const [textColor, setTextColor] = useState(boutique?.textColor ?? "#FFFEF7");
   const [place, setPlace] = useState(String(boutique?.place ?? last));
   const [visible, setVisible] = useState(boutique?.visible ?? true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -42,13 +27,14 @@ export function BoutiqueForm({ boutique, total }: { boutique: AdminBoutique | nu
     setErrors([]);
     setBusy("Envoi du logo…");
     try {
-      const { png, color: found } = await readLogo(f);
+      const { png, color: bg, textColor: fg } = await readLogo(f);
       const fd = new FormData();
-      fd.set("logo", new File([png], "logo.png", { type: "image/png" }));
+      fd.set("logo", png);
       const r = await uploadLogoAction(fd);
       if ("url" in r) {
         setLogo(r.url);
-        setColor(found);
+        setColor(bg);
+        setTextColor(fg);
       } else setErrors([r.error]);
     } catch {
       setErrors(["Ce logo n'a pas pu être lu. Essaie une autre image."]);
@@ -64,6 +50,7 @@ export function BoutiqueForm({ boutique, total }: { boutique: AdminBoutique | nu
       name,
       logo: logo || undefined,
       color,
+      textColor,
       place: Number(place),
       visible,
     }).catch(() => ({ errors: ["L'enregistrement a échoué. Réessaie dans un instant."] }));
@@ -91,12 +78,18 @@ export function BoutiqueForm({ boutique, total }: { boutique: AdminBoutique | nu
         )}
       </fieldset>
 
-      <label>
-        Couleur de la boutique {logo ? "(tirée du logo, tu peux la changer)" : ""}
-        <input className="admin-color" type="color" value={color} onChange={(e) => setColor(e.target.value.toUpperCase())} />
-      </label>
+      <div className="admin-colors">
+        <label>
+          Fond {logo ? "(tiré du logo)" : ""}
+          <input className="admin-color" type="color" value={color} onChange={(e) => setColor(e.target.value.toUpperCase())} />
+        </label>
+        <label>
+          Texte
+          <input className="admin-color" type="color" value={textColor} onChange={(e) => setTextColor(e.target.value.toUpperCase())} />
+        </label>
+      </div>
 
-      <div className="admin-sign" style={{ background: color, color: textOn(color) }} aria-label="Aperçu de l'enseigne">
+      <div className="admin-sign" style={{ background: color, color: textColor }} aria-label="Aperçu de l'enseigne">
         {/* eslint-disable-next-line @next/next/no-img-element -- aperçu du logo envoyé */}
         {logo ? <img src={logo} alt="" /> : <span>{name || "Nom de la boutique"}</span>}
       </div>
