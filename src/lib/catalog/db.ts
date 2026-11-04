@@ -1,9 +1,10 @@
+import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { SUPABASE_URL } from "@/lib/server/env";
-import type { Brand, Category, Product } from "./types";
+import type { Brand, Category, PricedProduct } from "./types";
 
-// Vrais articles lus dans la base (Supabase), avec la clé publique : la sécurité de la base ne montre
-// que les articles actifs. Mis en cache ; l'admin vide le cache « catalogue » à chaque modification.
+// Vrais articles lus dans la base (Supabase), avec la clé service : les coûts ne sont plus lisibles avec la clé
+// publique (migration 0012). Mis en cache ; l'admin vide le cache « catalogue » à chaque modification.
 // Si la base ne répond pas (pause, panne, réglage absent), on renvoie null : le site garde sa copie de secours.
 
 export const CATALOGUE_TAG = "catalogue";
@@ -24,7 +25,7 @@ export type Row = {
 const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position)";
 
 /** Transforme une ligne de la base en article du site ; null si elle est incomplète (marque ou catégorie inconnue). */
-export function toProduct(r: Row, brands: Brand[], categories: Category[], accentFor: (c: string) => string): Product | null {
+export function toProduct(r: Row, brands: Brand[], categories: Category[], accentFor: (c: string) => string): PricedProduct | null {
   const brand = brands.find((b) => b.slug === r.brands?.slug);
   const cat = categories.find((c) => c.id === r.categories?.code);
   const name = r.title?.fr;
@@ -53,7 +54,7 @@ export async function loadSiteRows(): Promise<Row[] | null> {
   "use cache";
   cacheTag(CATALOGUE_TAG);
   const url = SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!key) {
     cacheLife("hours");
     return null;

@@ -1,5 +1,5 @@
 import "server-only";
-import { getProduct } from "@/lib/catalog";
+import { getPricedProduct } from "@/lib/catalog";
 import { COLOR_NAMES } from "@/lib/catalog/palette";
 import { countriesOf, priceCart, unpackCart, type PayableProduct } from "@/models/payment/checkout";
 import { ZONES, type ZoneId } from "@/models/pricing/config";
@@ -27,7 +27,7 @@ export type Fulfilled = { status: "ok"; number: string; email: string | null } |
 const payable = async (slugs: string[]) => {
   const found = new Map<string, PayableProduct & { image?: { front: string } }>();
   for (const s of new Set(slugs)) {
-    const p = await getProduct(s);
+    const p = await getPricedProduct(s);
     if (p) found.set(s, p);
   }
   return found;
@@ -108,7 +108,7 @@ async function record(s: CheckoutSession, baseUrl: string): Promise<Fulfilled> {
   const lines = priced?.ok ? priced.lines : [];
   const items = [];
   for (const l of lines) {
-    const p = (await getProduct(l.slug))!;
+    const p = (await getPricedProduct(l.slug))!;
     const colorName = COLOR_NAMES[l.color] ?? l.color;
     const variantId = await ensureVariant(p, l.size, colorName);
     items.push({

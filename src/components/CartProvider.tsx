@@ -1,9 +1,9 @@
 "use client";
 
-import type { Cost } from "@/models/pricing/price";
+import { isPriceTable, type PriceTable } from "@/models/pricing/price";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-// Panier côté navigateur (démo). Le vrai panier sera recalculé côté serveur :
+// Panier côté navigateur. Au paiement, tout est recalculé côté serveur :
 // le navigateur n'envoie jamais de prix, seulement des identifiants et des quantités.
 
 export type CartLine = {
@@ -13,8 +13,8 @@ export type CartLine = {
   category: string;
   color: string;
   accent: string;
-  /** Coût de l'article : le prix affiché en est recalculé (zone, groupe). Jamais utilisé pour encaisser. */
-  cost: Cost;
+  /** Prix de l'article par zone et groupe, pour l'affichage. Jamais utilisé pour encaisser. */
+  prices: PriceTable;
   size?: string;
   sizes: string[];
   qty: number;
@@ -33,7 +33,7 @@ type CartCtx = {
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "tuc.cart.v2"; // v2 : les lignes gardent le coût, plus un prix figé
+const KEY = "tuc.cart.v3"; // v3 : les lignes gardent la table de prix, plus jamais le coût
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -45,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = localStorage.getItem(KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- lecture unique du stockage au montage
-      if (raw) setLines(JSON.parse(raw));
+      if (raw) setLines((JSON.parse(raw) as CartLine[]).filter((l) => isPriceTable(l?.prices)));
     } catch {
       /* stockage indisponible : panier vide */
     }

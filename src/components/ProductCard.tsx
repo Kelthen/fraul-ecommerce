@@ -16,7 +16,7 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <span className="br">{product.brandName}</span>
       <span className="nm">{product.name}</span>
-      <span className="pr"><Price cost={product.cost} /></span>
+      <span className="pr"><Price prices={product.prices} /></span>
     </Link>
   );
 }

@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ENVIES_MAX, hasEnvie, parseEnvies, toggleEnvie, type Envie } from "./envies.ts";
 
-const item = (slug: string): Omit<Envie, "at"> => ({ slug, name: "Hoodie", brand: "Nike", category: "hoodie", cost: { cny: 300, g: 700 }, color: "#141416", accent: "#EAE0C8" });
+const row = { public: 100, vip: 90, fidele: 75, revendeur: 60 };
+const PRICES = { us: row, ca: row, uk: row, eu: row };
+const item = (slug: string): Omit<Envie, "at"> => ({ slug, name: "Hoodie", brand: "Nike", category: "hoodie", prices: PRICES, color: "#141416", accent: "#EAE0C8" });
 
 test("toucher « Envie » ajoute en tête, toucher encore retire", () => {
   let l = toggleEnvie([], item("a"), 1);

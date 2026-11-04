@@ -11,3 +11,6 @@ grant usage on schema public, auth, extensions to anon, authenticated;
 -- Comme Supabase : droits par défaut sur les nouvelles tables, la RLS fait le tri.
 alter default privileges in schema public grant all on tables to anon, authenticated;
 alter default privileges in schema public grant all on sequences to anon, authenticated;
+-- Comme Supabase : stockage des fichiers (migration 0011).
+create schema storage;
+create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);

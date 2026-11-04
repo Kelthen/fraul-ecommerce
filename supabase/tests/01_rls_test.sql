@@ -154,3 +154,22 @@ do $$ begin
   exception when insufficient_privilege then raise notice 'OK: un client n''écrit pas dans concierge_requests'; end;
 end $$;
 reset role;
+
+-- Migration 0012 : les coûts ne se lisent pas avec la clé publique, le catalogue reste lisible
+set role anon;
+do $$ begin
+  begin perform cost from products limit 1; raise notice 'ECHEC: un visiteur lit products.cost';
+  exception when insufficient_privilege then raise notice 'OK: un visiteur ne lit pas products.cost'; end;
+  begin perform supplier_ref from products limit 1; raise notice 'ECHEC: un visiteur lit products.supplier_ref';
+  exception when insufficient_privilege then raise notice 'OK: un visiteur ne lit pas products.supplier_ref'; end;
+  begin perform supplier_cost from product_variants limit 1; raise notice 'ECHEC: un visiteur lit supplier_cost';
+  exception when insufficient_privilege then raise notice 'OK: un visiteur ne lit pas supplier_cost'; end;
+  if (select count(slug) from products) = 1 then raise notice 'OK: un visiteur lit le catalogue actif'; else raise notice 'ECHEC: catalogue illisible'; end if;
+end $$;
+reset role;
+set role authenticated; set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+do $$ begin
+  begin perform cost from products limit 1; raise notice 'ECHEC: un client lit products.cost';
+  exception when insufficient_privilege then raise notice 'OK: un client ne lit pas products.cost'; end;
+end $$;
+reset role;

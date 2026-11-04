@@ -4,9 +4,10 @@
 import { WALK_BRANDS, slugify } from "./brands";
 import { loadSiteRows, toProduct } from "./db";
 import { BRANDS, CATEGORIES, DEMO_PRODUCTS, NEW_ARRIVALS, REAL_SNAPSHOT, accentFor } from "./demo";
-import type { Brand, Category, CategoryId, Product } from "./types";
+import { priceTable } from "@/models/pricing/price";
+import type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
 
-export type { Brand, Category, CategoryId, Product } from "./types";
+export type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
 export { CATEGORIES } from "./demo";
 
 export async function getBrands(): Promise<Brand[]> {
@@ -31,10 +32,19 @@ export async function getCategoryBySlug(slug: string): Promise<Category | undefi
 }
 
 /** Vrais articles du site (base, ou copie de secours), puis les articles de démo. */
-async function allProducts(): Promise<Product[]> {
+async function pricedProducts(): Promise<PricedProduct[]> {
   const rows = await loadSiteRows();
-  const real = rows ? rows.map((r) => toProduct(r, BRANDS, CATEGORIES, accentFor)).filter((p): p is Product => p !== null) : REAL_SNAPSHOT;
+  const real = rows ? rows.map((r) => toProduct(r, BRANDS, CATEGORIES, accentFor)).filter((p): p is PricedProduct => p !== null) : REAL_SNAPSHOT;
   return [...real, ...DEMO_PRODUCTS];
+}
+
+/** Ce que les pages reçoivent : les prix, jamais le coût. */
+const toPublic = ({ cost, ...p }: PricedProduct): Product => ({ ...p, prices: priceTable(cost) });
+const allProducts = async () => (await pricedProducts()).map(toPublic);
+
+/** Article avec son coût, pour le paiement et les commandes. Serveur seulement. */
+export async function getPricedProduct(slug: string): Promise<PricedProduct | undefined> {
+  return (await pricedProducts()).find((p) => p.slug === slug);
 }
 
 export async function getProducts(): Promise<Product[]> {

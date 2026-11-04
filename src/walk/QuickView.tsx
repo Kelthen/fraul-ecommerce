@@ -8,11 +8,11 @@ import { Price, PriceNote } from "@/components/Price";
 import { ProductGallery, photoViews, type GalleryView } from "@/components/product/ProductGallery";
 import type { CategoryId } from "@/lib/catalog/types";
 import { related, type RelatedKey } from "@/models/catalog/related";
-import type { Cost } from "@/models/pricing/price";
+import type { PriceTable } from "@/models/pricing/price";
 
 /** Article tel que la fiche en grand le reçoit (moteur du Walk ou catalogue compact). */
 export type FicheItem = {
-  slug: string; n: string; p: Cost; c: string; a: string; vars: string[]; sizes: string[];
+  slug: string; n: string; p: PriceTable; c: string; a: string; vars: string[]; sizes: string[];
   brand: string; cat: CategoryId; photos: { front: string; back?: string; details?: string[] } | null;
 };
 
@@ -75,7 +75,7 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
             <ProductGallery key={item.slug} name={item.n} views={views(item)} className="f-gal" />
             <div className="f-info">
               <h2 id="fName">{item.n}</h2>
-              <p className="f-price"><Price cost={item.p} /></p>
+              <p className="f-price"><Price prices={item.p} /></p>
               <PriceNote />
               <div className="sizes" role="group" aria-label="Taille">
                 {item.sizes.map((z) => (
@@ -85,7 +85,7 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
               <div className="f-act">
                 {/* Style « Signature » choisi par Rhamone (21 oct.) : panier bordeaux avec sac, cœur rond, lien vers la fiche. */}
                 <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}><svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>Au panier</button>
-                <EnvieButton compact item={{ slug: item.slug, name: item.n, brand: item.brand, category: item.cat, cost: item.p, color: item.c, accent: item.a, photo: item.photos?.front }} />
+                <EnvieButton compact item={{ slug: item.slug, name: item.n, brand: item.brand, category: item.cat, prices: item.p, color: item.c, accent: item.a, photo: item.photos?.front }} />
                 <Link className="f-more" href={`/produit/${item.slug}`}>Fiche complète <span aria-hidden="true">→</span></Link>
               </div>
             </div>
@@ -106,7 +106,7 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
                         </span>
                         <span className="br">{x.brand}</span>
                         <span className="nm">{x.n}</span>
-                        <span className="pr"><Price cost={x.p} /></span>
+                        <span className="pr"><Price prices={x.p} /></span>
                       </button>
                     </li>
                   ))}

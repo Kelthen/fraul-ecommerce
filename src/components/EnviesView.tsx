@@ -44,7 +44,7 @@ export function EnviesView({ available }: { available: string[] }) {
                   {gone ? (
                     <span className="pr gone-note">Plus disponible · <u>la faire chercher</u></span>
                   ) : (
-                    <span className="pr"><Price cost={e.cost} /></span>
+                    <span className="pr"><Price prices={e.prices} /></span>
                   )}
                 </Link>
                 <EnvieButton compact item={e} className="on-card" />

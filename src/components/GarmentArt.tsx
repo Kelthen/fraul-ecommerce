@@ -1,6 +1,6 @@
 import type { CategoryId } from "@/lib/catalog";
 import { GARMENT_PATHS } from "@/lib/catalog/art";
-import { DARK } from "@/lib/catalog/demo";
+import { DARK } from "@/lib/catalog/palette";
 
 // Dessins provisoires, en attendant les vraies photos détourées (face / dos).
 // Repris de la démo V2 pour garder le même rendu partout (site et Walk).

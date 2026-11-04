@@ -1,5 +1,5 @@
 import "server-only";
-import { getCategory, getProduct } from "@/lib/catalog";
+import { getCategory, getPricedProduct } from "@/lib/catalog";
 import { parseTrackingMessage } from "@/models/relay/codes";
 import {
   REFUSALS,
@@ -476,7 +476,7 @@ export async function createTestOrder(baseUrl: string): Promise<string> {
   let landed = 0;
 
   for (const d of DEMO_PRODUCTS) {
-    const p = await getProduct(d.slug);
+    const p = await getPricedProduct(d.slug);
     if (!p) throw new Error(`Produit de démo introuvable : ${d.slug}`);
     const cat = getCategory(p.category);
     const [brand] = await db.insert<{ id: string }>("brands", { slug: p.brandSlug, name: p.brandName }, "slug");
