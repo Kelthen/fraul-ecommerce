@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CatalogBrowser, CatalogFallback } from "@/components/catalog/CatalogBrowser";
+import { SITE_URL } from "@/lib/format";
+import { breadcrumbJsonLd, jsonLdHtml } from "@/models/seo/jsonld";
 import { CATEGORIES, getCategoryBySlug, getProductsByCategory, getStockedCategories } from "@/lib/catalog";
 
 export function generateStaticParams() {
@@ -20,8 +22,13 @@ export default async function CategoryPage({ params }: PageProps<"/categorie/[sl
   if (!cat) notFound();
   const [products, categories] = await Promise.all([getProductsByCategory(cat.id), getStockedCategories()]);
   if (!products.length) notFound(); // une catégorie sans article n'existe pas sur le site
+  const crumbs = breadcrumbJsonLd(SITE_URL, [
+    { name: "Tout voir", path: "/tout" },
+    { name: cat.label, path: `/categorie/${cat.slug}` },
+  ]);
   return (
     <section className="sec wrap" style={{ paddingTop: 48 }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(crumbs) }} />
       <div className="head">
         <div>
           <p className="eyebrow">Toutes marques</p>

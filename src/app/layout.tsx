@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   description:
     "Streetwear et luxe 100 % authentiques, une boutique par marque, drops limités et suivi de commande à chaque étape.",
   openGraph: { type: "website", siteName: "TakeUrClothes", locale: "fr_FR" },
+  twitter: { card: "summary_large_image" },
   robots: SITE_LIVE ? { index: true, follow: true } : { index: false, follow: false },
 };
 

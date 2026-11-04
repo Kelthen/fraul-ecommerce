@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (filtres du catalogue)_
+_Dernière mise à jour : 2026-11-04 par serge (PR SEO : image de partage, données structurées, manifest)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -25,10 +25,10 @@ _Dernière mise à jour : 2026-11-04 par serge (filtres du catalogue)_
 - [ ] Un **type de vêtement tout nouveau** (ex. « maillots ») n'est pas proposé dans l'admin : l'ajouter au code (`CATEGORIES`) ; plus tard, éventuellement depuis l'admin.
 - [ ] **SEO** :
   - [ ] Favicon et icônes : `src/app/icon.png` (512 px), `apple-icon.png` (180 px), remplacer `favicon.ico` (aujourd'hui celui par défaut). **Attend le logo** (ligne « Bloqué »).
-  - [ ] Image de partage (Open Graph / WhatsApp / iMessage) : `opengraph-image.png` 1200×630 par défaut, et une par fiche produit (photo de face).
-  - [ ] Titres et descriptions : vérifier chaque page (accueil, marque, catégorie, produit), une description unique par page.
-  - [ ] Données structurées : `Product` (prix, devise, disponibilité) et `Organization` existent ; ajouter `BreadcrumbList` sur marque/catégorie/produit.
-  - [ ] `manifest.webmanifest` (nom, couleurs `#680209` / `#FFFEF7`, icônes).
+  - [x] Image de partage (Open Graph / WhatsApp / iMessage) : `opengraph-image.png` 1200×630 par défaut, et une par fiche produit (photo de face).
+  - [x] Titres et descriptions : vérifier chaque page (accueil, marque, catégorie, produit), une description unique par page.
+  - [x] Données structurées : `Product` (prix, devise, disponibilité) et `Organization` existent ; ajouter `BreadcrumbList` sur marque/catégorie/produit.
+  - [x] `manifest.webmanifest` (nom, couleurs `#680209` / `#FFFEF7`). Les icônes s'y ajouteront avec le logo, ligne au-dessus.
   - [ ] Le jour J : `NEXT_PUBLIC_SITE_LIVE=true` en production (débloque `robots.txt` et l'indexation), puis déclarer le site dans **Google Search Console** et envoyer `sitemap.xml`.
 - [x] Test téléphone : 3 contrôles qui expiraient au retour vers une page de marque (L-55, corrigé par Serge ?) — confirmer `npm run smoke` au vert.
 
@@ -121,6 +121,7 @@ _Dernière mise à jour : 2026-11-04 par serge (filtres du catalogue)_
 - **Webhook Stripe complet** : paiement échoué (annulation et e-mail), panier expiré (relance seulement avec l'accord « nouveautés »), remboursement, litige (alerte Telegram) — serge
 - **6 nouveaux rayons dans le Walk** : vestes et shorts près de la porte, chaussettes, lunettes, montres et bijoux sur les étagères du fond à droite ; panneaux et rails seulement si la boutique a ces articles — serge
 - **Filtres du catalogue** : page `/tout`, bouton « Filtrer » sur les pages marque et catégorie, pastilles, tri, filtres dans l'adresse ; catégories sans article retirées du site — serge
+- SEO : image de partage par défaut (provisoire, sans logo) et photo de face par fiche, prix et fil d'Ariane pour Google, description propre à chaque marque, manifest — serge
 
 ## 🔄 En cours
 
