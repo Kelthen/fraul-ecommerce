@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (PR SEO : image de partage, données structurées, manifest)_
+_Dernière mise à jour : 2026-11-04 par serge (ADMIN_EMAILS : Rhamone et Serge dans Vercel)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -17,7 +17,7 @@ _Dernière mise à jour : 2026-11-04 par serge (PR SEO : image de partage, donn�
 
 **Code (Serge)**
 - [x] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
-- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge, Jean Paul), Telegram en secours
+- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone et Serge, Jean Paul à ajouter quand il donne son adresse), Telegram en secours
 - [x] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
 - [x] Webhook Stripe : traiter les 4 événements ajoutés au webhook (`checkout.session.async_payment_failed` → annuler + prévenir ; `checkout.session.expired` → relance panier ; `charge.refunded` → commande « remboursée » ; `charge.dispute.created` → alerte Telegram). Aujourd'hui ils sont reçus et ignorés.
 - [x] **Filtres du catalogue** (Rhamone, 4 nov.) : page « Tout voir » + pages marque et type avec un bouton **« Filtrer »** (volet par le bas au téléphone) : **Type** (hoodies, pantalons, sneakers, chaussettes…), **Marque**, **Couleur** (pastilles), **Taille** ; **Tri** : nouveautés, prix croissant, prix décroissant. Filtres actifs en petites pastilles retirables ; filtres dans l'adresse (lien partageable sur WhatsApp) ; ne proposer que les valeurs qui ont des articles. Petits boutons, photos d'abord (L-58).
@@ -122,6 +122,7 @@ _Dernière mise à jour : 2026-11-04 par serge (PR SEO : image de partage, donn�
 - **6 nouveaux rayons dans le Walk** : vestes et shorts près de la porte, chaussettes, lunettes, montres et bijoux sur les étagères du fond à droite ; panneaux et rails seulement si la boutique a ces articles — serge
 - **Filtres du catalogue** : page `/tout`, bouton « Filtrer » sur les pages marque et catégorie, pastilles, tri, filtres dans l'adresse ; catégories sans article retirées du site — serge
 - SEO : image de partage par défaut (provisoire, sans logo) et photo de face par fiche, prix et fil d'Ariane pour Google, description propre à chaque marque, manifest — serge
+- `ADMIN_EMAILS` dans Vercel (production et previews) : Rhamone et Serge ; table `admin_login_codes` (0014) appliquée — serge
 
 ## 🔄 En cours
 
