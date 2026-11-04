@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (nouvelle marque depuis la fiche article)_
+_Dernière mise à jour : 2026-11-04 par serge (connexion admin par e-mail)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -16,8 +16,8 @@ _Dernière mise à jour : 2026-11-04 par serge (nouvelle marque depuis la fiche 
 > **Claude de Serge et tout Claude : relire cette liste à chaque session, cocher ce qui est fait dans la PR qui le fait.** Rien ne doit en sortir sans être fait ou décidé.
 
 **Code (Serge)**
-- [ ] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
-- [ ] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge, Jean Paul), Telegram en secours
+- [x] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
+- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge, Jean Paul), Telegram en secours
 - [ ] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
 - [ ] Webhook Stripe : traiter les 4 événements ajoutés au webhook (`checkout.session.async_payment_failed` → annuler + prévenir ; `checkout.session.expired` → relance panier ; `charge.refunded` → commande « remboursée » ; `charge.dispute.created` → alerte Telegram). Aujourd'hui ils sont reçus et ignorés.
 - [ ] **Filtres du catalogue** (Rhamone, 4 nov.) : page « Tout voir » + pages marque et type avec un bouton **« Filtrer »** (volet par le bas au téléphone) : **Type** (hoodies, pantalons, sneakers, chaussettes…), **Marque**, **Couleur** (pastilles), **Taille** ; **Tri** : nouveautés, prix croissant, prix décroissant. Filtres actifs en petites pastilles retirables ; filtres dans l'adresse (lien partageable sur WhatsApp) ; ne proposer que les valeurs qui ont des articles. Petits boutons, photos d'abord (L-58).
@@ -30,7 +30,7 @@ _Dernière mise à jour : 2026-11-04 par serge (nouvelle marque depuis la fiche 
   - [ ] Données structurées : `Product` (prix, devise, disponibilité) et `Organization` existent ; ajouter `BreadcrumbList` sur marque/catégorie/produit.
   - [ ] `manifest.webmanifest` (nom, couleurs `#680209` / `#FFFEF7`, icônes).
   - [ ] Le jour J : `NEXT_PUBLIC_SITE_LIVE=true` en production (débloque `robots.txt` et l'indexation), puis déclarer le site dans **Google Search Console** et envoyer `sitemap.xml`.
-- [ ] Test téléphone : 3 contrôles qui expiraient au retour vers une page de marque (L-55, corrigé par Serge ?) — confirmer `npm run smoke` au vert.
+- [x] Test téléphone : 3 contrôles qui expiraient au retour vers une page de marque (L-55, corrigé par Serge ?) — confirmer `npm run smoke` au vert.
 
 **Rhamone / Jean Paul**
 - [ ] **Logo TakeUrClothes** (fichier SVG ou PNG fond transparent) → favicon, icônes, image de partage, e-mails
@@ -116,6 +116,7 @@ _Dernière mise à jour : 2026-11-04 par serge (nouvelle marque depuis la fiche 
 - **Ménage** : documents finis rangés dans `docs/archive/`, index `docs/README.md`, copie de secours du catalogue renommée `fallback.ts`, mentions périmées retirées — serge
 - **Mannequin femme** devant chaque boutique et dans les boutiques ; test téléphone sans attente « networkidle » (faux échecs sur `next start`) — serge
 - **« + Nouvelle marque » depuis la fiche article** : nom, logo ou 2 couleurs, couleurs reprises du logo, marque sélectionnée sans perdre l'article ; couleur du texte aussi réglable dans `/admin/boutiques` — serge
+- **Connexion admin par e-mail** : `/admin`, code à 6 chiffres valable 10 min, 5 essais, liste `ADMIN_EMAILS` ; Telegram en secours (migration 0014) — serge
 
 ## 🔄 En cours
 

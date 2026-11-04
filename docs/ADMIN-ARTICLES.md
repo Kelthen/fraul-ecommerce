@@ -88,7 +88,7 @@
 - **À quoi ressemble une nouvelle boutique** : même gabarit que les autres (une des 3 architectures de #65), enseigne = logo s'il existe, sinon le nom en texte aux couleurs choisies ; placée **à la fin du parcours** du mall ; visible dès qu'elle a au moins un article en ligne (une boutique vide ne s'affiche pas, L-35).
 - Refuser un doublon : « Gucci » et « gucci » = la même boutique (comparer les slugs).
 
-### 2. Connexion admin par e-mail (les e-mails marchent depuis le 4 nov. : Resend vérifié, SMTP Supabase réglé)
+### 2. ✅ Connexion admin par e-mail, faite par Serge le 4 nov. (les e-mails marchent depuis le 4 nov. : Resend vérifié, SMTP Supabase réglé)
 - **Liste d'admins** dans Vercel (`ADMIN_EMAILS`, séparés par des virgules) : Rhamone (`rhamonkota@gmail.com`), Serge, Jean Paul (**e-mail de Jean Paul : à demander à Rhamone**).
 - `/admin` : on tape son e-mail, on reçoit un **code à 6 chiffres valable 10 min** (par Resend) ; si l'e-mail n'est pas dans la liste, **rien n'est envoyé**, et le message reste le même pour ne rien révéler. 5 essais au plus.
 - **Séparé des comptes clients** : un compte client ne donne jamais accès à l'admin, même avec la même adresse.
