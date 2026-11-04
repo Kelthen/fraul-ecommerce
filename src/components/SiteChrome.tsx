@@ -5,13 +5,12 @@ import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
 import { useAccount } from "./AccountProvider";
 import { useEnvies } from "./EnviesProvider";
-import { IconBag, IconBrands, IconHeart, IconHome, IconOutfit, IconSearch, IconUser, IconWalk } from "./Icons";
+import { IconBag, IconBrands, IconHeart, IconHome, IconSearch, IconUser, IconWalk } from "./Icons";
 
 const NAV = [
   { href: "/walk", label: "Walk", walk: true },
   { href: "/#nouveautes", label: "Nouveautés" },
   { href: "/marques", label: "Marques" },
-  { href: "/tenue", label: "Crée ta tenue" },
   { href: "/suivi", label: "Suivi" },
 ];
 
@@ -65,7 +64,7 @@ export function TabBar() {
     { href: "/", label: "Accueil", icon: <IconHome /> },
     { href: "/marques", label: "Marques", icon: <IconBrands /> },
     { href: "/walk", label: "Walk", icon: <IconWalk />, walk: true },
-    { href: "/tenue", label: "Tenue", icon: <IconOutfit /> },
+    { href: "/envies", label: "Envies", icon: <IconHeart /> }, // « Crée ta tenue » masqué tant qu'il ne marche pas (Rhamone, 4 nov.)
     { href: "/panier", label: count ? `Panier · ${count}` : "Panier", icon: <IconBag /> },
   ];
   return (
