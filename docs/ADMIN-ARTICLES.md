@@ -70,3 +70,32 @@
 - **Retirer :** possible seulement sans article, car les commandes passées gardent leurs fiches.
 - **Dans le mall :** une boutique apparaît dès son premier article visible.
 - **Logos :** seulement ceux que TakeUrClothes a le droit d'afficher. Ils partent en PNG de 512 px au plus, dans le dossier « produits ».
+
+---
+
+## Suite validée par Rhamone le 4 nov. 2026 (soir) — **pour Serge**
+
+> Rhamone n'a plus de temps : **Serge finit ces 3 PR, dans cet ordre.** Le tableau de bord des ventes est la PR #68 (ouverte, à regarder puis merger).
+> Déjà en place : modifier le prix d'un article existant (`/admin/articles` → Modifier) ; prix en **USD**, coût en ¥ obligatoire ; une marque = une boutique (la liste « Marque » de la fiche article lit les boutiques de `/admin/boutiques`).
+
+### 1. « + Nouvelle marque » depuis la fiche article (le plus urgent : Jean Paul ajoute ses articles aujourd'hui)
+- En bas de la liste « Marque » de `/admin/articles/fiche` : **« + Nouvelle marque… »**.
+- Petit panneau : **nom de la marque** (obligatoire), puis **au choix** :
+  - **déposer le logo** (même envoi que `uploadLogoAction` de `/admin/boutiques`) ;
+  - **ou, sans logo : choisir 2 couleurs** (fond et texte de l'enseigne) pour rester dans l'esprit de la marque. Le nom s'affiche alors en texte avec ces couleurs.
+- **Si un logo est déposé : couleurs reprises du logo, toutes seules.** Dans le navigateur, on dessine le logo sur un canvas, on garde les 2 teintes dominantes (sans le blanc ou le transparent du fond) et on les propose en couleurs de l'enseigne, modifiables avant d'enregistrer. Pas d'IA ni de service extérieur nécessaire.
+- Enregistrer = la boutique est créée (via `saveBoutique`), elle est **sélectionnée dans la fiche article**, et l'article continue d'être rempli. Logo, couleurs et place dans le mall restent modifiables ensuite dans `/admin/boutiques`.
+- **À quoi ressemble une nouvelle boutique** : même gabarit que les autres (une des 3 architectures de #65), enseigne = logo s'il existe, sinon le nom en texte aux couleurs choisies ; placée **à la fin du parcours** du mall ; visible dès qu'elle a au moins un article en ligne (une boutique vide ne s'affiche pas, L-35).
+- Refuser un doublon : « Gucci » et « gucci » = la même boutique (comparer les slugs).
+
+### 2. Connexion admin par e-mail (les e-mails marchent depuis le 4 nov. : Resend vérifié, SMTP Supabase réglé)
+- **Liste d'admins** dans Vercel (`ADMIN_EMAILS`, séparés par des virgules) : Rhamone (`rhamonkota@gmail.com`), Serge, Jean Paul (**e-mail de Jean Paul : à demander à Rhamone**).
+- `/admin` : on tape son e-mail, on reçoit un **code à 6 chiffres valable 10 min** (par Resend) ; si l'e-mail n'est pas dans la liste, **rien n'est envoyé**, et le message reste le même pour ne rien révéler. 5 essais au plus.
+- **Séparé des comptes clients** : un compte client ne donne jamais accès à l'admin, même avec la même adresse.
+- Le **code Telegram reste en secours** (`isAdmin()` accepte l'un ou l'autre).
+- En attendant : Jean Paul se connecte avec le code Telegram, après avoir été ajouté au groupe de l'équipe.
+
+### 3. Page compte client, style Nike (retour de Rhamone, capture du 4 nov.)
+- **Inscription** : case « Recevoir les nouveautés et les drops », **décochée par défaut** (opt-in, loi européenne). Elle remplace la case de la page compte.
+- **Accueil du compte** : « Bonjour [prénom] » en petit, l'e-mail dessous ; puis une **grille de cases** : **Mes commandes** (nombre + état de la dernière), **Mes envies** (nombre), **Mon panier** (nombre), **Suivre un colis**, **Réglages**. Tout tient sur un écran de téléphone.
+- **Réglages** : e-mail, nouveautés et drops (oui ou non), mot de passe ; **« Se déconnecter » = petit lien discret tout en bas de Réglages** (plus de gros bouton au milieu).

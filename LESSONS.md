@@ -323,3 +323,11 @@
 - **Erreur :** 3 contrôles de `npm run smoke` échouaient sur `next start` : les préchargements de liens de Next (`/?_rsc=…`) restaient parfois ouverts, la page n'était jamais « au repos » alors qu'elle marchait.
 - **Règle : dans `scripts/smoke.mjs`, attendre `load` puis un élément précis, jamais `networkidle`.**
 - **Reste à savoir :** pourquoi ces préchargements restent ouverts en local. Sur le vrai site, ils répondent en moins d'une demi-seconde.
+
+### L-56 — Quand l'humain dit « c'est fait », on teste au lieu de douter
+- **Erreur :** Rhamone avait réglé Resend, les DNS et Supabase ; Claude répétait que « les e-mails ne marchent pas encore », sans pouvoir le vérifier (Resend et les DNS sont injoignables depuis sa session). Rhamone : « je t'avais dit que j'avais tout fait ».
+- **Règle :** si on ne peut pas vérifier soi-même, on ne conclut pas que ça ne marche pas : on propose **un test concret d'une minute** (ex. créer un compte et attendre le code), et on croit l'humain jusqu'au résultat.
+
+### L-57 — Économiser les tokens de l'humain
+- **Erreur :** une page publiée, un PDF puis un texte pour le même guide ; un document généré avec des couleurs choisies sans demander (Rhamone : « arrête de gaspiller mes tokens »).
+- **Règle :** donner directement le format le plus simple (texte à copier-coller) ; ne rien générer de plus sans demande ; pour un document à la charte, demander les couleurs de Kelthen (pas encore dans le projet).
