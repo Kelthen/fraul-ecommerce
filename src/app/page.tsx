@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { BrandTile } from "@/components/BrandTile";
 import { CircleForm } from "@/components/CircleForm";
-import { GarmentArt } from "@/components/GarmentArt";
 import { IconArrow, IconCheck, IconLock, IconPin, IconSpark, IconWalk } from "@/components/Icons";
 import { ProductCard } from "@/components/ProductCard";
 import { getBrands, getNewArrivals, getWalkBrands } from "@/lib/catalog";
@@ -152,15 +151,10 @@ export default async function Home() {
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} aria-hidden="true">
-            {(
-              [
-                ["tee", "#0A0A0C", "#EAE0C8"],
-                ["pants", "#8F8880", "#420A0D"],
-                ["sneaker", "#680209", "#EAE0C8"],
-              ] as const
-            ).map(([t, c, a]) => (
-              <div key={t} className="piece" style={{ aspectRatio: "3/4" }}>
-                <GarmentArt type={t} color={c} accent={a} />
+            {news.slice(0, 3).map((p) => (
+              <div key={p.slug} className="piece" style={{ aspectRatio: "3/4", overflow: "hidden" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- photos du catalogue, parfois hébergées chez Supabase */}
+                <img src={p.image.front} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
             ))}
           </div>

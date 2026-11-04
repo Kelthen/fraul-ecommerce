@@ -3,8 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductDetail } from "@/components/ProductDetail";
-import { getBrand, getCategory, getProduct, getProducts } from "@/lib/catalog";
-import { signWord } from "@/lib/catalog/brands";
+import { getCategory, getProduct, getProducts } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/format";
 import { related } from "@/models/catalog/related";
 
@@ -27,7 +26,7 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();
-  const [brand, all] = await Promise.all([getBrand(product.brandSlug), getProducts()]);
+  const all = await getProducts();
   const cat = getCategory(product.category);
   // Mêmes propositions que la fiche en grand du Walk (src/models/catalog/related.ts).
   const tag = (p: (typeof all)[number]) => ({ slug: p.slug, brand: p.brandName, cat: p.category, photo: !!p.image, p });
@@ -56,7 +55,6 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
         <ProductDetail
           product={product}
           categoryLabel={cat.label}
-          brandWord={brand ? signWord(brand.style) : product.brandName}
         />
         {sections.map((s, i) => (
           <section key={s.key} style={{ paddingBottom: i === sections.length - 1 ? 72 : 40 }} aria-labelledby={`more-${s.key}`}>

@@ -3,8 +3,7 @@
 // ce qui change : three.js vient du projet (plus de CDN), les données viennent
 // du catalogue, le panier et la navigation sont ceux du site, et tout se nettoie
 // quand on quitte la page.
-import { GARMENT_PATHS as P } from "@/lib/catalog/art";
-import { DARK, accentFor } from "@/lib/catalog/palette";
+import { accentFor } from "@/lib/catalog/palette";
 import { createFocusController } from "./controllers/focus";
 import { connectHistory } from "./controllers/history";
 import { getMode } from "./modes";
@@ -237,39 +236,6 @@ export function startWalk(root, o) {
       x.fillStyle = fg; x.textBaseline = "middle"; const sp = fit(x, st, kind === "hoodie" ? 150 : 120, kind === "hoodie" ? 38 : 30);
       spaced(x, word(st), 256, 98, sp); return T(c);
     }
-    function backPrint(x, st, col, cx, cy, maxW) { x.save(); x.fillStyle = col; x.textBaseline = "middle"; const sp = fit(x, st, maxW, 14); spaced(x, word(st), cx, cy, sp); x.restore(); }
-    function drawItem(x, type, c, a, back, st) {
-      const p = new Path2D(P[type]); x.fillStyle = c; x.fill(p);
-      x.save(); x.clip(p); const g = x.createLinearGradient(0, 0, 0, 110); g.addColorStop(0, "rgba(255,255,255,.12)"); g.addColorStop(0.55, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.35)"); x.fillStyle = g; x.fillRect(0, 0, 100, 110); x.restore();
-      x.lineWidth = 1; x.strokeStyle = DARK.includes(c) ? "rgba(234,224,200,.22)" : "rgba(0,0,0,.25)"; x.stroke(p);
-      x.strokeStyle = a; x.fillStyle = a; x.lineWidth = 2; x.lineCap = "round";
-      if (type === "tee") { if (back) { x.stroke(new Path2D("M42 5 Q50 8 58 5")); backPrint(x, st, a, 50, 44, 36); } else { x.stroke(new Path2D("M42 4 Q50 13 58 4")); x.fillRect(57, 28, 9, 6); } }
-      if (type === "hoodie") { if (back) { x.stroke(new Path2D("M34 10 Q50 30 66 10")); backPrint(x, st, a, 50, 54, 38); } else { x.stroke(new Path2D("M38 10 Q50 27 62 10")); x.lineWidth = 1.4; x.stroke(new Path2D("M46 22 V36 M54 22 V36")); x.globalAlpha = 0.6; x.stroke(new Path2D("M36 74 H64 L68 92 H32 Z")); x.globalAlpha = 1; } }
-      if (type === "pants") { x.stroke(new Path2D("M26 13 H74")); x.globalAlpha = 0.6; x.lineWidth = 1.2; if (back) { x.strokeRect(31, 22, 12, 12); x.strokeRect(57, 22, 12, 12); } else x.stroke(new Path2D("M50 13 V30")); x.globalAlpha = 1; }
-      if (type === "sneaker") { x.fill(new Path2D("M8 76 H96 V84 Q96 89 90 89 H13 Q8 89 8 84 Z")); x.stroke(new Path2D("M40 56 L46 52 M44 60 L51 55 M48 63 L56 58")); }
-      if (type === "cap") { x.globalAlpha = 0.6; x.lineWidth = 1.3; x.stroke(new Path2D("M50 34 V74 M30 40 Q36 58 34 74 M70 40 Q66 58 68 74")); x.globalAlpha = 1; x.beginPath(); x.arc(50, 35, 2.6, 0, 7); x.fill(); if (back) x.fillRect(42, 66, 16, 5); else x.fillRect(40, 52, 16, 7); }
-      if (type === "bag") { x.lineWidth = 3; x.stroke(new Path2D("M26 48 C26 18 74 18 74 48")); x.lineWidth = 1.6; x.stroke(new Path2D("M20 60 H80")); if (!back) x.fillRect(44, 70, 12, 8); }
-    }
-    // Texture produit ; hauts et hoodies dessinés par-dessus le cintre (le cintre est DANS le vêtement)
-    function itemTexture(type, c, a, back, st) {
-      const sneaker = type === "sneaker", hang = type === "tee" || type === "hoodie", clip = type === "pants";
-      const [cn, x] = cv(256, sneaker ? 140 : hang || clip ? 320 : 282);
-      const hook = () => { x.save(); x.strokeStyle = "#cfc9c0"; x.lineWidth = 5; x.lineCap = "round"; x.stroke(new Path2D("M128 62 V44 C128 32 146 32 146 20 C146 8 124 6 121 18")); x.restore(); };
-      if (hang) { hook(); x.save(); x.strokeStyle = "#8a6a4e"; x.lineWidth = 8; x.lineJoin = "round"; x.stroke(new Path2D("M128 60 L30 104 H226 Z")); x.restore(); }
-      x.save();
-      if (hang || clip) x.translate(0, 38);
-      x.scale(2.56, 2.56);
-      if (sneaker) x.translate(0, -40);
-      if (back && (sneaker || type === "cap")) { x.translate(100, 0); x.scale(-1, 1); }
-      drawItem(x, type, c, a, back, st);
-      x.restore();
-      if (clip) { hook(); x.save(); x.strokeStyle = "#2b2a2c"; x.lineWidth = 7; x.lineCap = "round"; x.stroke(new Path2D("M66 60 H190")); x.fillStyle = "#2b2a2c"; x.fillRect(74, 56, 16, 24); x.fillRect(166, 56, 16, 24); x.restore(); }
-      return T(cn);
-    }
-    // Vrai produit : sa photo dans une carte (bords blancs arrondis), sur le même cintre que les dessins.
-    // La photo arrive en différé : on redessine la scène quand elle est chargée (onLoad).
-    // `k` = finesse : 2 (512 px) sur le portant, 4 (1024 px) pour l'article regardé de près (Zoom).
-    // Les mesures ci-dessous sont en « points » sur 256 de large, multipliés par k.
     function photoTexture(type, src, onLoad, k = 2) {
       const sneaker = type === "sneaker", hang = type === "tee" || type === "hoodie" || type === "jacket", clip = type === "pants" || type === "shorts";
       const H = sneaker ? 140 : hang || clip ? 320 : 282;
@@ -416,7 +382,7 @@ export function startWalk(root, o) {
       joint(g, [0, 0.012, 0], 0.24, new THREE.MeshPhongMaterial({ color: 0x2b2a2c, shininess: 60 }), 1, 0.05, 1);
       return g;
     }
-    GH = { cv, T, wordTex, labelTex, glowTex, itemTexture, photoTexture, sideTexture, SIDE_W, mannequin };
+    GH = { cv, T, wordTex, labelTex, glowTex, photoTexture, sideTexture, SIDE_W, mannequin };
     return GH;
   }
 
@@ -711,25 +677,19 @@ export function startWalk(root, o) {
         });
         sh.live = { items: live, frames, k: 0 }; showLive(sh);
       }
-      const GC = [0xf1ece0, 0x141416, 0x680209, 0x6b6766, 0xeae0c8, 0x202833, 0x9a938a];
-      const rail = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), lam(0xffffff), 30), dm = new THREE.Object3D();
-      let n = 0;
-      [-1, 1].forEach((sd) => { for (let z = -1.2; z > -6.1 && n < 30; z -= 0.33, n++) { const h = 0.95 + ((n + k) % 3) * 0.1; dm.position.set(sd * 3.75, 2.75 - h / 2, z); dm.scale.set(0.05, h, 0.6); dm.updateMatrix(); rail.setMatrixAt(n, dm.matrix); rail.setColorAt(n, new THREE.Color(GC[(n * 3 + k) % GC.length])); } });
-      rail.count = n; d.add(rail);
     }
-    // Pièces phares d'une marque pour sa vitrine : les vraies photos d'abord, 6 au plus.
+    // Pièces phares d'une marque pour sa vitrine : 6 au plus.
     const frameM = std(0x1b1b1d, 0.4, 0.3);
     function liveItems(brand) {
       const all = CATS.flatMap(([id]) => products(brand, id).map((it) => ({ it, cat: id })));
-      return [...all.filter((x) => x.it.img), ...all.filter((x) => !x.it.img)].slice(0, 6);
+      return all.slice(0, 6);
     }
-    /** Image d'un cadre : la photo (ou le dessin) centrée sur fond blanc, sans déformation. */
-    function frameTex({ it, cat }) {
+    /** Image d'un cadre : la photo centrée sur fond blanc, sans déformation. */
+    function frameTex({ it }) {
       const [c, x] = U.cv(384, 500), tex = U.T(c);
       x.fillStyle = "#ffffff"; x.fillRect(0, 0, 384, 500);
       const draw = (src, w, h) => { const r = Math.min(344 / w, 460 / h); x.drawImage(src, (384 - w * r) / 2, (500 - h * r) / 2, w * r, h * r); tex.needsUpdate = true; kick(); };
-      if (it.img) { const im = new Image(); im.onload = () => draw(im, im.naturalWidth, im.naturalHeight); im.src = it.img[0]; }
-      else { const t = U.itemTexture(cat, it.c, it.a, false); draw(t.image, t.image.width, t.image.height); t.dispose(); }
+      { const im = new Image(); im.onload = () => draw(im, im.naturalWidth, im.naturalHeight); im.src = it.img[0]; }
       return tex;
     }
     function showLive(sh) {
@@ -874,8 +834,8 @@ export function startWalk(root, o) {
     STORE.setActive(null); sUI("walk");
     STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); title(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
   }
-  // Même gabarit pour toutes les boutiques : les mêmes rayons partout, même vides (Rhamone, 19 oct.).
-  const rayons = () => CATS.filter(([id]) => id in CAR);
+  // Seuls les rayons qui ont des articles s'affichent (Serge, 4 nov., remplace « mêmes rayons partout » du 19 oct.).
+  const rayons = () => CATS.filter(([id]) => id in CAR && products(sBrand, id).length > 0);
   function showInfo(cat, k) {
     const it = STORE.item(cat, k);
     $("#iBrand").textContent = `${sBrand} · ${catLabel(cat)}`;
@@ -984,52 +944,25 @@ export function startWalk(root, o) {
       add(new THREE.PlaneGeometry(1.6, 0.15), basic({ map: U.labelTex("TAKEURCLOTHES · BOUTIQUE", st.fg), transparent: true, opacity: 0.6 }), 0, 1.65, -15.9),
     ];
 
-    const decoMat = {}, deco = (type, c, a) => decoMat[type + c + a] || (decoMat[type + c + a] = new THREE.MeshLambertMaterial({ map: U.itemTexture(type, c, a, false, st), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
-    const NK = [["#F1ECE0", "#2B2A2C"], ["#141416", "#F1ECE0"], ["#680209", "#F1ECE0"], ["#EAE0C8", "#420A0D"], ["#6B6766", "#141416"], ["#202833", "#EAE0C8"]];
-    const shelfM = lam(0xf4f2ee), ledM = basic({ color: 0xfff6e6 }), shoeGeo = new THREE.PlaneGeometry(0.36, 0.2);
+    const shelfM = lam(0xf4f2ee), ledM = basic({ color: 0xfff6e6 });
     [-1, 1].forEach((s) => {
       const cx = s * 3.75;
-      [0.55, 0.95, 1.35, 1.75, 2.15].forEach((y, li) => {
+      [0.55, 0.95, 1.35, 1.75, 2.15].forEach((y) => {
         add(new THREE.BoxGeometry(3.5, 0.035, 0.34), shelfM, cx, y, -15.82);
         add(new THREE.BoxGeometry(3.5, 0.01, 0.02), ledM, cx, y - 0.025, -15.66);
-        if (s < 0 && li === 2) return; // cette étagère porte le rayon sneakers interactif
-        for (let k = 0; k < 4; k++) { const [c, a] = NK[(k + li * 2 + (s > 0 ? 3 : 0)) % NK.length]; const m = add(shoeGeo, deco("sneaker", c, a), cx - 1.25 + k * 0.83, y + 0.12, -15.78); if (k % 2) m.scale.x = -1; }
       });
     });
 
-    // Portants muraux. À gauche (hauts) : vêtements de côté, serrés, comme dans une vraie boutique (Rhamone, 22 oct.),
-    // autour du rayon interactif ; on laisse libre la place où ses pièces glissent. À droite (pantalons) : profils simples.
-    const metalM = lam(0x1b1b1d), gData = [], sideDeco = [];
-    const GC = [0xf1ece0, 0x141416, 0x680209, 0x6b6766, 0xeae0c8, 0x202833, 0x2b2a2c, 0x9a938a];
-    function wallRail(side, z0, z1, long, zc, cat) {
+    // Portants muraux : seuls les vrais articles y pendent, rien de dessiné autour (Serge, 4 nov.).
+    const metalM = lam(0x1b1b1d);
+    function wallRail(side, z0, z1) {
       const y = 1.78, rx = side * 5.62, len = z0 - z1;
       const rod = add(new THREE.CylinderGeometry(0.016, 0.016, len, 8), metalM, rx, y, (z0 + z1) / 2); rod.rotation.x = Math.PI / 2;
       [z0, z1].forEach((z) => add(new THREE.BoxGeometry(0.4, 0.03, 0.03), metalM, side * 5.8, y, z));
-      const r = cat && CAR[cat], free = r ? Math.max(0.6, (products(st.name, cat).length - 1) * r.side + r.sp) : 2.3;
-      let n = 0; for (let z = z0 - 0.15; z > z1 + 0.15; z -= cat ? 0.16 : 0.14, n++) {
-        if (Math.abs(z - zc) < free) continue;
-        const c = GC[(n * 3 + (long ? 2 : 0)) % GC.length];
-        if (r) { sideDeco.push([z, c, cat, n]); continue; }
-        const h = (long ? 0.95 : 0.78) + ((n * 7) % 3) * 0.05; gData.push([side * 5.6, y - 0.05 - h / 2, z, 0.5, h, 0.045, c]);
-      }
     }
-    wallRail(-1, -3.6, -9.2, false, -6.4, "tee"); wallRail(-1, -9.8, -15.2, false, -12.4, "hoodie"); wallRail(1, -8.6, -15.2, true, -11.9);
-    { const mats = {}, geo = new THREE.PlaneGeometry(CAR.tee.size[0] * U.SIDE_W / 256, CAR.tee.size[1]);
-      sideDeco.forEach(([z, c, cat, n]) => {
-        const key = cat + c, hex = `#${new THREE.Color(c).getHexString()}`;
-        const m = mats[key] || (mats[key] = new THREE.MeshLambertMaterial({ map: U.sideTexture(cat, hex), transparent: true, alphaTest: 0.4 }));
-        add(geo, m, -5.57 - (n % 3) * 0.004, CAR[cat].o[1], z, Math.PI / 2);
-      });
-    }
-
+    wallRail(-1, -3.6, -9.2); wallRail(-1, -9.8, -15.2); wallRail(1, -8.6, -15.2);
     // Mur à casquettes
     add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
-    const crownG = new THREE.SphereGeometry(0.12, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), brimG = new THREE.CylinderGeometry(0.125, 0.125, 0.012, 20, 1, false, 0, Math.PI);
-    [1.0, 2.08].forEach((y, r) => { for (let k = 0; k < 7; k++) {
-      const m = lam(GC[(k + r * 3) % GC.length]), g = new THREE.Group();
-      const cr = new THREE.Mesh(crownG, m); cr.scale.set(1, 0.85, 1); const br = new THREE.Mesh(brimG, m); br.position.x = 0.07;
-      g.add(cr, br); g.position.set(5.82, y, -2.85 - k * 0.65); g.rotation.y = Math.PI; scene.add(g);
-    } });
 
     // Vitrine à accessoires (îlot central)
     add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
@@ -1060,14 +993,10 @@ export function startWalk(root, o) {
       });
     }
 
-    const gm = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), gData.length), dmy = new THREE.Object3D();
-    gData.forEach(([x, y, z, sx, sy, sz, c], k) => { dmy.position.set(x, y, z); dmy.scale.set(sx, sy, sz); dmy.updateMatrix(); gm.setMatrixAt(k, dmy.matrix); gm.setColorAt(k, new THREE.Color(c)); });
-    scene.add(gm);
-
     /* Rayons interactifs : les vrais articles pendent dans la scène, face et dos */
-    // Article avec photo (vrai produit) : sa photo face / dos ; sinon le dessin à sa couleur.
+    // Chaque article : sa photo, face et dos.
     const prodMat = (type, c, a, back, img) => new THREE.MeshLambertMaterial({
-      map: img ? U.photoTexture(type, img[back ? 1 : 0], () => kick()) : U.itemTexture(type, c, a, back, st), transparent: true, alphaTest: 0.04,
+      map: U.photoTexture(type, img[back ? 1 : 0], () => kick()), transparent: true, alphaTest: 0.04,
     });
     // Article regardé de près : sa photo passe en haute définition (une seule fois, à la demande, pour ménager la mémoire).
     function sharpen(m) {
@@ -1086,7 +1015,7 @@ export function startWalk(root, o) {
         if (sideGeo) { const s = new THREE.Mesh(sideGeo, sideMat(cat, it)); g.add(s); g.userData.side = s; }
         scene.add(g); return g;
       });
-      const real = items.findIndex((it) => it.img), start = real >= 0 ? real : Math.min(4, items.length - 1); // les vrais produits d'abord
+      const start = 0;
       cars[cat] = { cat, items, meshes, cfg, f: start, target: start, last: null, swingT: -1e9, o: V(...cfg.o), d: V(...cfg.d), out: V(...cfg.out) };
     });
 

@@ -191,14 +191,8 @@ p { margin: 0; }
 /* Fiche produit */
 .pdp { display: grid; gap: 28px; padding-block: 24px 48px; }
 @media (min-width: 900px) { .pdp { grid-template-columns: 1.1fr 1fr; gap: 56px; padding-block: 48px 80px; align-items: start; } }
-.pdp-stage { position: relative; aspect-ratio: 1/1; border-radius: 24px; background: var(--surface); display: grid; place-items: center; overflow: hidden; }
-.pdp-stage .ghost-word { position: absolute; top: 10px; left: 18px; font: italic 800 clamp(70px, 14vw, 140px)/1 var(--display); color: rgba(66, 10, 13, 0.06); pointer-events: none; }
-.pdp-stage svg.art, .pdp-stage img.art { width: 62%; height: auto; filter: drop-shadow(0 24px 30px rgba(40, 30, 20, 0.16)); }
-.pdp-stage .flip { animation: flip .6s cubic-bezier(.16, 1, .3, 1) both; }
 @keyframes flip { from { transform: perspective(700px) rotateY(80deg); opacity: 0; } to { transform: none; opacity: 1; } }
-.pdp-turn { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; }
 .round { width: 44px; height: 44px; border-radius: 999px; background: var(--ink); color: var(--ivory); font-size: 18px; display: grid; place-items: center; }
-.pdp-turn span { font: 700 10px/1 var(--body); letter-spacing: 0.18em; color: var(--ink); white-space: nowrap; }
 .pdp-info h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1; font-weight: 700; }
 .pdp-info .sub { margin-top: 8px; font-size: 13px; }
 .opt { margin-top: 26px; display: grid; gap: 12px; }
@@ -250,8 +244,6 @@ p { margin: 0; }
 /* Photos du fournisseur (pas encore détourées) : la photo remplit le cadre, sans ombre portée. */
 .pic.photo { background: #fff; }
 .pic.photo img { width: 100%; height: 100%; object-fit: cover; filter: none; }
-.pdp-stage.photo { background: #fff; }
-.pdp-stage.photo img { width: 100%; height: 100%; object-fit: contain; }
 .thumbs { display: flex; gap: 8px; overflow-x: auto; }
 .thumbs button { flex: 0 0 64px; display: grid; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; cursor: pointer; }
 .thumbs button[aria-pressed="true"] { border-color: var(--ink); }
@@ -298,18 +290,6 @@ p { margin: 0; }
 .order-row .o-stage { justify-self: end; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bordeaux); }
 .order-row .o-stage.done { color: var(--muted); }
 .order-row .o-meta { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
-/* E-mails de commande (aperçu) */
-.mails { display: grid; gap: 28px; margin: 28px 0 72px; }
-@media (min-width: 900px) { .mails { grid-template-columns: 1fr 1fr; } }
-.mail { display: grid; gap: 8px; min-width: 0; }
-.mail-box { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; }
-.mail-subj { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mail-subj span { color: var(--muted); }
-.mail-body { display: grid; gap: 12px; justify-items: start; padding: 22px 20px 26px; background: var(--ivory); }
-.mail-brand { margin: 0; font-family: var(--display); letter-spacing: 0.3em; color: var(--wine); }
-.mail-body h2 { font-size: 28px; margin: 0; }
-.mail-body p { margin: 0; font-size: 15px; }
-.mail-body ul { margin: 0; padding-left: 18px; font-size: 14px; }
 /* Mes envies : pièce plus en vente */
 .envie-card.gone .pic { opacity: .45; filter: grayscale(1); }
 .envie-card .gone-note { color: var(--bordeaux); font-size: 12px; }
@@ -360,7 +340,6 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .gal-track::-webkit-scrollbar { display: none; }
 .gal-track.zoomed { overflow: hidden; touch-action: none; }
 .gal-slide { flex: 0 0 100%; aspect-ratio: 1; scroll-snap-align: center; scroll-snap-stop: always; display: grid; place-items: center; overflow: hidden; background: #fff; }
-.gal-slide svg.art { width: 62%; height: auto; filter: drop-shadow(0 24px 30px rgba(40, 30, 20, 0.16)); }
 .gal-zoom { width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; overflow: hidden; }
 .gal-track.zoomed .gal-zoom { cursor: zoom-out; }
 .gal-zoom img { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .25s ease; user-select: none; -webkit-user-drag: none; }
@@ -370,8 +349,6 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .gal-arrow.l { left: 8px; } .gal-arrow.r { right: 8px; }
 .gal-arrow:disabled { opacity: 0; pointer-events: none; }
 @media (hover: none) { .gal-arrow { display: none; } }
-.thumb-art { display: grid; place-items: center; aspect-ratio: 1; padding: 6px; background: var(--surface); }
-.thumb-art svg { width: 100%; height: auto; }
 /* Propositions sous la fiche produit : 3 par rangée sur téléphone, comme dans le Walk */
 .grid.rel { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 10px; }
 .grid.rel .nm { font-size: 12px; }

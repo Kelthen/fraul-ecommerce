@@ -15,6 +15,7 @@ export type CartLine = {
   accent: string;
   /** Prix de l'article par zone et groupe, pour l'affichage. Jamais utilisé pour encaisser. */
   prices: PriceTable;
+  photo?: string;
   size?: string;
   sizes: string[];
   qty: number;
@@ -35,8 +36,10 @@ type CartCtx = {
 const Ctx = createContext<CartCtx | null>(null);
 const KEY = "tuc.cart.v3"; // v3 : les lignes gardent la table de prix, plus jamais le coût
 
+const NOTHING_YET: CartLine[] = [];
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [lines, setLines] = useState<CartLine[]>([]);
+  const [lines, setLines] = useState<CartLine[]>(NOTHING_YET);
   const [msg, setMsg] = useState<string | null>(null);
   const loaded = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -53,7 +56,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loaded.current) return;
+    if (!loaded.current || lines === NOTHING_YET) return; // la liste de départ n'écrase jamais ce qui est gardé
     try {
       localStorage.setItem(KEY, JSON.stringify(lines));
     } catch {

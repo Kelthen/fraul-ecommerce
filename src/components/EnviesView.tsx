@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { GarmentArt } from "./GarmentArt";
 import { Price } from "./Price";
 import { EnvieButton } from "./EnvieButton";
 import { useEnvies } from "./EnviesProvider";
-import type { CategoryId } from "@/lib/catalog";
 
 /** Page « Mes envies » : les pièces gardées de côté, du plus récent au plus ancien. */
 export function EnviesView({ available }: { available: string[] }) {
@@ -31,13 +29,9 @@ export function EnviesView({ available }: { available: string[] }) {
               return (
               <li key={e.slug} className={`envie-card${gone ? " gone" : ""}`}>
                 <Link className="card" href={gone ? `/sur-demande?marque=${encodeURIComponent(e.brand)}` : `/produit/${e.slug}`}>
-                  <div className={e.photo ? "pic photo" : "pic"}>
-                    {e.photo ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- captures du fournisseur, test de rendu avant détourage
-                      <img src={e.photo} alt="" loading="lazy" />
-                    ) : (
-                      <GarmentArt type={e.category as CategoryId} color={e.color} accent={e.accent} />
-                    )}
+                  <div className="pic photo">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- photos du catalogue, parfois hébergées chez Supabase */}
+                    {e.photo && <img src={e.photo} alt="" loading="lazy" />}
                   </div>
                   <span className="br">{e.brand}</span>
                   <span className="nm">{e.name}</span>

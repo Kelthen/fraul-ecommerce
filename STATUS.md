@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-03 par serge (coûts fournisseur privés)_
+_Dernière mise à jour : 2026-11-04 par serge (contenu de test retiré)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -77,6 +77,7 @@ _Dernière mise à jour : 2026-11-03 par serge (coûts fournisseur privés)_
 - **Comptes : CGV et fiche client rattrapées** (3 nov.) : l'acceptation part avec l'inscription et reste chez Supabase Auth ; la fiche client et les CGV sont enregistrées à la prochaine ouverture si la base ne répondait pas — serge
 - **Verrou de caisse et alerte de paiement** (3 nov.) : `PAYMENTS_OPEN` ouvre « Payer » ; si un paiement passe sans que la commande s'enregistre, le groupe Telegram reçoit le montant, l'e-mail et la session Stripe, et le client un message clair — serge
 - **Coûts fournisseur privés** (4 nov.) : les pages reçoivent une table de prix, jamais le coût ; `products.cost`, `supplier_ref` et `product_variants.supplier_cost` ne se lisent plus avec la clé publique (migration 0012 appliquée). Le site lit le catalogue avec la clé service. Page de test `/test/prix` retirée — serge
+- **Contenu de test retiré du site** : plus d'articles ni de dessins générés, boutiques sans articles retirées, rayons limités à ceux qui ont des articles, petit mall (8 boutiques ou moins) sur le tronc seul, avec Finds entre la montée et la descente. Hors production seulement : commandes d'exemple et compte local — serge
 
 ## 🔄 En cours
 
@@ -120,6 +121,7 @@ _Dernière mise à jour : 2026-11-03 par serge (coûts fournisseur privés)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | **Seulement du réel sur le site** : articles de démonstration, dessins générés et boutiques sans articles retirés ; un rayon n'existe que s'il a des articles (remplace « les 6 rayons partout » du 19 oct.). | Serge |
 | 2026-11-04 | **Admin des articles (PR 2)** : `/admin/articles`. Prix tapé en USD, converti par zone à **taux fixes** (CAD 1,38 · GBP 0,79 · EUR 0,92 : décidé par l'équipe, à confirmer). Coût en ¥ obligatoire. Prix plancher appliqué aussi sans remise. Retirer un article = le masquer. Caisse : #17 fermée (remplacée par #43). 3D (#10) : la semaine prochaine. | Rhamone |
 | 2026-11-03 | **Prix : Serge accepte la proposition de Rhamone** (prix de vente tapé en USD, converti selon la zone). Le prix USD **comprend droits, taxes et livraison**. **Taux fixes par zone, changés à la main.** **Remises de groupe appliquées sur ce prix.** **Le coût en ¥ est obligatoire** à la saisie : il sert au prix plancher et à l'alerte à 10 %. Remplace le prix calculé depuis le coût (CLAUDE.md §9). | Serge |
 | 2026-11-04 | **Admin pour Jean Paul** : ajouter, modifier et retirer (masquer) des articles, voir ventes et stats. Plan en 4 PR validé (`docs/ADMIN-ARTICLES.md`). **Prix : Jean Paul tape le prix de vente en USD, converti selon la zone du visiteur** (remplace le prix calculé depuis le coût : contre-proposition de Rhamone, discussion ouverte pour Serge ; détail dans `docs/ADMIN-ARTICLES.md`). Numéros de commande **TUC-** : migration 0008 appliquée. | Rhamone |

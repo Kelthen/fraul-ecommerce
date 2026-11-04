@@ -5,56 +5,32 @@ import { LIVE_SITE } from "@/lib/live-site";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Product } from "@/lib/catalog";
-import { accentFor } from "@/lib/catalog/palette";
-import { COLOR_NAMES } from "@/lib/catalog/palette";
+import { COLOR_NAMES, accentFor } from "@/lib/catalog/palette";
 import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
-import { GarmentArt } from "./GarmentArt";
 import { ProductGallery, photoViews } from "./product/ProductGallery";
 import { EnvieButton } from "./EnvieButton";
 
 
-type Props = { product: Product; categoryLabel: string; brandWord: string };
+type Props = { product: Product; categoryLabel: string };
 
-export function ProductDetail({ product, categoryLabel, brandWord }: Props) {
+export function ProductDetail({ product, categoryLabel }: Props) {
   const { add } = useCart();
   const router = useRouter();
   const [color, setColor] = useState(product.colors[0]);
   const [size, setSize] = useState(product.sizes[Math.min(2, product.sizes.length - 1)]);
-  const [front, setFront] = useState(true);
   const accent = accentFor(color);
   const colorName = COLOR_NAMES[color] ?? "Couleur";
-  const line = { slug: product.slug, name: product.name, brandName: product.brandName, category: product.category, color, accent, prices: product.prices, size, sizes: product.sizes };
+  const line = { slug: product.slug, name: product.name, brandName: product.brandName, category: product.category, color, accent, prices: product.prices, photo: product.image.front, size, sizes: product.sizes };
 
   return (
     <div className="pdp">
-      {product.image ? (
-        <ProductGallery name={product.name} views={photoViews(product.image)} />
-      ) : (
-      <div className="pdp-stage">
-        <span className="ghost-word" aria-hidden="true">TakeUrClothes</span>
-        <GarmentArt
-          key={`${front}-${color}`}
-          className="art flip"
-          type={product.category}
-          color={color}
-          accent={accent}
-          back={!front}
-          word={brandWord}
-          label={`${product.name}, vue ${front ? "de face" : "de dos"}`}
-        />
-        <div className="pdp-turn">
-          <button className="round" type="button" aria-label="Tourner l'article" onClick={() => setFront((f) => !f)}>‹</button>
-          <span>FACE / DOS</span>
-          <button className="round" type="button" aria-label="Tourner l'article" onClick={() => setFront((f) => !f)}>›</button>
-        </div>
-      </div>
-      )}
+      <ProductGallery name={product.name} views={photoViews(product.image)} />
 
       <div className="pdp-info">
         <p className="eyebrow">{product.brandName} · {categoryLabel}</p>
         <h1 style={{ marginTop: 10 }}>{product.name}</h1>
-        <p className="sub muted">{colorName}{product.image ? "" : ` · Vue ${front ? "de face" : "de dos"}`}</p>
+        <p className="sub muted">{colorName}</p>
 
         <div className="opt">
           <div className="opt-head">

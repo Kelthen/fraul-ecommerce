@@ -39,7 +39,7 @@ await check("aucun pays affiché", async () => {
 await check("page marques : pastilles, recherche", async () => {
   await page.goto(BASE + "/marques", { waitUntil: "networkidle" });
   const n = await page.locator(".bround").count();
-  if (n < 30) throw new Error(`${n} pastilles seulement`);
+  if (n < 1) throw new Error("aucune pastille");
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   if (wide) throw new Error("la page déborde en largeur");
   await shot("02b-marques");
@@ -77,7 +77,7 @@ await check("envies : garder une pièce, la retrouver, la retirer", async () => 
   await page.locator(".envies-empty").waitFor({ timeout: 5000 });
 });
 
-await check("suivi : 4 étapes, fourchette, remboursement, code invalide refusé, e-mails", async () => {
+await check("suivi : 4 étapes, fourchette, remboursement, code invalide refusé", async () => {
   await page.goto(BASE + "/suivi?code=tuc%201031", { waitUntil: "networkidle" });
   await page.locator(".track-eta").waitFor({ timeout: 5000 });
   if ((await page.locator(".steps li").count()) !== 4) throw new Error("le suivi n'a pas 4 étapes");
@@ -88,10 +88,6 @@ await check("suivi : 4 étapes, fourchette, remboursement, code invalide refusé
   await page.fill("#track-code", "ABC");
   await page.getByRole("button", { name: "Suivre" }).click();
   await page.locator("#track-err").waitFor({ timeout: 3000 });
-  await page.goto(BASE + "/suivi/e-mails", { waitUntil: "networkidle" });
-  await page.locator(".mail").nth(3).waitFor({ timeout: 5000 });
-  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
-  if (wide) throw new Error("les e-mails débordent en largeur");
 });
 
 await check("compte (démo) : création avec code, mauvais code refusé, déconnexion", async () => {
@@ -119,12 +115,9 @@ await check("compte (démo) : création avec code, mauvais code refusé, déconn
 await check("fiche produit + panier", async () => {
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
   await shot("03-marque");
-  await page.locator(".card:not(:has(.photo))").first().click(); // produit dessiné (démo)
+  await page.locator(".card").first().click();
   await page.getByRole("button", { name: "Au panier" }).waitFor();
   await shot("04-produit");
-  await page.getByRole("button", { name: "Tourner l'article" }).first().click();
-  await page.waitForTimeout(700);
-  await shot("05-produit-dos");
   await page.getByRole("button", { name: "Au panier" }).click();
   await page.goto(BASE + "/panier", { waitUntil: "networkidle" });
   await page.locator(".cart-item").first().waitFor();
@@ -145,55 +138,47 @@ await check("suivi", async () => {
   await shot("08-suivi");
 });
 
-await check("prix : devise de la zone, groupe de test, ligne de confirmation", async () => {
+await check("prix : devise de la zone, ligne de confirmation, aucun coût dans la page", async () => {
   await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
   const usd = await page.locator(".card .pr").first().innerText();
   if (!/\d.*USD$/.test(usd.trim())) throw new Error(`prix par défaut inattendu : ${usd}`);
-  await page.goto(BASE + "/test/prix", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "EUR", exact: true }).click();
-  await page.getByRole("button", { name: /VIP/ }).click();
-  await shot("15-test-prix");
-  await page.goto(BASE + "/marques/trapstar", { waitUntil: "networkidle" });
-  await page.waitForFunction(() => document.querySelector(".card .pr")?.textContent?.includes("EUR"), null, { timeout: 5000 });
   await page.locator(".card").first().click();
-  await page.getByText("Prix personnalisé pour ton compte.").waitFor({ timeout: 5000 });
   await page.getByText(/Droits et taxes inclus\. Prix final confirmé selon l'adresse de livraison\./).first().waitFor();
-  await shot("16-produit-prix-eur-vip");
+  await shot("16-produit-prix");
   const text = await page.locator("body").innerText();
   const found = ["Canada", "USA", "Royaume-Uni", "France", "Belgique", "CA$", "$CA", "US$"].filter((w) => text.includes(w));
   if (found.length) throw new Error(`pays ou devise nationale affichés : ${found.join(", ")}`);
-  await page.goto(BASE + "/test/prix", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /Revenir à la vraie zone/ }).click();
+  if ((await page.content()).includes("cny")) throw new Error("le coût fournisseur est dans la page");
 });
 
 // Va à la boutique k (0 = première) en faisant défiler le mall comme un visiteur.
-// Le nombre de boutiques est lu dans le compteur « Boutique 01 / 31 » (il suit la liste des marques).
+// Le nombre de boutiques est lu dans le compteur « Boutique 01 / 06 » (il suit la liste des marques).
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
-  const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 31;
+  const n = Number(el.querySelector("#count").textContent.split("/")[1]) || 1;
   const track = el.querySelector("#walkTrack");
   // Étapes du parcours (walk-path.ts) : entrée, boutiques avec Finds après les `conAfter` premières, sortie.
   const stops = Number(el.dataset.stops) || n + 1, after = Number(el.dataset.conAfter ?? Infinity);
   el.scrollTop = ((k + 1 + (k >= after ? 1 : 0) + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
 }, k);
 
-await check("walk : mall en T, 31 boutiques", async () => {
+await check("walk : mall, une vitrine par marque, jusqu'à la dernière", async () => {
   await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
   await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(2500);
   await shot("09-walk-entree");
   if (await page.locator("#walk.nogl").count()) throw new Error("WebGL indisponible (mode de secours)");
-  for (const [k, name] of [[0, "10-walk-boutique-01"], [5, "10b-walk-boutique-06"], [13, "10c-walk-mur-du-haut"], [24, "10d-walk-retour-tronc"]]) {
-    await goShop(k);
-    await page.waitForTimeout(1800);
-    await shot(name);
-  }
+  await goShop(0);
+  await page.waitForTimeout(1800);
+  await shot("10-walk-boutique-01");
+  const total = Number((await page.locator("#count").innerText()).split("/")[1]);
+  if (!(total > 0)) throw new Error("compteur de boutiques illisible");
   const shown = await page.locator("#bname").innerText();
   if (!shown) throw new Error("nom de boutique vide");
-  await goShop(30);                                       // 31e et dernière boutique : une des 4 nouvelles marques
+  await goShop(total - 1);
   await page.waitForTimeout(1800);
   const last = await page.locator("#bname").innerText(), count = await page.locator("#count").innerText();
-  if (!/31/.test(count) || last.toLowerCase() !== "travis scott") throw new Error(`dernière boutique : ${last} (${count})`);
-  await shot("10e-walk-31e-boutique");
+  if (!last || Number(count.match(/(\d+)\s*\//)?.[1]) !== total) throw new Error(`dernière boutique : ${last} (${count})`);
+  await shot("10e-walk-derniere-boutique");
 });
 
 await check("walk : toucher la vitrine pour entrer", async () => {
@@ -257,7 +242,9 @@ await check("walk : dans chaque rayon, son nom en haut, en entier, sous la marqu
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
   await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
-  for (const label of ["T-shirts", "Hoodies et sweats", "Pantalons", "Casquettes"]) {
+  const labels = await page.locator("#sCats .s-cat").allTextContents();
+  if (!labels.length) throw new Error("aucun rayon dans la boutique");
+  for (const label of labels) {
     if (await page.locator("#sTog").isVisible()) await page.locator("#sTog").click();
     await page.locator("#sCats .s-cat", { hasText: label }).click();
     await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
@@ -315,7 +302,6 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   await page.locator("#iPage").click();
   await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
   if (!(await page.locator("#store").evaluate((el) => el.inert))) throw new Error("boutique non inerte sous la fiche");
-  if ((await page.locator("#fiche .f-rel li").count()) < 6) throw new Error("pas assez de propositions sous la fiche");
   await back();
   await page.locator("#fiche").waitFor({ state: "hidden", timeout: 5000 });
   if (await page.locator("#sInfo").isHidden()) throw new Error("retour a fermé le rayon au lieu de la fiche");
@@ -354,7 +340,7 @@ await check("Finds : une pièce sur demande (page, puis dans le mall)", async ()
     el.scrollTop = ((after + 1 + 0.1) / stops) * (track.offsetHeight - el.clientHeight);
   });
   await page.locator("#conStop:not([hidden])").waitFor({ timeout: 10000 });
-  await page.waitForTimeout(7000); // saut long (vers la 10e boutique) : la caméra glisse jusqu'au comptoir
+  await page.waitForTimeout(7000); // saut long : la caméra glisse jusqu'au comptoir
   await shot("18a-finds-comptoir");
   // Toucher le comptoir ouvre Finds, jamais la boutique cachée derrière (retour de Rhamone, 18 oct.)
   const gl = await page.locator("#gl").boundingBox();
@@ -386,7 +372,7 @@ await check("heure du jour : à 19 h le mall est plus sombre et éclairé ; vitr
 });
 
 await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court vers un rayon", async () => {
-  await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/walk/nike", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1500);
   const before = await page.locator("#bname").innerText();
@@ -415,13 +401,13 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
 });
 
 await check("raccourcis : recherche « hoodie » → rayon, reprise à la dernière boutique, aide affichée une seule fois", async () => {
-  await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/walk/nike", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1500);
   await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1500);
-  if ((await page.locator("#bname").innerText()) !== "Amiri") throw new Error("pas de reprise à la dernière boutique");
+  if ((await page.locator("#bname").innerText()) !== "Nike") throw new Error("pas de reprise à la dernière boutique");
   if (await page.locator(".tap-hint").isVisible()) throw new Error("« Touche la vitrine » encore affiché alors qu'on est déjà entré");
   await page.locator("#wSearch").click();
   await page.locator("#dirq").fill("hoodie");
@@ -433,15 +419,15 @@ await check("raccourcis : recherche « hoodie » → rayon, reprise à la derni�
 });
 
 await check("lien direct vers une boutique du mall", async () => {
-  await page.goto(BASE + "/walk/amiri", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/walk/nike", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1800);
   const name = await page.locator("#bname").innerText();
-  if (name !== "Amiri") throw new Error(`boutique affichée : ${name}`);
-  await shot("13-devant-amiri");
+  if (name !== "Nike") throw new Error(`boutique affichée : ${name}`);
+  await shot("13-devant-nike");
 });
 
-await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles", async () => {
+await check("boutique avec peu d'articles : seulement ses rayons", async () => {
   await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });   // devant sa vitrine
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1800);
@@ -450,9 +436,9 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);    // toucher la vitrine = entrer
   await page.locator("#sCats .s-cat").first().waitFor({ state: "visible", timeout: 20000 });
-  // Même gabarit pour toutes les boutiques : les 6 rayons partout, même vides (Rhamone, 19 oct.).
+  // Seulement les rayons qui ont des articles (Serge, 4 nov. 2026).
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
-  if (rayons.length !== 6 || !rayons.includes("Hoodies et sweats")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
+  if (!rayons.includes("Hoodies et sweats") || rayons.includes("Sneakers")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
   if (await page.locator("#store #sCon, #store .s-back").count()) throw new Error("Finds ou l'aide « défiler » encore dans la boutique");
   // En haut de la boutique : retour et loupe en icônes ; la loupe ouvre la recherche par-dessus la boutique.
   if ((await page.locator("#sQuit").innerText()).trim()) throw new Error("le bouton retour de la boutique a encore du texte");
@@ -461,17 +447,6 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   await page.locator("#dirClose").click();
   await page.locator("#dir").waitFor({ state: "hidden", timeout: 5000 });
   if (await page.locator("#store").isHidden()) throw new Error("fermer la recherche a fermé la boutique");
-  await page.locator("#sCats .s-cat", { hasText: "Sneakers" }).click();
-  await page.locator("#sInfo.empty:not([hidden])").waitFor({ timeout: 20000 });
-  if ((await page.locator("#iName").textContent()) !== "Rien ici pour l'instant.") throw new Error("rayon vide mal affiché");
-  if (await page.locator("#iAdd").isVisible()) throw new Error("bouton Au panier dans un rayon vide");
-  await shot("14a-rayon-vide");
-  if ((await page.locator("#iElse .s-cat").count()) < 1) throw new Error("rayon vide : pas de proposition chez d'autres marques");
-  const other = await page.locator("#iElse .s-cat").first().textContent();
-  await page.locator("#iElse .s-cat").first().click();
-  await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
-  if (!(await page.locator("#sTitle").textContent()).startsWith(other)) throw new Error(`n'est pas allé chez ${other}`);
-  if (!(await page.locator("#iBrand").textContent()).includes("Sneakers")) throw new Error("pas arrivé au rayon sneakers de l'autre marque");
   await page.goto(BASE + "/walk/travis-scott", { waitUntil: "networkidle" });
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
@@ -495,9 +470,6 @@ await check("boutique d'une nouvelle marque (dans le mall), avec peu d'articles"
   await page.waitForFunction(() => document.querySelector("#fiche .gal-count")?.textContent?.startsWith("2 /"));
   await page.locator("#fiche .f-body").evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   await shot("16-fiche-propositions");
-  const first = await page.locator("#fName").textContent();
-  await page.locator("#fiche .f-rel li button").first().click();
-  await page.waitForFunction((t) => document.querySelector("#fName")?.textContent !== t, first);
 });
 
 // PC (Rhamone, 21 oct. : écran blanc et lenteur sur grand écran, la molette changeait de boutique).

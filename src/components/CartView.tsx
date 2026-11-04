@@ -3,10 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { startCheckout } from "@/app/panier/actions";
-import type { CategoryId } from "@/lib/catalog";
 import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
-import { GarmentArt } from "./GarmentArt";
 
 export function CartView() {
   const { lines, setQty, setSize, remove } = useCart();
@@ -30,7 +28,8 @@ export function CartView() {
         {lines.map((l, i) => (
           <li key={`${l.slug}-${l.size}-${l.color}`} className="cart-item">
             <Link className="pic" href={`/produit/${l.slug}`} aria-label={`${l.name}, voir la fiche`}>
-              <GarmentArt type={l.category as CategoryId} color={l.color} accent={l.accent} />
+              {/* eslint-disable-next-line @next/next/no-img-element -- photos du catalogue, parfois hébergées chez Supabase */}
+              {l.photo && <img src={l.photo} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
             </Link>
             <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
               <span className="eyebrow">{l.brandName}</span>

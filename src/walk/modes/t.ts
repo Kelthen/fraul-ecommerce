@@ -4,6 +4,12 @@ import { CEIL, SLOT, type MallLayout, type Slot } from "../models/mall-layout.ts
 
 export type TDims = { SLOT: number; CEIL: number; STEM_X: number; STEM_END: number; BAR_X: number; BAR_Z: number };
 
+/**
+ * Petit mall : jusqu'à 8 boutiques, seulement le tronc (on monte à droite, Finds au centre, on redescend à gauche).
+ * Sinon Finds tomberait après la dernière boutique, et le visiteur longerait des murs vides.
+ */
+const SHORT = 8;
+
 /** Plan de base : 27 vitrines (tronc 4 + 4, bas de barre 3 + 3, bouts 3 + 3, mur du haut 7). */
 const BASE = { stem: 4, low: 3, end: 3, top: 7 };
 const STEM_X = 7;
@@ -25,7 +31,8 @@ export function counts(n: number) {
 }
 
 export function layoutT(n: number): MallLayout<TDims> {
-  const c = counts(n);
+  const short = n <= SHORT;
+  const c = short ? { stem: Math.max(1, Math.ceil(n / 2)), low: 0, end: 0, top: 0 } : counts(n);
   const STEM_END = 24.5 + (c.stem - 1) * SLOT;
   const BAR_X = Math.max(33, ((c.top - 1) / 2) * SLOT + 7.5);
   const s: Slot[] = [];
@@ -33,7 +40,7 @@ export function layoutT(n: number): MallLayout<TDims> {
   const spread = (a: number, b: number, k: number) => Array.from({ length: k }, (_, i) => (k === 1 ? (a + b) / 2 : a + ((b - a) * i) / (k - 1)));
   const stemZ = Array.from({ length: c.stem }, (_, i) => 12.25 + i * SLOT);           // du bas de la barre vers l'entrée
   const lowX = spread(STEM_X + 4.5, BAR_X - 4.5, c.low);
-  const endZ = [-7.5, -16, -24.5];
+  const endZ = [-7.5, -16, -24.5].slice(0, c.end);
   const topX = spread(((c.top - 1) / 2) * SLOT, -((c.top - 1) / 2) * SLOT, c.top);
 
   [...stemZ].reverse().forEach((z) => put(STEM_X, z, -1, 0));       // on monte le tronc (côté droit)
@@ -48,7 +55,8 @@ export function layoutT(n: number): MallLayout<TDims> {
     slots: s,
     // Vers la 10e boutique (Rhamone, 18 oct. 2026 : « quand tu commences à être fatigué ») : au bout droit de la barre,
     // on se retourne vers le centre, face au comptoir posé à droite du « TUC ».
-    concierge: { after: c.stem + c.low + 2, slot: { x: CONCIERGE_R, z: CENTER_Z, nx: 1, nz: 0 } },
+    // Petit mall : au bout du tronc, entre la montée et la descente.
+    concierge: { after: short ? c.stem : c.stem + c.low + 2, slot: { x: CONCIERGE_R, z: CENTER_Z, nx: 1, nz: 0 } },
     // Contre le mur gauche du bas du tronc (pas de vitrine à cet endroit), juste avant les portes.
     caisse: { x: -STEM_X + 1.6, z: STEM_END - 4.2, nx: 1, nz: 0 },
     entry: { p: [0, STEM_END + 9], l: [0, 2.2, 18] },

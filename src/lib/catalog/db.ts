@@ -32,6 +32,7 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
   if (!brand || !cat || !name || r.cost == null || !r.weight_g || !r.colors.length) return null;
   const imgs = [...r.product_images].sort((a, b) => a.position - b.position);
   const front = imgs.find((i) => i.view === "front")?.path;
+  if (!front) return null;
   return {
     slug: r.slug,
     brandSlug: brand.slug,
@@ -43,9 +44,7 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
     accent: accentFor(r.colors[0]),
     colors: r.colors,
     sizes: r.sizes?.length ? r.sizes : cat.sizes,
-    ...(front
-      ? { image: { front, back: imgs.find((i) => i.view === "back")?.path, details: imgs.filter((i) => i.view === "detail").map((i) => i.path) } }
-      : {}),
+    image: { front, back: imgs.find((i) => i.view === "back")?.path, details: imgs.filter((i) => i.view === "detail").map((i) => i.path) },
   };
 }
 

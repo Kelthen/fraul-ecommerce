@@ -8,7 +8,9 @@ import { PILES, pileOf, type PileId } from "@/models/relay/piles";
 import { clearTestOrders, connectBot, newTestOrder, requestCode, resend, signOut, verifyCode } from "./actions";
 
 // Tableau de bord des commandes de TakeUrClothes (docs/PARCOURS-COMMANDE.md §3) : 3 piles + expédiées.
-// Version de démo : connexion par code Telegram, commande test, branchement du bot.
+const TEST_TOOLS = process.env.VERCEL_ENV !== "production";
+
+// Connexion par code Telegram, commandes, branchement du bot ; commande test hors production seulement.
 export const metadata: Metadata = { title: "Commandes", robots: { index: false, follow: false } };
 
 export default function OrdersAdminPage({ searchParams }: PageProps<"/admin/commandes">) {
@@ -105,15 +107,19 @@ async function Dashboard({ msg }: { msg: string | null }) {
     <>
       {msg && <p className="admin-msg">{msg}</p>}
       <div className="admin-acts">
-        <form action={newTestOrder}>
-          <button className="pill solid">Créer une commande test</button>
-        </form>
+        {TEST_TOOLS && (
+          <form action={newTestOrder}>
+            <button className="pill solid">Créer une commande test</button>
+          </form>
+        )}
         <form action={connectBot}>
           <button className="pill ghost">Brancher le bot sur ce site</button>
         </form>
-        <form action={clearTestOrders}>
-          <button className="pill ghost">Effacer les commandes test</button>
-        </form>
+        {TEST_TOOLS && (
+          <form action={clearTestOrders}>
+            <button className="pill ghost">Effacer les commandes test</button>
+          </form>
+        )}
         <form action={signOut}>
           <button className="pill ghost">Se déconnecter</button>
         </form>

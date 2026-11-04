@@ -16,7 +16,7 @@ register(
     }`),
 );
 
-const { BRANDS, CATEGORIES, PRODUCTS } = await import("../src/lib/catalog/demo.ts");
+const { BRANDS, CATEGORIES, REAL_SNAPSHOT: PRODUCTS } = await import("../src/lib/catalog/demo.ts");
 const { WALK_BRANDS } = await import("../src/lib/catalog/brands.ts");
 
 const q = (v) => `'${String(v).replaceAll("'", "''")}'`;

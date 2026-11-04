@@ -54,7 +54,7 @@ export function WalkExperience({ data, startBrand }: Props) {
   );
   const catLabel = useCallback((cat: CategoryId) => data.categories.find((c) => c.id === cat)?.label ?? cat, [data]);
   const addItem = useCallback(
-    (it: FicheItem, size?: string) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, size, sizes: it.sizes }),
+    (it: FicheItem, size?: string) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }),
     [add],
   );
   // La fiche vient de s'ouvrir ou de se fermer : le moteur remet le fond inerte et le focus à jour.
@@ -94,8 +94,8 @@ export function WalkExperience({ data, startBrand }: Props) {
         const b = brandOf(brandName);
         return (b ? data.items[b.slug]?.[cat] ?? [] : []).map((r) => toItem(data, brandName, cat, r));
       },
-      onAdd: (it: { slug: string; n: string; p: PriceTable; c: string; a: string; brand: string; cat: string; sizes: string[] }, size?: string) =>
-        addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, size, sizes: it.sizes }),
+      onAdd: (it: { slug: string; n: string; p: PriceTable; c: string; a: string; brand: string; cat: string; sizes: string[]; photos: FicheItem["photos"] }, size?: string) =>
+        addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }),
       onExit: () => router.push("/"),
       onFallback: (slug: string) => router.push(`/marques/${slug}`),
       onFiche: (it: FicheItem | null) => setFiche(it ? { ...it } : null),
