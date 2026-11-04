@@ -5,7 +5,7 @@ import { createLayerStack } from "./layers.ts";
 import { route } from "./store-layout.ts";
 import { AT_CAISSE, AT_CONCIERGE, AT_ENTRY, AT_EXIT, pathAt, progressForCaisse, progressForConcierge, progressForShop, stopProgress } from "./walk-path.ts";
 import { layoutT } from "../modes/t.ts";
-import type { Slot } from "./mall-layout.ts";
+import { shopType, type Slot } from "./mall-layout.ts";
 
 const N = 31;
 const MALL = layoutT(N);
@@ -119,4 +119,9 @@ test("petit mall (8 boutiques ou moins) : le tronc seul, Finds entre la montée 
     for (let k = 0; k < n; k++) assert.equal(pathAt(progressForShop(k, n, m), n, 10, m).shop, k);
     assert.equal(pathAt(progressForConcierge(n, m), n, 10, m).shop, AT_CONCIERGE);
   }
+});
+
+test("3 architectures de boutique : toutes présentes dès 3 boutiques, jamais deux fois la même côte à côte", () => {
+  assert.equal(new Set([0, 1, 2].map(shopType)).size, 3);
+  for (let k = 1; k < 40; k++) assert.notEqual(shopType(k), shopType(k - 1), `boutiques ${k - 1} et ${k}`);
 });

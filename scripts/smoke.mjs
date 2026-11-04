@@ -183,6 +183,19 @@ await check("walk : mall, une vitrine par marque, jusqu'à la dernière", async 
   await shot("10e-walk-derniere-boutique");
 });
 
+await check("walk : toucher la porte fait entrer dans le mall", async () => {
+  await page.goto(BASE + "/walk", { waitUntil: "networkidle" });
+  await page.locator("#walk:not([hidden])").waitFor({ timeout: 20000 });
+  await page.evaluate(() => { document.querySelector("#walk").scrollTop = 0; });
+  await page.waitForTimeout(1500);
+  await shot("09b-walk-porte");
+  if (!(await page.locator("#aisle").isHidden())) throw new Error("déjà dans le mall avant de toucher la porte");
+  const box = await page.locator("#gl").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 10000 });
+  if ((await page.locator("#count").innerText()).match(/\d+/)[0] !== "01") throw new Error("la porte ne mène pas à la première boutique");
+});
+
 await check("walk : toucher la vitrine pour entrer", async () => {
   await goShop(1);
   await page.waitForTimeout(1800);

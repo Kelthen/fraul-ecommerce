@@ -6,6 +6,11 @@ export const SLOT = 8.5;
 /** Hauteur sous plafond. */
 export const CEIL = 6.4;
 
+/** Ordre des 3 architectures le long du parcours : varié, jamais deux fois la même côte à côte. */
+const TYPE_ORDER = [0, 2, 1, 2, 0, 1];
+/** Architecture de la k-ième boutique (src/walk/views/facades.ts). Elle change si la boutique change de place. */
+export const shopType = (k: number) => TYPE_ORDER[k % TYPE_ORDER.length];
+
 /** Une vitrine : centre (x, z) et direction vers l'allée (nx, nz). */
 export type Slot = { x: number; z: number; nx: number; nz: number };
 

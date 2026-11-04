@@ -144,8 +144,12 @@ export function WalkExperience({ data, startBrand }: Props) {
               <div className="intro" id="intro">
                 <p className="eyebrow">Walk</p>
                 <h1>Le mall</h1>
-                <p>Fais défiler pour avancer d&apos;une boutique à l&apos;autre. Touche une vitrine pour entrer.</p>
-                <p className="scroll-hint">↓ Fais défiler pour entrer dans le mall</p>
+                <p>Touche la porte pour entrer, puis fais défiler pour passer d&apos;une boutique à l&apos;autre.</p>
+                <div className="acts">
+                  <button className="pill solid" id="walkIn" type="button">
+                    Entrer dans le mall
+                  </button>
+                </div>
               </div>
               <div className="outro con-stop" id="conStop" hidden>
                 <p className="eyebrow">Au centre du mall</p>

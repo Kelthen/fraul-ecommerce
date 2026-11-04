@@ -50,9 +50,15 @@ export function createEntrance(THREE: typeof T, { z, width, height, lines, serif
     return { d, side };
   });
 
+  // Zone à toucher : les deux portes réunies, vues de dehors seulement.
+  const hit = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.set(0, height / 2, z + 0.5);
+  group.add(hit);
+
   let last = -1;
   return {
     group,
+    hit,
     /** Ouvre les portes selon la distance de la caméra à l'entrée (en arrivant comme en sortant). */
     update(camZ: number) {
       const t = Math.min(1, Math.max(0, (z + OPEN_FROM - camZ) / (OPEN_FROM - OPEN_TO)));
