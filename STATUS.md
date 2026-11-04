@@ -11,6 +11,37 @@ _Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
 
 ---
 
+## 🚀 Avant le lancement — liste à ne pas oublier (Rhamone, 4 nov. 2026)
+
+> **Claude de Serge et tout Claude : relire cette liste à chaque session, cocher ce qui est fait dans la PR qui le fait.** Rien ne doit en sortir sans être fait ou décidé.
+
+**Code (Serge)**
+- [ ] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
+- [ ] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge, Jean Paul), Telegram en secours
+- [ ] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
+- [ ] Webhook Stripe : traiter les 4 événements ajoutés au webhook (`checkout.session.async_payment_failed` → annuler + prévenir ; `checkout.session.expired` → relance panier ; `charge.refunded` → commande « remboursée » ; `charge.dispute.created` → alerte Telegram). Aujourd'hui ils sont reçus et ignorés.
+- [ ] **Filtres du catalogue** (Rhamone, 4 nov.) : page « Tout voir » + pages marque et type avec un bouton **« Filtrer »** (volet par le bas au téléphone) : **Type** (hoodies, pantalons, sneakers, chaussettes…), **Marque**, **Couleur** (pastilles), **Taille** ; **Tri** : nouveautés, prix croissant, prix décroissant. Filtres actifs en petites pastilles retirables ; filtres dans l'adresse (lien partageable sur WhatsApp) ; ne proposer que les valeurs qui ont des articles. Petits boutons, photos d'abord (L-58).
+- [ ] **Rayons manquants dans le Walk** : seuls 6 types ont un rayon (`RACKS` de `src/walk/models/store-layout.ts` : tee, hoodie, pants, cap, sneaker, bag). Les **vestes, shorts, chaussettes, lunettes, montres, bijoux** sont en vente sur le site mais **absents des boutiques du Walk** (ex. shorts et doudoune Trapstar). Pour chacun : dessin (`art.ts`) + place sur le portant (`store-layout.ts`) + `npm run smoke` (L-34). Un rayon apparaît tout seul dès qu'une boutique a un article de ce type (rayon vide caché, L-35).
+- [ ] Un **type de vêtement tout nouveau** (ex. « maillots ») n'est pas proposé dans l'admin : l'ajouter au code (`CATEGORIES`) ; plus tard, éventuellement depuis l'admin.
+- [ ] **SEO** :
+  - [ ] Favicon et icônes : `src/app/icon.png` (512 px), `apple-icon.png` (180 px), remplacer `favicon.ico` (aujourd'hui celui par défaut). **Attend le logo** (ligne « Bloqué »).
+  - [ ] Image de partage (Open Graph / WhatsApp / iMessage) : `opengraph-image.png` 1200×630 par défaut, et une par fiche produit (photo de face).
+  - [ ] Titres et descriptions : vérifier chaque page (accueil, marque, catégorie, produit), une description unique par page.
+  - [ ] Données structurées : `Product` (prix, devise, disponibilité) et `Organization` existent ; ajouter `BreadcrumbList` sur marque/catégorie/produit.
+  - [ ] `manifest.webmanifest` (nom, couleurs `#680209` / `#FFFEF7`, icônes).
+  - [ ] Le jour J : `NEXT_PUBLIC_SITE_LIVE=true` en production (débloque `robots.txt` et l'indexation), puis déclarer le site dans **Google Search Console** et envoyer `sitemap.xml`.
+- [ ] Test téléphone : 3 contrôles qui expiraient au retour vers une page de marque (L-55, corrigé par Serge ?) — confirmer `npm run smoke` au vert.
+
+**Rhamone / Jean Paul**
+- [ ] **Logo TakeUrClothes** (fichier SVG ou PNG fond transparent) → favicon, icônes, image de partage, e-mails
+- [ ] Ajouter Jean Paul au groupe Telegram + son ID Telegram dans `TELEGRAM_ALLOWED_USERS` ; son e-mail pour `ADMIN_EMAILS`
+- [ ] Vrais prix (USD) et coûts (¥) de chaque article, saisis dans `/admin/articles`
+- [ ] Renouveler les clés collées dans le chat le 4 nov. (Stripe `whsec_` + `rk_live`, Resend, Turnstile), puis les remettre dans Vercel et Supabase
+- [ ] Compte Stripe vérifié (pays de l'entreprise, identité, banque)
+- [ ] Pages légales (CGV, confidentialité, mentions) relues par un juriste
+- [ ] Livraison droits payés (DDP), IOSS (UE) et TVA UK avec un comptable
+- [ ] **Dernier geste** : `PAYMENTS_OPEN=true` en production (ouvre la vraie caisse)
+
 ## Infos client (confirmées au kickoff)
 
 | Clé | Valeur | Confirmé le |
@@ -115,6 +146,7 @@ _Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
 
 | Élément attendu | Demandé le | Relancé le |
 |---|---|---|
+| **Logo TakeUrClothes** (SVG ou PNG transparent) : favicon, icônes, image de partage, e-mails | 2026-11-04 | — |
 | Logo, textes, liste des produits et prix | — | — |
 | Photos produits | — | — |
 | Factures fournisseur des marques (à archiver, non bloquant) | — | — |
