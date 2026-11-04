@@ -14,13 +14,16 @@ export type Zone = {
   dutiesPct: number;
   /** Marge de la zone, en % du coût rendu (prix catalogue volontairement haut). */
   marginPct: number;
+  /** 1 USD = `perUsd` unités de la devise : convertit le prix tapé en dollars par Jean Paul.
+   *  Fixe, changé à la main (Serge, 3 nov. 2026) — valeurs « décidé par l'équipe, à confirmer ». */
+  perUsd: number;
 };
 
 export const ZONES: Record<ZoneId, Zone> = {
-  us: { currency: "USD", fx: 0.14, shippingPerKg: 12, dutiesPct: 15, marginPct: 120 },
-  ca: { currency: "CAD", fx: 0.19, shippingPerKg: 16, dutiesPct: 18, marginPct: 120 },
-  uk: { currency: "GBP", fx: 0.11, shippingPerKg: 10, dutiesPct: 20, marginPct: 120 },
-  eu: { currency: "EUR", fx: 0.13, shippingPerKg: 11, dutiesPct: 22, marginPct: 120 },
+  us: { currency: "USD", fx: 0.14, shippingPerKg: 12, dutiesPct: 15, marginPct: 120, perUsd: 1 },
+  ca: { currency: "CAD", fx: 0.19, shippingPerKg: 16, dutiesPct: 18, marginPct: 120, perUsd: 1.38 },
+  uk: { currency: "GBP", fx: 0.11, shippingPerKg: 10, dutiesPct: 20, marginPct: 120, perUsd: 0.79 },
+  eu: { currency: "EUR", fx: 0.13, shippingPerKg: 11, dutiesPct: 22, marginPct: 120, perUsd: 0.92 },
 };
 
 /** Pays de livraison → zone. Jamais affiché sur le site (décision du 2026-10-12). */
