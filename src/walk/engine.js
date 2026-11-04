@@ -24,7 +24,7 @@ let THREE = null;
 let MANNEQUIN = null;
 /** Mannequin femme, même préparation (scripts/prep-mannequin.mjs <source> public/models/mannequin-femme.glb), mêmes noms de matières.
  *  Quand le fichier est là, passer WOMAN_READY à true : il prend sa place partout, sans autre changement. */
-const WOMAN_READY = false;
+const WOMAN_READY = true;
 let MANNEQUIN_F = null;
 /** Comptoir de la Caisse modélisé dans Blender par Rhamone (public/models/caisse.glb, préparé par scripts/prep-decor.mjs). */
 let CAISSE = null;
