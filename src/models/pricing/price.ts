@@ -1,6 +1,8 @@
 // Calcul des prix : fonctions pures, sans page ni navigateur (testées dans price.test.ts).
 // Le paiement recalculera tout côté serveur avec l'adresse de livraison : le navigateur n'envoie jamais un prix.
+// Serveur seulement : ce fichier connaît les marges. Le navigateur importe ./public.ts.
 import { COUNTRY_ZONE, DEFAULT_ZONE, GROUPS, MIN_MARGIN_PCT, ZONES, type GroupId, type ZoneId } from "./config.ts";
+import type { PriceTable } from "./public.ts";
 
 /** Ce que coûte un article chez le fournisseur : prix en yuans et poids en grammes.
  *  `usd` : prix de vente tapé par Jean Paul (droits et livraison compris) ; sans lui, le prix est calculé depuis le coût. */
@@ -33,9 +35,6 @@ export const catalogPrice = (cost: Cost, zoneId: ZoneId): number =>
     ? roundNice(cost.usd * ZONES[zoneId].perUsd) // prix tapé en dollars, converti au taux fixe de la zone
     : roundNice(landedCost(cost, zoneId) * (1 + ZONES[zoneId].marginPct / 100));
 
-/** Tous les prix d'un article, par zone et par groupe. C'est ce qui part vers le navigateur : jamais le coût. */
-export type PriceTable = Record<ZoneId, Record<GroupId, number>>;
-
 /** Prix plancher : coût rendu + marge minimale, arrondi à l'unité supérieure (R5). */
 export const floorPrice = (cost: Cost, zoneId: ZoneId): number => Math.ceil(landedCost(cost, zoneId) * (1 + MIN_MARGIN_PCT / 100));
 
@@ -54,14 +53,6 @@ export function customerPrice(cost: Cost, zoneId: ZoneId, groupId: GroupId = "pu
   return Math.max(drift <= MAX_DISCOUNT_DRIFT ? nice : Math.round(raw), floorPrice(cost, zoneId));
 }
 
+/** Prix publics d'un article, par zone. C'est ce qui part vers le navigateur : jamais le coût, ni le prix d'un groupe. */
 export const priceTable = (cost: Cost): PriceTable =>
-  Object.fromEntries(
-    (Object.keys(ZONES) as ZoneId[]).map((z) => [z, Object.fromEntries((Object.keys(GROUPS) as GroupId[]).map((g) => [g, customerPrice(cost, z, g)]))]),
-  ) as PriceTable;
-
-/** Le stockage du navigateur n'est pas fiable : vérifie la forme avant d'afficher un prix. */
-export const isPriceTable = (t: unknown): t is PriceTable =>
-  !!t && typeof t === "object" && (Object.keys(ZONES) as ZoneId[]).every((z) => {
-    const row = (t as Record<string, Record<string, unknown>>)[z];
-    return !!row && (Object.keys(GROUPS) as GroupId[]).every((g) => Number.isFinite(row[g]));
-  });
+  Object.fromEntries((Object.keys(ZONES) as ZoneId[]).map((z) => [z, customerPrice(cost, z)])) as PriceTable;

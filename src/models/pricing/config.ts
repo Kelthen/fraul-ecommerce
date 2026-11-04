@@ -1,8 +1,9 @@
 // Réglages des prix : le SEUL fichier à modifier pour changer une marge, une livraison ou une remise.
 // ⚠️ Valeurs de TEST, « décidé par l'équipe, à confirmer » (Rhamone + Serge, voir CLAUDE.md §9 « À décider »).
 
-export type ZoneId = "us" | "ca" | "uk" | "eu";
-export type Currency = "USD" | "CAD" | "GBP" | "EUR";
+import { DEFAULT_ZONE, ZONE_CURRENCY, type Currency, type ZoneId } from "./public.ts";
+
+export { DEFAULT_ZONE, type Currency, type ZoneId };
 
 export type Zone = {
   currency: Currency;
@@ -20,17 +21,14 @@ export type Zone = {
 };
 
 export const ZONES: Record<ZoneId, Zone> = {
-  us: { currency: "USD", fx: 0.14, shippingPerKg: 12, dutiesPct: 15, marginPct: 120, perUsd: 1 },
-  ca: { currency: "CAD", fx: 0.19, shippingPerKg: 16, dutiesPct: 18, marginPct: 120, perUsd: 1.38 },
-  uk: { currency: "GBP", fx: 0.11, shippingPerKg: 10, dutiesPct: 20, marginPct: 120, perUsd: 0.79 },
-  eu: { currency: "EUR", fx: 0.13, shippingPerKg: 11, dutiesPct: 22, marginPct: 120, perUsd: 0.92 },
+  us: { currency: ZONE_CURRENCY.us, fx: 0.14, shippingPerKg: 12, dutiesPct: 15, marginPct: 120, perUsd: 1 },
+  ca: { currency: ZONE_CURRENCY.ca, fx: 0.19, shippingPerKg: 16, dutiesPct: 18, marginPct: 120, perUsd: 1.38 },
+  uk: { currency: ZONE_CURRENCY.uk, fx: 0.11, shippingPerKg: 10, dutiesPct: 20, marginPct: 120, perUsd: 0.79 },
+  eu: { currency: ZONE_CURRENCY.eu, fx: 0.13, shippingPerKg: 11, dutiesPct: 22, marginPct: 120, perUsd: 0.92 },
 };
 
 /** Pays de livraison → zone. Jamais affiché sur le site (décision du 2026-10-12). */
 export const COUNTRY_ZONE: Record<string, ZoneId> = { US: "us", CA: "ca", GB: "uk", FR: "eu", BE: "eu" };
-
-/** Zone par défaut quand le pays est inconnu ou hors des pays livrés. */
-export const DEFAULT_ZONE: ZoneId = "us";
 
 export type GroupId = "public" | "vip" | "fidele" | "revendeur";
 

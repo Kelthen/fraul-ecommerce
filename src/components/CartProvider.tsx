@@ -1,6 +1,6 @@
 "use client";
 
-import { isPriceTable, type PriceTable } from "@/models/pricing/price";
+import { isPriceTable, type PriceTable } from "@/models/pricing/public";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // Panier côté navigateur. Au paiement, tout est recalculé côté serveur :
