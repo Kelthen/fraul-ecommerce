@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { AdminLogin } from "@/components/admin/AdminLogin";
 import { isAdmin } from "@/lib/server/admin-session";
 import { db } from "@/lib/server/db";
 import { PERIODS, salesByCurrency, topItems, type SaleOrder } from "@/models/admin/stats";
@@ -8,13 +9,13 @@ import { PERIODS, salesByCurrency, topItems, type SaleOrder } from "@/models/adm
 // Accueil de l'admin (docs/ADMIN-ARTICLES.md, PR 3) : ventes de Jean Paul et accès aux autres pages.
 export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
 
-export default function AdminHomePage() {
+export default function AdminHomePage({ searchParams }: PageProps<"/admin">) {
   return (
     <section className="sec wrap admin" style={{ paddingTop: 40 }}>
       <p className="eyebrow">TakeUrClothes · équipe</p>
       <h1 className="h2">Tableau de bord</h1>
       <Suspense fallback={<p className="muted">Chargement…</p>}>
-        <Dashboard />
+        <Dashboard searchParams={searchParams} />
       </Suspense>
     </section>
   );
@@ -47,13 +48,11 @@ async function loadSales() {
   return { orders, finds, now };
 }
 
-async function Dashboard() {
-  if (!(await isAdmin()))
-    return (
-      <p className="muted">
-        Accès réservé. <Link className="link" href="/admin/commandes">Connecte-toi</Link> (code sur Telegram), puis reviens ici.
-      </p>
-    );
+async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["searchParams"] }) {
+  if (!(await isAdmin())) {
+    const { msg } = await searchParams;
+    return <AdminLogin msg={typeof msg === "string" ? msg : null} />;
+  }
   const { orders, finds, now } = await loadSales();
 
   return (

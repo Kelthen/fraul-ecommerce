@@ -413,6 +413,8 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .admin-acts form { margin: 0; }
 .admin-login { display: grid; gap: 14px; max-width: 420px; margin-top: 16px; }
 .admin-code { display: grid; gap: 8px; }
+.admin-email { display: grid; gap: 8px; }
+.admin-email input { font: inherit; padding: 10px 12px; border: 1.5px solid var(--ink); border-radius: 10px; }
 .admin-code input { font: inherit; font-size: 1.4rem; letter-spacing: 0.2em; padding: 10px 12px; border: 1.5px solid var(--ink); border-radius: 10px; background: transparent; }
 .admin-pile { margin-top: 28px; }
 .admin-pile h2 { font-size: 1.1rem; margin-bottom: 10px; }

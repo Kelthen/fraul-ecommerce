@@ -25,7 +25,7 @@ async function Sheet({ searchParams }: { searchParams: PageProps<"/admin/boutiqu
   if (!(await isAdmin()))
     return (
       <p className="muted">
-        Accès réservé. <Link className="link" href="/admin/commandes">Connecte-toi</Link>, puis reviens ici.
+        Accès réservé. <Link className="link" href="/admin">Connecte-toi</Link>, puis reviens ici.
       </p>
     );
   const sp = await searchParams;

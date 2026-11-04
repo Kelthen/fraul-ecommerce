@@ -173,3 +173,9 @@ do $$ begin
   exception when insufficient_privilege then raise notice 'OK: un client ne lit pas products.cost'; end;
 end $$;
 reset role;
+set role anon;
+do $$ begin
+  begin perform code_hash from admin_login_codes limit 1; raise notice 'ECHEC: un visiteur lit les codes admin';
+  exception when insufficient_privilege then raise notice 'OK: un visiteur ne lit pas les codes admin'; end;
+end $$;
+reset role;

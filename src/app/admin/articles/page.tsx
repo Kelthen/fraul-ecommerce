@@ -26,7 +26,7 @@ async function List({ searchParams }: { searchParams: PageProps<"/admin/articles
   if (!(await isAdmin()))
     return (
       <p className="muted">
-        Accès réservé. <Link className="link" href="/admin/commandes">Connecte-toi</Link> (code sur Telegram), puis reviens ici.
+        Accès réservé. <Link className="link" href="/admin">Connecte-toi</Link>, puis reviens ici.
       </p>
     );
   const sp = await searchParams;

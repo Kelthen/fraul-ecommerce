@@ -14,6 +14,18 @@ const SELECT =
 
 export const mailerReady = () => Boolean(process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim());
 
+/** E-mail simple, en texte (codes de connexion de l'admin). */
+export async function sendEmail(to: string, subject: string, text: string): Promise<void> {
+  if (!mailerReady()) throw new Error("Resend non configuré");
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY!.trim()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: process.env.EMAIL_FROM!.trim(), to: [to], subject, text }),
+  });
+  if (!res.ok) throw new Error(`Resend ${res.status}`);
+}
+
 async function send(to: string, kind: EmailKind, row: TrackingRow, baseUrl: string): Promise<void> {
   const mail = orderEmail(kind, orderFromRow(row), { timeZone: "America/Toronto" });
   const replyTo = process.env.EMAIL_REPLY_TO?.trim();

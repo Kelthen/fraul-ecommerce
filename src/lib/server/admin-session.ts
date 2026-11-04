@@ -5,9 +5,8 @@ import { connection } from "next/server";
 import { adminChatId, sessionKey } from "./env";
 import { sendMessage } from "./telegram";
 
-// Connexion de démo au tableau de bord : un code à 8 chiffres envoyé dans la conversation du bot
-// (le compte de Jean Paul, ou le groupe de l'équipe). Pas de mot de passe à retenir, pas de variable de plus.
-// ⚠️ Provisoire : la vraie connexion (Supabase Auth + double vérification, ARCHITECTURE §4) remplacera ceci.
+// Session du tableau de bord, et code de secours : 8 chiffres envoyés dans la conversation du bot
+// (le compte de Jean Paul, ou le groupe de l'équipe). La connexion normale passe par e-mail (admin-email-login.ts).
 
 const PENDING = "tuc_admin_code";
 const SESSION = "tuc_admin";
@@ -31,9 +30,14 @@ export async function checkLoginCode(code: string): Promise<boolean> {
   const clean = code.replace(/\D/g, "");
   if (!exp || !mac || Number(exp) < Date.now() || !same(mac, sign(`code|${clean}|${exp}`))) return false;
   jar.delete(PENDING);
-  const sessionExp = Date.now() + SESSION_HOURS * 3_600_000;
-  jar.set(SESSION, `${sessionExp}.${sign(`session|${sessionExp}`)}`, { ...cookieOpts, maxAge: SESSION_HOURS * 3600 });
+  await startAdminSession();
   return true;
+}
+
+/** Ouvre la session de l'admin, après un code Telegram ou un code par e-mail. */
+export async function startAdminSession(): Promise<void> {
+  const exp = Date.now() + SESSION_HOURS * 3_600_000;
+  (await cookies()).set(SESSION, `${exp}.${sign(`session|${exp}`)}`, { ...cookieOpts, maxAge: SESSION_HOURS * 3600 });
 }
 
 export async function isAdmin(): Promise<boolean> {
