@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-03 par serge (import du catalogue, décision sur les prix)_
+_Dernière mise à jour : 2026-11-03 par serge (webhook Stripe testé, logos réseaux)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -76,6 +76,7 @@ _Dernière mise à jour : 2026-11-03 par serge (import du catalogue, décision s
 - **E-mails de commande** (3 nov.) : « confirmée » au paiement et « en route » 15 minutes après le code de suivi, par Resend. Inactif sans `RESEND_API_KEY` et `EMAIL_FROM` dans Vercel ; jamais pour une commande de test. L'« en route » part au geste suivant dans le bot, au plus tard à la visite quotidienne. « Livrée » et « indisponible » attendent le suivi du transporteur et les remboursements — serge
 - **Comptes : CGV et fiche client rattrapées** (3 nov.) : l'acceptation part avec l'inscription et reste chez Supabase Auth ; la fiche client et les CGV sont enregistrées à la prochaine ouverture si la base ne répondait pas — serge
 - **Verrou de caisse et alerte de paiement** (3 nov.) : `PAYMENTS_OPEN` ouvre « Payer » ; si un paiement passe sans que la commande s'enregistre, le groupe Telegram reçoit le montant, l'e-mail et la session Stripe, et le client un message clair — serge
+- **Webhook Stripe testé et logos sociaux** (4 nov.) : signature et événements couverts par des tests ; adresse à déclarer : `https://www.take-ur-clothes.com/api/stripe`, clé `STRIPE_WEBHOOK_SECRET` attendue. Logos Instagram et WhatsApp dans le pied de page, cliquables dès que les liens sont dans `src/content/social.ts` — serge
 
 ## 🔄 En cours
 

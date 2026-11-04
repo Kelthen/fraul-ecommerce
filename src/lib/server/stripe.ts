@@ -1,5 +1,4 @@
 import "server-only";
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { need } from "./env";
 
 // Stripe par son API REST, côté serveur uniquement. Pas de dépendance en plus : de simples requêtes fetch,
@@ -55,16 +54,3 @@ export const getCheckoutSession = (id: string) => call<CheckoutSession>(`checkou
 
 /** Adresse de livraison de la session, quelle que soit la version de l'API. */
 export const shippingOf = (s: CheckoutSession): ShippingDetails => s.collected_information?.shipping_details ?? s.shipping_details ?? null;
-
-/**
- * Vérifie l'en-tête Stripe-Signature d'un webhook (HMAC SHA-256 de « horodatage.corps »), à 5 min près.
- * https://docs.stripe.com/webhooks#verify-manually
- */
-export function verifyWebhook(rawBody: string, header: string | null, secret: string, now = Date.now()): boolean {
-  if (!header) return false;
-  const parts = header.split(",").map((p) => p.split("=") as [string, string]);
-  const t = Number(parts.find(([k]) => k === "t")?.[1]);
-  if (!Number.isFinite(t) || Math.abs(now / 1000 - t) > 300) return false;
-  const want = Buffer.from(createHmac("sha256", secret).update(`${t}.${rawBody}`).digest("hex"));
-  return parts.some(([k, v]) => k === "v1" && v?.length === want.length && timingSafeEqual(Buffer.from(v), want));
-}
