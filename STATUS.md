@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-03 par serge (textes provisoires cachés en production)_
+_Dernière mise à jour : 2026-11-03 par serge (import du catalogue, décision sur les prix)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -81,7 +81,7 @@ _Dernière mise à jour : 2026-11-03 par serge (textes provisoires cachés en pr
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
-| **Admin articles + tableau de bord pour Jean Paul** : PR 1 « articles dans la base » (code prêt, migration 0010 appliquée, **import à lancer avant merge**), puis /admin/articles, /admin (stats), compte admin de Jean Paul. **Serge reprend** : tout est dans `docs/ADMIN-ARTICLES.md` | rhamon → serge | `feat/rhamon/catalogue-base` | 2026-11-04 |
+| **Admin articles + tableau de bord pour Jean Paul** : PR 1 « articles dans la base » (code prêt, migration 0010 appliquée, **import fait le 3 nov. : 23 articles**), puis /admin/articles, /admin (stats), compte admin de Jean Paul. **Serge reprend** : tout est dans `docs/ADMIN-ARTICLES.md` | rhamon → serge | `feat/rhamon/catalogue-base` | 2026-11-04 |
 | Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
@@ -93,16 +93,12 @@ _Dernière mise à jour : 2026-11-03 par serge (textes provisoires cachés en pr
 5. Docs : retirer WhatsApp de CLAUDE.md §9, ARCHITECTURE.md (texte proposé dans la conversation du 17 oct.) — rhamon
 6. ✅ Plusieurs fournisseurs + Finds : tests RLS écrits et vue remplacée par une fonction (migration 0009, appliquée le 3 nov.) — serge
 7. Plus tard : retirer `customers.whatsapp` et le canal `whatsapp` (validé par Serge le 18 oct.)
-8. Supabase : brancher le site (catalogue, comptes). Le relais des commandes (#29) lit déjà la base côté serveur (clé service dans Vercel, preview seulement) — serge + rhamon
+8. Supabase : le relais, le suivi, les comptes et Finds lisent la base, en production aussi (clé service posée le 3 nov.). Catalogue : voir la ligne « Admin articles » — serge + rhamon
 9. ⚠️ **Supabase (plan gratuit) se met en pause après ~7 jours sans activité** : le 1er nov., un paiement test est passé chez Stripe sans être enregistré (base en pause, relancée le jour même). Avant le lancement : plan payant (≈ 25 $/mois) ou visite automatique quotidienne — décision de Rhamone attendue. **Visite quotidienne prête (`/api/quotidien`, 3 nov.)**, le plan payant reste le choix le plus sûr pour la production.
-10. Paiement Stripe : en ligne (#44). Ensuite : message clair + alerte Telegram si la base ne répond pas après un paiement ; webhook (`whsec_`), passage en live (compte Stripe vérifié, pages légales, vrais coûts)
-10. Paiement Stripe : en ligne (#44). Ensuite : message clair + alerte Telegram si la base ne répond pas après un paiement ; webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
-9. ⚠️ **Supabase (plan gratuit) se met en pause après ~7 jours sans activité** : le 1er nov., un paiement test est passé chez Stripe sans être enregistré (base en pause, relancée le jour même). Avant le lancement : plan payant (≈ 25 $/mois) ou visite automatique quotidienne — décision de Rhamone attendue.
-10. Paiement Stripe : en ligne (#44). Ensuite : webhook (`whsec_`), e-mails au client, passage en live (compte Stripe vérifié, pages légales, vrais coûts)
+10. Paiement Stripe : en ligne (#44), verrou et alerte en place (#52). Reste : webhook (`whsec_`), puis passage en live (compte Stripe vérifié, pages légales, vrais prix)
 11. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-12. Fournisseur + commandes + WeChat : valider `docs/FOURNISSEUR-COMMANDES.md` (3 questions en fin), puis obtenir de TakeUrClothes le lien du site fournisseur — Serge
-13. Comptes : réglages Supabase Auth faits par Serge le 3 nov. (Resend, modèles d'e-mail, code à 6 chiffres, mot de passe de 10 caractères). Reste Turnstile : `NEXT_PUBLIC_TURNSTILE_SITE_KEY` dans Vercel, puis secret dans Supabase → Attack Protection. Pour Finds, ajouter aussi `TURNSTILE_SECRET_KEY` dans Vercel. Reste : 2FA admin et partenaires — serge
 12. ✅ Fournisseur + commandes + WeChat : 3 questions de `docs/FOURNISSEUR-COMMANDES.md` tranchées le 3 nov. Reste à obtenir le coût de chaque article — serge
+13. Comptes : code à 6 chiffres, mot de passe de 10 caractères et confirmation d'e-mail réglés dans Supabase le 3 nov. **Bloqué par le domaine** (prévu le 4 nov.) : domaine vérifié dans Resend, puis SMTP personnalisé dans Supabase, modèles d'e-mail avec `{{ .Token }}` en français, `RESEND_API_KEY` et `EMAIL_FROM` dans Vercel. Ensuite : webhook Stripe et Turnstile (`NEXT_PUBLIC_TURNSTILE_SITE_KEY` et `TURNSTILE_SECRET_KEY` dans Vercel, secret aussi dans Supabase → Attack Protection). Reste : 2FA admin et partenaires — serge
 
 ## ⏳ Bloqué — attend le client
 
@@ -123,6 +119,7 @@ _Dernière mise à jour : 2026-11-03 par serge (textes provisoires cachés en pr
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-03 | **Prix : Serge accepte la proposition de Rhamone** (prix de vente tapé en USD, converti selon la zone). Le prix USD **comprend droits, taxes et livraison**. **Taux fixes par zone, changés à la main.** **Remises de groupe appliquées sur ce prix.** **Le coût en ¥ est obligatoire** à la saisie : il sert au prix plancher et à l'alerte à 10 %. Remplace le prix calculé depuis le coût (CLAUDE.md §9). | Serge |
 | 2026-11-04 | **Admin pour Jean Paul** : ajouter, modifier et retirer (masquer) des articles, voir ventes et stats. Plan en 4 PR validé (`docs/ADMIN-ARTICLES.md`). **Prix : Jean Paul tape le prix de vente en USD, converti selon la zone du visiteur** (remplace le prix calculé depuis le coût : contre-proposition de Rhamone, discussion ouverte pour Serge ; détail dans `docs/ADMIN-ARTICLES.md`). Numéros de commande **TUC-** : migration 0008 appliquée. | Rhamone |
 | 2026-11-03 | **Verrou de caisse `PAYMENTS_OPEN`** : « Payer » reste fermé tant qu'il ne vaut pas `true` en production, même avec toutes les clés. Les clés servent ainsi au suivi et aux comptes sans ouvrir la caisse. Sur les previews : `true`. Complète la décision du 3 nov. sur l'ouverture, qui devient ce seul réglage. | Serge |
 | 2026-11-03 | **Produits : le fournisseur envoie les photos sur WeChat**, importées avec `scripts/import-catalogue.mjs` (pas de fichier ni d'import par lien au départ). **Alerte marge à 10 %**, sur chaque nouveau coût saisi. | Serge |
