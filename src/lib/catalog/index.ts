@@ -1,7 +1,9 @@
-// Point d'accès unique au catalogue. Aujourd'hui : données de démonstration.
-// Demain : requêtes à la base (Supabase). Les pages n'appellent que ces fonctions.
+// Point d'accès unique au catalogue. Les pages n'appellent que ces fonctions.
+// Vrais articles : la base (src/lib/catalog/db.ts), modifiable depuis l'admin ; copie de secours si elle ne répond pas.
+// Articles de démo (dessinés) : dans le code. Marques et catégories : dans le code pour l'instant.
 import { WALK_BRANDS, slugify } from "./brands";
-import { BRANDS, CATEGORIES, NEW_ARRIVALS, PRODUCTS } from "./demo";
+import { loadSiteRows, toProduct } from "./db";
+import { BRANDS, CATEGORIES, DEMO_PRODUCTS, NEW_ARRIVALS, REAL_SNAPSHOT, accentFor } from "./demo";
 import type { Brand, Category, CategoryId, Product } from "./types";
 
 export type { Brand, Category, CategoryId, Product } from "./types";
@@ -28,35 +30,44 @@ export async function getCategoryBySlug(slug: string): Promise<Category | undefi
   return CATEGORIES.find((c) => c.slug === slug);
 }
 
+/** Vrais articles du site (base, ou copie de secours), puis les articles de démo. */
+async function allProducts(): Promise<Product[]> {
+  const rows = await loadSiteRows();
+  const real = rows ? rows.map((r) => toProduct(r, BRANDS, CATEGORIES, accentFor)).filter((p): p is Product => p !== null) : REAL_SNAPSHOT;
+  return [...real, ...DEMO_PRODUCTS];
+}
+
 export async function getProducts(): Promise<Product[]> {
-  return PRODUCTS;
+  return allProducts();
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {
-  return PRODUCTS.find((p) => p.slug === slug);
+  return (await allProducts()).find((p) => p.slug === slug);
 }
 
 export async function getProductsByBrand(brandSlug: string): Promise<Product[]> {
-  return PRODUCTS.filter((p) => p.brandSlug === brandSlug);
+  return (await allProducts()).filter((p) => p.brandSlug === brandSlug);
 }
 
 export async function getProductsByCategory(id: CategoryId): Promise<Product[]> {
-  return PRODUCTS.filter((p) => p.category === id);
+  return (await allProducts()).filter((p) => p.category === id);
 }
 
 /** Nouveautés : les vrais produits avec photo d'abord (une pièce par marque, puis les suivantes), complétés par la démo. */
 export async function getNewArrivals(): Promise<Product[]> {
-  const real = PRODUCTS.filter((p) => p.image);
+  const products = await allProducts();
+  const real = products.filter((p) => p.image);
   const firstOfBrand = real.filter((p, i) => real.findIndex((q) => q.brandSlug === p.brandSlug) === i);
   const picked = [...firstOfBrand, ...real.filter((p) => !firstOfBrand.includes(p))].slice(0, 8);
-  const demo = NEW_ARRIVALS.map(([brand, cat, k]) => PRODUCTS.filter((p) => p.brandSlug === slugify(brand) && p.category === cat && !p.image)[k]);
+  const demo = NEW_ARRIVALS.map(([brand, cat, k]) => products.filter((p) => p.brandSlug === slugify(brand) && p.category === cat && !p.image)[k]);
   return [...picked, ...demo].slice(0, 8);
 }
 
 /** Pièces proposées dans « Crée ta tenue » : quelques articles par emplacement. */
 export async function getOutfitPieces(): Promise<Record<"top" | "bottom" | "shoes", Product[]>> {
   const walk = WALK_BRANDS.slice(0, 8).map(slugify);
+  const products = await allProducts();
   const pick = (cats: CategoryId[]) =>
-    PRODUCTS.filter((p) => cats.includes(p.category) && walk.includes(p.brandSlug)).filter((_, i) => i % 3 === 0).slice(0, 8);
+    products.filter((p) => cats.includes(p.category) && walk.includes(p.brandSlug)).filter((_, i) => i % 3 === 0).slice(0, 8);
   return { top: pick(["tee", "hoodie"]), bottom: pick(["pants"]), shoes: pick(["sneaker"]) };
 }

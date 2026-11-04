@@ -81,6 +81,7 @@ _Dernière mise à jour : 2026-11-03 par serge (textes provisoires cachés en pr
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
+| **Admin articles + tableau de bord pour Jean Paul** : PR 1 « articles dans la base » (code prêt, migration 0010 appliquée, **import à lancer avant merge**), puis /admin/articles, /admin (stats), compte admin de Jean Paul. **Serge reprend** : tout est dans `docs/ADMIN-ARTICLES.md` | rhamon → serge | `feat/rhamon/catalogue-base` | 2026-11-04 |
 | Super centre, chantiers C à F : Caisse à la sortie + sac qui se remplit, Finds « Sur demande » (+ proposition fournisseurs multiples pour Serge), envies puis comptes, vitrines vivantes, heure du jour | rhamon | une PR par chantier | 2026-10-18 |
 
 ## 🆕 À faire (par priorité)
@@ -122,6 +123,7 @@ _Dernière mise à jour : 2026-11-03 par serge (textes provisoires cachés en pr
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | **Admin pour Jean Paul** : ajouter, modifier et retirer (masquer) des articles, voir ventes et stats. Plan en 4 PR validé (`docs/ADMIN-ARTICLES.md`). « Paul va ajouter les prix » : à préciser (coût ¥ ou prix de vente). Numéros de commande **TUC-** : migration 0008 appliquée. | Rhamone |
 | 2026-11-03 | **Verrou de caisse `PAYMENTS_OPEN`** : « Payer » reste fermé tant qu'il ne vaut pas `true` en production, même avec toutes les clés. Les clés servent ainsi au suivi et aux comptes sans ouvrir la caisse. Sur les previews : `true`. Complète la décision du 3 nov. sur l'ouverture, qui devient ce seul réglage. | Serge |
 | 2026-11-03 | **Produits : le fournisseur envoie les photos sur WeChat**, importées avec `scripts/import-catalogue.mjs` (pas de fichier ni d'import par lien au départ). **Alerte marge à 10 %**, sur chaque nouveau coût saisi. | Serge |
 | 2026-11-03 | ⚠️ **Production : Serge choisit d'ouvrir la vraie caisse, sans verrou.** Les réglages Supabase et Telegram vont en production ; dès que les deux secrets (`SUPABASE_SERVICE_ROLE_KEY`, `TELEGRAM_BOT_TOKEN`) y sont collés, « Payer » encaisse de vrais paiements avec les prix actuels, calculés sur des **coûts fictifs**. Déjà ajoutés : `TELEGRAM_ADMIN_CHAT_ID` (groupe de l'équipe) et `TELEGRAM_ALLOWED_USERS`. Rhamone : à lire avant le collage des secrets. | Serge |
