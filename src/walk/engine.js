@@ -10,16 +10,22 @@ import { getMode } from "./modes";
 import { createCaisse } from "./views/caisse";
 import { createConciergeDesk } from "./views/concierge";
 import { createEntrance } from "./views/entrance";
+import { createFacade } from "./views/facades";
 import { CAISSE_TEXT, CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
 import { AT_CAISSE, AT_CONCIERGE, AT_EXIT, EYE, lastStop, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
 import { daylightAt, localHour } from "./models/daylight";
+import { shopType } from "./models/mall-layout";
 import { matchCategories } from "./models/search";
 
 let THREE = null;
 /** Mannequin modélisé dans Blender par Rhamone (public/models/mannequin.glb, préparé par scripts/prep-mannequin.mjs). */
 let MANNEQUIN = null;
+/** Mannequin femme, même préparation (scripts/prep-mannequin.mjs <source> public/models/mannequin-femme.glb), mêmes noms de matières.
+ *  Quand le fichier est là, passer WOMAN_READY à true : il prend sa place partout, sans autre changement. */
+const WOMAN_READY = false;
+let MANNEQUIN_F = null;
 /** Comptoir de la Caisse modélisé dans Blender par Rhamone (public/models/caisse.glb, préparé par scripts/prep-decor.mjs). */
 let CAISSE = null;
 
@@ -174,7 +180,7 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE] = await Promise.all([loadModel("mannequin"), loadModel("caisse")]); if (CAISSE) walkMaterials(CAISSE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null]); if (CAISSE) walkMaterials(CAISSE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
@@ -343,8 +349,8 @@ export function startWalk(root, o) {
       }
       return MQ[key];
     }
-    function blenderMannequin(st, variant) {
-      const g = MANNEQUIN.clone(true), [tee, ink] = (variant ? [st.fg, st.bg] : [st.bg, st.fg]).map((c) => `#${new THREE.Color(c).getHexString()}`);
+    function blenderMannequin(st, variant, model) {
+      const g = model.clone(true), [tee, ink] = (variant ? [st.fg, st.bg] : [st.bg, st.fg]).map((c) => `#${new THREE.Color(c).getHexString()}`);
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
@@ -361,7 +367,8 @@ export function startWalk(root, o) {
     }
     function joint(g, p, r, mat, sx = 1, sy = 1, sz = 1) { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat); m.position.set(...p); m.scale.set(sx, sy, sz); g.add(m); return m; }
     function mannequin(st, variant) {
-      if (MANNEQUIN) return blenderMannequin(st, variant);
+      if (variant === 1 && MANNEQUIN_F) return blenderMannequin(st, variant, MANNEQUIN_F); // la version 1 devient la femme
+      if (MANNEQUIN) return blenderMannequin(st, variant, MANNEQUIN);
       const g = new THREE.Group(), darkSkin = variant === 1, hoodie = variant === 1;
       const skin = new THREE.MeshPhongMaterial({ color: darkSkin ? 0x1c1c1f : 0xf4f3f0, specular: darkSkin ? 0xb0b0b0 : 0x9a9a9a, shininess: 110 });
       const topCol = new THREE.Color(hoodie ? st.fg : st.bg);
@@ -464,6 +471,7 @@ export function startWalk(root, o) {
     if (progress > 0.02 && !root.classList.contains("seen-scroll")) gesture("scroll");
     const st = pathAt(progress);
     $("#intro").style.opacity = st.intro ? clamp(st.intro * 1.8 - 0.4, 0, 1) : 0;
+    $("#intro").inert = !st.intro; // effacée, l'entrée ne doit plus recevoir de toucher
     setHud(st.shop);
     if (MALL) MALL.kick();
   }
@@ -513,6 +521,12 @@ export function startWalk(root, o) {
     const brand = SHOP_NAMES[k];
     if (MALL) MALL.enter(k, () => openStore(brand, { fromWalk: true })); else openStore(brand, { fromWalk: true });
   };
+  // Toucher la porte (ou le bouton) : on avance jusqu'à la première boutique, les portes s'ouvrent à l'approche.
+  function enterMall() {
+    gesture("scroll");
+    walkEl.scrollTo({ top: stopAt(1) * (track.offsetHeight - walkEl.clientHeight), behavior: RM ? "auto" : "smooth" });
+  }
+  on($("#walkIn"), "click", enterMall);
   on($("#wQuit"), "click", () => o.onExit());
   on($("#enter"), "click", () => enterShop(curShop));
   on($("#again"), "click", () => { walkEl.scrollTo({ top: 0, behavior: RM ? "auto" : "smooth" }); });
@@ -643,20 +657,13 @@ export function startWalk(root, o) {
     });
 
     // Boutiques : façade + enseigne + zone à toucher tout de suite ; mannequins et intérieur à l'approche
-    const metal = std(0xc9c3b9, 0.3, 0.7), lightLine = new THREE.MeshBasicMaterial({ color: 0xfffaf0 });
     const glow = U.glowTex(true), pillarM = lam(0xfbf9f4);
     const hits = [], shops = [];
     SLOTS.slice(0, N).forEach((s, k) => {
       const st = SHOPS[k], g = new THREE.Group();
       g.position.set(s.x, 0, s.z); g.rotation.y = Math.atan2(s.nx, s.nz); scene.add(g);
-      const facade = std(new THREE.Color(st.bg).getHex(), 0.6, 0.05, 0.05);
-      [-1, 1].forEach((sd) => add(g, new THREE.BoxGeometry(1.75, CEIL, 0.4), facade, sd * 3.25, CEIL / 2, 0.2));
-      add(g, new THREE.BoxGeometry(4.8, CEIL - 4.2, 0.4), facade, 0, 4.2 + (CEIL - 4.2) / 2, 0.2);
-      const sm = new THREE.MeshBasicMaterial({ map: U.wordTex(st, st.logo ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) });
-      add(g, new THREE.PlaneGeometry(4.6, 0.9), sm, 0, 5.2, 0.41);
-      [-2.4, 2.4].forEach((dx) => add(g, new THREE.BoxGeometry(0.07, 4.2, 0.08), metal, dx, 2.1, 0.42));
-      add(g, new THREE.BoxGeometry(4.87, 0.07, 0.08), metal, 0, 4.2, 0.42);
-      add(g, new THREE.BoxGeometry(4.8, 0.02, 0.04), lightLine, 0, 0.012, 0.44);
+      const big = st.logo || shopType(k) === 1; // bandeau de la verrière ou logo : enseigne plus fine
+      g.add(createFacade(THREE, { type: shopType(k), bg: st.bg, ceil: CEIL, sign: U.wordTex(st, big ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) }));
       add(g, new THREE.BoxGeometry(0.5, CEIL, 0.7), pillarM, -SLOT / 2 + 0.05, CEIL / 2, 0.35);
       // Fond lumineux visible par la porte (l'intérieur détaillé vient à l'approche)
       const backdrop = add(g, new THREE.PlaneGeometry(4.6, 4.1), new THREE.MeshBasicMaterial({ map: glow }), 0, 2.05, -0.3);
@@ -668,6 +675,8 @@ export function startWalk(root, o) {
       const d = new THREE.Group(), st = sh.st; sh.g.add(d); sh.detail = d;
       [-1, 1].forEach((sd) => {
         add(d, new THREE.PlaneGeometry(1.35, 3.2), new THREE.MeshBasicMaterial({ map: glow }), sd * 3.25, 1.8, 0.41);
+        // Un homme à gauche, une femme à droite ; tant que le modèle femme n'est pas là, l'homme seul.
+        if (sd > 0 && !MANNEQUIN_F) return;
         const m = U.mannequin(st, sd > 0 ? 1 : 0); m.position.set(sd * 3.25, 0, 0.9); m.rotation.y = -sd * 0.2; d.add(m);
       });
       const fl = add(d, new THREE.PlaneGeometry(8, 6.4), lam(0xdcd0bd), 0, 0.005, -3.4); fl.rotation.x = -Math.PI / 2;
@@ -736,19 +745,19 @@ export function startWalk(root, o) {
 
     // Toucher une vitrine = entrer dans la boutique (le défilement ne fait jamais entrer)
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-    const pick = (e) => { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); const h = ray.intersectObjects([...hits, ...deskHits], false)[0]; return !h || h.distance >= 40 ? -1 : h.object.userData.desk ? DESK : h.object.userData.shop; };
-    const DESK = -9;
+    const pick = (e) => { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); const h = ray.intersectObjects([...hits, ...deskHits, entrance.hit], false)[0]; return !h || h.distance >= 40 ? -1 : h.object === entrance.hit ? DOOR : h.object.userData.desk ? DESK : h.object.userData.shop; };
+    const DESK = -9, DOOR = -8;
     let down = null, px = 0, py = 0;
     on(canvas, "pointerdown", (e) => { down = { x: e.clientX, y: e.clientY }; });
     on(canvas, "pointerup", (e) => {
       if (!down || entering) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
       if (moved > 8) return;
-      const k = pick(e); if (k === DESK) openConcierge(null); else if (k >= 0) enterShop(k);
+      const k = pick(e); if (k === DOOR) enterMall(); else if (k === DESK) openConcierge(null); else if (k >= 0) enterShop(k);
     });
     on(canvas, "pointercancel", () => { down = null; });
     on(stage, "pointermove", (e) => {
       if (e.pointerType !== "mouse") return; const r = stage.getBoundingClientRect(); px = (e.clientX - r.left) / r.width - 0.5; py = (e.clientY - r.top) / r.height - 0.5;
-      const k = pick(e); canvas.style.cursor = k >= 0 || k === DESK ? "pointer" : "default"; kick();
+      const k = pick(e); canvas.style.cursor = k >= 0 || k === DESK || k === DOOR ? "pointer" : "default"; kick();
     });
 
     const cam = { x: ENTRY.p[0], z: ENTRY.p[1] + 6, lx: ENTRY.l[0], ly: ENTRY.l[1], lz: ENTRY.l[2] };
@@ -785,7 +794,7 @@ export function startWalk(root, o) {
     };
   }
 
-  /* ===== La boutique (un seul gabarit pour toutes les marques) ===== */
+  /* ===== La boutique (un seul plan pour toutes les marques, l'ambiance suit son architecture) ===== */
   // Plan de la boutique (zones, portants, contournement de l'îlot) : src/walk/models/store-layout.ts.
 
   const storeEl = $("#store");
@@ -914,12 +923,15 @@ export function startWalk(root, o) {
     const dl = new THREE.DirectionalLight(0xffffff, 0.45); dl.position.set(2, 6, 4); scene.add(dl);
     const pl = new THREE.PointLight(0xffffff, 0.5, 12, 1.5); pl.position.set(0, 3.5, -2); scene.add(pl);
 
+    // Ambiance selon l'architecture de la boutique : claire, plus froide (verrière) ou chaude (portique).
+    const IN = [{ wall: 0xffffff, floor: 0xffffff, ceil: 0xf1efeb }, { wall: 0xe6eaec, floor: 0xc4c9ce, ceil: 0xe9ecee }, { wall: 0xfff2df, floor: 0xe6bd8e, ceil: 0xfaf3e6 }][shopType(Math.max(0, SHOP_NAMES.indexOf(st.name)))];
+
     /* Surfaces à lumière « cuite » : ombres et reflets peints une fois dans les textures */
     { const [c, x] = U.cv(512, 256);
       const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, "#f4f2ee"); g.addColorStop(0.72, "#e2ded8"); g.addColorStop(0.93, "#cdc8c1"); g.addColorStop(1, "#a8a39c");
       x.fillStyle = g; x.fillRect(0, 0, 512, 256);
       for (let i = 0; i < 7; i++) { const gx = (i + 0.5) * 512 / 7, r = x.createRadialGradient(gx, 0, 4, gx, 0, 130); r.addColorStop(0, "rgba(255,255,255,.6)"); r.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = r; x.fillRect(gx - 140, 0, 280, 150); }
-      const wallM = basic({ map: U.T(c) });
+      const wallM = basic({ map: U.T(c), color: IN.wall });
       add(new THREE.PlaneGeometry(16, 4.2), wallM, -6, 2.1, -8, Math.PI / 2);
       add(new THREE.PlaneGeometry(16, 4.2), wallM, 6, 2.1, -8, -Math.PI / 2);
       add(new THREE.PlaneGeometry(12, 4.2), wallM, 0, 2.1, -16);
@@ -932,15 +944,15 @@ export function startWalk(root, o) {
       ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
       const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
       blob(0, -8.8, 150, 0.36); [[-2.6, -1.6], [2.6, -1.6], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
-      const fl = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c) }), 0, 0, -8); fl.rotation.x = -Math.PI / 2;
+      const fl = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), color: IN.floor }), 0, 0, -8); fl.rotation.x = -Math.PI / 2;
     }
-    const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: 0xf1efeb }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
+    const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: IN.ceil }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
     const white = basic({ color: 0xffffff });
     [-2, 2].forEach((sx) => add(new THREE.BoxGeometry(0.14, 0.03, 15.2), white, sx, 4.18, -8));
     const spotGeo = new THREE.CircleGeometry(0.07, 16);
     for (let z = -1.2; z > -15.5; z -= 1.6) [-4.6, 4.6].forEach((sx) => { const s = add(spotGeo, white, sx, 4.19, z); s.rotation.x = Math.PI / 2; });
 
-    // Façade à la couleur de la marque, sol extérieur, enseigne (texte, jamais le logo)
+    // Façade à la couleur de la marque, sol extérieur, enseigne (nom ou logo)
     const facadeM = basic({ color: new THREE.Color(st.bg) });
     add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, -3.8, 2.1, 0); add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, 3.8, 2.1, 0);
     add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
@@ -991,7 +1003,7 @@ export function startWalk(root, o) {
     // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
     // filigrane presque invisible, derrière les vêtements (idée de Rhamone) : un mot ne doit jamais en cacher un autre
     // (25 oct. : « PANTALONS » sous le titre, le crochet de la pièce choisie au milieu de « HOODIES »).
-    const sign = (cat, t, x, y, z, ry) => { const m = add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true, depthWrite: false }), x, y, z, ry); m.userData = { cat, y }; return m; };
+    const sign = (cat, t, x, y, z, ry) => { const m = add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true, depthWrite: false }), x, y, z, ry); m.userData = { cat, y, stocked: products(st.name, cat).length > 0 }; m.visible = m.userData.stocked; return m; };
     const signs = [["tee", "T-SHIRTS", -6, -6.4], ["hoodie", "HOODIES", -6, -12.4], ["cap", "CASQUETTES", 6, -4.8], ["pants", "PANTALONS", 6, -11.9]]
       .map(([cat, t, wx, z]) => sign(cat, t, wx - Math.sign(wx) * (cat === "cap" ? 0.06 : 0.02), 2.85, z, wx < 0 ? Math.PI / 2 : -Math.PI / 2));
     [-3.75, 3.75].forEach((x) => signs.push(sign("sneaker", "SNEAKERS", x, 2.62, -15.97)));
@@ -999,7 +1011,7 @@ export function startWalk(root, o) {
     function watermark(cat) {
       signs.forEach((m) => {
         const on = m.userData.cat === cat, big = on && cat !== "bag" && cat !== "sneaker";
-        m.visible = !cat || on; m.material.opacity = cat ? 0.1 : 1;
+        m.visible = m.userData.stocked && (!cat || on); m.material.opacity = cat ? 0.1 : 1;
         m.position.y = big ? 1.3 : m.userData.y; m.scale.setScalar(big ? 2.4 : 1);
       });
     }
