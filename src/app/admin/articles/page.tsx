@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CATEGORIES } from "@/lib/catalog/fallback";
 import { isAdmin } from "@/lib/server/admin-session";
 import { listArticles } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";
@@ -38,42 +37,36 @@ async function List({ searchParams }: { searchParams: PageProps<"/admin/articles
   });
   if (!articles || !boutiques) return <p className="todo">La base ne répond pas. Réessaie dans un instant.</p>;
   const brand = (slug: string) => boutiques.find((b) => b.slug === slug)?.name ?? slug;
-  const cat = (id: string) => CATEGORIES.find((c) => c.id === id)?.label ?? id;
   return (
     <>
       {msg && <p className="admin-msg">{msg}</p>}
-      <div className="admin-acts">
-        <Link className="pill solid" href="/admin/articles/fiche">Ajouter un article</Link>
-        <Link className="pill ghost" href="/admin/boutiques">Boutiques</Link>
-        <Link className="pill ghost" href="/admin/commandes">Commandes</Link>
-      </div>
-      <p className="muted">
-        {articles.filter((a) => a.onSite).length} sur le site · {articles.filter((a) => !a.onSite).length} masqué(s).
-      </p>
-      <ul className="admin-articles">
+      <nav className="admin-bar">
+        <Link className="admin-add" href="/admin/articles/fiche">+ Ajouter</Link>
+        <Link className="link" href="/admin/boutiques">Boutiques</Link>
+        <Link className="link" href="/admin/commandes">Commandes</Link>
+        <span className="muted">{articles.filter((a) => a.onSite).length} en ligne · {articles.filter((a) => !a.onSite).length} masqué(s)</span>
+      </nav>
+      {/* Les photos d'abord : toucher un article l'ouvre ; une seule petite action par carte (Rhamone, 4 nov.). */}
+      <ul className="admin-grid">
         {articles.map((a) => {
           const us = a.priceUsd != null ? marginsByZone(a.priceUsd, a.costCny, a.weightG).find((m) => m.zone === "us") : null;
           return (
             <li key={a.slug} className={a.onSite ? undefined : "is-hidden"}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- miniature de l'admin, déjà réduite */}
-              {a.photos.front ? <img src={a.photos.front} alt="" loading="lazy" /> : <span className="admin-nophoto" />}
-              <div>
-                <p className="eyebrow">{brand(a.brand)} · {cat(a.category)}</p>
-                <p><b>{a.name}</b></p>
-                <p className="muted">
-                  {us ? `${us.price} USD` : "Prix calculé depuis le coût"} · coût {a.costCny} ¥
-                  {us && <> · marge {us.marginPct} %{us.marginPct < MARGIN_ALERT_PCT ? " ⚠️" : ""}</>}
-                  {!a.onSite && " · masqué"}
-                </p>
-              </div>
-              <div className="admin-acts">
-                <Link className="pill ghost" href={`/admin/articles/fiche?slug=${encodeURIComponent(a.slug)}`}>Modifier</Link>
-                <form action={toggleOnSiteAction}>
-                  <input type="hidden" name="slug" value={a.slug} />
-                  <input type="hidden" name="show" value={a.onSite ? "0" : "1"} />
-                  <button className="pill ghost">{a.onSite ? "Masquer" : "Remettre"}</button>
-                </form>
-              </div>
+              <Link href={`/admin/articles/fiche?slug=${encodeURIComponent(a.slug)}`} aria-label={`Modifier ${a.name}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- miniature de l'admin, déjà réduite */}
+                {a.photos.front ? <img src={a.photos.front} alt="" loading="lazy" /> : <span className="admin-nophoto" />}
+                <span className="admin-brand">{brand(a.brand)}</span>
+                <span className="admin-name">{a.name}</span>
+                <span className="admin-price">
+                  {us ? `${us.price} USD` : "Prix à saisir"}
+                  {us && us.marginPct < MARGIN_ALERT_PCT ? " · ⚠️ marge" : ""}
+                </span>
+              </Link>
+              <form action={toggleOnSiteAction}>
+                <input type="hidden" name="slug" value={a.slug} />
+                <input type="hidden" name="show" value={a.onSite ? "0" : "1"} />
+                <button className="admin-chip" aria-label={a.onSite ? `Masquer ${a.name}` : `Remettre ${a.name}`}>{a.onSite ? "Masquer" : "Remettre"}</button>
+              </form>
             </li>
           );
         })}
