@@ -1,12 +1,12 @@
 "use client";
 
-import type { Cost } from "@/models/pricing/price";
+import type { PriceTable } from "@/models/pricing/price";
 import { usePricing } from "./PricingProvider";
 
 /** Prix affiché d'un ou plusieurs articles (× quantité), dans la devise de la zone. */
-export function Price({ cost, costs, qty = 1 }: { cost?: Cost; costs?: { cost: Cost; qty?: number }[]; qty?: number }) {
+export function Price({ prices, lines, qty = 1 }: { prices?: PriceTable; lines?: { prices: PriceTable; qty?: number }[]; qty?: number }) {
   const { price, format } = usePricing();
-  const total = cost ? price(cost) * qty : (costs ?? []).reduce((a, l) => a + price(l.cost) * (l.qty ?? 1), 0);
+  const total = prices ? price(prices) * qty : (lines ?? []).reduce((a, l) => a + price(l.prices) * (l.qty ?? 1), 0);
   return <>{format(total)}</>;
 }
 

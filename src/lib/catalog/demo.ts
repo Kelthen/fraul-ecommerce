@@ -4,8 +4,8 @@
 import { ALL_BRANDS, REAL_PRODUCTS_ONLY, WALK_BRANDS, brandStyle, hash, slugify } from "./brands";
 import { IMAGES, type ImageId } from "../images";
 import { SUPPLIER_PRODUCTS } from "./supplier";
-import { COLORS } from "./palette";
-import type { Brand, Category, CategoryId, Product } from "./types";
+import { COLORS, DARK, accentFor } from "./palette";
+import type { Brand, Category, CategoryId, PricedProduct } from "./types";
 
 /** Catégories du site, dans l'ordre d'affichage. Ajouter une catégorie : une ligne ici + NAMES, COST_CNY,
  *  WEIGHT_G ci-dessous + son dessin (art.ts). Dans le Walk, elle n'apparaît qu'une fois son portant placé
@@ -25,9 +25,7 @@ export const CATEGORIES: Category[] = [
   { id: "bag", slug: "accessoires", label: "Accessoires", slot: "accessory", sizes: ["Unique"] },
 ];
 
-export { COLORS };
-export const DARK = ["#141416", "#202833", "#2B2A2C", "#420A0D", "#680209", "#6B6766", "#0A0A0C"];
-export const accentFor = (c: string) => (DARK.includes(c) ? "#EAE0C8" : "#420A0D");
+export { COLORS, DARK, accentFor };
 
 const NAMES: Record<CategoryId, string[]> = {
   tee: ["T-shirt essentiel", "T-shirt oversize", "T-shirt brodé", "T-shirt heavyweight", "T-shirt délavé"],
@@ -63,7 +61,7 @@ export const BRANDS: Brand[] = ALL_BRANDS.map((name) => ({
   inWalk: WALK_BRANDS.includes(name),
 }));
 
-function makeProducts(brand: Brand, cat: Category): Product[] {
+function makeProducts(brand: Brand, cat: Category): PricedProduct[] {
   const names = NAMES[cat.id];
   const [lo, hi] = COST_CNY[cat.id];
   const seed = hash(`${brand.name}|${cat.id}`);
@@ -87,7 +85,7 @@ function makeProducts(brand: Brand, cat: Category): Product[] {
 }
 
 /** Vrais produits du fournisseur (photos), avec un coût FICTIF : milieu de la fourchette de démo de leur catégorie. */
-function supplierProducts(): Product[] {
+function supplierProducts(): PricedProduct[] {
   const src = (id: ImageId) => IMAGES[id].src;
   return SUPPLIER_PRODUCTS.map((p) => {
     const brand = BRANDS.find((b) => b.name === p.brand)!;
@@ -110,15 +108,15 @@ function supplierProducts(): Product[] {
 }
 
 /** Copie de secours des vrais produits : la base fait foi (src/lib/catalog/db.ts), ceci ne sert que si elle ne répond pas. */
-export const REAL_SNAPSHOT: Product[] = supplierProducts();
+export const REAL_SNAPSHOT: PricedProduct[] = supplierProducts();
 
 /** Articles de démo, dessinés (pas de démo pour les marques qui n'ont que de vrais produits). Restent dans le code. */
-export const DEMO_PRODUCTS: Product[] = BRANDS.filter((b) => !REAL_PRODUCTS_ONLY.includes(b.name)).flatMap((b) =>
+export const DEMO_PRODUCTS: PricedProduct[] = BRANDS.filter((b) => !REAL_PRODUCTS_ONLY.includes(b.name)).flatMap((b) =>
   CATEGORIES.flatMap((c) => makeProducts(b, c)),
 );
 
 /** Vrais produits en premier, puis la démo (catalogue du code, utilisé par scripts/catalogue-sql.mjs). */
-export const PRODUCTS: Product[] = [...REAL_SNAPSHOT, ...DEMO_PRODUCTS];
+export const PRODUCTS: PricedProduct[] = [...REAL_SNAPSHOT, ...DEMO_PRODUCTS];
 
 /** Nouveautés mises en avant (démo). */
 export const NEW_ARRIVALS: [string, CategoryId, number][] = [

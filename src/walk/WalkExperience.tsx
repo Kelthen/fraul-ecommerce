@@ -7,14 +7,14 @@ import { useCart } from "@/components/CartProvider";
 import type { BrandStyle, Category, CategoryId } from "@/lib/catalog/types";
 import { Price, PriceNote } from "@/components/Price";
 import { usePricing } from "@/components/PricingProvider";
-import type { Cost } from "@/models/pricing/price";
+import type { PriceTable } from "@/models/pricing/price";
 import { startWalk } from "./engine";
 import { QuickView, type FicheItem } from "./QuickView";
 import { ConciergeForm } from "@/components/concierge/ConciergeForm";
 import "./walk.css";
 
 /** Article compact transmis au navigateur : [slug, nom, coût, couleur, couleurs, photos?]. */
-export type WalkItem = [string, string, Cost, string, string[], FicheItem["photos"]?];
+export type WalkItem = [string, string, PriceTable, string, string[], FicheItem["photos"]?];
 
 export type WalkData = {
   shops: { name: string; slug: string; style: BrandStyle }[];
@@ -54,15 +54,15 @@ export function WalkExperience({ data, startBrand }: Props) {
   );
   const catLabel = useCallback((cat: CategoryId) => data.categories.find((c) => c.id === cat)?.label ?? cat, [data]);
   const addItem = useCallback(
-    (it: FicheItem, size?: string) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, cost: it.p, size, sizes: it.sizes }),
+    (it: FicheItem, size?: string) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, size, sizes: it.sizes }),
     [add],
   );
   // La fiche vient de s'ouvrir ou de se fermer : le moteur remet le fond inerte et le focus à jour.
   useEffect(() => { walkRef.current?.refocus(); }, [fiche, concierge]);
-  const priceRef = useRef((c: Cost) => format(price(c)));
+  const priceRef = useRef((c: PriceTable) => format(price(c)));
   useEffect(() => {
     addRef.current = add;
-    priceRef.current = (c: Cost) => format(price(c));
+    priceRef.current = (c: PriceTable) => format(price(c));
   }, [add, price, format]);
 
   useEffect(() => {
@@ -89,13 +89,13 @@ export function WalkExperience({ data, startBrand }: Props) {
       allBrands: data.allBrands,
       categories: data.categories,
       fonts,
-      formatPrice: (c: Cost) => priceRef.current(c),
+      formatPrice: (c: PriceTable) => priceRef.current(c),
       getItems: (brandName: string, cat: CategoryId) => {
         const b = brandOf(brandName);
         return (b ? data.items[b.slug]?.[cat] ?? [] : []).map((r) => toItem(data, brandName, cat, r));
       },
-      onAdd: (it: { slug: string; n: string; p: Cost; c: string; a: string; brand: string; cat: string; sizes: string[] }, size?: string) =>
-        addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, cost: it.p, size, sizes: it.sizes }),
+      onAdd: (it: { slug: string; n: string; p: PriceTable; c: string; a: string; brand: string; cat: string; sizes: string[] }, size?: string) =>
+        addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, size, sizes: it.sizes }),
       onExit: () => router.push("/"),
       onFallback: (slug: string) => router.push(`/marques/${slug}`),
       onFiche: (it: FicheItem | null) => setFiche(it ? { ...it } : null),
@@ -162,7 +162,7 @@ export function WalkExperience({ data, startBrand }: Props) {
                 <p className="eyebrow">Dernier arrêt avant la sortie</p>
                 <h2>La Caisse</h2>
                 <p className="c-sum">
-                  Ton sac : {count} article{count > 1 ? "s" : ""} · <b><Price costs={lines} /></b>
+                  Ton sac : {count} article{count > 1 ? "s" : ""} · <b><Price lines={lines} /></b>
                 </p>
                 <ul className="c-lines">
                   {lines.slice(0, 4).map((l, i) => (

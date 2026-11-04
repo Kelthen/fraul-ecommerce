@@ -2,7 +2,7 @@
 // (supabase/migrations/0001_initial_schema.sql) pour qu'on puisse remplacer
 // les données de démonstration par la vraie base sans toucher aux pages.
 
-import type { Cost } from "@/models/pricing/price";
+import type { Cost, PriceTable } from "@/models/pricing/price";
 
 export type FontKey = "sansX" | "sansXi" | "sansL" | "serif" | "serifI" | "serifIB";
 
@@ -52,8 +52,8 @@ export type Product = {
   brandName: string;
   category: CategoryId;
   name: string;
-  /** Coût fournisseur (¥) et poids (g) : le prix affiché en est calculé par zone et par groupe (src/models/pricing). */
-  cost: Cost;
+  /** Prix par zone et par groupe. Le coût fournisseur ne quitte jamais le serveur. */
+  prices: PriceTable;
   /** Couleur principale et couleur d'accent du dessin provisoire. */
   color: string;
   accent: string;
@@ -63,3 +63,6 @@ export type Product = {
   /** Photos (face, dos, détails) quand elles existent ; sinon on dessine. Chemins du registre src/lib/images.ts. */
   image?: { front: string; back?: string; details?: string[] };
 };
+
+/** Article côté serveur : coût (¥), poids (g) et prix tapé en dollars. Ne jamais l'envoyer au navigateur. */
+export type PricedProduct = Omit<Product, "prices"> & { cost: Cost };

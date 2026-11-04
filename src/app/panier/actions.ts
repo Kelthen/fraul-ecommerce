@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { cookies, headers } from "next/headers";
-import { getProduct } from "@/lib/catalog";
+import { getPricedProduct } from "@/lib/catalog";
 import { missingPaymentSettings } from "@/lib/server/env";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { checkoutParams, priceCart, type CartProblem, type PayableProduct } from "@/models/payment/checkout";
@@ -37,7 +37,7 @@ export async function startCheckout(lines: unknown): Promise<{ url: string } | {
     for (const l of lines.slice(0, 50)) {
       const slug = (l as { slug?: unknown })?.slug;
       if (typeof slug === "string" && !found.has(slug)) {
-        const p = await getProduct(slug);
+        const p = await getPricedProduct(slug);
         if (p) found.set(slug, p);
       }
     }
