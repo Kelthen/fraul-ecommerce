@@ -12,6 +12,7 @@ export type Row = {
   slug: string;
   title: { fr?: string };
   cost: number | null;
+  price_usd: number | null;
   weight_g: number | null;
   colors: string[];
   sizes: string[] | null;
@@ -20,7 +21,7 @@ export type Row = {
   product_images: { view: "front" | "back" | "detail"; path: string; position: number }[];
 };
 
-const SELECT = "slug,title,cost,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position)";
+const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position)";
 
 /** Transforme une ligne de la base en article du site ; null si elle est incomplète (marque ou catégorie inconnue). */
 export function toProduct(r: Row, brands: Brand[], categories: Category[], accentFor: (c: string) => string): Product | null {
@@ -36,7 +37,7 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
     brandName: brand.name,
     category: cat.id,
     name,
-    cost: { cny: r.cost / 100, g: r.weight_g },
+    cost: { cny: r.cost / 100, g: r.weight_g, ...(r.price_usd ? { usd: r.price_usd / 100 } : {}) },
     color: r.colors[0],
     accent: accentFor(r.colors[0]),
     colors: r.colors,

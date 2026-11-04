@@ -48,7 +48,7 @@ const COST_CNY: Record<CategoryId, [number, number]> = {
   tee: [150, 230], hoodie: [340, 530], pants: [290, 430], sneaker: [290, 580], cap: [85, 170], bag: [110, 390],
   jacket: [480, 900], shorts: [130, 230], socks: [30, 70], glasses: [120, 300], watch: [200, 600], jewelry: [80, 250],
 };
-const WEIGHT_G: Record<CategoryId, number> = {
+export const WEIGHT_G: Record<CategoryId, number> = {
   tee: 250, hoodie: 700, pants: 600, sneaker: 1300, cap: 150, bag: 600,
   jacket: 1200, shorts: 350, socks: 100, glasses: 150, watch: 200, jewelry: 80,
 };

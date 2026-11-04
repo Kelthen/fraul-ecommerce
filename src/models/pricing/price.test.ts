@@ -69,3 +69,17 @@ test("prix plancher : aucune remise ne fait vendre sous coût + marge minimale (
       for (const c of [TEE, SNEAKER, { cny: 5, g: 2000 }])
         assert.ok(customerPrice(c, z, g) >= floorPrice(c, z), `${z}/${g}`);
 });
+
+test("prix tapé en dollars par Jean Paul : converti au taux fixe de la zone, arrondi propre", () => {
+  const tee: Cost = { cny: 190, g: 250, usd: 89 };
+  assert.equal(catalogPrice(tee, "us"), 89);
+  assert.equal(catalogPrice(tee, "ca"), roundNice(89 * ZONES.ca.perUsd));
+  assert.equal(catalogPrice(tee, "eu"), roundNice(89 * ZONES.eu.perUsd));
+});
+
+test("prix en dollars : les remises de groupe s'appliquent, le prix plancher protège toujours", () => {
+  const tee: Cost = { cny: 190, g: 250, usd: 89 };
+  assert.ok(customerPrice(tee, "us", "vip") < 89);
+  const tooCheap: Cost = { cny: 400, g: 700, usd: 20 };
+  assert.equal(customerPrice(tooCheap, "us"), floorPrice(tooCheap, "us"));
+});
