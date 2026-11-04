@@ -1,6 +1,4 @@
-// Types du catalogue. Ils suivent le schéma de base de données
-// (supabase/migrations/0001_initial_schema.sql) pour qu'on puisse remplacer
-// les données de démonstration par la vraie base sans toucher aux pages.
+// Types du catalogue. Ils suivent le schéma de base de données (supabase/migrations/).
 
 import type { Cost, PriceTable } from "@/models/pricing/price";
 
@@ -54,14 +52,14 @@ export type Product = {
   name: string;
   /** Prix par zone et par groupe. Le coût fournisseur ne quitte jamais le serveur. */
   prices: PriceTable;
-  /** Couleur principale et couleur d'accent du dessin provisoire. */
+  /** Couleur principale et couleur d'accent. */
   color: string;
   accent: string;
   /** Variantes de couleur proposées. */
   colors: string[];
   sizes: string[];
-  /** Photos (face, dos, détails) quand elles existent ; sinon on dessine. Chemins du registre src/lib/images.ts. */
-  image?: { front: string; back?: string; details?: string[] };
+  /** Photos : face obligatoire, dos et détails si elles existent. Un article sans photo n'est pas sur le site. */
+  image: { front: string; back?: string; details?: string[] };
 };
 
 /** Article côté serveur : coût (¥), poids (g) et prix tapé en dollars. Ne jamais l'envoyer au navigateur. */

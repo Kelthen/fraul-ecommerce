@@ -1,26 +1,30 @@
 // Point d'accès unique au catalogue. Les pages n'appellent que ces fonctions.
-// Vrais articles : la base (src/lib/catalog/db.ts), modifiable depuis l'admin ; copie de secours si elle ne répond pas.
-// Articles de démo (dessinés) : dans le code. Marques et catégories : dans le code pour l'instant.
-import { WALK_BRANDS, slugify } from "./brands";
+// Articles : la base (src/lib/catalog/db.ts), modifiable depuis l'admin ; copie de secours si elle ne répond pas.
+// Une marque sans article n'existe pas sur le site. Catégories : dans le code.
+import { WALK_BRANDS } from "./brands";
 import { loadSiteRows, toProduct } from "./db";
-import { BRANDS, CATEGORIES, DEMO_PRODUCTS, NEW_ARRIVALS, REAL_SNAPSHOT, accentFor } from "./demo";
+import { BRANDS, CATEGORIES, REAL_SNAPSHOT, accentFor } from "./demo";
 import { priceTable } from "@/models/pricing/price";
 import type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
 
 export type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
 export { CATEGORIES } from "./demo";
 
+const stockedSlugs = async () => new Set((await pricedProducts()).map((p) => p.brandSlug));
+
 export async function getBrands(): Promise<Brand[]> {
-  return BRANDS;
+  const stocked = await stockedSlugs();
+  return BRANDS.filter((b) => stocked.has(b.slug));
 }
 
 /** Boutiques du mall, dans l'ordre du parcours. */
 export async function getWalkBrands(): Promise<Brand[]> {
-  return WALK_BRANDS.map((name) => BRANDS.find((b) => b.name === name)!);
+  const brands = await getBrands();
+  return WALK_BRANDS.map((name) => brands.find((b) => b.name === name)).filter((b): b is Brand => !!b);
 }
 
 export async function getBrand(slug: string): Promise<Brand | undefined> {
-  return BRANDS.find((b) => b.slug === slug);
+  return (await getBrands()).find((b) => b.slug === slug);
 }
 
 export function getCategory(id: CategoryId): Category {
@@ -31,12 +35,14 @@ export async function getCategoryBySlug(slug: string): Promise<Category | undefi
   return CATEGORIES.find((c) => c.slug === slug);
 }
 
-/** Vrais articles du site (base, ou copie de secours), puis les articles de démo. */
+/** Articles du site : la base, ou la copie de secours si elle ne répond pas. */
 async function pricedProducts(): Promise<PricedProduct[]> {
   const rows = await loadSiteRows();
-  const real = rows ? rows.map((r) => toProduct(r, BRANDS, CATEGORIES, accentFor)).filter((p): p is PricedProduct => p !== null) : REAL_SNAPSHOT;
-  return [...real, ...DEMO_PRODUCTS];
+  return rows ? rows.map((r) => toProduct(r, BRANDS, CATEGORIES, accentFor)).filter((p): p is PricedProduct => p !== null) : REAL_SNAPSHOT;
 }
+
+/** Faux si le site montre sa copie de secours : ses prix peuvent être périmés, on n'encaisse pas. */
+export const catalogIsLive = async () => (await loadSiteRows()) !== null;
 
 /** Ce que les pages reçoivent : les prix, jamais le coût. */
 const toPublic = ({ cost, ...p }: PricedProduct): Product => ({ ...p, prices: priceTable(cost) });
@@ -63,21 +69,16 @@ export async function getProductsByCategory(id: CategoryId): Promise<Product[]> 
   return (await allProducts()).filter((p) => p.category === id);
 }
 
-/** Nouveautés : les vrais produits avec photo d'abord (une pièce par marque, puis les suivantes), complétés par la démo. */
+/** Nouveautés : une pièce par marque d'abord, puis les suivantes. */
 export async function getNewArrivals(): Promise<Product[]> {
   const products = await allProducts();
-  const real = products.filter((p) => p.image);
-  const firstOfBrand = real.filter((p, i) => real.findIndex((q) => q.brandSlug === p.brandSlug) === i);
-  const picked = [...firstOfBrand, ...real.filter((p) => !firstOfBrand.includes(p))].slice(0, 8);
-  const demo = NEW_ARRIVALS.map(([brand, cat, k]) => products.filter((p) => p.brandSlug === slugify(brand) && p.category === cat && !p.image)[k]);
-  return [...picked, ...demo].slice(0, 8);
+  const first = products.filter((p, i) => products.findIndex((q) => q.brandSlug === p.brandSlug) === i);
+  return [...first, ...products.filter((p) => !first.includes(p))].slice(0, 8);
 }
 
-/** Pièces proposées dans « Crée ta tenue » : quelques articles par emplacement. */
+/** Pièces proposées dans « Crée ta tenue ». Un emplacement sans pièce disponible reste vide. */
 export async function getOutfitPieces(): Promise<Record<"top" | "bottom" | "shoes", Product[]>> {
-  const walk = WALK_BRANDS.slice(0, 8).map(slugify);
   const products = await allProducts();
-  const pick = (cats: CategoryId[]) =>
-    products.filter((p) => cats.includes(p.category) && walk.includes(p.brandSlug)).filter((_, i) => i % 3 === 0).slice(0, 8);
-  return { top: pick(["tee", "hoodie"]), bottom: pick(["pants"]), shoes: pick(["sneaker"]) };
+  const pick = (cats: CategoryId[]) => products.filter((p) => cats.includes(p.category)).slice(0, 12);
+  return { top: pick(["tee", "hoodie"]), bottom: pick(["pants", "shorts"]), shoes: pick(["sneaker"]) };
 }

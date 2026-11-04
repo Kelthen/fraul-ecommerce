@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GarmentArt } from "@/components/GarmentArt";
 import { EnvieButton } from "@/components/EnvieButton";
 import { Price, PriceNote } from "@/components/Price";
-import { ProductGallery, photoViews, type GalleryView } from "@/components/product/ProductGallery";
+import { ProductGallery, photoViews } from "@/components/product/ProductGallery";
 import type { CategoryId } from "@/lib/catalog/types";
 import { related, type RelatedKey } from "@/models/catalog/related";
 import type { PriceTable } from "@/models/pricing/price";
@@ -26,18 +25,6 @@ type Props = {
   onPick: (it: FicheItem) => void;
   onAdd: (it: FicheItem, size?: string) => void;
 };
-
-function Art({ it, back = false, label }: { it: FicheItem; back?: boolean; label?: string }) {
-  return <GarmentArt className="art" type={it.cat} color={it.c} accent={it.a} back={back} word={it.brand} label={label} />;
-}
-
-function views(it: FicheItem): GalleryView[] {
-  if (it.photos) return photoViews(it.photos);
-  return [
-    { label: "Face", art: <Art it={it} label={`${it.n}, vue de face`} /> },
-    { label: "Dos", art: <Art it={it} back label={`${it.n}, vue de dos`} /> },
-  ];
-}
 
 /** Fiche en grand dans une boutique du Walk : toutes les photos, taille, panier, et 12 propositions en dessous. */
 export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props) {
@@ -72,7 +59,7 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
             </button>
           </div>
           <div className="f-body" ref={sheet}>
-            <ProductGallery key={item.slug} name={item.n} views={views(item)} className="f-gal" />
+            <ProductGallery key={item.slug} name={item.n} views={item.photos ? photoViews(item.photos) : []} className="f-gal" />
             <div className="f-info">
               <h2 id="fName">{item.n}</h2>
               <p className="f-price"><Price prices={item.p} /></p>
@@ -96,13 +83,9 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
                   {s.items.map(({ x }) => (
                     <li key={x.slug}>
                       <button type="button" onClick={() => onPick(x)}>
-                        <span className={x.photos ? "pic photo" : "pic"}>
-                          {x.photos ? (
-                            // eslint-disable-next-line @next/next/no-img-element -- captures du fournisseur, test de rendu avant détourage
-                            <img src={x.photos.front} alt="" loading="lazy" />
-                          ) : (
-                            <Art it={x} />
-                          )}
+                        <span className="pic photo">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- photos du catalogue, parfois hébergées chez Supabase */}
+                          {x.photos && <img src={x.photos.front} alt="" loading="lazy" />}
                         </span>
                         <span className="br">{x.brand}</span>
                         <span className="nm">{x.n}</span>

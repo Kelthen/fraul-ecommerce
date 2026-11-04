@@ -54,6 +54,7 @@ export async function signOut() {
 }
 
 export async function newTestOrder() {
+  if (process.env.VERCEL_ENV === "production") return;
   await guard();
   const base = await baseUrl();
   await attempt(async () => {
@@ -72,6 +73,7 @@ export async function resend(form: FormData) {
 }
 
 export async function clearTestOrders() {
+  if (process.env.VERCEL_ENV === "production") return;
   await guard();
   await attempt(async () => `${await deleteTestOrders()} commande(s) test effacée(s).`);
 }

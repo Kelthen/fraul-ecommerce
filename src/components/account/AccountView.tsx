@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authLive } from "@/lib/auth-client";
 import { useAccount } from "../AccountProvider";
@@ -24,7 +23,6 @@ export function AccountView() {
         <h2 id="acc-orders">Mes commandes</h2>
         {!authLive && <p className="todo">Démo : commandes d&apos;exemple.</p>}
         <MyOrders />
-        {!authLive && <Link className="link" href="/suivi/e-mails">Voir les e-mails de commande</Link>}
       </section>
 
       <section className="acc-card" aria-labelledby="acc-mails">

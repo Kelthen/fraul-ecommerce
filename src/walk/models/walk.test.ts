@@ -109,3 +109,14 @@ test("couches : le retour du téléphone ne ferme que le dessus", () => {
   assert.deepEqual(closed, ["rayon"]);
   assert.ok(L.drop("store") && !L.has("store") && L.has("dir"));
 });
+
+test("petit mall (8 boutiques ou moins) : le tronc seul, Finds entre la montée et la descente, chaque arrêt a sa vitrine", () => {
+  for (const n of [1, 2, 5, 6, 8]) {
+    const m = layoutT(n);
+    assert.ok(m.slots.length >= n, `${n} boutiques`);
+    assert.ok(m.concierge.after <= n, `Finds après ${m.concierge.after} sur ${n}`);
+    assert.ok(m.slots.slice(0, n).every((s) => Math.abs(s.x) === m.dims.STEM_X));
+    for (let k = 0; k < n; k++) assert.equal(pathAt(progressForShop(k, n, m), n, 10, m).shop, k);
+    assert.equal(pathAt(progressForConcierge(n, m), n, 10, m).shop, AT_CONCIERGE);
+  }
+});

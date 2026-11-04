@@ -16,9 +16,11 @@ type EnviesCtx = {
 const Ctx = createContext<EnviesCtx | null>(null);
 const KEY = "tuc.envies.v1";
 
+const NOTHING_YET: Envie[] = [];
+
 export function EnviesProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useCart();
-  const [list, setList] = useState<Envie[]>([]);
+  const [list, setList] = useState<Envie[]>(NOTHING_YET);
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function EnviesProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loaded.current) return;
+    if (!loaded.current || list === NOTHING_YET) return; // la liste de départ n'écrase jamais ce qui est gardé
     try {
       localStorage.setItem(KEY, JSON.stringify(list));
     } catch {

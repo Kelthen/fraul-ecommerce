@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { cookies, headers } from "next/headers";
-import { getPricedProduct } from "@/lib/catalog";
+import { catalogIsLive, getPricedProduct } from "@/lib/catalog";
 import { missingPaymentSettings } from "@/lib/server/env";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { checkoutParams, priceCart, type CartProblem, type PayableProduct } from "@/models/payment/checkout";
@@ -29,6 +29,7 @@ async function baseUrl(): Promise<string> {
 
 export async function startCheckout(lines: unknown): Promise<{ url: string } | { error: string }> {
   if (missingPaymentSettings().length) return { error: "Le paiement n'est pas encore ouvert. Reviens très vite !" };
+  if (!(await catalogIsLive())) return { error: "Le paiement ne répond pas. Réessaie dans un instant." }; // jamais d'encaissement sur la copie de secours
   const z = (await cookies()).get("tuc_zone")?.value;
   const zone: ZoneId = z && z in ZONES ? (z as ZoneId) : DEFAULT_ZONE;
 

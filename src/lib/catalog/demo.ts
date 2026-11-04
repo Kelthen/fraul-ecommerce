@@ -1,14 +1,13 @@
-// DONNÉES DE DÉMONSTRATION — aucune vraie donnée pour l'instant.
-// Générées de façon déterministe (mêmes produits à chaque build). Elles seront
-// remplacées par la base de données ; seules les fonctions de ./index.ts changent.
-import { ALL_BRANDS, REAL_PRODUCTS_ONLY, WALK_BRANDS, brandStyle, hash, slugify } from "./brands";
+// Référence du catalogue : catégories, marques, et copie de secours des vrais articles.
+// La base fait foi pour les articles (./db.ts). La copie ne sert que si elle ne répond pas, et le paiement refuse alors.
+import { ALL_BRANDS, WALK_BRANDS, brandStyle, slugify } from "./brands";
 import { IMAGES, type ImageId } from "../images";
 import { SUPPLIER_PRODUCTS } from "./supplier";
 import { COLORS, DARK, accentFor } from "./palette";
 import type { Brand, Category, CategoryId, PricedProduct } from "./types";
 
-/** Catégories du site, dans l'ordre d'affichage. Ajouter une catégorie : une ligne ici + NAMES, COST_CNY,
- *  WEIGHT_G ci-dessous + son dessin (art.ts). Dans le Walk, elle n'apparaît qu'une fois son portant placé
+/** Catégories du site, dans l'ordre d'affichage. Ajouter une catégorie : une ligne ici + COST_CNY,
+ *  WEIGHT_G ci-dessous. Dans le Walk, elle n'apparaît qu'une fois son portant placé
  *  (src/walk/models/store-layout.ts). */
 export const CATEGORIES: Category[] = [
   { id: "tee", slug: "t-shirts", label: "T-shirts", slot: "top", sizes: ["XS", "S", "M", "L", "XL"] },
@@ -27,21 +26,7 @@ export const CATEGORIES: Category[] = [
 
 export { COLORS, DARK, accentFor };
 
-const NAMES: Record<CategoryId, string[]> = {
-  tee: ["T-shirt essentiel", "T-shirt oversize", "T-shirt brodé", "T-shirt heavyweight", "T-shirt délavé"],
-  hoodie: ["Hoodie brodé", "Hoodie oversize", "Hoodie zippé", "Hoodie molleton épais", "Hoodie délavé"],
-  pants: ["Jogging cargo", "Pantalon droit", "Jogging molleton", "Cargo ripstop", "Pantalon large"],
-  sneaker: ["Sneaker basse cuir", "Sneaker montante", "Runner mesh", "Sneaker rétro", "Sneaker plateforme"],
-  cap: ["Casquette brodée", "Casquette 5 panneaux", "Bob", "Casquette délavée", "Casquette logo"],
-  bag: ["Sacoche bandoulière", "Sac banane", "Tote bag", "Pochette", "Sac à dos"],
-  jacket: ["Veste workwear", "Doudoune", "Veste coach", "Bomber", "Parka"],
-  shorts: ["Short molleton", "Short cargo", "Short de bain", "Short en jean", "Short mesh"],
-  socks: ["Chaussettes logo", "Chaussettes côtelées", "Lot de 3 paires", "Chaussettes hautes", "Chaussettes sport"],
-  glasses: ["Lunettes de soleil", "Lunettes ovales", "Lunettes rectangulaires", "Masque solaire", "Lunettes aviateur"],
-  watch: ["Montre acier", "Montre chronographe", "Montre plongée", "Montre cuir", "Montre digitale"],
-  jewelry: ["Collier chaîne", "Pendentif", "Chaîne cubaine", "Collier perles", "Ras-du-cou"],
-};
-/** Coût fournisseur de démo, en ¥ (fourchette par catégorie), et poids moyen en grammes. */
+/** Coût de secours en ¥ (fourchette par catégorie), si la base ne répond pas, et poids moyen en grammes. */
 const COST_CNY: Record<CategoryId, [number, number]> = {
   tee: [150, 230], hoodie: [340, 530], pants: [290, 430], sneaker: [290, 580], cap: [85, 170], bag: [110, 390],
   jacket: [480, 900], shorts: [130, 230], socks: [30, 70], glasses: [120, 300], watch: [200, 600], jewelry: [80, 250],
@@ -51,9 +36,6 @@ export const WEIGHT_G: Record<CategoryId, number> = {
   jacket: 1200, shorts: 350, socks: 100, glasses: 150, watch: 200, jewelry: 80,
 };
 
-/** Nombre d'articles par rayon et par marque (démo). */
-export const PER_RAYON = 6;
-
 export const BRANDS: Brand[] = ALL_BRANDS.map((name) => ({
   slug: slugify(name),
   name,
@@ -61,30 +43,7 @@ export const BRANDS: Brand[] = ALL_BRANDS.map((name) => ({
   inWalk: WALK_BRANDS.includes(name),
 }));
 
-function makeProducts(brand: Brand, cat: Category): PricedProduct[] {
-  const names = NAMES[cat.id];
-  const [lo, hi] = COST_CNY[cat.id];
-  const seed = hash(`${brand.name}|${cat.id}`);
-  return Array.from({ length: PER_RAYON }, (_, i) => {
-    const ci = (i * 3 + seed) % COLORS.length;
-    const color = COLORS[ci];
-    const name = names[(i + seed) % names.length];
-    return {
-      slug: `${brand.slug}-${slugify(name)}-${cat.id}-${i + 1}`,
-      brandSlug: brand.slug,
-      brandName: brand.name,
-      category: cat.id,
-      name,
-      cost: { cny: Math.round((lo + ((i * 37 + seed) % (hi - lo))) / 5) * 5, g: WEIGHT_G[cat.id] },
-      color,
-      accent: accentFor(color),
-      colors: [color, COLORS[(ci + 3) % COLORS.length], COLORS[(ci + 6) % COLORS.length]],
-      sizes: cat.sizes,
-    };
-  });
-}
-
-/** Vrais produits du fournisseur (photos), avec un coût FICTIF : milieu de la fourchette de démo de leur catégorie. */
+/** Copie de secours : les vrais articles avec leurs photos, coût au milieu de la fourchette de leur catégorie. */
 function supplierProducts(): PricedProduct[] {
   const src = (id: ImageId) => IMAGES[id].src;
   return SUPPLIER_PRODUCTS.map((p) => {
@@ -109,17 +68,3 @@ function supplierProducts(): PricedProduct[] {
 
 /** Copie de secours des vrais produits : la base fait foi (src/lib/catalog/db.ts), ceci ne sert que si elle ne répond pas. */
 export const REAL_SNAPSHOT: PricedProduct[] = supplierProducts();
-
-/** Articles de démo, dessinés (pas de démo pour les marques qui n'ont que de vrais produits). Restent dans le code. */
-export const DEMO_PRODUCTS: PricedProduct[] = BRANDS.filter((b) => !REAL_PRODUCTS_ONLY.includes(b.name)).flatMap((b) =>
-  CATEGORIES.flatMap((c) => makeProducts(b, c)),
-);
-
-/** Vrais produits en premier, puis la démo (catalogue du code, utilisé par scripts/catalogue-sql.mjs). */
-export const PRODUCTS: PricedProduct[] = [...REAL_SNAPSHOT, ...DEMO_PRODUCTS];
-
-/** Nouveautés mises en avant (démo). */
-export const NEW_ARRIVALS: [string, CategoryId, number][] = [
-  ["Trapstar", "hoodie", 2], ["Nike", "sneaker", 0], ["Corteiz", "pants", 3], ["Stüssy", "tee", 1],
-  ["Represent", "hoodie", 5], ["Palm Angels", "tee", 4], ["Essentials", "pants", 0], ["Carhartt WIP", "cap", 2],
-];
