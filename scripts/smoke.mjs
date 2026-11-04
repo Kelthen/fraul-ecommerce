@@ -148,7 +148,9 @@ await check("prix : devise de la zone, ligne de confirmation, aucun coût dans l
   const text = await page.locator("body").innerText();
   const found = ["Canada", "USA", "Royaume-Uni", "France", "Belgique", "CA$", "$CA", "US$"].filter((w) => text.includes(w));
   if (found.length) throw new Error(`pays ou devise nationale affichés : ${found.join(", ")}`);
-  if ((await page.content()).includes("cny")) throw new Error("le coût fournisseur est dans la page");
+  const html = await page.content();
+  if (html.includes("cny")) throw new Error("le coût fournisseur est dans la page");
+  if (html.includes("revendeur")) throw new Error("le prix d'un groupe est dans la page");
 });
 
 // Va à la boutique k (0 = première) en faisant défiler le mall comme un visiteur.

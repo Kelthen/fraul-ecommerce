@@ -1,8 +1,8 @@
 // « Mes envies » : les pièces qu'on garde de côté (bouton « Envie », décision de Rhamone du 18 oct. 2026).
 // Gardées sur le téléphone pour l'instant ; synchronisées avec le compte quand les comptes seront branchés
 // (table `wishlists` du schéma). Chaque envie garde un instantané pour s'afficher sans recharger le catalogue ;
-// elle garde aussi sa table de prix par zone et groupe, jamais le coût.
-import { isPriceTable, type PriceTable } from "../pricing/price.ts";
+// elle garde aussi ses prix publics par zone, jamais le coût.
+import { isPriceTable, type PriceTable } from "../pricing/public.ts";
 
 export type Envie = {
   slug: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import type { PriceTable } from "@/models/pricing/price";
+import type { PriceTable } from "@/models/pricing/public";
 import { usePricing } from "./PricingProvider";
 
 /** Prix affiché d'un ou plusieurs articles (× quantité), dans la devise de la zone. */

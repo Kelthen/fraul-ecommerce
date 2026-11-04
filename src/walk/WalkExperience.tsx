@@ -7,7 +7,7 @@ import { useCart } from "@/components/CartProvider";
 import type { BrandStyle, Category, CategoryId } from "@/lib/catalog/types";
 import { Price, PriceNote } from "@/components/Price";
 import { usePricing } from "@/components/PricingProvider";
-import type { PriceTable } from "@/models/pricing/price";
+import type { PriceTable } from "@/models/pricing/public";
 import { startWalk } from "./engine";
 import { QuickView, type FicheItem } from "./QuickView";
 import { ConciergeForm } from "@/components/concierge/ConciergeForm";

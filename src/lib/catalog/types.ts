@@ -1,6 +1,7 @@
 // Types du catalogue. Ils suivent le schéma de base de données (supabase/migrations/).
 
-import type { Cost, PriceTable } from "@/models/pricing/price";
+import type { Cost } from "@/models/pricing/price";
+import type { PriceTable } from "@/models/pricing/public";
 
 export type FontKey = "sansX" | "sansXi" | "sansL" | "serif" | "serifI" | "serifIB";
 

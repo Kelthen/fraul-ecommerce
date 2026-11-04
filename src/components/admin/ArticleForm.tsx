@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { saveArticleAction, uploadPhotoAction } from "@/app/admin/articles/actions";
+import { useEffect, useState } from "react";
+import { marginsAction, saveArticleAction, uploadPhotoAction } from "@/app/admin/articles/actions";
 import type { AdminArticle } from "@/lib/server/admin-articles";
-import { MARGIN_ALERT_PCT, marginsByZone } from "@/models/admin/article";
+import type { ZoneMargin } from "@/models/admin/article";
 
 // Formulaire d'article de l'admin, pensé pour le téléphone de Jean Paul : photos prises ou choisies,
 // réduites ici (1600 px, JPEG) avant l'envoi, prix en dollars, marge visible dans chaque devise avant d'enregistrer.
@@ -46,10 +46,17 @@ export function ArticleForm({ article, brands, categories, colors }: Props) {
   const [errors, setErrors] = useState<string[]>([]);
 
   const num = (s: string) => Number(s.replace(",", "."));
-  const margins = useMemo(
-    () => (num(priceUsd) > 0 && num(costCny) > 0 && num(weightG) > 0 ? marginsByZone(num(priceUsd), num(costCny), num(weightG)) : null),
-    [priceUsd, costCny, weightG],
-  );
+  // Le calcul reste sur le serveur : les marges et les taux ne vont jamais dans le navigateur.
+  const [margins, setMargins] = useState<ZoneMargin[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    const t = setTimeout(() => {
+      void marginsAction(num(priceUsd), num(costCny), num(weightG))
+        .catch(() => null)
+        .then((m) => { if (live) setMargins(m); });
+    }, 250);
+    return () => { live = false; clearTimeout(t); };
+  }, [priceUsd, costCny, weightG]);
 
   const onCategory = (id: string) => {
     setCategory(id);
@@ -148,11 +155,11 @@ export function ArticleForm({ article, brands, categories, colors }: Props) {
           <thead><tr><th>Devise</th><th>Prix client</th><th>Marge</th></tr></thead>
           <tbody>
             {margins.map((m) => (
-              <tr key={m.zone} className={m.marginPct < MARGIN_ALERT_PCT || m.raisedToFloor ? "is-alert" : undefined}>
+              <tr key={m.zone} className={m.low || m.raisedToFloor ? "is-alert" : undefined}>
                 <td>{m.currency}</td>
                 <td>{m.price} {m.currency}</td>
                 <td>
-                  {m.marginPct} %{m.raisedToFloor ? " · relevé au prix plancher" : m.marginPct < MARGIN_ALERT_PCT ? " ⚠️ marge faible" : ""}
+                  {m.marginPct} %{m.raisedToFloor ? " · relevé au prix plancher" : m.low ? " ⚠️ marge faible" : ""}
                 </td>
               </tr>
             ))}

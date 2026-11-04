@@ -7,7 +7,7 @@ import { Price, PriceNote } from "@/components/Price";
 import { ProductGallery, photoViews } from "@/components/product/ProductGallery";
 import type { CategoryId } from "@/lib/catalog/types";
 import { related, type RelatedKey } from "@/models/catalog/related";
-import type { PriceTable } from "@/models/pricing/price";
+import type { PriceTable } from "@/models/pricing/public";
 
 /** Article tel que la fiche en grand le reçoit (moteur du Walk ou catalogue compact). */
 export type FicheItem = {

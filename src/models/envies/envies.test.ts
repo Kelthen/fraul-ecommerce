@@ -3,8 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ENVIES_MAX, hasEnvie, parseEnvies, toggleEnvie, type Envie } from "./envies.ts";
 
-const row = { public: 100, vip: 90, fidele: 75, revendeur: 60 };
-const PRICES = { us: row, ca: row, uk: row, eu: row };
+const PRICES = { us: 100, ca: 138, uk: 79, eu: 92 };
 const item = (slug: string): Omit<Envie, "at"> => ({ slug, name: "Hoodie", brand: "Nike", category: "hoodie", prices: PRICES, color: "#141416", accent: "#EAE0C8" });
 
 test("toucher « Envie » ajoute en tête, toucher encore retire", () => {
