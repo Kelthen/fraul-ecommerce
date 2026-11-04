@@ -7,7 +7,7 @@
 //    (src/lib/catalog/supplier.ts). Ces deux fichiers sont générés : on relance le script, on ne les édite pas.
 //
 // Un « ensemble » (vues veste-… et pantalon-…) devient deux produits ; la vue « ensemble » sert de
-// photo de détail aux deux. Les coûts sont FICTIFS (démo) tant que le fournisseur n'a pas donné ses prix.
+// photo de détail aux deux. Ces coûts servent seulement à la copie de secours : les vrais prix sont dans la base.
 import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -99,8 +99,8 @@ await writeFile(
 );
 await writeFile(
   "src/lib/catalog/supplier.ts",
-  `${header}// Produits réels classés par Rhamone à partir des captures du fournisseur (test de rendu, pas de mise en ligne).\n` +
-    `// Coûts FICTIFS (démo) : ils viennent de la catégorie, en attendant les prix du fournisseur.\n` +
+  `${header}// Copie de secours des vrais articles, utilisée seulement si la base ne répond pas (le paiement est alors refusé).\n` +
+    `// Coûts estimés d'après la catégorie : ils ne servent qu'à cette copie.\n` +
     `import type { CategoryId } from "./types";\nimport type { ImageId } from "../images";\n\n` +
     `export type SupplierProduct = {\n  slug: string;\n  brand: string;\n  category: CategoryId;\n  name: string;\n  /** Couleur dominante de la photo de face (sert au dessin de repli et aux pastilles). */\n  color: string;\n` +
     `  image: { front: ImageId; back?: ImageId; details: ImageId[] };\n  note?: string;\n};\n\n` +

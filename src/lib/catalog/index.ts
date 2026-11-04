@@ -2,12 +2,12 @@
 // Articles : la base (src/lib/catalog/db.ts), modifiable depuis l'admin ; copie de secours si elle ne répond pas.
 // Boutiques : la base aussi. Une marque sans article ou masquée n'existe pas sur le site. Catégories : dans le code.
 import { loadBrandRows, loadSiteRows, toBrand, toProduct } from "./db";
-import { BRANDS, CATEGORIES, REAL_SNAPSHOT, accentFor } from "./demo";
+import { BRANDS, CATEGORIES, REAL_SNAPSHOT, accentFor } from "./fallback";
 import { priceTable } from "@/models/pricing/price";
 import type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
 
 export type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
-export { CATEGORIES } from "./demo";
+export { CATEGORIES } from "./fallback";
 
 const stockedSlugs = async () => new Set((await pricedProducts()).map((p) => p.brandSlug));
 

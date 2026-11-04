@@ -2,7 +2,7 @@
 
 import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { CATEGORIES } from "@/lib/catalog/demo";
+import { CATEGORIES } from "@/lib/catalog/fallback";
 import { CATALOGUE_TAG } from "@/lib/catalog/db";
 import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";

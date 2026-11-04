@@ -1,6 +1,6 @@
 // FICHIER GÉNÉRÉ par scripts/import-catalogue.mjs — ne pas modifier à la main, relancer le script.
-// Produits réels classés par Rhamone à partir des captures du fournisseur (test de rendu, pas de mise en ligne).
-// Coûts FICTIFS (démo) : ils viennent de la catégorie, en attendant les prix du fournisseur.
+// Copie de secours des vrais articles, utilisée seulement si la base ne répond pas (le paiement est alors refusé).
+// Coûts estimés d'après la catégorie : ils ne servent qu'à cette copie.
 import type { CategoryId } from "./types";
 import type { ImageId } from "../images";
 
