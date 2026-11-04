@@ -128,6 +128,7 @@ _Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | **Tableau de bord `/admin`** (PR 3) : ventes du jour, 7 et 30 jours par devise (jamais additionnées), panier moyen, marge estimée, articles les plus vendus, demandes Finds à traiter ; liens vers Articles, Boutiques, Commandes. **Jean Paul se connecte aujourd'hui par le code Telegram** (il rejoint le groupe de l'équipe) ; le compte par e-mail (PR 4) attend le domaine vérifié dans Resend. | Rhamone |
 | 2026-11-04 | **Mannequin femme fait sans Blender**, à partir du modèle homme : Serge a repris cette tâche de Rhamone. Rhamone reste à consulter sur les décisions « logos » et « rayons avec articles ». | Serge |
 | 2026-11-04 | **Domaine : take-ur-clothes.com** (remplace takeurclothes.com visé le 1er nov.). Documents finis rangés dans `docs/archive/`. | Serge |
 | 2026-11-04 | **3 architectures de boutique** réparties le long du parcours, jamais deux fois la même côte à côte. **Un homme et une femme** devant chaque boutique : Rhamone modélise la femme, l'homme seul en attendant. **La porte du mall se touche** pour entrer. | Serge |
