@@ -160,6 +160,7 @@ _Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | **« Crée ta tenue » masqué** tant qu'il ne marche pas : plus de lien (menu, barre du bas → « Envies », pied de page, accueil), page hors Google ; la page `/tenue` reste en place pour la reprendre (3D la semaine prochaine). | Rhamone |
 | 2026-11-04 | **E-mails en place** (domaine take-ur-clothes.com vérifié dans Resend, SMTP Supabase réglé : création de compte testée par Rhamone). Clés Stripe webhook, Resend et Turnstile dans Vercel. **Suite pour Serge** (Rhamone n'a plus de temps) : 1) « + Nouvelle marque » depuis la fiche article (logo, ou 2 couleurs si pas de logo ; couleurs reprises du logo), 2) connexion admin par e-mail (liste de 3 admins, Telegram en secours), 3) page compte client style Nike. Détail : `docs/ADMIN-ARTICLES.md`. | Rhamone |
 | 2026-11-04 | **Tableau de bord `/admin`** (PR 3) : ventes du jour, 7 et 30 jours par devise (jamais additionnées), panier moyen, marge estimée, articles les plus vendus, demandes Finds à traiter ; liens vers Articles, Boutiques, Commandes. **Jean Paul se connecte aujourd'hui par le code Telegram** (il rejoint le groupe de l'équipe) ; le compte par e-mail (PR 4) attend le domaine vérifié dans Resend. | Rhamone |
 | 2026-11-04 | **Mannequin femme fait sans Blender**, à partir du modèle homme : Serge a repris cette tâche de Rhamone. Rhamone reste à consulter sur les décisions « logos » et « rayons avec articles ». | Serge |

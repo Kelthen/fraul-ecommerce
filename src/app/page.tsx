@@ -137,30 +137,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="sec pearl" aria-labelledby="outfit-title">
-        <div className="wrap outfit">
-          <div>
-            <p className="eyebrow">Drop 001 · Assemble</p>
-            <h2 id="outfit-title" style={{ fontSize: "clamp(38px, 8vw, 72px)", lineHeight: 0.95, margin: "8px 0 16px" }}>
-              Crée ta tenue
-            </h2>
-            <p style={{ maxWidth: "40ch" }}>Un haut, un bas, une paire : essaie-les sur le mannequin et ajoute la tenue entière au panier.</p>
-            <div style={{ marginTop: 24 }}>
-              <Link className="pill ink" href="/tenue">
-                Commencer
-              </Link>
-            </div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} aria-hidden="true">
-            {news.slice(0, 3).map((p) => (
-              <div key={p.slug} className="piece" style={{ aspectRatio: "3/4", overflow: "hidden" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element -- photos du catalogue, parfois hébergées chez Supabase */}
-                <img src={p.image.front} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* « Crée ta tenue » masqué tant qu'il ne marche pas (Rhamone, 4 nov.) : remettre la section depuis l'historique Git. */}
 
       <section className="sec wrap" aria-labelledby="track-title">
         <div className="track-grid">
