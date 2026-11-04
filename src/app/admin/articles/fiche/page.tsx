@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CATEGORIES, COLORS, WEIGHT_G } from "@/lib/catalog/demo";
+import { CATEGORIES, COLORS, WEIGHT_G } from "@/lib/catalog/fallback";
 import { COLOR_NAMES } from "@/lib/catalog/palette";
 import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle } from "@/lib/server/admin-articles";

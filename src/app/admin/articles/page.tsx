@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CATEGORIES } from "@/lib/catalog/demo";
+import { CATEGORIES } from "@/lib/catalog/fallback";
 import { isAdmin } from "@/lib/server/admin-session";
 import { listArticles } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";

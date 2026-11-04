@@ -23,7 +23,6 @@
 Le hook `.claude/hooks/session-start.sh` s'exécute à l'ouverture et t'affiche un **briefing** : dernières PR mergées, PR ouvertes, ce que l'autre a fait, STATUS.md, règles de LESSONS.md.
 - Lis-le avant de répondre à quoi que ce soit.
 - Si tu ne vois pas de briefing, lance `bash .claude/hooks/session-start.sh` toi-même.
-- **Claude de Serge** : lis aussi `docs/POUR-SERGE.md` (passation du 18 oct. 2026 : ce qui attend Serge, demandes d'avis de Rhamone).
 - Si le briefing montre que **l'autre dev a fait quelque chose depuis la dernière session**, commence ta première réponse par 2-3 lignes : « Depuis ta dernière session, l'autre dev a fait… ».
 
 ---
@@ -115,7 +114,7 @@ demande → vérification (§2) → plan court → OK de l'humain
 
 ## 7. Stack et commandes
 
-- Next.js 16 (App Router, Cache Components) + TypeScript strict + CSS maison (`src/app/globals.css`, pas de Tailwind). three.js pour le Walk (`src/walk/`). Supabase (schéma prêt dans `supabase/migrations/`, pas encore branché). Vercel, projet `fraul-ecommerce`, équipe Kelthen (`main` → prod, chaque PR → preview).
+- Next.js 16 (App Router, Cache Components) + TypeScript strict + CSS maison (`src/app/globals.css`, pas de Tailwind). three.js pour le Walk (`src/walk/`). Supabase (schéma dans `supabase/migrations/`, branché en production). Vercel, projet `fraul-ecommerce`, équipe Kelthen (`main` → prod, chaque PR → preview).
 - Cette version de Next.js a changé : lire `node_modules/next/dist/docs/` avant d'utiliser une API (voir `AGENTS.md`).
 - Fuseau, langue et localisation du client : voir STATUS.md « Infos client ». Utilise toujours ce fuseau pour les dates (L-19).
 
@@ -227,8 +226,8 @@ Montserrat. Référence : LuisaViaRoma. Haut de gamme, **beau mais léger**
 - **Aucun pays affiché nulle part** sur le site (décision du 2026-10-12). Les
   pays ne servent qu'à la logistique, en coulisse.
 - Pages : marques, catégories, fiche produit (face/dos), Crée ta tenue,
-  panier, suivi, pages légales (squelettes). Catalogue de **démonstration**
-  derrière `src/lib/catalog/` ; schéma de base dans `supabase/migrations/`.
+  panier, suivi, pages légales, admin des articles et des boutiques. Catalogue lu dans la base
+  (`src/lib/catalog/`), copie de secours des vrais articles si elle ne répond pas ; schéma dans `supabase/migrations/`.
 - Démo d'origine (une seule page) archivée : `demo/fraul-demo-v2.html`.
 - Avant de dire « fini » : `npm run check` puis `npm run smoke` (téléphone,
   3D comprise). Toujours arrêter l'ancien serveur avant d'en lancer un neuf.

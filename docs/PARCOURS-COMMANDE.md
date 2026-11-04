@@ -1,8 +1,8 @@
 # Parcours d'une commande : du paiement au colis chez le client
 
 > **Zone de Serge** (commandes, fournisseurs, expédition). Écrit le 19 oct. 2026 (heure de Toronto) avec Serge.
-> **Remplace la partie 2 de `docs/FOURNISSEUR-COMMANDES.md`** (portail WeChat pour le fournisseur) : TakeUrClothes devient le relais, le fournisseur n'a pas de portail.
-> S'appuie sur `docs/FOURNISSEURS-MULTIPLES.md` (offres par fournisseur, migration 0004 validée, non appliquée) et y ajoute ce qui manque (§4, §6).
+> **Remplace la partie 2 de `docs/archive/FOURNISSEUR-COMMANDES.md`** (portail WeChat pour le fournisseur) : TakeUrClothes devient le relais, le fournisseur n'a pas de portail.
+> S'appuie sur `docs/archive/FOURNISSEURS-MULTIPLES.md` (offres par fournisseur, migration 0004 validée, non appliquée) et y ajoute ce qui manque (§4, §6).
 > Rien n'est codé ni appliqué. Réponses de Rhamone bienvenues en « 🗣️ Rhamone ».
 
 ---
@@ -87,7 +87,7 @@ Le niveau 2 est prévu dès la construction : passer de 1 à 2 = un réglage, pa
 
 ## 4. Plusieurs fournisseurs : ne jamais se tromper d'article ni de prix
 
-S'appuie sur `supplier_offers` (migration 0004, `docs/FOURNISSEURS-MULTIPLES.md`). Rappel et ajouts :
+S'appuie sur `supplier_offers` (migration 0004, `docs/archive/FOURNISSEURS-MULTIPLES.md`). Rappel et ajouts :
 - Chaque variante (produit × taille × couleur) a **son code TakeUrClothes** et **ses offres** : fournisseur, sa référence, son lien, son prix ¥, stock, délai, **date de dernière vérification**.
 - **Prix client** = calculé sur le fournisseur de référence : un seul prix, qui ne dépend pas du fournisseur choisi.
 - **À la commande**, le site propose l'offre la moins chère en stock dans le délai ; TakeUrClothes confirme. Fournisseur, référence et coût réel sont **figés sur la ligne** (`offer_id`, `supplier_id`, `unit_cost`) : si un prix change ensuite, la commande garde les bons chiffres. Contrôle du **prix plancher** avec le coût réel avant l'envoi.

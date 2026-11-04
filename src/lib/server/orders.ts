@@ -17,7 +17,7 @@ import { getCheckoutSession, shippingOf, type CheckoutSession } from "./stripe";
 
 /** Version des CGV acceptée (pages légales encore en brouillon, à faire valider par un juriste). */
 export const TERMS_VERSION = "2026-11-01-brouillon";
-/** Au lancement, un seul fournisseur ; TakeUrClothes répartira ensuite entre ses fournisseurs (FOURNISSEURS-MULTIPLES.md). */
+/** Au lancement, un seul fournisseur ; TakeUrClothes répartira ensuite entre ses fournisseurs (archive/FOURNISSEURS-MULTIPLES.md). */
 const MAIN_SUPPLIER = "Fournisseur principal";
 const DAY = 86_400_000;
 const SHEET_DAYS_BEFORE_SHIPPING = 21; // même durée que la commande test du relais

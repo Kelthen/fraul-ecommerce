@@ -3,9 +3,9 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
+_Dernière mise à jour : 2026-11-04 par serge (ménage)_
 
-> **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
+> **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
 **Preview :** https://fraul-ecommerce.vercel.app (Vercel, équipe Kelthen ; Google bloqué tant que le site n'est pas lancé)
 
@@ -25,7 +25,7 @@ _Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
 | Source des données | Code : 23 vrais produits avec photos (`src/lib/catalog/supplier.ts`, généré par `scripts/import-catalogue.mjs` depuis le classement de Rhamone, coûts **fictifs**) + catalogue de démo (`src/lib/catalog/demo.ts`). Base Supabase créée mais vide et pas encore branchée | 2026-10-18 |
 | Base de données | Supabase, projet `fraul` (`rqrdccsxyyufqlenmpct`, USA Est), plan gratuit, organisation « kelthenrift-prog's Org » — Serge pas encore membre | 2026-10-13 |
 
-## ✅ En ligne (preview, pas encore en production)
+## ✅ En ligne
 
 - Règles de démarrage + kit NBW (CLAUDE.md, STATUS.md, LESSONS.md, briefing, modèle de PR, notifications, script photos) — rhamon
 - Architecture cible — `docs/ARCHITECTURE.md`
@@ -35,10 +35,10 @@ _Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
 - Supabase : migration **0003 emplacements de tenue** appliquée (cap, glasses, neck, watch, layer, socks), alignée sur `src/lib/catalog/types.ts` — serge
 - Projet Supabase `fraul` créé (USA Est, gratuit) ; migrations 0001 (schéma) et 0002 (sécurité des fonctions) appliquées ; contrôle de sécurité Supabase : seul reste le suivi public par lien, voulu — rhamon
 - Page Marques : grille de pastilles rectangulaires aux coins légèrement arrondis (3 par ligne sur téléphone, 6 sur ordinateur), nom de la marque en texte avec le style de son enseigne, recherche gardée, lien « Voir la boutique » (boutique dans le Walk) sous chaque marque. Composant unique `BrandTile` (variante `grid` ; l'accueil garde ses pavés) — rhamon
-- **Finds, une pièce sur demande** (chantier D, ex-« Conciergerie ») : nouvel arrêt du mall **vers la 10e boutique** (au bout droit de la barre, on se retourne vers le centre), face à un comptoir au pied du grand « TUC » (« Finds · Sur demande ») ; **toucher le comptoir** ou le bouton « Demande une pièce » → formulaire par-dessus le mall (le retour du téléphone le ferme). Aussi : lien « Une pièce introuvable ? » sous chaque vitrine, page `/sur-demande` (lien dans le pied de page). Formulaire : article, marque, taille, lien, e-mail, précisions ; vérifié (champ piège anti-robot, longueurs, liens https) ; **démo : rien n'est envoyé**. Proposition pour Serge : `docs/FOURNISSEURS-MULTIPLES.md` (plusieurs fournisseurs par article, personne de l'expédition, table des demandes ; SQL proposé, non appliqué) — rhamon
+- **Finds, une pièce sur demande** (chantier D, ex-« Conciergerie ») : nouvel arrêt du mall **vers la 10e boutique** (au bout droit de la barre, on se retourne vers le centre), face à un comptoir au pied du grand « TUC » (« Finds · Sur demande ») ; **toucher le comptoir** ou le bouton « Demande une pièce » → formulaire par-dessus le mall (le retour du téléphone le ferme). Aussi : lien « Une pièce introuvable ? » sous chaque vitrine, page `/sur-demande` (lien dans le pied de page). Formulaire : article, marque, taille, lien, e-mail, précisions ; vérifié (champ piège anti-robot, longueurs, liens https) ; **démo : rien n'est envoyé**. Proposition pour Serge : `docs/archive/FOURNISSEURS-MULTIPLES.md` (plusieurs fournisseurs par article, personne de l'expédition, table des demandes ; SQL proposé, non appliqué) — rhamon
 - **Vitrines vivantes + heure du jour** (chantier F) : dans chaque vitrine du mall, deux cadres montrent les pièces phares de la marque (vraies photos d'abord, sinon dessins) et changent toutes les 5 s quand on est devant (rien qui bouge si le téléphone demande moins d'animations). **Lumière selon l'heure locale du visiteur** : jour comme aujourd'hui ; dès 17 h elle baisse et se réchauffe ; à 19 h plus sombre et éclairé (vitrines et plafonniers restent allumés) ; la nuit, sombre mais jamais noir. Essai à une autre heure sur la preview : `/walk?heure=19` — rhamon
 - **Envies** (chantier E, 1re partie) : bouton cœur **« Envie »** sur la fiche produit et dans la fiche en grand du mall ; cœur avec le nombre dans l'en-tête ; page **« Mes envies »** (`/envies`, « Gardé de côté ») : les pièces gardées, du plus récent au plus ancien, retirables d'un geste. Gardées sur le téléphone pour l'instant (synchro avec le compte quand les comptes seront branchés ; prix toujours recalculé, jamais figé). Dans la fiche en grand, « Ajouter au panier » → « Au panier » pour que tout tienne sur un téléphone — rhamon
-- **Comptes (démo, front-end seulement)** (chantier E, 2e partie) : icône compte dans l'en-tête → `/compte` (aussi `/connexion`). Créer un compte : e-mail + mot de passe (10 caractères mini, refus des mots de passe courants ou contenant l'e-mail) → **code à 6 chiffres par e-mail** (démo : code affiché, aucun e-mail envoyé ; 5 erreurs = une minute d'attente). Se connecter, mot de passe oublié (code puis nouveau mot de passe). « Mon compte » : commandes (vide), e-mails (nouveautés **décochées par défaut**), se déconnecter. Aucun mot de passe gardé, même dans le navigateur. Branchement (Supabase Auth, Turnstile, limites) : zone de Serge, `docs/POUR-SERGE.md` §2.4 — rhamon
+- **Comptes (démo, front-end seulement)** (chantier E, 2e partie) : icône compte dans l'en-tête → `/compte` (aussi `/connexion`). Créer un compte : e-mail + mot de passe (10 caractères mini, refus des mots de passe courants ou contenant l'e-mail) → **code à 6 chiffres par e-mail** (démo : code affiché, aucun e-mail envoyé ; 5 erreurs = une minute d'attente). Se connecter, mot de passe oublié (code puis nouveau mot de passe). « Mon compte » : commandes (vide), e-mails (nouveautés **décochées par défaut**), se déconnecter. Aucun mot de passe gardé, même dans le navigateur. Branchement (Supabase Auth, Turnstile, limites) : zone de Serge, `docs/archive/POUR-SERGE.md` §2.4 — rhamon
 - **Fiche en grand** (chantier B) : dans une boutique du Walk, toucher l'article devant soi (ou « En grand ») ouvre sa fiche par-dessus la boutique : toutes ses photos (face, dos, autant de détails qu'il y en a), on glisse de l'une à l'autre, compteur « 2 / 6 », miniatures, toucher pour zoomer ; taille, « Au panier », « Fiche complète ». En dessous, **12 propositions au plus, 3 par rangée** : autres articles du même rayon de la marque, « Complète la tenue » (autres rayons de la marque), puis les autres boutiques. Toucher une proposition l'affiche et le portant suit. Le retour du téléphone ferme la fiche. Mêmes galerie et propositions sur la fiche produit. « Zoom » s'appelle maintenant « Tourner » (gros plan 3D) — rhamon
 - **Portant de côté** (22 oct.) : dans les rayons T-shirts et Hoodies, les hauts pendent **serrés et de côté** (manche et flanc à la couleur de la photo, jamais le devant), sur un crochet fin en « ? » qui sort du col ; la capuche tombe dans le dos. La pièce touchée sort du rang et se met de face (photo). Tout le mur de gauche suit le même style. **Liste des rayons aussi dans chaque rayon** : en bas à gauche sur PC, repliée derrière « ☰ Rayons » sur téléphone ; le rayon ouvert y est surligné. La rangée de pastilles en bas de la fiche (dont « ‹ Centre », doublon de ←) est retirée — rhamon
 - **Entrer / sortir sans attendre** : toucher une vitrine → fondu de 0,15 s → directement au centre de la boutique, devant les rayons (plus de zoom ni de marche ; la boutique regardée se prépare en coulisse) ; « Sortir » ou le retour du téléphone → retour immédiat face à la même vitrine ; trajet vers un rayon : 0,5 s au plus. Chargement du mall : plus d'attente minimale, écran (habit qui tourne, proposition) seulement si ça dure plus de 0,2 s. Mesuré dans le navigateur de test (3D sans carte graphique, bien plus lent qu'un téléphone) : entrer 4,4 s → 0,8 s, rayon 2,6 s → 1,4 s, sortir 3,7 s → instantané — rhamon
@@ -82,6 +82,7 @@ _Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
 - **Marges et prix de groupe privés** : le navigateur reçoit seulement le prix public de chaque zone (`src/models/pricing/public.ts`), plus les marges, taux ni remises — serge
 - **Gestion des boutiques** : `/admin/boutiques` (ajout, modification, place dans le mall, masquage, retrait, logo, couleur tirée du logo) ; le site lit les boutiques dans la base — serge
 - **Walk** : toucher la porte fait entrer dans le mall ; 3 architectures de boutique (enseigne, verrière, portique) avec une ambiance intérieure propre ; un homme en vitrine, emplacement femme prêt (`WOMAN_READY` dans `src/walk/engine.js`) ; plus de panneaux de rayons vides dans la boutique — serge
+- **Ménage** : documents finis rangés dans `docs/archive/`, index `docs/README.md`, copie de secours du catalogue renommée `fallback.ts`, mentions périmées retirées — serge
 
 ## 🔄 En cours
 
@@ -92,7 +93,7 @@ _Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
 
 ## 🆕 À faire (par priorité)
 
-1. Plan MVC validé par Serge le 13 oct. (`docs/PLAN-MVC.md`) → étapes 1 et 2 en ligne (PR #5, #6) ; ensuite étapes 3 et 4 (vues 3D, contrôleurs du mall)
+1. Plan MVC validé par Serge le 13 oct. (`docs/archive/PLAN-MVC.md`) → étapes 1 et 2 en ligne (PR #5, #6) ; ensuite étapes 3 et 4 (vues 3D, contrôleurs du mall)
 2. Rhamone essaie la preview et confirme les choix par défaut du mall (voir Décisions)
 3. Brancher Slack : secret `SLACK_WEBHOOK_URL` dans GitHub (voir `playbook/README.md`) — rhamon
 4. Plan en 6 chantiers de Rhamone (17 oct.), une PR chacun, dans cet ordre : ✅ catégories → ✅ photos du fournisseur (+ 4 marques dans l'annuaire) → ✅ modes de mall (31 boutiques) → ✅ portes vitrées d'entrée → ✅ page Marques en pastilles → Crée ta tenue en 3D (prototype puis version complète) → comptes, suivi et e-mails — rhamon
@@ -103,13 +104,13 @@ _Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
 9. ⚠️ **Supabase (plan gratuit) se met en pause après ~7 jours sans activité** : le 1er nov., un paiement test est passé chez Stripe sans être enregistré (base en pause, relancée le jour même). Avant le lancement : plan payant (≈ 25 $/mois) ou visite automatique quotidienne — décision de Rhamone attendue. **Visite quotidienne prête (`/api/quotidien`, 3 nov.)**, le plan payant reste le choix le plus sûr pour la production.
 10. Paiement Stripe : en ligne (#44), verrou et alerte en place (#52). Reste : webhook (`whsec_`), puis passage en live (compte Stripe vérifié, pages légales, vrais prix)
 11. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
-12. ✅ Fournisseur + commandes + WeChat : 3 questions de `docs/FOURNISSEUR-COMMANDES.md` tranchées le 3 nov. Reste à obtenir le coût de chaque article — serge
+12. ✅ Fournisseur + commandes + WeChat : 3 questions de `docs/archive/FOURNISSEUR-COMMANDES.md` tranchées le 3 nov. Reste à obtenir le coût de chaque article — serge
 13. Comptes : code à 6 chiffres, mot de passe de 10 caractères et confirmation d'e-mail réglés dans Supabase le 3 nov. **Bloqué par le domaine** (prévu le 4 nov.) : domaine vérifié dans Resend, puis SMTP personnalisé dans Supabase, modèles d'e-mail avec `{{ .Token }}` en français, `RESEND_API_KEY` et `EMAIL_FROM` dans Vercel. Ensuite : webhook Stripe et Turnstile (`NEXT_PUBLIC_TURNSTILE_SITE_KEY` et `TURNSTILE_SECRET_KEY` dans Vercel, secret aussi dans Supabase → Attack Protection). Reste : 2FA admin et partenaires — serge
 - **Rhamone :** modéliser le mannequin femme, le préparer avec `scripts/prep-mannequin.mjs <source> public/models/mannequin-femme.glb` (mêmes noms de matières), puis passer `WOMAN_READY` à `true` dans `src/walk/engine.js`.
 
 ## ⏳ Bloqué — attend le client
 
-> Nom de domaine **takeurclothes.com** : à acheter et brancher sur Vercel (demandé le 2026-11-01).
+> Domaine en ligne : **www.take-ur-clothes.com** (Rhamone, 3 nov.). Paiement fermé tant que `PAYMENTS_OPEN` n'est pas `true`.
 
 | Élément attendu | Demandé le | Relancé le |
 |---|---|---|
@@ -126,6 +127,7 @@ _Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | **Domaine : take-ur-clothes.com** (remplace takeurclothes.com visé le 1er nov.). Documents finis rangés dans `docs/archive/`. | Serge |
 | 2026-11-04 | **3 architectures de boutique** réparties le long du parcours, jamais deux fois la même côte à côte. **Un homme et une femme** devant chaque boutique : Rhamone modélise la femme, l'homme seul en attendant. **La porte du mall se touche** pour entrer. | Serge |
 | 2026-11-04 | **Jean Paul gère les boutiques** dans `/admin/boutiques` : ajout, modification, place, masquage, retrait. **Logo envoyé par lui** (remplace « pas de logos » du 17 oct., ⚠️ il doit avoir le droit d'afficher chaque logo) et couleur tirée du logo, modifiable. Marques sans articles retirées de la base (migration 0013). | Serge |
 | 2026-11-04 | **Seulement du réel sur le site** : articles de démonstration, dessins générés et boutiques sans articles retirés ; un rayon n'existe que s'il a des articles (remplace « les 6 rayons partout » du 19 oct.). | Serge |
@@ -167,7 +169,7 @@ _Dernière mise à jour : 2026-11-04 par serge (porte et 3 architectures)_
 | 2026-10-13 | **Supabase en plan gratuit** (2 projets actifs max) : le projet `kelthen-social-publishing` est **mis en pause** pour faire place à `fraul`. Le relancer obligera à en mettre un autre en pause. | Rhamone |
 | 2026-10-13 | **Plan MVC validé** : on garde Next.js, rangement MVC, Walk = cœur du site avec liste en repli, `/marques/:slug`, on démarre par l'étape 1. | Serge |
 | 2026-10-13 | **Droits de douane payés par le client mais inclus dans le prix affiché (DDP)** : « Droits et taxes inclus », rien à payer à la livraison. | Serge |
-| 2026-10-13 | **WeChat : lien portail maintenant** (lien personnel épinglé dans WeChat, interface en chinois, bouton « Copier pour WeChat »), **robot WeCom plus tard**. Détail : `docs/FOURNISSEUR-COMMANDES.md`. | Serge |
+| 2026-10-13 | **WeChat : lien portail maintenant** (lien personnel épinglé dans WeChat, interface en chinois, bouton « Copier pour WeChat »), **robot WeCom plus tard**. Détail : `docs/archive/FOURNISSEUR-COMMANDES.md`. | Serge |
 | 2026-10-13 | **Lancement sur USA, Canada, Royaume-Uni, France, Belgique seulement.** L'Afrique (dont l'Afrique de l'Ouest) est mise de côté pour le moment, à revoir plus tard. | Serge |
 | 2026-10-13 | **Serge valide R1 à R6.** Précisions : devise affichée en code (USD/CAD/GBP/EUR) car « $ » est ambigu ; marge minimale de test 20 %. **À corriger dans la PR #2 avant merge :** l'arrondi toujours vers le bas fausse les remises sur les petits prix (VIP = Fidèle à 29 sur un article à 39) → arrondi au plus proche. Détail dans CLAUDE.md §9. ✅ Corrigé dans la PR #2 (mergée le 13 oct.) : arrondi au plus proche, code de devise, « Droits et taxes inclus ». | Serge |
 | 2026-10-12 | **Stratégie de prix de Serge : accord de Rhamone sur l'ensemble** (CLAUDE.md §9). Ses points R1 à R6 sont des **contre-propositions ouvertes** : Serge peut répondre ; Rhamone commence à construire sur cette base en attendant. | Serge + Rhamone, discussion ouverte |
