@@ -35,11 +35,19 @@
 - Pour l'admin (PR 2) : après chaque modification, appeler `updateTag("catalogue")` (action serveur) pour que le site se mette à jour tout de suite.
 - Photos ajoutées depuis l'admin : stockage Supabase (bucket public), compressées avant l'envoi ; les photos actuelles restent dans `public/images/library/`.
 
-## ❓ Question ouverte (Rhamone : « Paul va ajouter les prix »)
+## ✅ Prix : réponse de Rhamone (4 nov.)
 
-Deux lectures possibles, à confirmer avec Rhamone ou Jean Paul **avant la PR 2** :
-1. Jean Paul tape **le coût fournisseur en ¥** et le site calcule le prix de vente par devise (la stratégie de prix actuelle, CLAUDE.md §9).
-2. Jean Paul tape **lui-même le prix de vente** (par devise ?). Le calcul automatique deviendrait seulement une suggestion. Il faudrait alors une colonne de prix par zone et garder le prix plancher (R5).
+> 🗣️ **Rhamone, 4 nov. 2026** : « Directement il peut mettre en dollars mais les prix se convertissent en fonction du pays. »
+
+- Jean Paul tape **le prix de vente en USD**, article par article.
+- Le site **convertit** ce prix dans la devise du visiteur (CAD, GBP, EUR), avec un taux par zone et l'arrondi « propre » (`roundNice`). Le code de devise reste affiché.
+- ⚠️ Ça **remplace le prix calculé depuis le coût** (CLAUDE.md §9, stratégie de Serge). C'est une **contre-proposition** de Rhamone, et la discussion reste ouverte (L-33) : Serge peut répondre en « 🗣️ Serge ».
+- Proposition à garder : le **coût en ¥ reste demandé** (facultatif), pour la marge estimée, l'alerte à 10 % et le **prix plancher** (R5).
+- Points à trancher par Serge :
+  - les droits et la livraison sont-ils compris dans le prix USD tapé ?
+  - taux de conversion fixe, ou mis à jour chaque jour ?
+  - les remises de groupe s'appliquent-elles sur ce prix ?
+- Base : il faudra une colonne `price_usd` (en cents) sur `products`, migration à écrire dans la PR 2.
 
 ## Autres points laissés en route (4 nov.)
 
