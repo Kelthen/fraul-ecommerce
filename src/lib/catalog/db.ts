@@ -1,7 +1,8 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { SUPABASE_URL } from "@/lib/server/env";
-import type { Brand, Category, PricedProduct } from "./types";
+import { brandStyle } from "./brands";
+import type { Brand, BrandStyle, Category, PricedProduct } from "./types";
 
 // Vrais articles lus dans la base (Supabase), avec la clé service : les coûts ne sont plus lisibles avec la clé
 // publique (migration 0012). Mis en cache ; l'admin vide le cache « catalogue » à chaque modification.
@@ -48,10 +49,30 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
   };
 }
 
+export type BrandRow = { slug: string; name: string; style: Partial<BrandStyle> | null; logo_url: string | null };
+
+/** Transforme une ligne de la base en marque du site. */
+export function toBrand(r: BrandRow): Brand {
+  const style: BrandStyle = { ...brandStyle(r.name), ...r.style, name: r.name };
+  if (r.logo_url) style.logo = r.logo_url;
+  return { slug: r.slug, name: r.name, style };
+}
+
 /** Lignes brutes des articles du site, dans l'ordre d'affichage ; null si la base ne répond pas. */
 export async function loadSiteRows(): Promise<Row[] | null> {
   "use cache";
   cacheTag(CATALOGUE_TAG);
+  return read<Row>(`products?select=${SELECT}&status=eq.active&on_site=is.true&order=position.asc,created_at.asc`);
+}
+
+/** Boutiques visibles, dans l'ordre du mall ; null si la base ne répond pas. */
+export async function loadBrandRows(): Promise<BrandRow[] | null> {
+  "use cache";
+  cacheTag(CATALOGUE_TAG);
+  return read<BrandRow>("brands?select=slug,name,style,logo_url&active=is.true&order=walk_position.asc.nullslast,name.asc");
+}
+
+async function read<T>(path: string): Promise<T[] | null> {
   const url = SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!key) {
@@ -59,12 +80,12 @@ export async function loadSiteRows(): Promise<Row[] | null> {
     return null;
   }
   try {
-    const res = await fetch(`${url}/rest/v1/products?select=${SELECT}&status=eq.active&on_site=is.true&order=position.asc,created_at.asc`, {
+    const res = await fetch(`${url}/rest/v1/${path}`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) throw new Error(`Supabase ${res.status}`);
-    const rows = (await res.json()) as Row[];
+    const rows = (await res.json()) as T[];
     cacheLife("hours"); // l'admin vide ce cache à chaque modification : les changements se voient tout de suite
     return rows;
   } catch (e) {

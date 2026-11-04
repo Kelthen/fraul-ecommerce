@@ -453,3 +453,17 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .admin-margins { width: 100%; border-collapse: collapse; font-size: 14px; }
 .admin-margins th, .admin-margins td { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(10, 10, 12, 0.1); }
 .admin-margins tr.is-alert td { color: var(--bordeaux); font-weight: 600; }
+
+/* Logos de boutiques (envoyés depuis l'admin) */
+.brand-logo { display: block; max-width: 86%; max-height: 72%; margin: auto; object-fit: contain; }
+.brand-logo.big { max-width: min(70vw, 360px); max-height: 120px; margin: 0; }
+.sg .brand-logo { max-height: 100%; }
+.bround .brand-logo, .btile .brand-logo { max-height: 48px; }
+.admin-shop { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; }
+.admin-articles .admin-shop img { width: auto; height: auto; max-width: 80%; max-height: 80%; object-fit: contain; background: none; border-radius: 0; }
+.admin-sign { display: grid; place-items: center; min-height: 88px; padding: 12px; border-radius: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.admin-sign img { max-width: 70%; max-height: 72px; object-fit: contain; }
+.admin-color { width: 72px; height: 44px; padding: 2px; }
+.admin-remove summary { list-style: none; cursor: pointer; }
+.admin-remove summary::-webkit-details-marker { display: none; }
+.admin-remove form { margin-top: 8px; }

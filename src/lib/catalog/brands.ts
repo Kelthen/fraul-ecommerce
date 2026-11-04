@@ -16,12 +16,6 @@ export const FONTS: Record<FontKey, { family: "sans" | "serif"; weight: number; 
 const PRESET: Record<string, Omit<BrandStyle, "name">> = {
   Nike: { bg: "#111113", fg: "#FFFEF7", font: "sansXi", sp: 0.02, up: true },
   Trapstar: { bg: "#680209", fg: "#FFFEF7", font: "sansX", sp: 0.16, up: true },
-  Corteiz: { bg: "#E6DCC4", fg: "#141416", font: "serif", sp: 0.1, up: true },
-  "Stüssy": { bg: "#202833", fg: "#EAE0C8", font: "serifI", sp: 0.02, up: false },
-  Represent: { bg: "#0E0E10", fg: "#EAE0C8", font: "sansL", sp: 0.3, up: true },
-  "Palm Angels": { bg: "#F3EEE2", fg: "#141416", font: "serifIB", sp: 0.02, up: false },
-  Essentials: { bg: "#5F5B59", fg: "#FFFEF7", font: "sansL", sp: 0.26, up: true },
-  "Carhartt WIP": { bg: "#420A0D", fg: "#EAE0C8", font: "sansX", sp: 0.06, up: true },
   "Travis Scott": { bg: "#2B2A2C", fg: "#EAE0C8", font: "sansX", sp: 0.1, up: true },
   "Saint Michael": { bg: "#F3EEE2", fg: "#141416", font: "serif", sp: 0.12, up: true },
   ERD: { bg: "#111113", fg: "#FFFEF7", font: "sansL", sp: 0.4, up: true },
@@ -75,18 +69,6 @@ export const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-// Marques connues. Seules celles qui ont des articles apparaissent sur le site.
-export const ALL_BRANDS = [
-  "Adidas", "Amiri", "Arc’teryx", "Broken Planet", "Carhartt WIP", "Chrome Hearts", "Cole Buxton",
-  "Corteiz", "Denim Tears", "ERD", "Essentials", "Fear of God", "Gallery Dept.", "Hellstar", "Jordan",
-  "Moncler", "New Balance", "Nike", "Off-White", "Palm Angels", "Polo Ralph Lauren", "Represent", "Rhude",
-  "Saint Michael", "Sp5der", "Stone Island", "Stüssy", "Syna World", "The North Face", "Trapstar", "Travis Scott",
-];
-
-/** Marques phares : en tête du parcours du mall (début du tronc du T, là où tout le monde passe). */
-const FEATURED = ["Nike", "Trapstar", "Corteiz", "Stüssy", "Represent", "Palm Angels", "Essentials", "Carhartt WIP"];
-
-/** Ordre des boutiques dans le mall : les marques phares, puis toutes les autres de A à Z.
- *  Le nombre de boutiques du mall = le nombre de marques ; la forme s'adapte (src/walk/modes).
- *  (décidé par l'équipe, à confirmer) */
-export const WALK_BRANDS = [...FEATURED, ...ALL_BRANDS.filter((b) => !FEATURED.includes(b))];
+// Copie de secours : les marques des articles de la copie de secours, si la base ne répond pas.
+// Sinon, les boutiques viennent de la base et Jean Paul les gère depuis l'admin.
+export const FALLBACK_BRANDS = ["Nike", "Trapstar", "ERD", "Polo Ralph Lauren", "Saint Michael", "Travis Scott"];

@@ -34,7 +34,8 @@ export default async function BrandPage({ params }: PageProps<"/marques/[slug]">
         <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
           <p className="eyebrow" style={{ color: st.fg, opacity: 0.75 }}>Boutique</p>
           <h1 className="sign" style={{ ...signCss(st), color: st.fg, margin: "12px 0 24px", fontSize: `clamp(28px, min(10vw, ${fit.toFixed(1)}vw), 120px)`, textShadow: `0 0 2px ${st.bg}, 0 2px 18px ${st.bg}` }}>
-            {signWord(st)}
+            {/* eslint-disable-next-line @next/next/no-img-element -- logo déjà réduit à l'envoi */}
+            {st.logo ? <img className="brand-logo big" src={st.logo} alt={brand.name} /> : signWord(st)}
           </h1>
           <Link className="pill solid" href={`/walk/${brand.slug}`}>
             <IconWalk /> Entrer dans la boutique

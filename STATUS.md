@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (marges et prix de groupe privés)_
+_Dernière mise à jour : 2026-11-04 par serge (gestion des boutiques)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -80,6 +80,7 @@ _Dernière mise à jour : 2026-11-04 par serge (marges et prix de groupe privés
 - **Coûts fournisseur privés** (4 nov.) : les pages reçoivent une table de prix, jamais le coût ; `products.cost`, `supplier_ref` et `product_variants.supplier_cost` ne se lisent plus avec la clé publique (migration 0012 appliquée). Le site lit le catalogue avec la clé service. Page de test `/test/prix` retirée — serge
 - **Contenu de test retiré du site** : plus d'articles ni de dessins générés, boutiques sans articles retirées, rayons limités à ceux qui ont des articles, petit mall (8 boutiques ou moins) sur le tronc seul, avec Finds entre la montée et la descente. Hors production seulement : commandes d'exemple et compte local — serge
 - **Marges et prix de groupe privés** : le navigateur reçoit seulement le prix public de chaque zone (`src/models/pricing/public.ts`), plus les marges, taux ni remises — serge
+- **Gestion des boutiques** : `/admin/boutiques` (ajout, modification, place dans le mall, masquage, retrait, logo, couleur tirée du logo) ; le site lit les boutiques dans la base — serge
 
 ## 🔄 En cours
 
@@ -123,6 +124,7 @@ _Dernière mise à jour : 2026-11-04 par serge (marges et prix de groupe privés
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | **Jean Paul gère les boutiques** dans `/admin/boutiques` : ajout, modification, place, masquage, retrait. **Logo envoyé par lui** (remplace « pas de logos » du 17 oct., ⚠️ il doit avoir le droit d'afficher chaque logo) et couleur tirée du logo, modifiable. Marques sans articles retirées de la base (migration 0013). | Serge |
 | 2026-11-04 | **Seulement du réel sur le site** : articles de démonstration, dessins générés et boutiques sans articles retirés ; un rayon n'existe que s'il a des articles (remplace « les 6 rayons partout » du 19 oct.). | Serge |
 | 2026-11-04 | **Admin des articles (PR 2)** : `/admin/articles`. Prix tapé en USD, converti par zone à **taux fixes** (CAD 1,38 · GBP 0,79 · EUR 0,92 : décidé par l'équipe, à confirmer). Coût en ¥ obligatoire. Prix plancher appliqué aussi sans remise. Retirer un article = le masquer. Caisse : #17 fermée (remplacée par #43). 3D (#10) : la semaine prochaine. | Rhamone |
 | 2026-11-03 | **Prix : Serge accepte la proposition de Rhamone** (prix de vente tapé en USD, converti selon la zone). Le prix USD **comprend droits, taxes et livraison**. **Taux fixes par zone, changés à la main.** **Remises de groupe appliquées sur ce prix.** **Le coût en ¥ est obligatoire** à la saisie : il sert au prix plancher et à l'alerte à 10 %. Remplace le prix calculé depuis le coût (CLAUDE.md §9). | Serge |

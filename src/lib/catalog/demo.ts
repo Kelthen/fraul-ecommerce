@@ -1,6 +1,6 @@
 // Référence du catalogue : catégories, marques, et copie de secours des vrais articles.
 // La base fait foi pour les articles (./db.ts). La copie ne sert que si elle ne répond pas, et le paiement refuse alors.
-import { ALL_BRANDS, WALK_BRANDS, brandStyle, slugify } from "./brands";
+import { FALLBACK_BRANDS, brandStyle, slugify } from "./brands";
 import { IMAGES, type ImageId } from "../images";
 import { SUPPLIER_PRODUCTS } from "./supplier";
 import { COLORS, DARK, accentFor } from "./palette";
@@ -36,12 +36,7 @@ export const WEIGHT_G: Record<CategoryId, number> = {
   jacket: 1200, shorts: 350, socks: 100, glasses: 150, watch: 200, jewelry: 80,
 };
 
-export const BRANDS: Brand[] = ALL_BRANDS.map((name) => ({
-  slug: slugify(name),
-  name,
-  style: brandStyle(name),
-  inWalk: WALK_BRANDS.includes(name),
-}));
+export const BRANDS: Brand[] = FALLBACK_BRANDS.map((name) => ({ slug: slugify(name), name, style: brandStyle(name) }));
 
 /** Copie de secours : les vrais articles avec leurs photos, coût au milieu de la fourchette de leur catégorie. */
 function supplierProducts(): PricedProduct[] {

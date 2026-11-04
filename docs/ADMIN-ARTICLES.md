@@ -61,3 +61,12 @@
 - `RESEND_API_KEY` et `EMAIL_FROM` absents de Vercel : les e-mails de commande ne partent pas. Il faut d'abord le domaine `takeurclothes.com` vérifié dans Resend. Guide complet donné à Rhamone : domaine → Resend « Add Domain » → DNS dans Vercel → clé API → SMTP Supabase (`smtp.resend.com`, port 465, utilisateur `resend`).
 - Migration `0008` (numéros **TUC-**) **appliquée le 4 nov.** avec l'accord de Rhamone.
 - PR #17 (ancienne Caisse, remplacée par #43) et #10 (Crée ta tenue 3D) ouvertes depuis plus de 7 jours : finir ou fermer (Rhamone).
+
+## Boutiques (`/admin/boutiques`, Serge, 4 nov. 2026)
+
+- **Ajouter ou modifier :** nom, logo (facultatif), couleur tirée du logo et modifiable, place dans le mall.
+- **Place :** 1 = première boutique du parcours. Les flèches de la liste déplacent d'un cran.
+- **Masquer :** la boutique et ses articles disparaissent du site, sans rien effacer.
+- **Retirer :** possible seulement sans article, car les commandes passées gardent leurs fiches.
+- **Dans le mall :** une boutique apparaît dès son premier article visible.
+- **Logos :** seulement ceux que TakeUrClothes a le droit d'afficher. Ils partent en PNG de 512 px au plus, dans le dossier « produits ».

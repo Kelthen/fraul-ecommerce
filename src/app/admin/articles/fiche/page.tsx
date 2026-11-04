@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { BRANDS, CATEGORIES, COLORS, WEIGHT_G } from "@/lib/catalog/demo";
+import { CATEGORIES, COLORS, WEIGHT_G } from "@/lib/catalog/demo";
 import { COLOR_NAMES } from "@/lib/catalog/palette";
 import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle } from "@/lib/server/admin-articles";
+import { listBoutiques } from "@/lib/server/admin-boutiques";
 import { ArticleForm } from "@/components/admin/ArticleForm";
 
 // Fiche d'un article : nouvelle (sans ?slug) ou à modifier (?slug=…).
@@ -34,12 +35,14 @@ async function Sheet({ searchParams }: { searchParams: PageProps<"/admin/article
   const slug = typeof sp.slug === "string" ? sp.slug : null;
   const article = slug ? await getArticle(slug).catch(() => null) : null;
   if (slug && !article) return <p className="todo">Article introuvable.</p>;
+  const boutiques = await listBoutiques().catch(() => null);
+  if (!boutiques) return <p className="todo">La base ne répond pas. Réessaie dans un instant.</p>;
   return (
     <>
       <h1 className="h2">{article ? article.name : "Nouvel article"}</h1>
       <ArticleForm
         article={article}
-        brands={BRANDS.map((b) => ({ slug: b.slug, name: b.name }))}
+        brands={boutiques.map((b) => ({ slug: b.slug, name: b.name }))}
         categories={CATEGORIES.map((c) => ({ id: c.id, label: c.label, sizes: c.sizes, weight: WEIGHT_G[c.id] }))}
         colors={COLORS.map((hex) => ({ hex, name: COLOR_NAMES[hex] ?? hex }))}
       />

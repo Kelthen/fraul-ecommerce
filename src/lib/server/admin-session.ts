@@ -1,6 +1,7 @@
 import "server-only";
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { adminChatId, sessionKey } from "./env";
 import { sendMessage } from "./telegram";
 
@@ -36,6 +37,7 @@ export async function checkLoginCode(code: string): Promise<boolean> {
 }
 
 export async function isAdmin(): Promise<boolean> {
+  await connection(); // lu à chaque requête : l'heure ci-dessous n'est jamais figée au rendu statique
   const [exp, mac] = ((await cookies()).get(SESSION)?.value ?? "").split(".");
   return !!exp && !!mac && Number(exp) > Date.now() && same(mac, sign(`session|${exp}`));
 }
