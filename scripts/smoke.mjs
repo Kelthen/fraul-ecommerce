@@ -135,6 +135,36 @@ await check("fiche produit + panier", async () => {
   await shot("06-panier");
 });
 
+await check("catalogue : filtrer, pastilles, tri, lien partageable", async () => {
+  await page.goto(BASE + "/tout", { waitUntil: "load" });
+  await page.locator(".f-open").waitFor({ timeout: 10000 });
+  const all = await page.locator(".catalog .card").count();
+  if (all < 2) throw new Error(`catalogue presque vide : ${all}`);
+  await page.locator(".f-open").click();
+  await page.locator(".f-sheet[open]").waitFor({ timeout: 5000 });
+  await shot("07a-filtres");
+  await page.locator(".f-opt", { hasText: "Nike" }).click();
+  await page.waitForURL(/marque=nike/, { timeout: 5000 });
+  await page.locator(".f-see").click();
+  await page.locator(".f-chip").first().waitFor();
+  const nike = await page.locator(".catalog .card").count();
+  if (!(nike > 0 && nike < all)) throw new Error(`filtre marque : ${nike} sur ${all}`);
+  await page.locator(".cat-sort select").selectOption("prix-croissant");
+  await page.waitForURL(/tri=prix-croissant/, { timeout: 5000 });
+  await page.waitForTimeout(300);
+  const prices = await page.locator(".catalog .card .pr").allInnerTexts();
+  const nums = prices.map((t) => Number(t.replace(/[^\d]/g, "")));
+  if (nums.some((n, i) => i && n < nums[i - 1])) throw new Error(`tri par prix : ${prices.join(", ")}`);
+  await page.reload({ waitUntil: "load" });
+  await page.locator(".f-chip").first().waitFor({ timeout: 10000 });
+  if ((await page.locator(".catalog .card").count()) !== nike) throw new Error("le lien ne garde pas les filtres");
+  await page.locator(".f-chip").first().click();
+  await page.waitForFunction(() => !location.search.includes("marque"));
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  if (wide) throw new Error("la page déborde en largeur");
+  if ((await page.goto(BASE + "/categorie/sneakers")).status() !== 404) throw new Error("catégorie vide encore visible");
+});
+
 await check("crée ta tenue", async () => {
   await page.goto(BASE + "/tenue", { waitUntil: "load" });
   await page.getByRole("tab", { name: "Bas" }).click();

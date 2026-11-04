@@ -10,6 +10,7 @@ import { IconBag, IconBrands, IconHeart, IconHome, IconOutfit, IconSearch, IconU
 const NAV = [
   { href: "/walk", label: "Walk", walk: true },
   { href: "/#nouveautes", label: "Nouveautés" },
+  { href: "/tout", label: "Tout voir" },
   { href: "/marques", label: "Marques" },
   { href: "/tenue", label: "Crée ta tenue" },
   { href: "/suivi", label: "Suivi" },

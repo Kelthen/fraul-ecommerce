@@ -31,6 +31,7 @@ export function SiteFooter() {
             <ul>
               <li><Link href="/walk">Walk</Link></li>
               <li><Link href="/#nouveautes">Nouveautés</Link></li>
+              <li><Link href="/tout">Tout voir</Link></li>
               <li><Link href="/marques">Marques</Link></li>
               <li><Link href="/tenue">Crée ta tenue</Link></li>
             </ul>

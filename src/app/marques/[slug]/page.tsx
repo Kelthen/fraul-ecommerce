@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { IconWalk } from "@/components/Icons";
-import { ProductCard } from "@/components/ProductCard";
 import { CATEGORIES, getBrand, getBrands, getProductsByBrand } from "@/lib/catalog";
 import { signCss, signWord } from "@/lib/catalog/brands";
+import { CatalogBrowser, CatalogFallback } from "@/components/catalog/CatalogBrowser";
 
 export async function generateStaticParams() {
   return (await getBrands()).map((b) => ({ slug: b.slug }));
@@ -43,21 +44,10 @@ export default async function BrandPage({ params }: PageProps<"/marques/[slug]">
         </div>
         <div className="door" aria-hidden="true" />
       </section>
-      <div className="wrap" style={{ paddingBottom: 24 }}>
-        {CATEGORIES.map((c) => {
-          const items = products.filter((p) => p.category === c.id);
-          if (!items.length) return null;
-          return (
-            <section key={c.id} className="cat-block" aria-labelledby={`cat-${c.id}`}>
-              <h2 id={`cat-${c.id}`}>{c.label}</h2>
-              <div className="grid">
-                {items.map((p) => (
-                  <ProductCard key={p.slug} product={p} />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+      <div className="wrap" style={{ paddingBottom: 24, paddingTop: 16 }}>
+        <Suspense fallback={<CatalogFallback products={products} />}>
+          <CatalogBrowser products={products} categories={CATEGORIES.map(({ id, label }) => ({ id, label }))} grouped />
+        </Suspense>
       </div>
     </>
   );

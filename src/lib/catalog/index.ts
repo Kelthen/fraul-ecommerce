@@ -71,6 +71,12 @@ export async function getProductsByCategory(id: CategoryId): Promise<Product[]> 
   return (await allProducts()).filter((p) => p.category === id);
 }
 
+/** Catégories qui ont au moins un article, dans l'ordre d'affichage. */
+export async function getStockedCategories(): Promise<Category[]> {
+  const stocked = new Set((await pricedProducts()).map((p) => p.category));
+  return CATEGORIES.filter((c) => stocked.has(c.id));
+}
+
 /** Nouveautés : une pièce par marque d'abord, puis les suivantes. */
 export async function getNewArrivals(): Promise<Product[]> {
   const products = await allProducts();
