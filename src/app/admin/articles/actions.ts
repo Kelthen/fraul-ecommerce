@@ -2,15 +2,14 @@
 
 import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { BRANDS, CATEGORIES } from "@/lib/catalog/demo";
+import { CATEGORIES } from "@/lib/catalog/demo";
 import { CATALOGUE_TAG } from "@/lib/catalog/db";
 import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
+import { listBoutiques } from "@/lib/server/admin-boutiques";
 import { articleProblems, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
 
 // Actions de l'admin des articles. Une action serveur est une adresse publique : chacune revérifie la session.
-
-const known = { brands: BRANDS.map((b) => b.slug), categories: CATEGORIES.map((c) => c.id) };
 
 /** Marge dans chaque zone, affichée pendant la saisie. */
 export async function marginsAction(priceUsd: number, costCny: number, weightG: number): Promise<ZoneMargin[] | null> {
@@ -32,6 +31,7 @@ export async function uploadPhotoAction(form: FormData): Promise<{ url: string }
 
 export async function saveArticleAction(input: ArticleInput): Promise<{ slug: string } | { errors: string[] }> {
   if (!(await isAdmin())) return { errors: ["Session expirée : reconnecte-toi."] };
+  const known = { brands: (await listBoutiques()).map((b) => b.slug), categories: CATEGORIES.map((c) => c.id) };
   const errors = articleProblems(input, known);
   if (errors.length) return { errors };
   const isNew = !input.slug;

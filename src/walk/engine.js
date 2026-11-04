@@ -216,10 +216,21 @@ export function startWalk(root, o) {
       const t = word(st);
       for (;;) { x.font = canvasFont(st, px); const sp = st.sp * px; const w = [...t].reduce((a, ch) => a + x.measureText(ch).width, 0) + sp * (t.length - 1); if (w <= maxW || px <= 10) return sp; px -= 2; }
     }
-    function wordTex(st, { w = 1024, h = 200, bg = null, fg = st.fg, maxW = 860, px = 130, glow = false } = {}) {
+    function wordTex(st, { w = 1024, h = 200, bg = null, fg = st.fg, maxW = 860, px = 130, glow = false, logo = true } = {}) {
       const [c, x] = cv(w, h); if (bg) { x.fillStyle = bg; x.fillRect(0, 0, w, h); }
       x.fillStyle = fg; x.textBaseline = "middle"; const sp = fit(x, st, maxW, px);
-      if (glow) { x.shadowColor = fg; x.shadowBlur = 18; } spaced(x, word(st), w / 2, h / 2 + 4, sp); return T(c);
+      if (glow) { x.shadowColor = fg; x.shadowBlur = 18; } spaced(x, word(st), w / 2, h / 2 + 4, sp);
+      const tex = T(c);
+      if (logo && st.logo) { // le nom reste affiché si le logo ne se charge pas
+        const im = new Image(); im.crossOrigin = "anonymous";
+        im.onload = () => {
+          x.shadowBlur = 0; x.clearRect(0, 0, w, h); if (bg) { x.fillStyle = bg; x.fillRect(0, 0, w, h); }
+          const k = Math.min(maxW / im.width, (h * 0.86) / im.height), dw = im.width * k, dh = im.height * k;
+          x.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh); tex.needsUpdate = true;
+        };
+        im.src = st.logo;
+      }
+      return tex;
     }
     function labelTex(t, fg = "#1b1b1d") { const [c, x] = cv(1024, 192); x.fillStyle = fg; x.textBaseline = "middle"; x.font = `500 64px ${o.fonts.sans}`; spaced(x, t, 512, 100, 18); return T(c); }
     function glowTex(light = false) {
@@ -325,7 +336,7 @@ export function startWalk(root, o) {
     function chestMat(st, tee, ink) {
       const key = `${st.name}|${tee}`;
       if (!MQ[key]) {
-        const map = wordTex(st, { w: 512, h: 384, bg: tee, fg: ink, maxW: 480, px: 170 });
+        const map = wordTex(st, { w: 512, h: 384, bg: tee, fg: ink, maxW: 480, px: 170, logo: false });
         map.flipY = false; // coordonnées de texture du glTF
         map.encoding = THREE.LinearEncoding; // même rendu de couleur que le tee (couleur simple) : pas de carré plus foncé
         MQ[key] = new THREE.MeshLambertMaterial({ map });
@@ -641,7 +652,7 @@ export function startWalk(root, o) {
       const facade = std(new THREE.Color(st.bg).getHex(), 0.6, 0.05, 0.05);
       [-1, 1].forEach((sd) => add(g, new THREE.BoxGeometry(1.75, CEIL, 0.4), facade, sd * 3.25, CEIL / 2, 0.2));
       add(g, new THREE.BoxGeometry(4.8, CEIL - 4.2, 0.4), facade, 0, 4.2 + (CEIL - 4.2) / 2, 0.2);
-      const sm = new THREE.MeshBasicMaterial({ map: U.wordTex(st, { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) });
+      const sm = new THREE.MeshBasicMaterial({ map: U.wordTex(st, st.logo ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) });
       add(g, new THREE.PlaneGeometry(4.6, 0.9), sm, 0, 5.2, 0.41);
       [-2.4, 2.4].forEach((dx) => add(g, new THREE.BoxGeometry(0.07, 4.2, 0.08), metal, dx, 2.1, 0.42));
       add(g, new THREE.BoxGeometry(4.87, 0.07, 0.08), metal, 0, 4.2, 0.42);

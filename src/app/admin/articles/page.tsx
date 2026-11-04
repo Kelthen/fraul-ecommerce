@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { BRANDS, CATEGORIES } from "@/lib/catalog/demo";
+import { CATEGORIES } from "@/lib/catalog/demo";
 import { isAdmin } from "@/lib/server/admin-session";
 import { listArticles } from "@/lib/server/admin-articles";
+import { listBoutiques } from "@/lib/server/admin-boutiques";
 import { MARGIN_ALERT_PCT, marginsByZone } from "@/models/admin/article";
 import { toggleOnSiteAction } from "./actions";
 
@@ -31,22 +32,23 @@ async function List({ searchParams }: { searchParams: PageProps<"/admin/articles
     );
   const sp = await searchParams;
   const msg = typeof sp.msg === "string" ? sp.msg : null;
-  const articles = await listArticles().catch((e) => {
+  const [articles, boutiques] = await Promise.all([listArticles(), listBoutiques()]).catch((e) => {
     console.error("[admin articles]", e);
-    return null;
+    return [null, null];
   });
-  if (!articles) return <p className="todo">La base ne répond pas. Réessaie dans un instant.</p>;
-  const brand = (slug: string) => BRANDS.find((b) => b.slug === slug)?.name ?? slug;
+  if (!articles || !boutiques) return <p className="todo">La base ne répond pas. Réessaie dans un instant.</p>;
+  const brand = (slug: string) => boutiques.find((b) => b.slug === slug)?.name ?? slug;
   const cat = (id: string) => CATEGORIES.find((c) => c.id === id)?.label ?? id;
   return (
     <>
       {msg && <p className="admin-msg">{msg}</p>}
       <div className="admin-acts">
         <Link className="pill solid" href="/admin/articles/fiche">Ajouter un article</Link>
+        <Link className="pill ghost" href="/admin/boutiques">Boutiques</Link>
         <Link className="pill ghost" href="/admin/commandes">Commandes</Link>
       </div>
       <p className="muted">
-        {articles.filter((a) => a.onSite).length} sur le site · {articles.filter((a) => !a.onSite).length} masqué(s). Les articles de démo (dessinés) ne sont pas listés.
+        {articles.filter((a) => a.onSite).length} sur le site · {articles.filter((a) => !a.onSite).length} masqué(s).
       </p>
       <ul className="admin-articles">
         {articles.map((a) => {

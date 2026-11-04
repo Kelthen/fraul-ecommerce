@@ -15,14 +15,14 @@ export type BrandStyle = {
   sp: number;
   /** Nom écrit en majuscules sur l'enseigne. */
   up: boolean;
+  /** Logo envoyé par Jean Paul depuis l'admin : remplace le nom sur l'enseigne. */
+  logo?: string;
 };
 
 export type Brand = {
   slug: string;
   name: string;
   style: BrandStyle;
-  /** Présente comme boutique dans le Walk. */
-  inWalk: boolean;
 };
 
 export type CategoryId =

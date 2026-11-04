@@ -22,7 +22,8 @@ export default async function Home() {
             {fronts.map((b, i) => (
               <div key={`${b.slug}-${i}`} className="front" style={{ "--fb": b.style.bg, "--ff": b.style.fg } as React.CSSProperties}>
                 <div className="sg" style={signCss(b.style)}>
-                  {signWord(b.style)}
+                  {/* eslint-disable-next-line @next/next/no-img-element -- logo déjà réduit à l'envoi */}
+                  {b.style.logo ? <img className="brand-logo" src={b.style.logo} alt="" /> : signWord(b.style)}
                 </div>
                 <div className="dr" />
               </div>

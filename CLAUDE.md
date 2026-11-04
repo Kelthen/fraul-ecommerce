@@ -235,7 +235,7 @@ Montserrat. Référence : LuisaViaRoma. Haut de gamme, **beau mais léger**
 
 ### Règles visuelles / démo (ne pas répéter)
 
-- Ne **pas** copier les logos de marques (marques déposées) : enseignes en texte.
+- Ne **pas** copier les logos de marques (marques déposées) : enseignes en texte, sauf un logo envoyé par Jean Paul depuis l'admin des boutiques (Serge, 4 nov. 2026).
 - Le cintre est **à l'intérieur** du vêtement. Mannequins réalistes (tête
   ovale brillante sans visage, pose naturelle), pas des cylindres.
 - Pas de double entrée en boutique ; caméra **face aux vitrines**.

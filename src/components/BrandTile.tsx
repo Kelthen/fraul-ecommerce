@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Brand } from "@/lib/catalog";
 import { signCss, signWord } from "@/lib/catalog/brands";
 
-// Pastille d'une marque : son nom en texte, avec le style de son enseigne (jamais le logo déposé).
+// Pastille d'une marque : le logo envoyé par Jean Paul, sinon son nom avec le style de son enseigne.
 // Changer l'apparence des pastilles, c'est ici (et .btile / .bround dans globals.css).
 //   variant="card"  : pavé rectangulaire (accueil)
 //   variant="grid"  : pastille rectangulaire aux coins légèrement arrondis (page Marques)
@@ -10,6 +10,8 @@ import { signCss, signWord } from "@/lib/catalog/brands";
 export function BrandTile({ brand, variant = "card" }: { brand: Brand; variant?: "card" | "grid" }) {
   const st = brand.style;
   const word = signWord(st);
+  // eslint-disable-next-line @next/next/no-img-element -- logo déjà réduit à l'envoi, hébergé chez Supabase
+  const logo = st.logo ? <img className="brand-logo" src={st.logo} alt={brand.name} loading="lazy" /> : null;
   if (variant === "grid") {
     // Taille du texte relative à la largeur de la pastille (unités cqi) : au plus 2 lignes, les noms longs rétrécissent.
     const longest = Math.max(...word.split(" ").map((w) => w.length));
@@ -17,9 +19,11 @@ export function BrandTile({ brand, variant = "card" }: { brand: Brand; variant?:
     const size = 78 / (fitLen * (0.66 + st.sp));
     return (
       <Link className="bround" href={`/marques/${brand.slug}`} aria-label={brand.name} style={{ background: st.bg, color: st.fg }}>
-        <span className="wm" style={{ ...signCss(st), fontSize: `clamp(9px, ${size.toFixed(1)}cqi, 26px)` }}>
-          {word}
-        </span>
+        {logo ?? (
+          <span className="wm" style={{ ...signCss(st), fontSize: `clamp(9px, ${size.toFixed(1)}cqi, 26px)` }}>
+            {word}
+          </span>
+        )}
       </Link>
     );
   }
@@ -27,9 +31,11 @@ export function BrandTile({ brand, variant = "card" }: { brand: Brand; variant?:
   const size = Math.min(26, 150 / (word.length * (0.66 + st.sp)));
   return (
     <Link className="btile" href={`/marques/${brand.slug}`} style={{ background: st.bg, color: st.fg }}>
-      <span className="wm" style={{ ...signCss(st), fontSize: `${size.toFixed(1)}px` }}>
-        {word}
-      </span>
+      {logo ?? (
+        <span className="wm" style={{ ...signCss(st), fontSize: `${size.toFixed(1)}px` }}>
+          {word}
+        </span>
+      )}
       <small>Entrer dans la boutique</small>
     </Link>
   );

@@ -1,8 +1,7 @@
 // Point d'accès unique au catalogue. Les pages n'appellent que ces fonctions.
 // Articles : la base (src/lib/catalog/db.ts), modifiable depuis l'admin ; copie de secours si elle ne répond pas.
-// Une marque sans article n'existe pas sur le site. Catégories : dans le code.
-import { WALK_BRANDS } from "./brands";
-import { loadSiteRows, toProduct } from "./db";
+// Boutiques : la base aussi. Une marque sans article ou masquée n'existe pas sur le site. Catégories : dans le code.
+import { loadBrandRows, loadSiteRows, toBrand, toProduct } from "./db";
 import { BRANDS, CATEGORIES, REAL_SNAPSHOT, accentFor } from "./demo";
 import { priceTable } from "@/models/pricing/price";
 import type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
@@ -13,15 +12,18 @@ export { CATEGORIES } from "./demo";
 const stockedSlugs = async () => new Set((await pricedProducts()).map((p) => p.brandSlug));
 
 export async function getBrands(): Promise<Brand[]> {
-  const stocked = await stockedSlugs();
-  return BRANDS.filter((b) => stocked.has(b.slug));
+  const [stocked, brands] = await Promise.all([stockedSlugs(), visibleBrands()]);
+  return brands.filter((b) => stocked.has(b.slug));
+}
+
+/** Boutiques visibles, dans l'ordre choisi dans l'admin ; celles de la copie de secours si la base ne répond pas. */
+async function visibleBrands(): Promise<Brand[]> {
+  const rows = await loadBrandRows();
+  return rows ? rows.map(toBrand) : BRANDS;
 }
 
 /** Boutiques du mall, dans l'ordre du parcours. */
-export async function getWalkBrands(): Promise<Brand[]> {
-  const brands = await getBrands();
-  return WALK_BRANDS.map((name) => brands.find((b) => b.name === name)).filter((b): b is Brand => !!b);
-}
+export const getWalkBrands = getBrands;
 
 export async function getBrand(slug: string): Promise<Brand | undefined> {
   return (await getBrands()).find((b) => b.slug === slug);
@@ -37,8 +39,8 @@ export async function getCategoryBySlug(slug: string): Promise<Category | undefi
 
 /** Articles du site : la base, ou la copie de secours si elle ne répond pas. */
 async function pricedProducts(): Promise<PricedProduct[]> {
-  const rows = await loadSiteRows();
-  return rows ? rows.map((r) => toProduct(r, BRANDS, CATEGORIES, accentFor)).filter((p): p is PricedProduct => p !== null) : REAL_SNAPSHOT;
+  const [rows, brands] = await Promise.all([loadSiteRows(), visibleBrands()]);
+  return rows ? rows.map((r) => toProduct(r, brands, CATEGORIES, accentFor)).filter((p): p is PricedProduct => p !== null) : REAL_SNAPSHOT;
 }
 
 /** Faux si le site montre sa copie de secours : ses prix peuvent être périmés, on n'encaisse pas. */
