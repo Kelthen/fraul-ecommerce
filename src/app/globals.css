@@ -397,6 +397,12 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .auth-link { justify-self: start; background: none; border: 0; padding: 4px 0; font-size: 13px; color: var(--bordeaux); text-decoration: underline; cursor: pointer; }
 .acc-card { display: grid; gap: 8px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .acc-card h2 { font-size: 24px; }
+.acc-hello { font: 700 11px/1 var(--body); letter-spacing: 0.22em; text-transform: uppercase; }
+.acc-grid { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.acc-tile { display: grid; align-content: space-between; gap: 18px; height: 100%; min-height: 104px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.acc-tile b { font-size: 15px; }
+.acc-tile span { font-size: 12px; color: var(--muted); }
+.acc-signout { margin-top: 12px; font-size: 12px; color: var(--muted); }
 .acc-check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
 .acc-check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--bordeaux); }
 .icon-btn.on { color: var(--bordeaux); }

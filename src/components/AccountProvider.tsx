@@ -13,7 +13,7 @@ type AccountCtx = {
   /** Démo seulement. */
   signIn: (email: string) => void;
   /** Vrai compte : garde la session après connexion ou code validé. */
-  adopt: (s: Session, acceptedTerms?: boolean) => Promise<void>;
+  adopt: (s: Session, acceptedTerms?: boolean, wantsNews?: boolean) => Promise<void>;
   signOut: () => void;
   setMarketing: (on: boolean) => void;
   /** Jeton à jour pour parler au serveur, ou null si la session est finie. */
@@ -84,10 +84,11 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     return {
       account: stored ? { email: stored.email, since: stored.since, marketing: stored.marketing } : null,
       signIn: (email) => save({ email, since: Date.now(), marketing: false }), // pas d'e-mails marketing sans accord (RGPD)
-      adopt: async (session, acceptedTerms = false) => {
+      adopt: async (session, acceptedTerms = false, wantsNews = false) => {
         const profile = await syncAccount(session.access_token, acceptedTerms).catch(() => null);
         synced.current = true;
-        save({ email: session.email, since: session.since, marketing: profile?.marketing === true, session });
+        if (wantsNews) await saveMarketing(session.access_token, true).catch(() => false);
+        save({ email: session.email, since: session.since, marketing: wantsNews || profile?.marketing === true, session });
       },
       signOut: () => {
         if (stored?.session) void signOutEverywhere(stored.session.access_token);

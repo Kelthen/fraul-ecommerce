@@ -1,42 +1,49 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { authLive } from "@/lib/auth-client";
+import Link from "next/link";
+import { STAGES, stageIndex } from "@/models/orders/tracking";
 import { useAccount } from "../AccountProvider";
-import { MyOrders } from "../orders/MyOrders";
+import { useCart } from "../CartProvider";
+import { useEnvies } from "../EnviesProvider";
+import { useMyOrders } from "../orders/MyOrders";
 import { AuthForm } from "./AuthForm";
 
-/** Page « Mon compte » : connecté → infos, commandes, préférences ; sinon → connexion. */
+const many = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
+
+/** Accueil du compte : une grille de cases qui tient sur un écran de téléphone. Non connecté : la connexion. */
 export function AccountView() {
-  const { account, signOut, setMarketing } = useAccount();
-  const router = useRouter();
+  const { account } = useAccount();
   if (!account) return <AuthForm />;
-  const since = new Date(account.since).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return <Home email={account.email} />;
+}
+
+function Home({ email }: { email: string }) {
+  const { count: cart } = useCart();
+  const { count: envies } = useEnvies();
+  const orders = useMyOrders();
+  const list = Array.isArray(orders) ? orders : [];
+  const last = list.reduce<(typeof list)[number] | null>((a, o) => (!a || o.paidAt > a.paidAt ? o : a), null);
+  const tiles = [
+    { href: "/compte/commandes", title: "Mes commandes", note: orders === null ? " " : orders === "error" ? "À revoir" : list.length ? `${many(list.length, "commande")}${last ? ` · ${STAGES[stageIndex(last.step)].label}` : ""}` : "Aucune pour l'instant" },
+    { href: "/envies", title: "Mes envies", note: envies ? many(envies, "pièce") : "Rien de gardé" },
+    { href: "/panier", title: "Mon panier", note: cart ? many(cart, "pièce") : "Vide" },
+    { href: "/suivi", title: "Suivre un colis", note: "Avec ton numéro" },
+    { href: "/compte/reglages", title: "Réglages", note: "E-mail, mot de passe" },
+  ];
   return (
     <div className="auth account">
-      <p className="eyebrow">Mon compte</p>
-      <h1>Bonjour</h1>
-      <p className="muted">{account.email} · membre depuis le {since}</p>
-      {!authLive && <p className="todo">Démo : compte gardé sur ce téléphone seulement, rien n&apos;est envoyé.</p>}
-
-      <section className="acc-card" aria-labelledby="acc-orders">
-        <h2 id="acc-orders">Mes commandes</h2>
-        {!authLive && <p className="todo">Démo : commandes d&apos;exemple.</p>}
-        <MyOrders />
-      </section>
-
-      <section className="acc-card" aria-labelledby="acc-mails">
-        <h2 id="acc-mails">E-mails</h2>
-        <p className="muted">Commandes, livraisons et réponses de Finds : toujours par e-mail.</p>
-        <label className="acc-check">
-          <input type="checkbox" checked={account.marketing} onChange={(e) => setMarketing(e.target.checked)} />
-          <span>Recevoir les nouveautés et les drops (modifiable à tout moment)</span>
-        </label>
-      </section>
-
-      <div className="acc-acts">
-        <button className="pill ghost" type="button" onClick={() => { signOut(); router.push("/"); }}>Se déconnecter</button>
-      </div>
+      <p className="acc-hello">Bonjour</p>
+      <p className="muted">{email}</p>
+      <ul className="acc-grid">
+        {tiles.map((t) => (
+          <li key={t.href}>
+            <Link className="acc-tile" href={t.href}>
+              <b>{t.title}</b>
+              <span>{t.note}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
