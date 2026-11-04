@@ -95,7 +95,7 @@
 - Le **code Telegram reste en secours** (`isAdmin()` accepte l'un ou l'autre).
 - En attendant : Jean Paul se connecte avec le code Telegram, après avoir été ajouté au groupe de l'équipe.
 
-### 3. Page compte client, style Nike (retour de Rhamone, capture du 4 nov.)
+### 3. ✅ Page compte client, style Nike, faite par Serge le 4 nov. (retour de Rhamone, capture du 4 nov.)
 - **Inscription** : case « Recevoir les nouveautés et les drops », **décochée par défaut** (opt-in, loi européenne). Elle remplace la case de la page compte.
 - **Accueil du compte** : « Bonjour [prénom] » en petit, l'e-mail dessous ; puis une **grille de cases** : **Mes commandes** (nombre + état de la dernière), **Mes envies** (nombre), **Mon panier** (nombre), **Suivre un colis**, **Réglages**. Tout tient sur un écran de téléphone.
 - **Réglages** : e-mail, nouveautés et drops (oui ou non), mot de passe ; **« Se déconnecter » = petit lien discret tout en bas de Réglages** (plus de gros bouton au milieu).

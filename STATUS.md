@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (connexion admin par e-mail)_
+_Dernière mise à jour : 2026-11-04 par serge (page compte)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -18,7 +18,7 @@ _Dernière mise à jour : 2026-11-04 par serge (connexion admin par e-mail)_
 **Code (Serge)**
 - [x] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
 - [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge, Jean Paul), Telegram en secours
-- [ ] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
+- [x] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
 - [ ] Webhook Stripe : traiter les 4 événements ajoutés au webhook (`checkout.session.async_payment_failed` → annuler + prévenir ; `checkout.session.expired` → relance panier ; `charge.refunded` → commande « remboursée » ; `charge.dispute.created` → alerte Telegram). Aujourd'hui ils sont reçus et ignorés.
 - [ ] **Filtres du catalogue** (Rhamone, 4 nov.) : page « Tout voir » + pages marque et type avec un bouton **« Filtrer »** (volet par le bas au téléphone) : **Type** (hoodies, pantalons, sneakers, chaussettes…), **Marque**, **Couleur** (pastilles), **Taille** ; **Tri** : nouveautés, prix croissant, prix décroissant. Filtres actifs en petites pastilles retirables ; filtres dans l'adresse (lien partageable sur WhatsApp) ; ne proposer que les valeurs qui ont des articles. Petits boutons, photos d'abord (L-58).
 - [ ] **Rayons manquants dans le Walk** : seuls 6 types ont un rayon (`RACKS` de `src/walk/models/store-layout.ts` : tee, hoodie, pants, cap, sneaker, bag). Les **vestes, shorts, chaussettes, lunettes, montres, bijoux** sont en vente sur le site mais **absents des boutiques du Walk** (ex. shorts et doudoune Trapstar). Pour chacun : dessin (`art.ts`) + place sur le portant (`store-layout.ts`) + `npm run smoke` (L-34). Un rayon apparaît tout seul dès qu'une boutique a un article de ce type (rayon vide caché, L-35).
@@ -117,6 +117,7 @@ _Dernière mise à jour : 2026-11-04 par serge (connexion admin par e-mail)_
 - **Mannequin femme** devant chaque boutique et dans les boutiques ; test téléphone sans attente « networkidle » (faux échecs sur `next start`) — serge
 - **« + Nouvelle marque » depuis la fiche article** : nom, logo ou 2 couleurs, couleurs reprises du logo, marque sélectionnée sans perdre l'article ; couleur du texte aussi réglable dans `/admin/boutiques` — serge
 - **Connexion admin par e-mail** : `/admin`, code à 6 chiffres valable 10 min, 5 essais, liste `ADMIN_EMAILS` ; Telegram en secours (migration 0014) — serge
+- **Page compte style Nike** : grille de cases, réglages à part, « Se déconnecter » discret, case « nouveautés » décochée à l'inscription — serge
 
 ## 🔄 En cours
 

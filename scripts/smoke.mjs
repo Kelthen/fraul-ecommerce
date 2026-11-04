@@ -98,6 +98,7 @@ await check("compte (démo) : création avec code, mauvais code refusé, déconn
   await page.goto(BASE + "/compte", { waitUntil: "load" });
   await page.getByRole("button", { name: "Créer un compte" }).click();
   await page.locator("input[name=email]").fill("test@exemple.com");
+  if (await page.locator(".auth-form .acc-check input").isChecked()) throw new Error("nouveautés cochées d'avance");
   await page.locator("input[name=password]").fill("court");
   await page.getByRole("button", { name: "Recevoir mon code" }).click();
   if (!(await page.locator(".af-err").count())) throw new Error("mot de passe trop court accepté");
@@ -111,7 +112,13 @@ await check("compte (démo) : création avec code, mauvais code refusé, déconn
   await page.getByRole("button", { name: "Valider" }).click();
   await page.locator(".account").waitFor({ timeout: 5000 });
   await shot("06d-mon-compte");
+  if ((await page.locator(".acc-tile").count()) !== 5) throw new Error("accueil du compte : 5 cases attendues");
+  const tall = await page.evaluate(() => document.querySelector(".acc-grid").getBoundingClientRect().bottom > innerHeight);
+  if (tall) throw new Error("la grille du compte dépasse l'écran du téléphone");
+  await page.goto(BASE + "/compte/commandes", { waitUntil: "load" });
+  await page.locator(".order-row").first().waitFor({ timeout: 5000 });
   if ((await page.locator(".order-row").count()) !== 3) throw new Error("Mes commandes : 3 commandes de démo attendues");
+  await page.goto(BASE + "/compte/reglages", { waitUntil: "load" });
   await page.getByRole("button", { name: "Se déconnecter" }).click();
   await page.waitForURL(BASE + "/");
 });
