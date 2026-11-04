@@ -6,11 +6,17 @@ import { BRANDS, CATEGORIES } from "@/lib/catalog/demo";
 import { CATALOGUE_TAG } from "@/lib/catalog/db";
 import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
-import { articleProblems, articleSlug, type ArticleInput } from "@/models/admin/article";
+import { articleProblems, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
 
 // Actions de l'admin des articles. Une action serveur est une adresse publique : chacune revérifie la session.
 
 const known = { brands: BRANDS.map((b) => b.slug), categories: CATEGORIES.map((c) => c.id) };
+
+/** Marge dans chaque zone, affichée pendant la saisie. */
+export async function marginsAction(priceUsd: number, costCny: number, weightG: number): Promise<ZoneMargin[] | null> {
+  if (!(await isAdmin())) return null;
+  return priceUsd > 0 && costCny > 0 && weightG > 0 ? marginsByZone(priceUsd, costCny, weightG) : null;
+}
 
 export async function uploadPhotoAction(form: FormData): Promise<{ url: string } | { error: string }> {
   if (!(await isAdmin())) return { error: "Session expirée : reconnecte-toi." };

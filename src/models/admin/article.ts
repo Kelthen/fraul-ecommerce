@@ -43,7 +43,7 @@ export function articleProblems(a: ArticleInput, known: { brands: string[]; cate
   return p;
 }
 
-export type ZoneMargin = { zone: ZoneId; currency: string; price: number; landed: number; marginPct: number; raisedToFloor: boolean };
+export type ZoneMargin = { zone: ZoneId; currency: string; price: number; landed: number; marginPct: number; raisedToFloor: boolean; low: boolean };
 
 /** Prix payé, coût rendu et marge dans chaque zone : ce que Jean Paul voit avant d'enregistrer. */
 export function marginsByZone(priceUsd: number, costCny: number, weightG: number): ZoneMargin[] {
@@ -52,7 +52,8 @@ export function marginsByZone(priceUsd: number, costCny: number, weightG: number
     const price = customerPrice(cost, zone);
     const landed = landedCost(cost, zone);
     const asked = customerPrice({ ...cost, cny: 0, g: 0 }, zone); // prix converti, sans plancher
-    return { zone, currency: ZONES[zone].currency, price, landed, marginPct: Math.round(((price - landed) / price) * 100), raisedToFloor: price > asked };
+    const marginPct = Math.round(((price - landed) / price) * 100);
+    return { zone, currency: ZONES[zone].currency, price, landed, marginPct, low: marginPct < MARGIN_ALERT_PCT, raisedToFloor: price > asked };
   });
 }
 
