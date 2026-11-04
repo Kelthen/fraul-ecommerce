@@ -109,11 +109,16 @@ function supplierProducts(): Product[] {
   });
 }
 
-/** Vrais produits en premier, puis la démo (pas de démo pour les marques qui n'ont que de vrais produits). */
-export const PRODUCTS: Product[] = [
-  ...supplierProducts(),
-  ...BRANDS.filter((b) => !REAL_PRODUCTS_ONLY.includes(b.name)).flatMap((b) => CATEGORIES.flatMap((c) => makeProducts(b, c))),
-];
+/** Copie de secours des vrais produits : la base fait foi (src/lib/catalog/db.ts), ceci ne sert que si elle ne répond pas. */
+export const REAL_SNAPSHOT: Product[] = supplierProducts();
+
+/** Articles de démo, dessinés (pas de démo pour les marques qui n'ont que de vrais produits). Restent dans le code. */
+export const DEMO_PRODUCTS: Product[] = BRANDS.filter((b) => !REAL_PRODUCTS_ONLY.includes(b.name)).flatMap((b) =>
+  CATEGORIES.flatMap((c) => makeProducts(b, c)),
+);
+
+/** Vrais produits en premier, puis la démo (catalogue du code, utilisé par scripts/catalogue-sql.mjs). */
+export const PRODUCTS: Product[] = [...REAL_SNAPSHOT, ...DEMO_PRODUCTS];
 
 /** Nouveautés mises en avant (démo). */
 export const NEW_ARRIVALS: [string, CategoryId, number][] = [
