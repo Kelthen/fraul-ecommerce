@@ -262,6 +262,26 @@ await check("walk : la Caisse avant la sortie quand le sac n'est pas vide", asyn
 
 // Un mot ne doit jamais en cacher un autre (Rhamone, 25 oct. : « PANTALONS » sous le titre, crochet au milieu de « HOODIES ») :
 // dans un rayon, son nom est en haut, sous la marque, en entier ; les panneaux 3D des rayons ne s'affichent plus.
+await check("walk : shorts et vestes ont leur rayon (Trapstar)", async () => {
+  await page.goto(BASE + "/walk/trapstar", { waitUntil: "load" });
+  await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1200);
+  await page.locator("#enter").click();
+  await page.locator('#store[data-mode="hub"]:not([hidden])').waitFor({ timeout: 20000 });
+  for (const label of ["Shorts", "Vestes et manteaux"]) {
+    if (await page.locator("#sTog").isVisible()) await page.locator("#sTog").click();
+    await page.locator("#sCats .s-cat", { hasText: label }).click();
+    await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
+    await page.waitForTimeout(900);
+    await shot(`12e-rayon-${label.split(" ")[0].toLowerCase()}`);
+    if ((await page.locator("#sTitle").textContent()).split("\n")[1] !== label) throw new Error(`rayon ${label} non ouvert`);
+  }
+  await page.locator("#sQuit").click();
+  await page.locator('#store[data-mode="hub"]:not([hidden])').waitFor({ timeout: 20000 });
+  await page.locator("#sQuit").click();
+  await page.locator("#store").waitFor({ state: "hidden", timeout: 20000 });
+});
+
 await check("walk : dans chaque rayon, son nom en haut, en entier, sous la marque", async () => {
   await goShop(1);
   await page.waitForTimeout(1800);

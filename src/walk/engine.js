@@ -943,7 +943,7 @@ export function startWalk(root, o) {
       const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.42)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
       ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
       const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
-      blob(0, -8.8, 150, 0.36); [[-2.6, -1.6], [2.6, -1.6], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
+      blob(0, -8.8, 150, 0.36); [[-3.6, -0.7], [3.6, -0.7], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
       const fl = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), color: IN.floor }), 0, 0, -8); fl.rotation.x = -Math.PI / 2;
     }
     const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: IN.ceil }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
@@ -984,6 +984,8 @@ export function startWalk(root, o) {
       [z0, z1].forEach((z) => add(new THREE.BoxGeometry(0.4, 0.03, 0.03), metalM, side * 5.8, y, z));
     }
     wallRail(-1, -3.6, -9.2); wallRail(-1, -9.8, -15.2); wallRail(1, -8.6, -15.2);
+    if (products(st.name, "jacket").length) wallRail(-1, -0.6, -3.4);
+    if (products(st.name, "shorts").length) wallRail(1, -0.5, -2.4);
     // Mur à casquettes
     add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
 
@@ -997,20 +999,22 @@ export function startWalk(root, o) {
     const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
 
     // Mannequins habillés par le gabarit de la marque
-    [[-2.6, -1.6, 0.45, 0], [2.6, -1.6, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
+    [[-3.6, -0.7, 0.45, 0], [3.6, -0.7, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
 
     // Signalétique
     // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
     // filigrane presque invisible, derrière les vêtements (idée de Rhamone) : un mot ne doit jamais en cacher un autre
     // (25 oct. : « PANTALONS » sous le titre, le crochet de la pièce choisie au milieu de « HOODIES »).
     const sign = (cat, t, x, y, z, ry) => { const m = add(new THREE.PlaneGeometry(1.6, 0.3), basic({ map: U.labelTex(t), transparent: true, depthWrite: false }), x, y, z, ry); m.userData = { cat, y, stocked: products(st.name, cat).length > 0 }; m.visible = m.userData.stocked; return m; };
-    const signs = [["tee", "T-SHIRTS", -6, -6.4], ["hoodie", "HOODIES", -6, -12.4], ["cap", "CASQUETTES", 6, -4.8], ["pants", "PANTALONS", 6, -11.9]]
+    const signs = [["tee", "T-SHIRTS", -6, -6.4], ["hoodie", "HOODIES", -6, -12.4], ["cap", "CASQUETTES", 6, -4.8], ["pants", "PANTALONS", 6, -11.9], ["jacket", "VESTES", -6, -1.9], ["shorts", "SHORTS", 6, -1.6]]
       .map(([cat, t, wx, z]) => sign(cat, t, wx - Math.sign(wx) * (cat === "cap" ? 0.06 : 0.02), 2.85, z, wx < 0 ? Math.PI / 2 : -Math.PI / 2));
-    [-3.75, 3.75].forEach((x) => signs.push(sign("sneaker", "SNEAKERS", x, 2.62, -15.97)));
+    signs.push(sign("sneaker", "SNEAKERS", -3.75, 2.62, -15.97));
+    [["socks", "CHAUSSETTES", 2.9, 2.62], ["glasses", "LUNETTES", 4.6, 2.62], ["watch", "MONTRES", 2.9, 2.92], ["jewelry", "BIJOUX", 4.6, 2.92]]
+      .forEach(([cat, t, x, y]) => signs.push(sign(cat, t, x, y, -15.97)));
     signs.push(sign("bag", "ACCESSOIRES", 0, 1.6, -9.62));
     function watermark(cat) {
       signs.forEach((m) => {
-        const on = m.userData.cat === cat, big = on && cat !== "bag" && cat !== "sneaker";
+        const on = m.userData.cat === cat, big = on && ["tee", "hoodie", "cap", "pants", "jacket", "shorts"].includes(cat); // rayons muraux
         m.visible = m.userData.stocked && (!cat || on); m.material.opacity = cat ? 0.1 : 1;
         m.position.y = big ? 1.3 : m.userData.y; m.scale.setScalar(big ? 2.4 : 1);
       });
