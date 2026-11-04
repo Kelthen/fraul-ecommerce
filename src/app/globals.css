@@ -311,6 +311,8 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .foot a { text-decoration: none; color: var(--muted); }
 .foot a:hover { color: var(--ink); }
+.foot-social { display: flex !important; gap: 14px !important; }
+.foot-social-off { display: inline-flex; color: var(--muted); }
 .foot-legal { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; }
 
 /* Pages légales */
