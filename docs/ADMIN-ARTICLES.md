@@ -78,7 +78,7 @@
 > Rhamone n'a plus de temps : **Serge finit ces 3 PR, dans cet ordre.** Le tableau de bord des ventes est la PR #68 (ouverte, à regarder puis merger).
 > Déjà en place : modifier le prix d'un article existant (`/admin/articles` → Modifier) ; prix en **USD**, coût en ¥ obligatoire ; une marque = une boutique (la liste « Marque » de la fiche article lit les boutiques de `/admin/boutiques`).
 
-### 1. « + Nouvelle marque » depuis la fiche article (le plus urgent : Jean Paul ajoute ses articles aujourd'hui)
+### 1. ✅ « + Nouvelle marque » depuis la fiche article (fait par Serge le 4 nov.)
 - En bas de la liste « Marque » de `/admin/articles/fiche` : **« + Nouvelle marque… »**.
 - Petit panneau : **nom de la marque** (obligatoire), puis **au choix** :
   - **déposer le logo** (même envoi que `uploadLogoAction` de `/admin/boutiques`) ;

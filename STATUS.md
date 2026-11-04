@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
+_Dernière mise à jour : 2026-11-04 par serge (nouvelle marque depuis la fiche article)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -115,6 +115,7 @@ _Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
 - **Walk** : toucher la porte fait entrer dans le mall ; 3 architectures de boutique (enseigne, verrière, portique) avec une ambiance intérieure propre ; un homme en vitrine, emplacement femme prêt (`WOMAN_READY` dans `src/walk/engine.js`) ; plus de panneaux de rayons vides dans la boutique — serge
 - **Ménage** : documents finis rangés dans `docs/archive/`, index `docs/README.md`, copie de secours du catalogue renommée `fallback.ts`, mentions périmées retirées — serge
 - **Mannequin femme** devant chaque boutique et dans les boutiques ; test téléphone sans attente « networkidle » (faux échecs sur `next start`) — serge
+- **« + Nouvelle marque » depuis la fiche article** : nom, logo ou 2 couleurs, couleurs reprises du logo, marque sélectionnée sans perdre l'article ; couleur du texte aussi réglable dans `/admin/boutiques` — serge
 
 ## 🔄 En cours
 
@@ -160,6 +161,7 @@ _Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | PR #46 (21 articles aux prix fictifs) et #10 (tenue en 3D, prototype) **fermées sans merge** : en conflit avec le site actuel, branches gardées. Les articles passent par l'admin. | Serge |
 | 2026-11-04 | **E-mails en place** (domaine take-ur-clothes.com vérifié dans Resend, SMTP Supabase réglé : création de compte testée par Rhamone). Clés Stripe webhook, Resend et Turnstile dans Vercel. **Suite pour Serge** (Rhamone n'a plus de temps) : 1) « + Nouvelle marque » depuis la fiche article (logo, ou 2 couleurs si pas de logo ; couleurs reprises du logo), 2) connexion admin par e-mail (liste de 3 admins, Telegram en secours), 3) page compte client style Nike. Détail : `docs/ADMIN-ARTICLES.md`. | Rhamone |
 | 2026-11-04 | **Tableau de bord `/admin`** (PR 3) : ventes du jour, 7 et 30 jours par devise (jamais additionnées), panier moyen, marge estimée, articles les plus vendus, demandes Finds à traiter ; liens vers Articles, Boutiques, Commandes. **Jean Paul se connecte aujourd'hui par le code Telegram** (il rejoint le groupe de l'équipe) ; le compte par e-mail (PR 4) attend le domaine vérifié dans Resend. | Rhamone |
 | 2026-11-04 | **Mannequin femme fait sans Blender**, à partir du modèle homme : Serge a repris cette tâche de Rhamone. Rhamone reste à consulter sur les décisions « logos » et « rayons avec articles ». | Serge |

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { marginsAction, saveArticleAction, uploadPhotoAction } from "@/app/admin/articles/actions";
 import type { AdminArticle } from "@/lib/server/admin-articles";
 import type { ZoneMargin } from "@/models/admin/article";
+import { NewBrandPanel } from "./NewBrandPanel";
 
 // Formulaire d'article de l'admin, pensé pour le téléphone de Jean Paul : photos prises ou choisies,
 // réduites ici (1600 px, JPEG) avant l'envoi, prix en dollars, marge visible dans chaque devise avant d'enregistrer.
@@ -36,8 +37,12 @@ async function shrink(file: File): Promise<Blob> {
   return blob;
 }
 
-export function ArticleForm({ article, brands, categories, colors }: Props) {
+const NEW_BRAND = "__nouvelle";
+
+export function ArticleForm({ article, brands: initialBrands, categories, colors }: Props) {
   const router = useRouter();
+  const [brands, setBrands] = useState(initialBrands);
+  const [addingBrand, setAddingBrand] = useState(false);
   const [brand, setBrand] = useState(article?.brand ?? "");
   const [category, setCategory] = useState(article?.category ?? "");
   const [name, setName] = useState(article?.name ?? "");
@@ -130,11 +135,22 @@ export function ArticleForm({ article, brands, categories, colors }: Props) {
     <form className="admin-form" onSubmit={(e) => (e.preventDefault(), save())}>
       <label>
         Marque
-        <select value={brand} onChange={(e) => setBrand(e.target.value)} required>
+        <select value={brand} onChange={(e) => (e.target.value === NEW_BRAND ? setAddingBrand(true) : setBrand(e.target.value))} required>
           <option value="" disabled>Choisir…</option>
           {brands.map((b) => <option key={b.slug} value={b.slug}>{b.name}</option>)}
+          <option value={NEW_BRAND}>+ Nouvelle marque…</option>
         </select>
       </label>
+      {addingBrand && (
+        <NewBrandPanel
+          onCancel={() => setAddingBrand(false)}
+          onCreated={(b) => {
+            setBrands((list) => [...list, b]);
+            setBrand(b.slug);
+            setAddingBrand(false);
+          }}
+        />
+      )}
       <label>
         Catégorie
         <select value={category} onChange={(e) => onCategory(e.target.value)} required>
