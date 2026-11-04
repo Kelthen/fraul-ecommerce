@@ -6,6 +6,7 @@ import { ProductDetail } from "@/components/ProductDetail";
 import { getCategory, getProduct, getProducts } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/format";
 import { related } from "@/models/catalog/related";
+import { breadcrumbJsonLd, jsonLdHtml, productJsonLd } from "@/models/seo/jsonld";
 
 export async function generateStaticParams() {
   return (await getProducts()).map((p) => ({ slug: p.slug }));
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: PageProps<"/produit/[slug]">)
     title: `${p.name} ${p.brandName}`,
     description: `${p.name} ${p.brandName} (${cat.label.toLowerCase()}). Tailles ${p.sizes.join(", ")}. Pièce authentique, suivi de commande à chaque étape.`,
     alternates: { canonical: `/produit/${p.slug}` },
+    openGraph: { type: "website", siteName: "TakeUrClothes", locale: "fr_FR", title: `${p.name} ${p.brandName}`, url: `/produit/${p.slug}`, images: [{ url: p.image.front }] },
   };
 }
 
@@ -37,14 +39,19 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
     others: `${cat.label} des autres boutiques`,
   };
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: `${product.name} ${product.brandName}`,
-    brand: { "@type": "Brand", name: product.brandName },
-    category: cat.label,
-    url: `${SITE_URL}/produit/${product.slug}`,
-  };
+  const jsonLd = productJsonLd(SITE_URL, {
+    slug: product.slug,
+    name: product.name,
+    brandName: product.brandName,
+    categoryLabel: cat.label,
+    image: product.image.front,
+    priceUsd: product.prices.us,
+  });
+  const crumbs = breadcrumbJsonLd(SITE_URL, [
+    { name: "Marques", path: "/marques" },
+    { name: product.brandName, path: `/marques/${product.brandSlug}` },
+    { name: product.name, path: `/produit/${product.slug}` },
+  ]);
 
   return (
     <div className="light">
@@ -69,7 +76,7 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
           </section>
         ))}
       </div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml([jsonLd, crumbs]) }} />
     </div>
   );
 }
