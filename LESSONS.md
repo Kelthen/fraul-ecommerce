@@ -331,3 +331,7 @@
 ### L-57 — Économiser les tokens de l'humain
 - **Erreur :** une page publiée, un PDF puis un texte pour le même guide ; un document généré avec des couleurs choisies sans demander (Rhamone : « arrête de gaspiller mes tokens »).
 - **Règle :** donner directement le format le plus simple (texte à copier-coller) ; ne rien générer de plus sans demande ; pour un document à la charte, demander les couleurs de Kelthen (pas encore dans le projet).
+
+### L-58 — Les photos d'abord, des petits boutons
+- **Erreur :** dans `/admin/articles`, chaque article avait deux gros boutons (« Modifier », « Masquer ») et trois lignes de texte : on voyait à peine les photos (Rhamone : « moins de boutons, plus de photos »).
+- **Règle :** une liste d'articles est une **grille de photos** ; toucher la photo ouvre l'article ; au plus **une petite action** discrète par carte ; texte réduit au nom (une ligne) et au prix. Les gros boutons pleine largeur sont réservés à l'action principale d'une page.
