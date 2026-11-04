@@ -60,12 +60,12 @@ export function OutfitBuilder({ pieces }: { pieces: Record<Slot, Product[]> }) {
         <div className="outfit-total">
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }} className="muted">
             <span>3 pièces · tailles à choisir au panier</span>
-            <span><Price costs={[t, b, s]} /></span>
+            <span><Price lines={[t, b, s]} /></span>
           </div>
           <button
             className="pill ink"
             type="button"
-            onClick={() => [t, b, s].forEach((p) => add({ slug: p.slug, name: p.name, brandName: p.brandName, category: p.category, color: p.color, accent: p.accent, cost: p.cost, sizes: p.sizes }))}
+            onClick={() => [t, b, s].forEach((p) => add({ slug: p.slug, name: p.name, brandName: p.brandName, category: p.category, color: p.color, accent: p.accent, prices: p.prices, sizes: p.sizes }))}
           >
             Ajouter la tenue au panier
           </button>

@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-03 par serge (import du catalogue, décision sur les prix)_
+_Dernière mise à jour : 2026-11-03 par serge (coûts fournisseur privés)_
 
 > **Serge / Claude de Serge : commencez par `docs/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -76,6 +76,7 @@ _Dernière mise à jour : 2026-11-03 par serge (import du catalogue, décision s
 - **E-mails de commande** (3 nov.) : « confirmée » au paiement et « en route » 15 minutes après le code de suivi, par Resend. Inactif sans `RESEND_API_KEY` et `EMAIL_FROM` dans Vercel ; jamais pour une commande de test. L'« en route » part au geste suivant dans le bot, au plus tard à la visite quotidienne. « Livrée » et « indisponible » attendent le suivi du transporteur et les remboursements — serge
 - **Comptes : CGV et fiche client rattrapées** (3 nov.) : l'acceptation part avec l'inscription et reste chez Supabase Auth ; la fiche client et les CGV sont enregistrées à la prochaine ouverture si la base ne répondait pas — serge
 - **Verrou de caisse et alerte de paiement** (3 nov.) : `PAYMENTS_OPEN` ouvre « Payer » ; si un paiement passe sans que la commande s'enregistre, le groupe Telegram reçoit le montant, l'e-mail et la session Stripe, et le client un message clair — serge
+- **Coûts fournisseur privés** (4 nov.) : les pages reçoivent une table de prix, jamais le coût ; `products.cost`, `supplier_ref` et `product_variants.supplier_cost` ne se lisent plus avec la clé publique (migration 0012 appliquée). Le site lit le catalogue avec la clé service. Page de test `/test/prix` retirée — serge
 
 ## 🔄 En cours
 

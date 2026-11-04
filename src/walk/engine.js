@@ -4,7 +4,7 @@
 // du catalogue, le panier et la navigation sont ceux du site, et tout se nettoie
 // quand on quitte la page.
 import { GARMENT_PATHS as P } from "@/lib/catalog/art";
-import { DARK, accentFor } from "@/lib/catalog/demo";
+import { DARK, accentFor } from "@/lib/catalog/palette";
 import { createFocusController } from "./controllers/focus";
 import { connectHistory } from "./controllers/history";
 import { getMode } from "./modes";

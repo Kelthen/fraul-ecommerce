@@ -7,3 +7,6 @@ export const COLOR_NAMES: Record<string, string> = {
   "#F1ECE0": "Écru", "#141416": "Noir", "#680209": "Bordeaux", "#420A0D": "Vin", "#6B6766": "Gris anthracite",
   "#EAE0C8": "Perle", "#202833": "Marine", "#9A938A": "Pierre", "#2B2A2C": "Charbon", "#C9BFAA": "Sable",
 };
+
+export const DARK = ["#141416", "#202833", "#2B2A2C", "#420A0D", "#680209", "#6B6766", "#0A0A0C"];
+export const accentFor = (c: string) => (DARK.includes(c) ? "#EAE0C8" : "#420A0D");

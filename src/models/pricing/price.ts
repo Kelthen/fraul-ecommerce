@@ -33,6 +33,9 @@ export const catalogPrice = (cost: Cost, zoneId: ZoneId): number =>
     ? roundNice(cost.usd * ZONES[zoneId].perUsd) // prix tapé en dollars, converti au taux fixe de la zone
     : roundNice(landedCost(cost, zoneId) * (1 + ZONES[zoneId].marginPct / 100));
 
+/** Tous les prix d'un article, par zone et par groupe. C'est ce qui part vers le navigateur : jamais le coût. */
+export type PriceTable = Record<ZoneId, Record<GroupId, number>>;
+
 /** Prix plancher : coût rendu + marge minimale, arrondi à l'unité supérieure (R5). */
 export const floorPrice = (cost: Cost, zoneId: ZoneId): number => Math.ceil(landedCost(cost, zoneId) * (1 + MIN_MARGIN_PCT / 100));
 
@@ -50,3 +53,15 @@ export function customerPrice(cost: Cost, zoneId: ZoneId, groupId: GroupId = "pu
   const drift = Math.abs((1 - nice / catalog) * 100 - pct);
   return Math.max(drift <= MAX_DISCOUNT_DRIFT ? nice : Math.round(raw), floorPrice(cost, zoneId));
 }
+
+export const priceTable = (cost: Cost): PriceTable =>
+  Object.fromEntries(
+    (Object.keys(ZONES) as ZoneId[]).map((z) => [z, Object.fromEntries((Object.keys(GROUPS) as GroupId[]).map((g) => [g, customerPrice(cost, z, g)]))]),
+  ) as PriceTable;
+
+/** Le stockage du navigateur n'est pas fiable : vérifie la forme avant d'afficher un prix. */
+export const isPriceTable = (t: unknown): t is PriceTable =>
+  !!t && typeof t === "object" && (Object.keys(ZONES) as ZoneId[]).every((z) => {
+    const row = (t as Record<string, Record<string, unknown>>)[z];
+    return !!row && (Object.keys(GROUPS) as GroupId[]).every((g) => Number.isFinite(row[g]));
+  });

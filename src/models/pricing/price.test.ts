@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { GROUPS, ZONES, type GroupId, type ZoneId } from "./config.ts";
-import { MAX_DISCOUNT_DRIFT, catalogPrice, customerPrice, floorPrice, landedCost, roundNice, zoneOf, type Cost } from "./price.ts";
+import { MAX_DISCOUNT_DRIFT, catalogPrice, customerPrice, floorPrice, landedCost, roundNice, zoneOf, type Cost, isPriceTable, priceTable } from "./price.ts";
 
 const TEE: Cost = { cny: 190, g: 250 };
 const SNEAKER: Cost = { cny: 430, g: 1300 };
@@ -82,4 +82,15 @@ test("prix en dollars : les remises de groupe s'appliquent, le prix plancher pro
   assert.ok(customerPrice(tee, "us", "vip") < 89);
   const tooCheap: Cost = { cny: 400, g: 700, usd: 20 };
   assert.equal(customerPrice(tooCheap, "us"), floorPrice(tooCheap, "us"));
+});
+
+test("table de prix : mêmes prix que le calcul, aucun coût dedans", () => {
+  const cost: Cost = { cny: 435, g: 700, usd: 179 };
+  const t = priceTable(cost);
+  assert.equal(t.ca.vip, customerPrice(cost, "ca", "vip"));
+  assert.equal(t.us.public, customerPrice(cost, "us"));
+  assert.ok(!JSON.stringify(t).includes("cny") && !JSON.stringify(t).includes("435"));
+  assert.ok(isPriceTable(t));
+  assert.ok(!isPriceTable({ cny: 1, g: 2 }));
+  assert.ok(!isPriceTable(null));
 });
