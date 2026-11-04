@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (ménage)_
+_Dernière mise à jour : 2026-11-04 par serge (mannequin femme en ligne)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -83,6 +83,7 @@ _Dernière mise à jour : 2026-11-04 par serge (ménage)_
 - **Gestion des boutiques** : `/admin/boutiques` (ajout, modification, place dans le mall, masquage, retrait, logo, couleur tirée du logo) ; le site lit les boutiques dans la base — serge
 - **Walk** : toucher la porte fait entrer dans le mall ; 3 architectures de boutique (enseigne, verrière, portique) avec une ambiance intérieure propre ; un homme en vitrine, emplacement femme prêt (`WOMAN_READY` dans `src/walk/engine.js`) ; plus de panneaux de rayons vides dans la boutique — serge
 - **Ménage** : documents finis rangés dans `docs/archive/`, index `docs/README.md`, copie de secours du catalogue renommée `fallback.ts`, mentions périmées retirées — serge
+- **Mannequin femme** devant chaque boutique et dans les boutiques ; test téléphone sans attente « networkidle » (faux échecs sur `next start`) — serge
 
 ## 🔄 En cours
 
@@ -106,7 +107,7 @@ _Dernière mise à jour : 2026-11-04 par serge (ménage)_
 11. Vraies photos produit détourées (via `scripts/optimize-images.mjs`)
 12. ✅ Fournisseur + commandes + WeChat : 3 questions de `docs/archive/FOURNISSEUR-COMMANDES.md` tranchées le 3 nov. Reste à obtenir le coût de chaque article — serge
 13. Comptes : code à 6 chiffres, mot de passe de 10 caractères et confirmation d'e-mail réglés dans Supabase le 3 nov. **Bloqué par le domaine** (prévu le 4 nov.) : domaine vérifié dans Resend, puis SMTP personnalisé dans Supabase, modèles d'e-mail avec `{{ .Token }}` en français, `RESEND_API_KEY` et `EMAIL_FROM` dans Vercel. Ensuite : webhook Stripe et Turnstile (`NEXT_PUBLIC_TURNSTILE_SITE_KEY` et `TURNSTILE_SECRET_KEY` dans Vercel, secret aussi dans Supabase → Attack Protection). Reste : 2FA admin et partenaires — serge
-- **Rhamone :** modéliser le mannequin femme, le préparer avec `scripts/prep-mannequin.mjs <source> public/models/mannequin-femme.glb` (mêmes noms de matières), puis passer `WOMAN_READY` à `true` dans `src/walk/engine.js`.
+- **Mannequin femme :** version tirée du modèle homme par script (`scripts/prep-mannequin.mjs --femme`). Rhamone peut la remplacer par un vrai modèle de Blender : même fichier `public/models/mannequin-femme.glb`, mêmes noms de matières.
 
 ## ⏳ Bloqué — attend le client
 
@@ -127,6 +128,7 @@ _Dernière mise à jour : 2026-11-04 par serge (ménage)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-04 | **Mannequin femme fait sans Blender**, à partir du modèle homme : Serge a repris cette tâche de Rhamone. Rhamone reste à consulter sur les décisions « logos » et « rayons avec articles ». | Serge |
 | 2026-11-04 | **Domaine : take-ur-clothes.com** (remplace takeurclothes.com visé le 1er nov.). Documents finis rangés dans `docs/archive/`. | Serge |
 | 2026-11-04 | **3 architectures de boutique** réparties le long du parcours, jamais deux fois la même côte à côte. **Un homme et une femme** devant chaque boutique : Rhamone modélise la femme, l'homme seul en attendant. **La porte du mall se touche** pour entrer. | Serge |
 | 2026-11-04 | **Jean Paul gère les boutiques** dans `/admin/boutiques` : ajout, modification, place, masquage, retrait. **Logo envoyé par lui** (remplace « pas de logos » du 17 oct., ⚠️ il doit avoir le droit d'afficher chaque logo) et couleur tirée du logo, modifiable. Marques sans articles retirées de la base (migration 0013). | Serge |

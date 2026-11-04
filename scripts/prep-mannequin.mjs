@@ -1,4 +1,5 @@
 // Prépare le mannequin exporté de Blender pour le Walk : node scripts/prep-mannequin.mjs
+// Version femme, tirée du même modèle : node scripts/prep-mannequin.mjs --femme
 // Entrée : assets-src/models/fraul_mannequin.glb (export Blender de Rhamone, 25 oct. 2026).
 // Sortie : public/models/mannequin.glb, léger pour téléphone (≈ 22 000 triangles au lieu de 166 000, sans Draco).
 // À relancer après chaque nouvel export ; ne jamais retoucher le fichier de sortie à la main.
@@ -7,8 +8,10 @@ import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { dedup, prune, quantize, simplifyPrimitive, weld } from "@gltf-transform/functions";
 import draco3d from "draco3dgltf";
 import { MeshoptSimplifier } from "meshoptimizer";
+import { feminize } from "./mannequin-femme.mjs";
 
-const [src = "assets-src/models/fraul_mannequin.glb", out = "public/models/mannequin.glb"] = process.argv.slice(2);
+const FEMME = process.argv.includes("--femme");
+const [src = "assets-src/models/fraul_mannequin.glb", out = FEMME ? "public/models/mannequin-femme.glb" : "public/models/mannequin.glb"] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ "draco3d.decoder": await draco3d.createDecoderModule() });
 const doc = await io.read(src);
 const root = doc.getRoot();
@@ -29,6 +32,8 @@ for (const p of tee ? tee.listPrimitives() : []) {
     if (t > 0) { v[1] -= 0.045 * t; v[0] *= 1 + 0.03 * t; v[2] = 0.01 + (v[2] - 0.01) * (1 + 0.03 * t); a.setElement(i, v); }
   }
 }
+
+if (FEMME) feminize(root);
 
 await doc.transform(prune({ keepAttributes: true }), dedup(), weld()); // garder les coordonnées de texture du panneau de poitrine
 

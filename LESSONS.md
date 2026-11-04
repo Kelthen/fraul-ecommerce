@@ -318,3 +318,8 @@
 - **Ce qui s'est passé :** dans le rayon Pantalons, le panneau 3D « PANTALONS » passait sous le nom de la boutique ; dans Hoodies, le crochet de la pièce choisie coupait « HOODIES ». Rhamone : « c'est des trucs que tu dois vérifier ».
 - **Cause :** les textes dessinés dans la 3D bougent avec la caméra ; personne ne vérifiait qu'ils ne passaient pas sous les textes et boutons de l'écran.
 - **Règle :** un texte important ne vit pas dans la 3D quand l'écran affiche autre chose par-dessus : il passe dans l'interface (titre), et la 3D garde au plus un filigrane derrière les objets. Regarder chaque capture du test en cherchant un mot coupé ou recouvert ; le test téléphone vérifie le titre de chaque rayon.
+
+### L-55 — Le test téléphone n'attend pas « networkidle »
+- **Erreur :** 3 contrôles de `npm run smoke` échouaient sur `next start` : les préchargements de liens de Next (`/?_rsc=…`) restaient parfois ouverts, la page n'était jamais « au repos » alors qu'elle marchait.
+- **Règle : dans `scripts/smoke.mjs`, attendre `load` puis un élément précis, jamais `networkidle`.**
+- **Reste à savoir :** pourquoi ces préchargements restent ouverts en local. Sur le vrai site, ils répondent en moins d'une demi-seconde.
