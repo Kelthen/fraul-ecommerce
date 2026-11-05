@@ -24,6 +24,15 @@ export const MARGIN_ALERT_PCT = 10;
 const HEX = /^#[0-9A-F]{6}$/i;
 const PHOTO = /^(\/images\/library\/[a-z0-9-]+\.(jpg|jpeg|png|webp)|https:\/\/[a-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/produits\/[A-Za-z0-9/_.-]+)$/;
 
+/** Adresse de photo remise d'aplomb : sans espaces ni retours à la ligne, sans « // » en trop après le domaine. */
+export const cleanPhotoUrl = (u: string) => u.replace(/\s+/g, "").replace(/([^:])\/{2,}/g, "$1/");
+
+/** La fiche avec ses adresses de photos nettoyées (à appeler avant articleProblems et l'enregistrement). */
+export const cleanArticle = (a: ArticleInput): ArticleInput => ({
+  ...a,
+  photos: { front: cleanPhotoUrl(a.photos.front), back: a.photos.back ? cleanPhotoUrl(a.photos.back) : undefined, details: a.photos.details.map(cleanPhotoUrl) },
+});
+
 /** Problèmes de la fiche, en clair, prêts à afficher. Tableau vide = fiche correcte. */
 export function articleProblems(a: ArticleInput, known: { brands: string[]; categories: string[] }): string[] {
   const p: string[] = [];
@@ -33,7 +42,7 @@ export function articleProblems(a: ArticleInput, known: { brands: string[]; cate
   if (!(a.priceUsd >= 1 && a.priceUsd <= 20000)) p.push("Prix en dollars : entre 1 et 20 000.");
   if (!(a.costCny > 0 && a.costCny <= 100000)) p.push("Coût en ¥ obligatoire (il protège du prix trop bas).");
   if (!(a.weightG >= 10 && a.weightG <= 30000)) p.push("Poids : entre 10 g et 30 kg.");
-  if (!a.colors.length || a.colors.length > 6 || !a.colors.every((c) => HEX.test(c))) p.push("Choisis 1 à 6 couleurs.");
+  if (!a.colors.length || a.colors.length > 6 || !a.colors.every((c) => HEX.test(c))) p.push("Couleur : touche au moins une pastille de couleur (6 au plus).");
   if (!a.sizes.length || a.sizes.length > 15 || a.sizes.some((s) => !s.trim() || s.length > 12)) p.push("Tailles : 1 à 15, séparées par des virgules.");
   if (a.supplierRef && a.supplierRef.length > 80) p.push("Référence fournisseur trop longue.");
   const all = [a.photos.front, ...(a.photos.back ? [a.photos.back] : []), ...a.photos.details];
