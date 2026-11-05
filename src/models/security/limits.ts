@@ -13,6 +13,8 @@ export const LIMITS = {
   adminCheck: { max: 20, seconds: 15 * MINUTE },
   /** Taper un code admin, par adresse e-mail : renvoyer des codes ne donne pas plus d'essais. */
   adminCheckEmail: { max: 20, seconds: HOUR },
+  /** Taper le code de l'application d'authentification, par adresse e-mail. */
+  adminTotp: { max: 10, seconds: 15 * MINUTE },
   /** Demander un code Telegram : par adresse IP, et pour tout le site (le groupe de l'équipe ne doit pas être inondé). */
   telegramSend: { max: 5, seconds: 15 * MINUTE },
   telegramSendAll: { max: 30, seconds: HOUR },

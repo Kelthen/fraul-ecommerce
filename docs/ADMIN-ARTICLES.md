@@ -91,9 +91,11 @@
 ### 2. ✅ Connexion admin par e-mail, faite par Serge le 4 nov. (les e-mails marchent depuis le 4 nov. : Resend vérifié, SMTP Supabase réglé)
 - **Liste d'admins** dans Vercel (`ADMIN_EMAILS`, séparés par des virgules) : Rhamone (`rhamonkota@gmail.com`), Serge, Jean Paul (**e-mail de Jean Paul : à demander à Rhamone**).
 - `/admin` : on tape son e-mail, on reçoit un **code à 6 chiffres valable 10 min** (par Resend) ; si l'e-mail n'est pas dans la liste, **rien n'est envoyé**, et le message reste le même pour ne rien révéler. 5 essais au plus.
-- **Séparé des comptes clients** : un compte client ne donne jamais accès à l'admin, même avec la même adresse.
-- Le **code Telegram reste en secours** (`isAdmin()` accepte l'un ou l'autre).
-- En attendant : Jean Paul se connecte avec le code Telegram, après avoir été ajouté au groupe de l'équipe.
+- **Double vérification depuis le 5 nov.** (demande de Rhamone) : après le code, le code d'une application d'authentification (Google Authenticator, Microsoft Authenticator…). QR code à la première connexion, alerte Telegram et e-mail à chaque changement d'application.
+- **Depuis « Mon compte »** (#85) : « Accès équipe » envoie le même code par e-mail, puis mène à la même 2e étape. Le mot de passe ne compte pas comme vérification : il se réinitialise par ce même e-mail.
+- **Telegram** : remplace le code e-mail si l'e-mail n'arrive pas, jamais l'application : il n'ouvre pas l'admin à lui seul.
+- **Téléphone perdu** : le code de l'autre canal (e-mail et Telegram réunis) retire l'ancienne application, puis on en ajoute une nouvelle. Jean Paul a besoin de quelqu'un du groupe Telegram tant qu'il n'y est pas.
+- **Changer la clé service Supabase** rend les secrets illisibles (ils sont chiffrés avec une clé qui en dérive) : chacun repasse alors par « Téléphone perdu ».
 
 ### 3. ✅ Page compte client, style Nike, faite par Serge le 4 nov. (retour de Rhamone, capture du 4 nov.)
 - **Inscription** : case « Recevoir les nouveautés et les drops », **décochée par défaut** (opt-in, loi européenne). Elle remplace la case de la page compte.

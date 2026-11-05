@@ -2,12 +2,10 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { checkLoginCode, isAdmin, logout, sendLoginCode } from "@/lib/server/admin-session";
+import { isAdmin, logout } from "@/lib/server/admin-session";
 import { webhookSecret } from "@/lib/server/env";
-import { allow, clientIp } from "@/lib/server/limits";
 import { createTestOrder, deleteTestOrders, relayOrder } from "@/lib/server/relay";
 import { tg } from "@/lib/server/telegram";
-import { TOO_MANY } from "@/models/security/limits";
 
 // Actions du tableau de bord des commandes. Chaque action revérifie la session : une action serveur
 // est une adresse publique, on ne fait jamais confiance à la page qui l'a appelée.
@@ -36,20 +34,6 @@ async function attempt(fn: () => Promise<string>): Promise<never> {
     msg = `⚠️ ${e instanceof Error ? e.message : "Erreur"}`;
   }
   return done(msg);
-}
-
-export async function requestCode() {
-  if (!(await allow("telegramSend", await clientIp())) || !(await allow("telegramSendAll", "tous"))) done(TOO_MANY);
-  await attempt(async () => {
-    await sendLoginCode();
-    return "Code envoyé sur Telegram.";
-  });
-}
-
-export async function verifyCode(form: FormData) {
-  if (!(await allow("telegramCheck", await clientIp())) || !(await allow("telegramCheckAll", "tous"))) done(TOO_MANY);
-  const ok = await checkLoginCode(String(form.get("code") ?? ""));
-  done(ok ? "Connecté." : "Code incorrect ou expiré.");
 }
 
 export async function signOut() {

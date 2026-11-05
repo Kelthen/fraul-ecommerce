@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { teamCheckCodeAction, teamSendCodeAction, teamStateAction, type TeamState } from "@/app/compte/team-actions";
 import { useAccount } from "../AccountProvider";
 
-/** Case « Admin » de la page compte, pour l'équipe seulement : après le code reçu par e-mail. */
+/** Case « Admin » de la page compte, pour l'équipe seulement : le code reçu par e-mail mène à la 2e étape sur /admin. */
 export function TeamAccess() {
   const { token } = useAccount();
+  const router = useRouter();
   const [state, setState] = useState<TeamState>("none");
   const [sent, setSent] = useState(false);
   const [msg, setMsg] = useState("");
@@ -40,8 +42,8 @@ export function TeamAccess() {
   async function check(f: FormData) {
     setBusy(true);
     const ok = await teamCheckCodeAction(await token(), String(f.get("code") ?? "")).catch(() => false);
-    if (ok) setState("admin");
-    else setMsg("Code incorrect ou expiré.");
+    if (ok) return router.push("/admin");
+    setMsg("Code incorrect ou expiré.");
     setBusy(false);
   }
   return (
