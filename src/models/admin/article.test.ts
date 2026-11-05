@@ -1,7 +1,7 @@
 // Tests de la fiche d'article de l'admin : node --test src/models/admin/article.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MARGIN_ALERT_PCT, articleProblems, articleSlug, marginsByZone, type ArticleInput } from "./article.ts";
+import { MARGIN_ALERT_PCT, articleProblems, articleSlug, filterArticles, marginsByZone, type ArticleInput } from "./article.ts";
 
 const known = { brands: ["nike", "trapstar"], categories: ["hoodie", "tee"] };
 const ok: ArticleInput = {
@@ -51,4 +51,17 @@ test("adresse de photo avec espace, retour à la ligne ou « // » : nettoyée p
   assert.equal(fixed.photos.front, "https://abc.supabase.co/storage/v1/object/public/produits/2026-11/a.jpg");
   assert.deepEqual(articleProblems(fixed, known), []);
   assert.match(articleProblems({ ...ok, photos: { front: bad, details: [] } }, known).join(), /remets-la/);
+});
+
+test("liste de l'admin : « nike pantalon » trouve le pantalon Nike, classé par marque", () => {
+  const list = [
+    { name: "Hoodie noir", brand: "trapstar", category: "hoodie" },
+    { name: "Jogging Tech", brand: "nike", category: "pants" },
+    { name: "Hoodie gris", brand: "nike", category: "hoodie" },
+  ];
+  const label = { brand: (s: string) => ({ nike: "Nike", trapstar: "Trapstar" })[s] ?? s, type: (id: string) => ({ pants: "Pantalons", hoodie: "Hoodies" })[id] ?? id };
+  assert.deepEqual(filterArticles(list, { q: "Nike pantalon" }, label).map((a) => a.name), ["Jogging Tech"]);
+  assert.deepEqual(filterArticles(list, { type: "hoodie" }, label).map((a) => a.name), ["Hoodie gris", "Hoodie noir"]);
+  assert.deepEqual(filterArticles(list, { brand: "trapstar", q: "" }, label).map((a) => a.name), ["Hoodie noir"]);
+  assert.equal(filterArticles(list, {}, label).length, 3);
 });

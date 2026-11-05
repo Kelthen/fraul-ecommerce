@@ -78,3 +78,26 @@ export function articleSlug(brandSlug: string, name: string, taken: (s: string) 
   if (!taken(base)) return base;
   for (let i = 2; ; i++) if (!taken(`${base}-${i}`)) return `${base}-${i}`;
 }
+
+const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/**
+ * Liste de l'admin : recherche (« nike pantalon » = tous les mots, sans accents, dans le nom, la marque ou le type),
+ * filtres marque et type, puis classée par marque. L'ordre d'origine est gardé dans chaque marque.
+ */
+export function filterArticles<T extends { name: string; brand: string; category: string }>(
+  list: T[],
+  f: { q?: string; brand?: string; type?: string },
+  label: { brand: (slug: string) => string; type: (id: string) => string },
+): T[] {
+  const words = fold(f.q ?? "").split(/\s+/).filter(Boolean);
+  return list
+    .filter((a) => (!f.brand || a.brand === f.brand) && (!f.type || a.category === f.type))
+    .filter((a) => {
+      const text = fold(`${a.name} ${label.brand(a.brand)} ${a.brand} ${label.type(a.category)}`);
+      return words.every((w) => text.includes(w));
+    })
+    .map((a, i) => ({ a, i }))
+    .sort((x, y) => label.brand(x.a.brand).localeCompare(label.brand(y.a.brand), "fr") || x.i - y.i)
+    .map((x) => x.a);
+}
