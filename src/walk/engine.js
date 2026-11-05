@@ -173,6 +173,9 @@ export function startWalk(root, o) {
 
   /* ===== three.js chargé à l'ouverture (bundle du projet, pas de CDN) ===== */
   let threeP = null;
+  // Les photos envoyées depuis l'admin viennent d'un autre domaine (Supabase) : sans crossOrigin, elles
+  // « salissent » le dessin, la carte graphique le refuse et le vêtement s'affiche tout noir.
+  const webImage = () => { const im = new Image(); im.crossOrigin = "anonymous"; return im; };
   function ensureThree() {
     if (THREE) return Promise.resolve(true);
     if (!threeP) threeP = new Promise((res) => {
@@ -228,7 +231,7 @@ export function startWalk(root, o) {
       if (glow) { x.shadowColor = fg; x.shadowBlur = 18; } spaced(x, word(st), w / 2, h / 2 + 4, sp);
       const tex = T(c);
       if (logo && st.logo) { // le nom reste affiché si le logo ne se charge pas
-        const im = new Image(); im.crossOrigin = "anonymous";
+        const im = webImage();
         im.onload = () => {
           x.shadowBlur = 0; x.clearRect(0, 0, w, h); if (bg) { x.fillStyle = bg; x.fillRect(0, 0, w, h); }
           const k = Math.min(maxW / im.width, (h * 0.86) / im.height), dw = im.width * k, dh = im.height * k;
@@ -262,7 +265,7 @@ export function startWalk(root, o) {
       const rr = (p) => { const r = 14; x.beginPath(); x.moveTo(p.x + r, p.y); x.arcTo(p.x + p.w, p.y, p.x + p.w, p.y + p.h, r); x.arcTo(p.x + p.w, p.y + p.h, p.x, p.y + p.h, r); x.arcTo(p.x, p.y + p.h, p.x, p.y, r); x.arcTo(p.x, p.y, p.x + p.w, p.y, r); x.closePath(); };
       if (hang || clip) hook(x, 128);
       x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore();
-      const img = new Image();
+      const img = webImage();
       img.onload = () => {
         const inner = { x: card.x + 6, y: card.y + 6, w: card.w - 12, h: card.h - 12 };
         const s = Math.max(inner.w / img.width, inner.h / img.height), w = img.width * s, h = img.height * s;
@@ -326,7 +329,7 @@ export function startWalk(root, o) {
         tex.needsUpdate = true;
       };
       draw(color);
-      if (img) { const im = new Image(); im.onload = () => { const c = photoColor(im); if (c) { draw(c); onLoad(); } }; im.src = img; }
+      if (img) { const im = webImage(); im.onload = () => { const c = photoColor(im); if (c) { draw(c); onLoad(); } }; im.src = img; }
       return tex;
     }
     // Mannequin de Blender : on garde ses formes, ses matières passent à l'éclairage simple du Walk (léger sur téléphone).
@@ -709,7 +712,7 @@ export function startWalk(root, o) {
       const [c, x] = U.cv(384, 500), tex = U.T(c);
       x.fillStyle = "#ffffff"; x.fillRect(0, 0, 384, 500);
       const draw = (src, w, h) => { const r = Math.min(344 / w, 460 / h); x.drawImage(src, (384 - w * r) / 2, (500 - h * r) / 2, w * r, h * r); tex.needsUpdate = true; kick(); };
-      { const im = new Image(); im.onload = () => draw(im, im.naturalWidth, im.naturalHeight); im.src = it.img[0]; }
+      { const im = webImage(); im.onload = () => draw(im, im.naturalWidth, im.naturalHeight); im.src = it.img[0]; }
       return tex;
     }
     function showLive(sh) {
