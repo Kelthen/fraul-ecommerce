@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-05 par rhamon (admin articles : recherche, filtres, suppression ; Frank admin)_
+_Dernière mise à jour : 2026-11-05 par serge (photos du Walk en noir)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -124,6 +124,7 @@ _Dernière mise à jour : 2026-11-05 par rhamon (admin articles : recherche, fil
 - **Filtres du catalogue** : page `/tout`, bouton « Filtrer » sur les pages marque et catégorie, pastilles, tri, filtres dans l'adresse ; catégories sans article retirées du site — serge
 - SEO : image de partage par défaut (provisoire, sans logo) et photo de face par fiche, prix et fil d'Ariane pour Google, description propre à chaque marque, manifest — serge
 - `ADMIN_EMAILS` dans Vercel (production et previews) : Rhamone, Serge, Frank (5 nov., rhamon) ; table `admin_login_codes` (0014) appliquée — serge
+- Walk : les photos envoyées depuis l'admin s'affichent enfin (elles sortaient en noir) — serge
 
 ## 🔄 En cours
 
