@@ -7,6 +7,7 @@ import { useCart } from "../CartProvider";
 import { useEnvies } from "../EnviesProvider";
 import { useMyOrders } from "../orders/MyOrders";
 import { AuthForm } from "./AuthForm";
+import { TeamAccess } from "./TeamAccess";
 
 const many = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
 
@@ -43,6 +44,7 @@ function Home({ email }: { email: string }) {
             </Link>
           </li>
         ))}
+        <TeamAccess />
       </ul>
     </div>
   );

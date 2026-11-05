@@ -1,5 +1,5 @@
 // Connexion à l'admin par e-mail : liste des adresses autorisées et règles du code. Pur (testé dans login.test.ts).
-// Séparée des comptes clients : un compte client ne donne jamais accès à l'admin, même avec la même adresse.
+// Un compte client avec une adresse de la liste ouvre l'admin seulement après le code par e-mail (src/app/compte/team-actions.ts).
 
 export const CODE_MINUTES = 10;
 export const MAX_ATTEMPTS = 5;

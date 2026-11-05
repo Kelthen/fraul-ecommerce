@@ -14,6 +14,8 @@ const hash = (email: string, code: string) => createHmac("sha256", sessionKey())
 const same = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 const load = (email: string) => db.one<Row>("admin_login_codes", `select=*&email=${eq(email)}`);
 const allowed = (email: string) => parseAdminEmails(process.env.ADMIN_EMAILS).includes(email);
+/** L'adresse (déjà vérifiée par le compte client) fait-elle partie de l'équipe ? */
+export const isAdminEmail = allowed;
 
 export async function sendAdminCode(email: string): Promise<void> {
   if (!allowed(email)) return;
