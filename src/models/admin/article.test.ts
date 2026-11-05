@@ -1,7 +1,7 @@
 // Tests de la fiche d'article de l'admin : node --test src/models/admin/article.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MARGIN_ALERT_PCT, articleProblems, articleSlug, filterArticles, marginsByZone, type ArticleInput } from "./article.ts";
+import { MARGIN_ALERT_PCT, articleProblems, articleSlug, filterArticles, findDuplicate, marginsByZone, type ArticleInput } from "./article.ts";
 
 const known = { brands: ["nike", "trapstar"], categories: ["hoodie", "tee"] };
 const ok: ArticleInput = {
@@ -64,4 +64,11 @@ test("liste de l'admin : « nike pantalon » trouve le pantalon Nike, classé pa
   assert.deepEqual(filterArticles(list, { type: "hoodie" }, label).map((a) => a.name), ["Hoodie gris", "Hoodie noir"]);
   assert.deepEqual(filterArticles(list, { brand: "trapstar", q: "" }, label).map((a) => a.name), ["Hoodie noir"]);
   assert.equal(filterArticles(list, {}, label).length, 3);
+});
+
+test("doublon : même marque et même nom, sans tenir compte des majuscules ni des accents", () => {
+  const list = [{ slug: "nike-hoodie-noir", brand: "nike", name: "Hoodie Noir" }];
+  assert.equal(findDuplicate(list, { brand: "nike", name: "  hoodie  noir " })?.slug, "nike-hoodie-noir");
+  assert.equal(findDuplicate(list, { brand: "trapstar", name: "Hoodie noir" }), null);
+  assert.equal(findDuplicate(list, { brand: "nike", name: "Hoodie noir", slug: "nike-hoodie-noir" }), null); // lui-même
 });

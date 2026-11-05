@@ -116,7 +116,7 @@ _Dernière mise à jour : 2026-11-05 par rhamon (admin articles : recherche, fil
 - **Ménage** : documents finis rangés dans `docs/archive/`, index `docs/README.md`, copie de secours du catalogue renommée `fallback.ts`, mentions périmées retirées — serge
 - **Mannequin femme** devant chaque boutique et dans les boutiques ; test téléphone sans attente « networkidle » (faux échecs sur `next start`) — serge
 - **« + Nouvelle marque » depuis la fiche article** : nom, logo ou 2 couleurs, couleurs reprises du logo, marque sélectionnée sans perdre l'article ; couleur du texte aussi réglable dans `/admin/boutiques` — serge
-- **Admin articles : recherche et filtres** (« nike pantalon », marque, type ; classés par marque) et **vrai bouton Supprimer** dans la fiche, en deux gestes. Un article déjà commandé n'est pas supprimé : il est masqué, pour garder l'historique (demande de Rhamone, 5 nov. 2026) — rhamon
+- **Admin articles : recherche et filtres** (« nike pantalon », marque, type ; classés par marque) , **refus des doublons** (même marque et même nom) et **vrai bouton Supprimer** dans la fiche, en deux gestes. Un article déjà commandé n'est pas supprimé : il est masqué, pour garder l'historique (demande de Rhamone, 5 nov. 2026) — rhamon
 - **Connexion admin par e-mail** : `/admin`, code à 6 chiffres valable 10 min, 5 essais, liste `ADMIN_EMAILS` ; Telegram en secours (migration 0014) — serge
 - **Page compte style Nike** : grille de cases, réglages à part, « Se déconnecter » discret, case « nouveautés » décochée à l'inscription — serge
 - **Webhook Stripe complet** : paiement échoué (annulation et e-mail), panier expiré (relance seulement avec l'accord « nouveautés »), remboursement, litige (alerte Telegram) — serge

@@ -101,3 +101,9 @@ export function filterArticles<T extends { name: string; brand: string; category
     .sort((x, y) => label.brand(x.a.brand).localeCompare(label.brand(y.a.brand), "fr") || x.i - y.i)
     .map((x) => x.a);
 }
+
+/** Doublon : même marque et même nom (sans majuscules, accents ni espaces en trop). Renvoie l'article déjà là. */
+export function findDuplicate<T extends { slug: string; brand: string; name: string }>(list: T[], a: { slug?: string; brand: string; name: string }): T | null {
+  const key = (n: string) => fold(n).replace(/[^a-z0-9]+/g, " ").trim();
+  return list.find((x) => x.slug !== a.slug && x.brand === a.brand && key(x.name) === key(a.name)) ?? null;
+}

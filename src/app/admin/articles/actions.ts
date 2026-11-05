@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { CATEGORIES } from "@/lib/catalog/fallback";
 import { CATALOGUE_TAG } from "@/lib/catalog/db";
 import { isAdmin } from "@/lib/server/admin-session";
-import { deleteArticle, getArticle, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
+import { deleteArticle, getArticle, listArticles, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";
-import { articleProblems, cleanArticle, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
+import { articleProblems, cleanArticle, findDuplicate, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
 
 // Actions de l'admin des articles. Une action serveur est une adresse publique : chacune revérifie la session.
 
@@ -37,6 +37,9 @@ export async function saveArticleAction(raw: ArticleInput): Promise<{ slug: stri
   if (errors.length) return { errors };
   const isNew = !input.slug;
   if (!isNew && !(await getArticle(input.slug!))) return { errors: ["Article introuvable."] };
+  const twin = findDuplicate(await listArticles(), input);
+  if (twin)
+    return { errors: [`« ${twin.name} » existe déjà pour cette marque${twin.onSite ? "" : " (masqué)"}. Ouvre-le dans la liste pour le modifier, ou change le nom (ajoute la couleur, par exemple).`] };
   try {
     const slug = input.slug || articleSlug(input.brand, input.name, () => false);
     const free = isNew ? await uniqueSlug(slug) : slug;
