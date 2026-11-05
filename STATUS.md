@@ -32,6 +32,11 @@ _Dernière mise à jour : 2026-11-04 par serge (ADMIN_EMAILS : Rhamone et Serge 
   - [ ] Le jour J : `NEXT_PUBLIC_SITE_LIVE=true` en production (débloque `robots.txt` et l'indexation), puis déclarer le site dans **Google Search Console** et envoyer `sitemap.xml`.
 - [x] Test téléphone : 3 contrôles qui expiraient au retour vers une page de marque (L-55, corrigé par Serge ?) — confirmer `npm run smoke` au vert.
 
+**Sécurité (Rhamone, 5 nov.)**
+- [ ] **Admin avec double vérification** : la connexion par code e-mail (#75) est un seul facteur. Ajouter un 2e facteur pour les admins (application d'authentification TOTP, ou mot de passe + code) ; sessions admin courtes (≤ 12 h).
+- [ ] **Session client qui expire** : Supabase → Authentication → Sessions : délai d'inactivité et durée maximale de session (fonction du plan payant) ; sinon, côté site, déconnexion après X jours sans visite. Durées à fixer avec Rhamone.
+- [ ] **Entrées et base protégées** (le « débordement » côté web) : limites de taille partout (formulaires, envois de fichiers, actions serveur : 3 Mo depuis #73), limite d'essais (connexion, codes, Finds, paiement), aucune requête SQL écrite à la main avec des valeurs du visiteur (tout passe par l'API Supabase), RLS vérifiée sur chaque table (`get_advisors` sécurité de Supabase au vert), en-têtes de sécurité (déjà dans `next.config.ts`).
+
 **Rhamone / Jean Paul**
 - [ ] **Logo TakeUrClothes** (fichier SVG ou PNG fond transparent) → favicon, icônes, image de partage, e-mails
 - [ ] Ajouter Jean Paul au groupe Telegram + son ID Telegram dans `TELEGRAM_ALLOWED_USERS` ; son e-mail pour `ADMIN_EMAILS`
