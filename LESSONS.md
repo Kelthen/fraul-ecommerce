@@ -335,3 +335,7 @@
 ### L-58 — Les photos d'abord, des petits boutons
 - **Erreur :** dans `/admin/articles`, chaque article avait deux gros boutons (« Modifier », « Masquer ») et trois lignes de texte : on voyait à peine les photos (Rhamone : « moins de boutons, plus de photos »).
 - **Règle :** une liste d'articles est une **grille de photos** ; toucher la photo ouvre l'article ; au plus **une petite action** discrète par carte ; texte réduit au nom (une ligne) et au prix. Les gros boutons pleine largeur sont réservés à l'action principale d'une page.
+
+### L-59 — Tester le mall avec une photo envoyée, pas seulement avec celles du site
+- **Erreur :** une photo envoyée depuis l'admin s'affichait comme un rectangle noir dans le mall. Elle vient d'un autre domaine (Supabase) et le chargement n'avait pas `crossOrigin` ; les 23 articles de départ, servis par le site lui-même, cachaient le problème et le test téléphone passait.
+- **Règle :** dans `src/walk/engine.js`, toute image passe par `webImage()`. Une fonction qui touche aux photos se teste aussi avec une photo venue de Supabase.

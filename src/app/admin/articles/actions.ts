@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { CATEGORIES } from "@/lib/catalog/fallback";
 import { CATALOGUE_TAG } from "@/lib/catalog/db";
 import { isAdmin } from "@/lib/server/admin-session";
-import { getArticle, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
+import { deleteArticle, getArticle, listArticles, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";
-import { articleProblems, cleanArticle, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
+import { articleProblems, cleanArticle, findDuplicate, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
 
 // Actions de l'admin des articles. Une action serveur est une adresse publique : chacune revérifie la session.
 
@@ -37,6 +37,9 @@ export async function saveArticleAction(raw: ArticleInput): Promise<{ slug: stri
   if (errors.length) return { errors };
   const isNew = !input.slug;
   if (!isNew && !(await getArticle(input.slug!))) return { errors: ["Article introuvable."] };
+  const twin = findDuplicate(await listArticles(), input);
+  if (twin)
+    return { errors: [`« ${twin.name} » existe déjà pour cette marque${twin.onSite ? "" : " (masqué)"}. Ouvre-le dans la liste pour le modifier, ou change le nom (ajoute la couleur, par exemple).`] };
   try {
     const slug = input.slug || articleSlug(input.brand, input.name, () => false);
     const free = isNew ? await uniqueSlug(slug) : slug;
@@ -62,4 +65,22 @@ export async function toggleOnSiteAction(form: FormData): Promise<void> {
   await setOnSite(slug, show);
   updateTag(CATALOGUE_TAG);
   redirect(`/admin/articles?msg=${encodeURIComponent(show ? "Article remis sur le site." : "Article masqué : il n'est plus visible sur le site.")}`);
+}
+
+export async function deleteArticleAction(form: FormData): Promise<void> {
+  if (!(await isAdmin())) redirect("/admin/commandes");
+  const slug = String(form.get("slug") ?? "");
+  let msg: string;
+  try {
+    const r = await deleteArticle(slug);
+    if (r === "ordered") {
+      await setOnSite(slug, false);
+      msg = "Cet article a déjà été commandé : il est masqué (pas supprimé) pour garder l'historique des commandes.";
+    } else msg = r === "deleted" ? "Article supprimé." : "Article introuvable.";
+    updateTag(CATALOGUE_TAG);
+  } catch (e) {
+    console.error("[admin articles] suppression", e);
+    msg = "La suppression a échoué. Réessaie dans un instant.";
+  }
+  redirect(`/admin/articles?msg=${encodeURIComponent(msg)}`);
 }

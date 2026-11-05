@@ -1,4 +1,5 @@
 // Tests des modèles du Walk : node --test src/walk/models/walk.test.ts
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createLayerStack } from "./layers.ts";
@@ -144,4 +145,10 @@ test("les portants d'un même mur ne se chevauchent pas", () => {
   for (const [a, b] of [["jacket", "tee"], ["tee", "hoodie"], ["shorts", "cap"]]) {
     assert.ok(span(a)[0] >= span(b)[1] - 0.01, `${a} et ${b}`);
   }
+});
+
+test("toute photo du mall se charge en crossOrigin, sinon les photos envoyées s'affichent en noir", () => {
+  const engine = readFileSync(new URL("../engine.js", import.meta.url), "utf8");
+  assert.equal(engine.match(/new Image\(\)/g)?.length, 1);
+  assert.match(engine, /const webImage = \(\) => \{ const im = new Image\(\); im\.crossOrigin = "anonymous"/);
 });

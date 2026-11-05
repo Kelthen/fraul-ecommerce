@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-04 par serge (ADMIN_EMAILS : Rhamone et Serge dans Vercel)_
+_Dernière mise à jour : 2026-11-05 par serge (photos du Walk en noir)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -17,7 +17,7 @@ _Dernière mise à jour : 2026-11-04 par serge (ADMIN_EMAILS : Rhamone et Serge 
 
 **Code (Serge)**
 - [x] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
-- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone et Serge, Jean Paul à ajouter quand il donne son adresse), Telegram en secours
+- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge et Frank, partenaire de Jean Paul, ajouté le 5 nov. ; Jean Paul à ajouter quand il donne son adresse), Telegram en secours
 - [x] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
 - [x] Webhook Stripe : traiter les 4 événements ajoutés au webhook (`checkout.session.async_payment_failed` → annuler + prévenir ; `checkout.session.expired` → relance panier ; `charge.refunded` → commande « remboursée » ; `charge.dispute.created` → alerte Telegram). Aujourd'hui ils sont reçus et ignorés.
 - [x] **Filtres du catalogue** (Rhamone, 4 nov.) : page « Tout voir » + pages marque et type avec un bouton **« Filtrer »** (volet par le bas au téléphone) : **Type** (hoodies, pantalons, sneakers, chaussettes…), **Marque**, **Couleur** (pastilles), **Taille** ; **Tri** : nouveautés, prix croissant, prix décroissant. Filtres actifs en petites pastilles retirables ; filtres dans l'adresse (lien partageable sur WhatsApp) ; ne proposer que les valeurs qui ont des articles. Petits boutons, photos d'abord (L-58).
@@ -31,6 +31,11 @@ _Dernière mise à jour : 2026-11-04 par serge (ADMIN_EMAILS : Rhamone et Serge 
   - [x] `manifest.webmanifest` (nom, couleurs `#680209` / `#FFFEF7`). Les icônes s'y ajouteront avec le logo, ligne au-dessus.
   - [ ] Le jour J : `NEXT_PUBLIC_SITE_LIVE=true` en production (débloque `robots.txt` et l'indexation), puis déclarer le site dans **Google Search Console** et envoyer `sitemap.xml`.
 - [x] Test téléphone : 3 contrôles qui expiraient au retour vers une page de marque (L-55, corrigé par Serge ?) — confirmer `npm run smoke` au vert.
+
+**Sécurité (Rhamone, 5 nov.)**
+- [ ] **Admin avec double vérification** : la connexion par code e-mail (#75) est un seul facteur. Ajouter un 2e facteur pour les admins (application d'authentification TOTP, ou mot de passe + code) ; sessions admin courtes (≤ 12 h).
+- [ ] **Session client qui expire** : Supabase → Authentication → Sessions : délai d'inactivité et durée maximale de session (fonction du plan payant) ; sinon, côté site, déconnexion après X jours sans visite. Durées à fixer avec Rhamone.
+- [ ] **Entrées et base protégées** (le « débordement » côté web) : limites de taille partout (formulaires, envois de fichiers, actions serveur : 3 Mo depuis #73), limite d'essais (connexion, codes, Finds, paiement), aucune requête SQL écrite à la main avec des valeurs du visiteur (tout passe par l'API Supabase), RLS vérifiée sur chaque table (`get_advisors` sécurité de Supabase au vert), en-têtes de sécurité (déjà dans `next.config.ts`).
 
 **Rhamone / Jean Paul**
 - [ ] **Logo TakeUrClothes** (fichier SVG ou PNG fond transparent) → favicon, icônes, image de partage, e-mails
@@ -117,13 +122,15 @@ _Dernière mise à jour : 2026-11-04 par serge (ADMIN_EMAILS : Rhamone et Serge 
 - **Mannequin femme** devant chaque boutique et dans les boutiques ; test téléphone sans attente « networkidle » (faux échecs sur `next start`) — serge
 - **« + Nouvelle marque » depuis la fiche article** : nom, logo ou 2 couleurs, couleurs reprises du logo, marque sélectionnée sans perdre l'article ; couleur du texte aussi réglable dans `/admin/boutiques` — serge
 - **Admin depuis « Mon compte »** : un client connecté dont l'adresse est dans `ADMIN_EMAILS` voit « Accès équipe » ; code par e-mail, puis case « Admin ». Plus besoin de taper /admin. Remplace « un compte client ne donne jamais accès à l'admin » de #75 (décision de Rhamone, 5 nov. 2026) — rhamon
+- **Admin articles : recherche et filtres** (« nike pantalon », marque, type ; classés par marque) , **refus des doublons** (même marque et même nom) et **vrai bouton Supprimer** dans la fiche, en deux gestes. Un article déjà commandé n'est pas supprimé : il est masqué, pour garder l'historique (demande de Rhamone, 5 nov. 2026) — rhamon
 - **Connexion admin par e-mail** : `/admin`, code à 6 chiffres valable 10 min, 5 essais, liste `ADMIN_EMAILS` ; Telegram en secours (migration 0014) — serge
 - **Page compte style Nike** : grille de cases, réglages à part, « Se déconnecter » discret, case « nouveautés » décochée à l'inscription — serge
 - **Webhook Stripe complet** : paiement échoué (annulation et e-mail), panier expiré (relance seulement avec l'accord « nouveautés »), remboursement, litige (alerte Telegram) — serge
 - **6 nouveaux rayons dans le Walk** : vestes et shorts près de la porte, chaussettes, lunettes, montres et bijoux sur les étagères du fond à droite ; panneaux et rails seulement si la boutique a ces articles — serge
 - **Filtres du catalogue** : page `/tout`, bouton « Filtrer » sur les pages marque et catégorie, pastilles, tri, filtres dans l'adresse ; catégories sans article retirées du site — serge
 - SEO : image de partage par défaut (provisoire, sans logo) et photo de face par fiche, prix et fil d'Ariane pour Google, description propre à chaque marque, manifest — serge
-- `ADMIN_EMAILS` dans Vercel (production et previews) : Rhamone et Serge ; table `admin_login_codes` (0014) appliquée — serge
+- `ADMIN_EMAILS` dans Vercel (production et previews) : Rhamone, Serge, Frank (5 nov., rhamon) ; table `admin_login_codes` (0014) appliquée — serge
+- Walk : les photos envoyées depuis l'admin s'affichent enfin (elles sortaient en noir) — serge
 
 ## 🔄 En cours
 

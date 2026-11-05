@@ -5,7 +5,7 @@ import { db, eq } from "./db";
 import { SUPABASE_URL, serviceKey } from "./env";
 
 // Articles du site dans la base, vus et modifiés depuis l'admin (clé service, après vérification de la session).
-// Retirer un article = le masquer (on_site = false) : jamais effacé, les commandes passées gardent leur fiche.
+// Masquer (on_site = false) le retire du site. Supprimer l'efface pour de bon, sauf s'il a déjà été commandé.
 
 export type AdminArticle = {
   slug: string;
@@ -116,6 +116,24 @@ export async function saveArticle(a: ArticleInput & { slug: string }, isNew: boo
 
 export async function setOnSite(slug: string, onSite: boolean): Promise<void> {
   await db.update("products", `slug=${eq(slug)}`, { on_site: onSite });
+}
+
+/**
+ * Supprime l'article pour de bon (photos, tailles et offres fournisseur partent avec lui).
+ * Refusé s'il figure dans une commande : on le masque alors, pour garder l'historique.
+ */
+export async function deleteArticle(slug: string): Promise<"deleted" | "ordered" | "missing"> {
+  const p = await db.one<{ id: string }>("products", `select=id&slug=${eq(slug)}`);
+  if (!p) return "missing";
+  const variants = await db.select<{ id: string }>("product_variants", `select=id&product_id=${eq(p.id)}`);
+  if (variants.length) {
+    const ids = `in.(${variants.map((v) => v.id).join(",")})`;
+    if (await db.one("order_items", `select=id&variant_id=${ids}`)) return "ordered";
+    await db.remove("cart_items", `variant_id=${ids}`); // paniers en cours : la ligne disparaît
+    await db.remove("outfit_items", `variant_id=${ids}`);
+  }
+  await db.remove("products", `id=${eq(p.id)}`);
+  return "deleted";
 }
 
 const MAX_PHOTO = 2 * 1024 * 1024; // même limite que le dossier « produits » (migration 0011)
