@@ -1,6 +1,7 @@
 "use server";
 
 import { db, eq } from "@/lib/server/db";
+import { allow, clientIp } from "@/lib/server/limits";
 import { findDemoOrder } from "@/models/orders/demo";
 import { isClosed, orderFromRow, type TrackingRow } from "@/models/orders/from-db";
 import { normalizeCode, type Order } from "@/models/orders/tracking";
@@ -24,6 +25,7 @@ export async function lookupOrder(rawCode: unknown, rawEmail: unknown): Promise<
   }
   const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase().slice(0, 254) : "";
   if (!email) return { status: "none" };
+  if (!(await allow("track", await clientIp()))) return { status: "error" };
 
   try {
     const row = await db.one<TrackingRow & { email: string; is_demo: boolean }>("orders", `${SELECT}&number=${eq(code)}&status=neq.pending_payment`);

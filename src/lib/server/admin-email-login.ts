@@ -3,6 +3,7 @@ import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { CODE_MINUTES, canResend, canTry, parseAdminEmails } from "@/models/admin/login";
 import { db, eq } from "./db";
 import { sessionKey } from "./env";
+import { allow } from "./limits";
 import { sendEmail } from "./mailer";
 
 // Code de connexion à l'admin envoyé par e-mail. Une adresse hors de la liste ne reçoit rien, et le visiteur voit la même
@@ -34,6 +35,7 @@ export async function sendAdminCode(email: string): Promise<void> {
 /** Vrai si le code est bon. Chaque essai est compté avant la comparaison ; un code réussi ne resservira pas. */
 export async function checkAdminCode(email: string, code: string): Promise<boolean> {
   if (!allowed(email) || code.length !== 6) return false;
+  if (!(await allow("adminCheckEmail", email))) return false;
   const row = await load(email);
   if (!row || !canTry({ attempts: row.attempts, expiresAt: Date.parse(row.expires_at) }, Date.now())) return false;
   // Conditionnel : deux essais en même temps ne comptent pas pour un seul.
