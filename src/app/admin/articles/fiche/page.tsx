@@ -7,6 +7,7 @@ import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";
 import { ArticleForm } from "@/components/admin/ArticleForm";
+import { deleteArticleAction } from "../actions";
 
 // Fiche d'un article : nouvelle (sans ?slug) ou à modifier (?slug=…).
 export const metadata: Metadata = { title: "Fiche article", robots: { index: false, follow: false } };
@@ -46,6 +47,17 @@ async function Sheet({ searchParams }: { searchParams: PageProps<"/admin/article
         categories={CATEGORIES.map((c) => ({ id: c.id, label: c.label, sizes: c.sizes, weight: WEIGHT_G[c.id] }))}
         colors={COLORS.map((hex) => ({ hex, name: COLOR_NAMES[hex] ?? hex }))}
       />
+      {article && (
+        // Deux gestes pour supprimer : ouvrir, puis confirmer. Pas dans la grille, pour éviter un toucher par erreur.
+        <details className="admin-delete">
+          <summary>Supprimer l&apos;article</summary>
+          <p className="muted">Il disparaît pour de bon. Pour le retirer un moment, décoche plutôt « Visible sur le site ».</p>
+          <form action={deleteArticleAction}>
+            <input type="hidden" name="slug" value={article.slug} />
+            <button className="admin-danger">Oui, supprimer définitivement</button>
+          </form>
+        </details>
+      )}
     </>
   );
 }
