@@ -67,3 +67,5 @@ export const verifyCode = async (type: "signup" | "recovery", email: string, tok
 export const changePassword = (accessToken: string, password: string) => call("user", { password }, { method: "PUT", token: accessToken });
 export const refreshSession = async (refreshToken: string) => toSession(await call<RawSession>("token?grant_type=refresh_token", { refresh_token: refreshToken }));
 export const signOutEverywhere = (accessToken: string) => call("logout", {}, { token: accessToken }).catch(() => {});
+/** Session finie sur cet appareil seulement : les autres appareils du client restent connectés. */
+export const signOutHere = (accessToken: string) => call("logout?scope=local", {}, { token: accessToken }).catch(() => {});
