@@ -6,7 +6,9 @@ import { parseAllowedUsers } from "@/models/relay/access";
 // Rien ici ne part vers le navigateur.
 
 /** Adresse publique du projet Supabase `fraul` (pas un secret). */
-export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://rqrdccsxyyufqlenmpct.supabase.co";
+// Nettoyée : une valeur collée dans Vercel avec un espace, un retour à la ligne ou un « / » final donnait des
+// adresses de photos refusées par l'admin (« Une photo n'a pas été envoyée correctement », 4 nov. 2026).
+export const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "https://rqrdccsxyyufqlenmpct.supabase.co").replace(/\/+$/, "");
 
 export function need(name: string): string {
   // Les valeurs collées dans Vercel portent parfois un espace ou un retour à la ligne : on les retire.

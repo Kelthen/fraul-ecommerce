@@ -24,7 +24,7 @@ test("une fiche complète passe", () => {
 test("le coût en ¥ est obligatoire (prix plancher), et chaque champ est vérifié", () => {
   assert.match(articleProblems({ ...ok, costCny: 0 }, known).join(), /Coût en ¥/);
   assert.match(articleProblems({ ...ok, brand: "inconnue" }, known).join(), /marque/);
-  assert.match(articleProblems({ ...ok, colors: ["rouge"] }, known).join(), /couleurs/);
+  assert.match(articleProblems({ ...ok, colors: ["rouge"] }, known).join(), /pastille de couleur/);
   assert.match(articleProblems({ ...ok, photos: { front: "", details: [] } }, known).join(), /photo de face/);
   assert.match(articleProblems({ ...ok, photos: { front: "https://ailleurs.com/x.jpg", details: [] } }, known).join(), /remets-la/);
 });
@@ -42,4 +42,13 @@ test("adresse de l'article : lisible, sans accents, unique", () => {
   assert.equal(articleSlug("nike", "Tech Fleece — Noir / Gris chiné", () => false), "nike-tech-fleece-noir-gris-chine");
   const taken = new Set(["nike-polo", "nike-polo-2"]);
   assert.equal(articleSlug("nike", "Polo", (s) => taken.has(s)), "nike-polo-3");
+});
+
+test("adresse de photo avec espace, retour à la ligne ou « // » : nettoyée puis acceptée", async () => {
+  const { cleanArticle } = await import("./article.ts");
+  const bad = "https://abc.supabase.co\n//storage/v1/object/public/produits/2026-11/a.jpg ";
+  const fixed = cleanArticle({ ...ok, photos: { front: bad, details: [bad] } });
+  assert.equal(fixed.photos.front, "https://abc.supabase.co/storage/v1/object/public/produits/2026-11/a.jpg");
+  assert.deepEqual(articleProblems(fixed, known), []);
+  assert.match(articleProblems({ ...ok, photos: { front: bad, details: [] } }, known).join(), /remets-la/);
 });
