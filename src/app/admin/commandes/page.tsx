@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
-import { hasPendingCode, isAdmin } from "@/lib/server/admin-session";
+import { isAdmin } from "@/lib/server/admin-session";
 import { adminChatId, allowedUsers, botTokenLooksValid, missingSettings } from "@/lib/server/env";
 import { isGroupChat } from "@/models/relay/access";
 import { loadPaidOrders, type OrderRow } from "@/lib/server/relay";
 import { PILES, pileOf, type PileId } from "@/models/relay/piles";
-import { clearTestOrders, connectBot, newTestOrder, requestCode, resend, signOut, verifyCode } from "./actions";
+import { clearTestOrders, connectBot, newTestOrder, resend, signOut } from "./actions";
 
 // Tableau de bord des commandes de TakeUrClothes (docs/PARCOURS-COMMANDE.md §3) : 3 piles + expédiées.
 const TEST_TOOLS = process.env.VERCEL_ENV !== "production";
@@ -49,27 +50,13 @@ async function Gate({ searchParams }: { searchParams: PageProps<"/admin/commande
         de l&apos;équipe, séparés par des virgules), puis redéploie.
       </p>
     );
-  if (!(await isAdmin())) return <Login msg={msg} waiting={await hasPendingCode()} />;
+  if (!(await isAdmin()))
+    return (
+      <p className="muted">
+        Accès réservé. <Link className="link" href="/admin">Connecte-toi</Link>, puis reviens ici.
+      </p>
+    );
   return <Dashboard msg={msg} />;
-}
-
-function Login({ msg, waiting }: { msg: string | null; waiting: boolean }) {
-  return (
-    <div className="admin-login">
-      {msg && <p className="admin-msg">{msg}</p>}
-      <p className="muted">Accès réservé. Le code de connexion arrive sur le Telegram de TakeUrClothes.</p>
-      <form action={requestCode}>
-        <button className={`pill ${waiting ? "ghost" : "solid"}`}>{waiting ? "Renvoyer un code" : "Recevoir un code sur Telegram"}</button>
-      </form>
-      {waiting && (
-        <form action={verifyCode} className="admin-code">
-          <label htmlFor="code">Code à 8 chiffres</label>
-          <input id="code" name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={12} required />
-          <button className="pill solid">Entrer</button>
-        </form>
-      )}
-    </div>
-  );
 }
 
 const fmt = (iso: string) =>

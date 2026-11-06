@@ -50,8 +50,8 @@ async function loadSales() {
 
 async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["searchParams"] }) {
   if (!(await isAdmin())) {
-    const { msg } = await searchParams;
-    return <AdminLogin msg={typeof msg === "string" ? msg : null} />;
+    const { msg, etape } = await searchParams;
+    return <AdminLogin msg={typeof msg === "string" ? msg : null} step={typeof etape === "string" ? etape : null} />;
   }
   const { orders, finds, now } = await loadSales();
 

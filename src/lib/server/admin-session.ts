@@ -5,8 +5,8 @@ import { connection } from "next/server";
 import { adminChatId, sessionKey } from "./env";
 import { sendMessage } from "./telegram";
 
-// Session du tableau de bord, et code de secours : 8 chiffres envoyés dans la conversation du bot
-// (le compte de Jean Paul, ou le groupe de l'équipe). La connexion normale passe par e-mail (admin-email-login.ts).
+// Session du tableau de bord, et code Telegram : 8 chiffres envoyés dans la conversation du bot
+// (le compte de Jean Paul, ou le groupe de l'équipe). Il n'ouvre jamais la session à lui seul : voir login-actions.ts.
 
 const PENDING = "tuc_admin_code";
 const SESSION = "tuc_admin";
@@ -30,11 +30,10 @@ export async function checkLoginCode(code: string): Promise<boolean> {
   const clean = code.replace(/\D/g, "");
   if (!exp || !mac || Number(exp) < Date.now() || !same(mac, sign(`code|${clean}|${exp}`))) return false;
   jar.delete(PENDING);
-  await startAdminSession();
   return true;
 }
 
-/** Ouvre la session de l'admin, après un code Telegram ou un code par e-mail. */
+/** Ouvre la session de l'admin, seulement après les deux vérifications (login-actions.ts). */
 export async function startAdminSession(): Promise<void> {
   const exp = Date.now() + SESSION_HOURS * 3_600_000;
   (await cookies()).set(SESSION, `${exp}.${sign(`session|${exp}`)}`, { ...cookieOpts, maxAge: SESSION_HOURS * 3600 });
@@ -44,10 +43,6 @@ export async function isAdmin(): Promise<boolean> {
   await connection(); // lu à chaque requête : l'heure ci-dessous n'est jamais figée au rendu statique
   const [exp, mac] = ((await cookies()).get(SESSION)?.value ?? "").split(".");
   return !!exp && !!mac && Number(exp) > Date.now() && same(mac, sign(`session|${exp}`));
-}
-
-export async function hasPendingCode(): Promise<boolean> {
-  return !!(await cookies()).get(PENDING);
 }
 
 export async function logout(): Promise<void> {

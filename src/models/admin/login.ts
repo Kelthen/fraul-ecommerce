@@ -1,5 +1,5 @@
 // Connexion à l'admin par e-mail : liste des adresses autorisées et règles du code. Pur (testé dans login.test.ts).
-// Un compte client avec une adresse de la liste ouvre l'admin seulement après le code par e-mail (src/app/compte/team-actions.ts).
+// Un compte client avec une adresse de la liste passe par les mêmes étapes : code par e-mail, puis application (src/app/compte/team-actions.ts).
 
 export const CODE_MINUTES = 10;
 export const MAX_ATTEMPTS = 5;
