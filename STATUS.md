@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-05 par serge (double vérification admin)_
+_Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -35,7 +35,9 @@ _Dernière mise à jour : 2026-11-05 par serge (double vérification admin)_
 **Sécurité (Rhamone, 5 nov.)**
 - [x] **Admin avec double vérification** : la connexion par code e-mail (#75) est un seul facteur. Ajouter un 2e facteur pour les admins (application d'authentification TOTP, ou mot de passe + code) ; sessions admin courtes (≤ 12 h).
   - Fait le 5 nov. : code e-mail (ou Telegram), puis application d'authentification, sur `/admin` et depuis `/compte` ; sessions de 12 h (migration 0016, appliquée). Rhamone, Serge, Jean Paul et Frank s'inscrivent à leur prochaine connexion.
-- [ ] **Session client qui expire** : Supabase → Authentication → Sessions : délai d'inactivité et durée maximale de session (fonction du plan payant) ; sinon, côté site, déconnexion après X jours sans visite. Durées à fixer avec Rhamone.
+- [x] **Session client qui expire** : Supabase → Authentication → Sessions : délai d'inactivité et durée maximale de session (fonction du plan payant) ; sinon, côté site, déconnexion après X jours sans visite. Durées à fixer avec Rhamone.
+  - Fait côté site le 5 nov. : déconnexion après 30 jours sans visite, 90 jours au maximum (décidé par l'équipe, à confirmer avec Rhamone).
+  - [ ] Avec le plan payant : régler aussi ces durées dans Supabase (Authentication → Sessions). Seul ce réglage annule la session côté serveur si l'appareil ne revient jamais.
 - [ ] **Entrées et base protégées** (le « débordement » côté web) : limites de taille partout (formulaires, envois de fichiers, actions serveur : 3 Mo depuis #73), limite d'essais (connexion, codes, Finds, paiement), aucune requête SQL écrite à la main avec des valeurs du visiteur (tout passe par l'API Supabase), RLS vérifiée sur chaque table (`get_advisors` sécurité de Supabase au vert), en-têtes de sécurité (déjà dans `next.config.ts`).
   - Fait le 5 nov. : compteurs d'essais sur les codes admin, le code Telegram, le suivi, le paiement et Finds (migration 0015, appliquée). Toutes les tables ont la sécurité par ligne. Requêtes vers la base par l'API Supabase, valeurs du visiteur encodées, champs publics coupés à leur taille.
   - Avertissements Supabase restants, voulus : `public_tracking` (lien secret du suivi) et `supplier_order_lines` (filtrée sur le fournisseur connecté).
@@ -137,6 +139,7 @@ _Dernière mise à jour : 2026-11-05 par serge (double vérification admin)_
 - Walk : les photos envoyées depuis l'admin s'affichent enfin (elles sortaient en noir) — serge
 - Limites d'essais sur les codes admin, le code Telegram, le suivi, le paiement et Finds (migration 0015) — serge
 - Admin : double vérification, code e-mail ou Telegram puis application d'authentification ; secours « Téléphone perdu » (migration 0016) — serge
+- Session client : déconnexion après 30 jours sans visite, 90 jours au maximum (à confirmer avec Rhamone) — serge
 
 ## 🔄 En cours
 

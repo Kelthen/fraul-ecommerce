@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { saveMarketing, syncAccount } from "@/app/compte/actions";
-import { authLive, refreshSession, signOutEverywhere, type Session } from "@/lib/auth-client";
+import { authLive, refreshSession, signOutEverywhere, signOutHere, type Session } from "@/lib/auth-client";
+import { readTimes, seenLongAgo, sessionExpired, type SessionTimes } from "@/models/account/session";
 
 // Compte client : Supabase Auth (e-mail + mot de passe + code par e-mail). Aucun mot de passe n'est gardé.
 // Sans clé publique (développement local), le compte reste une démo gardée sur le téléphone.
@@ -24,7 +25,7 @@ const Ctx = createContext<AccountCtx | null>(null);
 const KEY = authLive ? "tuc.account.v1" : "tuc.account.demo.v1";
 const REFRESH_MARGIN = 60_000;
 
-type Stored = Account & { session?: Session };
+type Stored = Account & { session?: Session } & Partial<SessionTimes>;
 
 const write = (a: Stored | null) => {
   try {
@@ -34,6 +35,12 @@ const write = (a: Stored | null) => {
     /* stockage indisponible : le compte dure le temps de la page */
   }
 };
+
+/** Session trop ancienne : Supabase l'annule aussi, si l'appareil a encore de quoi le lui demander. */
+const endHere = (s: Session) =>
+  (s.expires_at > Date.now() ? Promise.resolve(s) : refreshSession(s.refresh_token))
+    .then((fresh) => signOutHere(fresh.access_token))
+    .catch(() => {});
 
 export function AccountProvider({ children }: { children: React.ReactNode }) {
   const [stored, setStored] = useState<Stored | null>(null);
@@ -47,17 +54,49 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     try {
       const a = JSON.parse(localStorage.getItem(KEY) ?? "null");
       if (a && typeof a.email === "string" && (!authLive || a.session)) {
+        const now = Date.now();
+        const times = readTimes(a, now);
+        if (a.session && sessionExpired(times, now)) {
+          void endHere(a.session);
+          write(null);
+          return;
+        }
+        const next: Stored = { email: a.email, since: Number(a.since) || now, marketing: a.marketing === true, session: a.session, signedInAt: times.signedInAt, lastSeen: now };
         // eslint-disable-next-line react-hooks/set-state-in-effect -- lecture unique du stockage au montage
-        setStored({ email: a.email, since: Number(a.since) || Date.now(), marketing: a.marketing === true, session: a.session });
+        setStored(next);
+        write(next);
       }
     } catch {
       /* stockage indisponible : pas de compte */
     }
   }, []);
 
+  // Onglet resté ouvert : la règle vaut aussi au retour sur le site, pas seulement à l'ouverture.
+  useEffect(() => {
+    if (!stored?.session) return;
+    const check = () => {
+      if (document.visibilityState !== "visible" || !stored.session) return;
+      const now = Date.now();
+      const times = readTimes(stored, now);
+      if (sessionExpired(times, now)) {
+        void endHere(stored.session);
+        save(null);
+      } else if (seenLongAgo(times, now)) {
+        save({ ...stored, ...times, lastSeen: now });
+      }
+    };
+    document.addEventListener("visibilitychange", check);
+    return () => document.removeEventListener("visibilitychange", check);
+  }, [stored, save]);
+
   const token = useCallback(async () => {
     const s = stored?.session;
     if (!s) return null;
+    if (sessionExpired(readTimes(stored, Date.now()), Date.now())) {
+      void endHere(s);
+      save(null);
+      return null;
+    }
     if (s.expires_at - REFRESH_MARGIN > Date.now()) return s.access_token;
     try {
       const next = await refreshSession(s.refresh_token);
@@ -88,7 +127,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
         const profile = await syncAccount(session.access_token, acceptedTerms).catch(() => null);
         synced.current = true;
         if (wantsNews) await saveMarketing(session.access_token, true).catch(() => false);
-        save({ email: session.email, since: session.since, marketing: wantsNews || profile?.marketing === true, session });
+        const now = Date.now();
+        save({ email: session.email, since: session.since, marketing: wantsNews || profile?.marketing === true, session, signedInAt: now, lastSeen: now });
       },
       signOut: () => {
         if (stored?.session) void signOutEverywhere(stored.session.access_token);
