@@ -339,3 +339,7 @@
 ### L-59 — Tester le mall avec une photo envoyée, pas seulement avec celles du site
 - **Erreur :** une photo envoyée depuis l'admin s'affichait comme un rectangle noir dans le mall. Elle vient d'un autre domaine (Supabase) et le chargement n'avait pas `crossOrigin` ; les 23 articles de départ, servis par le site lui-même, cachaient le problème et le test téléphone passait.
 - **Règle :** dans `src/walk/engine.js`, toute image passe par `webImage()`. Une fonction qui touche aux photos se teste aussi avec une photo venue de Supabase.
+
+### L-60 — Après une action serveur qui enregistre, rediriger depuis le serveur
+- **Erreur :** la fiche article ne se fermait pas après « Enregistrer » sur le téléphone de l'équipe : le `router.push` du navigateur, lancé après l'action, restait sans effet. Pas reproduit en local, où tout répond tout de suite.
+- **Règle :** une action serveur qui enregistre puis change de page appelle `redirect()` elle-même, comme le recommande la doc de Next (« Redirect after a mutation »). Côté client, la promesse est alors rejetée avec un `digest` `NEXT_REDIRECT` : ne pas l'afficher comme une erreur.

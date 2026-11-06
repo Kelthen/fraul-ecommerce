@@ -3,6 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
+_Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
 _Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
 
@@ -143,6 +144,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Limites d'essais sur les codes admin, le code Telegram, le suivi, le paiement et Finds (migration 0015) — serge
 - Admin : double vérification, code e-mail ou Telegram puis application d'authentification ; secours « Téléphone perdu » (migration 0016) — serge
 - Session client : déconnexion après 30 jours sans visite, 90 jours au maximum (à confirmer avec Rhamone) — serge
+- Admin : après « Enregistrer », la fiche article se ferme et la liste s'affiche (le serveur fait la redirection) — serge
 - Admin, fiche article : le champ « Nom » devient « Description » — serge
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
