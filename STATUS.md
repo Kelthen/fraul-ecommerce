@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
+_Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -35,6 +35,8 @@ _Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
 **Sécurité (Rhamone, 5 nov.)**
 - [x] **Admin avec double vérification** : la connexion par code e-mail (#75) est un seul facteur. Ajouter un 2e facteur pour les admins (application d'authentification TOTP, ou mot de passe + code) ; sessions admin courtes (≤ 12 h).
   - Fait le 5 nov. : code e-mail (ou Telegram), puis application d'authentification, sur `/admin` et depuis `/compte` ; sessions de 12 h (migration 0016, appliquée). Rhamone, Serge, Jean Paul et Frank s'inscrivent à leur prochaine connexion.
+  - Coupée jusqu'au lancement (décision de Serge, 6 nov.) : le premier code ouvre l'admin, comme avant.
+  - [ ] Le jour J : vider la table `admin_totp` (la clé de Frank, inscrit le 6 nov., a circulé en capture d'écran), puis `ADMIN_2FA=true` dans Vercel (production) ; chaque admin s'inscrit à sa connexion suivante.
 - [x] **Session client qui expire** : Supabase → Authentication → Sessions : délai d'inactivité et durée maximale de session (fonction du plan payant) ; sinon, côté site, déconnexion après X jours sans visite. Durées à fixer avec Rhamone.
   - Fait côté site le 5 nov. : déconnexion après 30 jours sans visite, 90 jours au maximum (décidé par l'équipe, à confirmer avec Rhamone).
   - [ ] Avec le plan payant : régler aussi ces durées dans Supabase (Authentication → Sessions). Seul ce réglage annule la session côté serveur si l'appareil ne revient jamais.
@@ -140,6 +142,7 @@ _Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
 - Limites d'essais sur les codes admin, le code Telegram, le suivi, le paiement et Finds (migration 0015) — serge
 - Admin : double vérification, code e-mail ou Telegram puis application d'authentification ; secours « Téléphone perdu » (migration 0016) — serge
 - Session client : déconnexion après 30 jours sans visite, 90 jours au maximum (à confirmer avec Rhamone) — serge
+- Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
 ## 🔄 En cours
 
@@ -185,6 +188,7 @@ _Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-06 | **Double vérification de l'admin coupée jusqu'au lancement** : le code e-mail (ou Telegram) suffit d'ici là. Le code reste en place ; le jour J, `ADMIN_2FA=true` dans Vercel. | Serge, chat du 6 nov. |
 | 2026-11-04 | **Relance de panier** : un e-mail seulement si l'adresse a un compte qui a accepté les nouveautés. Sans cet accord, une relance commerciale pose problème (RGPD, loi canadienne anti-pourriel). Décidé par l'équipe, à confirmer avec un juriste. | Serge |
 | 2026-11-04 | PR #46 (21 articles aux prix fictifs) et #10 (tenue en 3D, prototype) **fermées sans merge** : en conflit avec le site actuel, branches gardées. Les articles passent par l'admin. | Serge |
 | 2026-11-04 | **E-mails en place** (domaine take-ur-clothes.com vérifié dans Resend, SMTP Supabase réglé : création de compte testée par Rhamone). Clés Stripe webhook, Resend et Turnstile dans Vercel. **Suite pour Serge** (Rhamone n'a plus de temps) : 1) « + Nouvelle marque » depuis la fiche article (logo, ou 2 couleurs si pas de logo ; couleurs reprises du logo), 2) connexion admin par e-mail (liste de 3 admins, Telegram en secours), 3) page compte client style Nike. Détail : `docs/ADMIN-ARTICLES.md`. | Rhamone |

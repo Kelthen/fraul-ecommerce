@@ -8,6 +8,9 @@ const WINDOW = 1;
 
 export const TOTP_DIGITS = 6;
 
+/** Double vérification de l'admin : coupée jusqu'au lancement (décision de Serge, 6 nov. 2026), ADMIN_2FA=true l'allume. */
+export const twoFactorOn = (setting: string | undefined) => setting?.trim().toLowerCase() === "true";
+
 export function base32Encode(bytes: Buffer): string {
   let bits = 0, value = 0, out = "";
   for (const b of bytes) {

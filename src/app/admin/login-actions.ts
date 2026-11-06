@@ -4,12 +4,22 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { checkAdminCode, isAdminEmail, sendAdminCode } from "@/lib/server/admin-email-login";
 import { checkLoginCode, sendLoginCode, startAdminSession } from "@/lib/server/admin-session";
-import { checkTotp, endSecondStep, readSecondStep, resetTotp, startSecondStep, warnTotpChange } from "@/lib/server/admin-totp";
+import {
+  checkTotp,
+  endSecondStep,
+  readSecondStep,
+  resetTotp,
+  startSecondStep,
+  totpRequired,
+  warnTotpChange,
+  type FirstFactor,
+} from "@/lib/server/admin-totp";
 import { allow, clientIp } from "@/lib/server/limits";
 import { CODE_MINUTES, cleanCode, normalizeEmail } from "@/models/admin/login";
 import { TOO_MANY } from "@/models/security/limits";
 
 // Connexion à l'admin en deux étapes : un code par e-mail (ou Telegram), puis l'application d'authentification.
+// La 2e étape est coupée jusqu'au lancement (ADMIN_2FA, voir admin-totp.ts) : le premier code ouvre alors l'admin.
 // Même réponse pour une adresse connue ou non. Chaque action revérifie tout : une action serveur est une adresse publique.
 
 const PENDING_EMAIL = "tuc_admin_email"; // même nom dans AdminLogin.tsx
@@ -38,8 +48,14 @@ export async function verifyEmailCode(form: FormData): Promise<void> {
   const email = await pendingEmail();
   const ok = email ? await checkAdminCode(email, cleanCode(form.get("code"))).catch((e) => (console.error("[admin] code", e), false)) : false;
   if (!ok) go(WRONG);
+  await firstCodeOk(email, "email");
+}
+
+/** Premier code bon : 2e étape si la double vérification est allumée, sinon l'admin s'ouvre. */
+async function firstCodeOk(email: string, factor: FirstFactor): Promise<never> {
   await clearPendingEmail();
-  await startSecondStep(email, "email");
+  if (totpRequired()) await startSecondStep(email, factor);
+  else await startAdminSession();
   redirect("/admin");
 }
 
@@ -57,12 +73,11 @@ export async function verifyTelegramCode(form: FormData): Promise<void> {
   const email = await pendingEmail();
   const ok = email && isAdminEmail(email) ? await checkLoginCode(String(form.get("code") ?? "")) : false;
   if (!ok) go(WRONG, "telegram");
-  await clearPendingEmail();
-  await startSecondStep(email, "telegram");
-  redirect("/admin");
+  await firstCodeOk(email, "telegram");
 }
 
 export async function verifyTotp(form: FormData): Promise<void> {
+  if (!totpRequired()) redirect("/admin");
   const pending = await readSecondStep();
   if (!pending) go("Recommence : le premier code a expiré.");
   if (!(await allow("adminCheck", await clientIp())) || !(await allow("adminTotp", pending.email))) go(TOO_MANY);
@@ -76,6 +91,7 @@ export async function verifyTotp(form: FormData): Promise<void> {
 
 /** Téléphone perdu : il faut aussi le code de l'autre canal. */
 export async function startRecovery(): Promise<void> {
+  if (!totpRequired()) redirect("/admin");
   const pending = await readSecondStep();
   if (!pending) go("Recommence : le premier code a expiré.");
   if (pending.factor === "email") {
@@ -89,6 +105,7 @@ export async function startRecovery(): Promise<void> {
 }
 
 export async function verifyRecovery(form: FormData): Promise<void> {
+  if (!totpRequired()) redirect("/admin");
   const pending = await readSecondStep();
   if (!pending) go("Recommence : le premier code a expiré.");
   if (!(await allow("adminCheck", await clientIp()))) go(TOO_MANY, "secours");

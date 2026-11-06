@@ -6,7 +6,7 @@ import { adminChatId, sessionKey } from "./env";
 import { sendMessage } from "./telegram";
 
 // Session du tableau de bord, et code Telegram : 8 chiffres envoyés dans la conversation du bot
-// (le compte de Jean Paul, ou le groupe de l'équipe). Il n'ouvre jamais la session à lui seul : voir login-actions.ts.
+// (le compte de Jean Paul, ou le groupe de l'équipe). Seul, il ouvre la session tant que la double vérification est coupée : voir login-actions.ts.
 
 const PENDING = "tuc_admin_code";
 const SESSION = "tuc_admin";
