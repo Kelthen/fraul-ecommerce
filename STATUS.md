@@ -4,6 +4,7 @@
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
 _Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
+_Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
@@ -144,6 +145,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Admin : double vérification, code e-mail ou Telegram puis application d'authentification ; secours « Téléphone perdu » (migration 0016) — serge
 - Session client : déconnexion après 30 jours sans visite, 90 jours au maximum (à confirmer avec Rhamone) — serge
 - Admin : après « Enregistrer », la fiche article se ferme et la liste s'affiche (le serveur fait la redirection) — serge
+- Admin, fiche article : le champ « Nom » devient « Description » — serge
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
 ## 🔄 En cours
@@ -190,6 +192,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-06 | Fiche article de l'admin : le champ « Nom » s'appelle **« Description »**. Le texte s'affiche toujours comme titre de l'article sur le site, sous la marque. | Serge, capture du 6 nov. |
 | 2026-11-06 | **Double vérification de l'admin coupée jusqu'au lancement** : le code e-mail (ou Telegram) suffit d'ici là. Le code reste en place ; le jour J, `ADMIN_2FA=true` dans Vercel. | Serge, chat du 6 nov. |
 | 2026-11-04 | **Relance de panier** : un e-mail seulement si l'adresse a un compte qui a accepté les nouveautés. Sans cet accord, une relance commerciale pose problème (RGPD, loi canadienne anti-pourriel). Décidé par l'équipe, à confirmer avec un juriste. | Serge |
 | 2026-11-04 | PR #46 (21 articles aux prix fictifs) et #10 (tenue en 3D, prototype) **fermées sans merge** : en conflit avec le site actuel, branches gardées. Les articles passent par l'admin. | Serge |
