@@ -10,12 +10,12 @@ import {
   verifyTelegramCode,
   verifyTotp,
 } from "@/app/admin/login-actions";
-import { enrollmentKey, readSecondStep, type PendingLogin } from "@/lib/server/admin-totp";
+import { enrollmentKey, readSecondStep, totpRequired, type PendingLogin } from "@/lib/server/admin-totp";
 import { TOTP_DIGITS, otpauthUrl, readableKey } from "@/models/admin/totp";
 
 // Connexion à l'admin en deux étapes : un code par e-mail (ou Telegram), puis l'application d'authentification.
 export async function AdminLogin({ msg, step }: { msg: string | null; step: string | null }) {
-  const pending = await readSecondStep();
+  const pending = totpRequired() ? await readSecondStep() : null;
   const email = (await cookies()).get("tuc_admin_email")?.value;
   return (
     <div className="admin-login">

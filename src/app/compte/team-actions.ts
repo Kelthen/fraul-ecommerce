@@ -1,8 +1,8 @@
 "use server";
 
 import { checkAdminCode, isAdminEmail, sendAdminCode } from "@/lib/server/admin-email-login";
-import { isAdmin } from "@/lib/server/admin-session";
-import { startSecondStep } from "@/lib/server/admin-totp";
+import { isAdmin, startAdminSession } from "@/lib/server/admin-session";
+import { startSecondStep, totpRequired } from "@/lib/server/admin-totp";
 import { verifiedUser } from "@/lib/server/customer";
 import { cleanCode } from "@/models/admin/login";
 
@@ -29,6 +29,6 @@ export async function teamCheckCodeAction(token: unknown, code: unknown): Promis
   const user = await verifiedUser(token).catch(() => null);
   if (!user || !isAdminEmail(user.email)) return false;
   const ok = await checkAdminCode(user.email, cleanCode(code)).catch((e) => (console.error("[compte] code équipe", e), false));
-  if (ok) await startSecondStep(user.email, "email");
+  if (ok) await (totpRequired() ? startSecondStep(user.email, "email") : startAdminSession());
   return ok;
 }
