@@ -4,9 +4,11 @@ import { randomUUID } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { catalogIsLive, getPricedProduct } from "@/lib/catalog";
 import { missingPaymentSettings } from "@/lib/server/env";
+import { allow, clientIp } from "@/lib/server/limits";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { checkoutParams, priceCart, type CartProblem, type PayableProduct } from "@/models/payment/checkout";
 import { DEFAULT_ZONE, ZONES, type ZoneId } from "@/models/pricing/config";
+import { TOO_MANY } from "@/models/security/limits";
 
 // « Payer » : le panier (identifiants et quantités seulement) part vers Stripe Checkout.
 // Une action serveur est une adresse publique : tout est revérifié ici, rien n'est cru du navigateur.
@@ -30,6 +32,7 @@ async function baseUrl(): Promise<string> {
 export async function startCheckout(lines: unknown): Promise<{ url: string } | { error: string }> {
   if (missingPaymentSettings().length) return { error: "Le paiement n'est pas encore ouvert. Reviens très vite !" };
   if (!(await catalogIsLive())) return { error: "Le paiement ne répond pas. Réessaie dans un instant." }; // jamais d'encaissement sur la copie de secours
+  if (!(await allow("checkout", await clientIp()))) return { error: TOO_MANY };
   const z = (await cookies()).get("tuc_zone")?.value;
   const zone: ZoneId = z && z in ZONES ? (z as ZoneId) : DEFAULT_ZONE;
 

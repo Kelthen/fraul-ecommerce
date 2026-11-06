@@ -59,6 +59,9 @@ export const db = {
     call<T[]>(`${table}?${filter}`, { method: "PATCH", body: JSON.stringify(patch), prefer: "return=representation" }),
 
   remove: (table: string, filter: string) => call<null>(`${table}?${filter}`, { method: "DELETE" }),
+
+  /** Appelle une fonction de la base. */
+  rpc: <T>(fn: string, args: Row) => call<T>(`rpc/${fn}`, { method: "POST", body: JSON.stringify(args) }),
 };
 
 export const eq = (v: string | number) => `eq.${enc(String(v))}`;

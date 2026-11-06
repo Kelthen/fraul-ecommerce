@@ -2,9 +2,11 @@
 
 import { db, eq } from "@/lib/server/db";
 import { adminChatId } from "@/lib/server/env";
+import { allow, clientIp } from "@/lib/server/limits";
 import { sendMessage } from "@/lib/server/telegram";
 import { validateRequest, type ConciergeResult } from "@/models/concierge/request";
 import { findsAlert } from "@/models/concierge/alert";
+import { TOO_MANY } from "@/models/security/limits";
 
 // Finds : une adresse publique, donc tout est revérifié ici. Le texte du visiteur reste une donnée (voir request.ts).
 
@@ -40,6 +42,7 @@ export async function submitFinds(input: unknown, captcha: unknown): Promise<Fin
     return { ok: "demo", value: r.value };
   }
   if (!(await captchaOk(captcha))) return { ok: false, errors: { form: "La vérification a échoué. Réessaie." } };
+  if (!(await allow("finds", await clientIp()))) return { ok: false, errors: { form: TOO_MANY } };
 
   try {
     const mine = await db.select("concierge_requests", `select=id&email=${eq(r.value.email)}&created_at=gt.${since(24 * HOUR)}&limit=${MAX_PER_EMAIL_PER_DAY}`);

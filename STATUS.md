@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-05 par serge (photos du Walk en noir)_
+_Dernière mise à jour : 2026-11-05 par serge (limites d'essais)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -36,6 +36,9 @@ _Dernière mise à jour : 2026-11-05 par serge (photos du Walk en noir)_
 - [ ] **Admin avec double vérification** : la connexion par code e-mail (#75) est un seul facteur. Ajouter un 2e facteur pour les admins (application d'authentification TOTP, ou mot de passe + code) ; sessions admin courtes (≤ 12 h).
 - [ ] **Session client qui expire** : Supabase → Authentication → Sessions : délai d'inactivité et durée maximale de session (fonction du plan payant) ; sinon, côté site, déconnexion après X jours sans visite. Durées à fixer avec Rhamone.
 - [ ] **Entrées et base protégées** (le « débordement » côté web) : limites de taille partout (formulaires, envois de fichiers, actions serveur : 3 Mo depuis #73), limite d'essais (connexion, codes, Finds, paiement), aucune requête SQL écrite à la main avec des valeurs du visiteur (tout passe par l'API Supabase), RLS vérifiée sur chaque table (`get_advisors` sécurité de Supabase au vert), en-têtes de sécurité (déjà dans `next.config.ts`).
+  - Fait le 5 nov. : compteurs d'essais sur les codes admin, le code Telegram, le suivi, le paiement et Finds (migration 0015, appliquée). Toutes les tables ont la sécurité par ligne. Requêtes vers la base par l'API Supabase, valeurs du visiteur encodées, champs publics coupés à leur taille.
+  - Avertissements Supabase restants, voulus : `public_tracking` (lien secret du suivi) et `supplier_order_lines` (filtrée sur le fournisseur connecté).
+  - [ ] Protection contre les mots de passe volés (Supabase → Authentication) : à activer, demande le plan payant. Captcha Supabase aussi.
 
 **Rhamone / Jean Paul**
 - [ ] **Logo TakeUrClothes** (fichier SVG ou PNG fond transparent) → favicon, icônes, image de partage, e-mails
@@ -131,6 +134,7 @@ _Dernière mise à jour : 2026-11-05 par serge (photos du Walk en noir)_
 - SEO : image de partage par défaut (provisoire, sans logo) et photo de face par fiche, prix et fil d'Ariane pour Google, description propre à chaque marque, manifest — serge
 - `ADMIN_EMAILS` dans Vercel (production et previews) : Rhamone, Serge, Frank (5 nov., rhamon) ; table `admin_login_codes` (0014) appliquée — serge
 - Walk : les photos envoyées depuis l'admin s'affichent enfin (elles sortaient en noir) — serge
+- Limites d'essais sur les codes admin, le code Telegram, le suivi, le paiement et Finds (migration 0015) — serge
 
 ## 🔄 En cours
 
