@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { marginsAction, saveArticleAction, uploadPhotoAction } from "@/app/admin/articles/actions";
 import type { AdminArticle } from "@/lib/server/admin-articles";
@@ -39,8 +38,9 @@ async function shrink(file: File): Promise<Blob> {
 
 const NEW_BRAND = "__nouvelle";
 
+const isRedirect = (e: unknown) => String((e as { digest?: unknown } | null)?.digest ?? "").startsWith("NEXT_REDIRECT");
+
 export function ArticleForm({ article, brands: initialBrands, categories, colors }: Props) {
-  const router = useRouter();
   const [brands, setBrands] = useState(initialBrands);
   const [addingBrand, setAddingBrand] = useState(false);
   const [brand, setBrand] = useState(article?.brand ?? "");
@@ -115,9 +115,11 @@ export function ArticleForm({ article, brands: initialBrands, categories, colors
       supplierRef,
       photos: { front, back: back || undefined, details },
       onSite,
-    }).catch(() => ({ errors: ["La connexion a coupé. Réessaie."] }));
-    if ("slug" in r) router.push(`/admin/articles?msg=${encodeURIComponent(article ? "Article modifié." : "Article ajouté.")}`);
-    else {
+    }).catch((e: unknown) =>
+      // Réussi : le serveur renvoie à la liste, et Next le signale en rejetant la promesse. Ce n'est pas une panne.
+      isRedirect(e) ? null : { errors: ["La connexion a coupé. Réessaie."] },
+    );
+    if (r?.errors.length) {
       setErrors(r.errors);
       setBusy(null);
     }

@@ -29,7 +29,9 @@ export async function uploadPhotoAction(form: FormData): Promise<{ url: string }
   }
 }
 
-export async function saveArticleAction(raw: ArticleInput): Promise<{ slug: string } | { errors: string[] }> {
+/** Enregistre, puis renvoie à la liste. La redirection se fait ici, côté serveur : un router.push du téléphone après
+ *  l'enregistrement restait parfois sans effet et la fiche ne se fermait pas (retour de Serge, 6 nov.). */
+export async function saveArticleAction(raw: ArticleInput): Promise<{ errors: string[] }> {
   const input = cleanArticle(raw);
   if (!(await isAdmin())) return { errors: ["Session expirée : reconnecte-toi."] };
   const known = { brands: (await listBoutiques()).map((b) => b.slug), categories: CATEGORIES.map((c) => c.id) };
@@ -42,14 +44,13 @@ export async function saveArticleAction(raw: ArticleInput): Promise<{ slug: stri
     return { errors: [`« ${twin.name} » existe déjà pour cette marque${twin.onSite ? "" : " (masqué)"}. Ouvre-le dans la liste pour le modifier, ou change le nom (ajoute la couleur, par exemple).`] };
   try {
     const slug = input.slug || articleSlug(input.brand, input.name, () => false);
-    const free = isNew ? await uniqueSlug(slug) : slug;
-    await saveArticle({ ...input, slug: free }, isNew);
-    updateTag(CATALOGUE_TAG); // le site montre le changement tout de suite
-    return { slug: free };
+    await saveArticle({ ...input, slug: isNew ? await uniqueSlug(slug) : slug }, isNew);
   } catch (e) {
     console.error("[admin articles] enregistrement", e);
     return { errors: ["L'enregistrement a échoué. Réessaie dans un instant."] };
   }
+  updateTag(CATALOGUE_TAG); // le site montre le changement tout de suite
+  redirect(`/admin/articles?msg=${encodeURIComponent(isNew ? "Article ajouté." : "Article modifié.")}`);
 }
 
 async function uniqueSlug(base: string): Promise<string> {
