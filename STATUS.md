@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
+_Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 
 > **Serge / Claude de Serge : commencez par `docs/archive/POUR-SERGE.md`** (ce qui vous attend dans votre zone + nos demandes d'avis, 18 oct. 2026).
 
@@ -140,6 +140,7 @@ _Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
 - Limites d'essais sur les codes admin, le code Telegram, le suivi, le paiement et Finds (migration 0015) — serge
 - Admin : double vérification, code e-mail ou Telegram puis application d'authentification ; secours « Téléphone perdu » (migration 0016) — serge
 - Session client : déconnexion après 30 jours sans visite, 90 jours au maximum (à confirmer avec Rhamone) — serge
+- Admin, fiche article : le champ « Nom » devient « Description » — serge
 
 ## 🔄 En cours
 
@@ -185,6 +186,7 @@ _Dernière mise à jour : 2026-11-05 par serge (session client qui expire)_
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-06 | Fiche article de l'admin : le champ « Nom » s'appelle **« Description »**. Le texte s'affiche toujours comme titre de l'article sur le site, sous la marque. | Serge, capture du 6 nov. |
 | 2026-11-04 | **Relance de panier** : un e-mail seulement si l'adresse a un compte qui a accepté les nouveautés. Sans cet accord, une relance commerciale pose problème (RGPD, loi canadienne anti-pourriel). Décidé par l'équipe, à confirmer avec un juriste. | Serge |
 | 2026-11-04 | PR #46 (21 articles aux prix fictifs) et #10 (tenue en 3D, prototype) **fermées sans merge** : en conflit avec le site actuel, branches gardées. Les articles passent par l'admin. | Serge |
 | 2026-11-04 | **E-mails en place** (domaine take-ur-clothes.com vérifié dans Resend, SMTP Supabase réglé : création de compte testée par Rhamone). Clés Stripe webhook, Resend et Turnstile dans Vercel. **Suite pour Serge** (Rhamone n'a plus de temps) : 1) « + Nouvelle marque » depuis la fiche article (logo, ou 2 couleurs si pas de logo ; couleurs reprises du logo), 2) connexion admin par e-mail (liste de 3 admins, Telegram en secours), 3) page compte client style Nike. Détail : `docs/ADMIN-ARTICLES.md`. | Rhamone |

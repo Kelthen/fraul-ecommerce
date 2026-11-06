@@ -38,7 +38,7 @@ export function articleProblems(a: ArticleInput, known: { brands: string[]; cate
   const p: string[] = [];
   if (!known.brands.includes(a.brand)) p.push("Choisis une marque.");
   if (!known.categories.includes(a.category)) p.push("Choisis une catégorie.");
-  if (a.name.trim().length < 3 || a.name.length > 120) p.push("Le nom doit faire entre 3 et 120 caractères.");
+  if (a.name.trim().length < 3 || a.name.length > 120) p.push("La description doit faire entre 3 et 120 caractères.");
   if (!(a.priceUsd >= 1 && a.priceUsd <= 20000)) p.push("Prix en dollars : entre 1 et 20 000.");
   if (!(a.costCny > 0 && a.costCny <= 100000)) p.push("Coût en ¥ obligatoire (il protège du prix trop bas).");
   if (!(a.weightG >= 10 && a.weightG <= 30000)) p.push("Poids : entre 10 g et 30 kg.");
