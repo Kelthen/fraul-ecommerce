@@ -8,7 +8,7 @@
 | PR | Quoi | État |
 |---|---|---|
 | 1 | **Les vrais articles passent dans la base** ; le site les lit de là (rien ne change à l'écran) | 🟡 code prêt, branche `feat/rhamon/catalogue-base` ; **import fait le 3 nov.**, merge à venir |
-| 2 | `/admin/articles` : liste, ajouter (photos face/dos/détails depuis le téléphone, marque, catégorie, nom, couleurs, tailles, coût ¥, poids, fournisseur + réf + lien), modifier, **retirer = masquer** (jamais effacer) ; prix calculé par devise + marge ; alerte marge < 10 % (décision Serge du 3 nov.) | 🆕 |
+| 2 | `/admin/articles` : liste, ajouter (photos face/dos/détails depuis le téléphone, marque, catégorie, description (affichée comme titre de l'article sur le site), couleurs, tailles, coût ¥, poids, fournisseur + réf + lien), modifier, **retirer = masquer** (jamais effacer) ; prix calculé par devise + marge ; alerte marge < 10 % (décision Serge du 3 nov.) | 🆕 |
 | 3 | `/admin` tableau de bord : ventes jour/semaine/mois par devise, nb de commandes, panier moyen, marge estimée, top articles et marques, commandes en retard (tes piles), demandes Finds | 🆕 |
 | 4 | Connexion de Jean Paul : vrai compte admin (Supabase Auth, déjà branché par toi) + 2FA ; rôles admin / équipe | 🆕 |
 

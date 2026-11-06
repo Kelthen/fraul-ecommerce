@@ -39,7 +39,7 @@ export async function saveArticleAction(raw: ArticleInput): Promise<{ slug: stri
   if (!isNew && !(await getArticle(input.slug!))) return { errors: ["Article introuvable."] };
   const twin = findDuplicate(await listArticles(), input);
   if (twin)
-    return { errors: [`« ${twin.name} » existe déjà pour cette marque${twin.onSite ? "" : " (masqué)"}. Ouvre-le dans la liste pour le modifier, ou change le nom (ajoute la couleur, par exemple).`] };
+    return { errors: [`« ${twin.name} » existe déjà pour cette marque${twin.onSite ? "" : " (masqué)"}. Ouvre-le dans la liste pour le modifier, ou change la description (ajoute la couleur, par exemple).`] };
   try {
     const slug = input.slug || articleSlug(input.brand, input.name, () => false);
     const free = isNew ? await uniqueSlug(slug) : slug;

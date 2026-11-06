@@ -159,7 +159,7 @@ export function ArticleForm({ article, brands: initialBrands, categories, colors
         </select>
       </label>
       <label>
-        Nom
+        Description
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Hoodie noir, logo rouge" maxLength={120} required />
       </label>
       <label>
