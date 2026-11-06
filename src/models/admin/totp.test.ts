@@ -1,7 +1,7 @@
 // Tests des codes d'authentification : node --test src/models/admin/totp.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { base32Encode, matchTotp, otpauthUrl, readableKey, totpCode } from "./totp.ts";
+import { base32Encode, matchTotp, otpauthUrl, readableKey, totpCode, twoFactorOn } from "./totp.ts";
 
 const SECRET = Buffer.from("12345678901234567890"); // secret de la RFC 6238
 
@@ -30,6 +30,13 @@ test("un code déjà utilisé ne resert pas, un code mal formé non plus", () =>
   assert.equal(matchTotp(SECRET, totpCode(SECRET, step - 1), now, step), null);
   assert.equal(matchTotp(SECRET, "12345", now, 0), null);
   assert.equal(matchTotp(SECRET, "abcdef", now, 0), null);
+});
+
+test("double vérification : allumée seulement par ADMIN_2FA=true", () => {
+  assert.equal(twoFactorOn(undefined), false);
+  assert.equal(twoFactorOn(""), false);
+  assert.equal(twoFactorOn("false"), false);
+  assert.equal(twoFactorOn(" TRUE "), true);
 });
 
 test("lien de l'application et clé lisible", () => {

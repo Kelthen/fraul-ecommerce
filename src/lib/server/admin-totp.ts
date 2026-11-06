@@ -1,7 +1,7 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { base32Encode, matchTotp } from "@/models/admin/totp";
+import { base32Encode, matchTotp, twoFactorOn } from "@/models/admin/totp";
 import { db, eq } from "./db";
 import { adminChatId, sessionKey } from "./env";
 import { sendEmail } from "./mailer";
@@ -10,6 +10,9 @@ import { sendMessage } from "./telegram";
 // Double vérification de l'admin : un premier code (e-mail ou Telegram), puis celui de l'application d'authentification.
 // Mot de passe + code e-mail ne suffirait pas : le mot de passe se réinitialise par ce même e-mail.
 // Secours si le téléphone est perdu : le code de l'autre canal (e-mail et Telegram réunis), puis nouvelle inscription.
+
+/** Coupée jusqu'au lancement : sans ADMIN_2FA=true, le premier code ouvre l'admin, comme avant le 6 nov. */
+export const totpRequired = () => twoFactorOn(process.env.ADMIN_2FA);
 
 export type FirstFactor = "email" | "telegram";
 export type PendingLogin = { email: string; factor: FirstFactor };
