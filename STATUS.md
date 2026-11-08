@@ -150,6 +150,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Accueil : défilé de looks, version de test** (`feat/rhamon/looks-accueil`) : 6 looks avec photo de mannequin, faits avec les vrais articles, sous l'entrée du Walk, en **scène** (personnage au centre en entier, les autres en profondeur, glisser ou flèches ; retour de Rhamone du 8 nov. : pas de cartes) ; toucher le personnage ouvre ses pièces (photo, prix, fiche). Photos : essais de ChatGPT validés par Rhamone le 8 nov. (`assets-src/looks/`) ; textes déformés et chaussures illustratives à corriger avant la mise en ligne. Un look sans photo montrerait les photos de ses pièces. Version finale : looks ajoutés depuis l'admin (photo + pièces), après validation de Rhamone. Notes : `docs/ACCUEIL-LOOKS.md`.
+
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
 | **Admin articles + tableau de bord pour Jean Paul** : PR 1 « articles dans la base » (code prêt, migration 0010 appliquée, **import fait le 3 nov. : 23 articles**), puis /admin/articles, /admin (stats), compte admin de Jean Paul. **Serge reprend** : tout est dans `docs/ADMIN-ARTICLES.md` | rhamon → serge | `feat/rhamon/catalogue-base` | 2026-11-04 |
@@ -194,6 +196,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 |---|---|---|
 | 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |
 | 2026-11-08 | **Photos par couleur** : une couleur peut avoir ses propres photos (face, dos) ; sans photo, les photos principales. **Pas de gestion de stock** pour l'instant. | Rhamone |
+| 2026-11-08 | **ChatGPT travaille aussi sur le dépôt** : règles dans `AGENTS.md` (branche + PR, jamais `main`, pas de base/Stripe/prix/admin sans accord). Chaque PR de ChatGPT est relue par Claude avant le merge. Protéger `main` dans GitHub (Settings → Branches) : à faire par Rhamone. | Rhamone |
 | 2026-11-06 | Fiche article de l'admin : le champ « Nom » s'appelle **« Description »**. Le texte s'affiche toujours comme titre de l'article sur le site, sous la marque. | Serge, capture du 6 nov. |
 | 2026-11-06 | **Double vérification de l'admin coupée jusqu'au lancement** : le code e-mail (ou Telegram) suffit d'ici là. Le code reste en place ; le jour J, `ADMIN_2FA=true` dans Vercel. | Serge, chat du 6 nov. |
 | 2026-11-04 | **Relance de panier** : un e-mail seulement si l'adresse a un compte qui a accepté les nouveautés. Sans cet accord, une relance commerciale pose problème (RGPD, loi canadienne anti-pourriel). Décidé par l'équipe, à confirmer avec un juriste. | Serge |

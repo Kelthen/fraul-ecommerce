@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EnvieButton } from "@/components/EnvieButton";
+import { QtyStepper } from "@/components/QtyStepper";
 import { Price, PriceNote } from "@/components/Price";
 import { ProductGallery, photoViews } from "@/components/product/ProductGallery";
 import type { CategoryId } from "@/lib/catalog/types";
@@ -23,7 +24,7 @@ type Props = {
   onClose: () => void;
   /** Une proposition touchée devient l'article affiché (le portant suit s'il est dans le rayon ouvert). */
   onPick: (it: FicheItem) => void;
-  onAdd: (it: FicheItem, size?: string) => void;
+  onAdd: (it: FicheItem, size?: string, qty?: number) => void;
 };
 
 /** Fiche en grand dans une boutique du Walk : toutes les photos, taille, panier, et 12 propositions en dessous. */
@@ -32,6 +33,10 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
   const closeBtn = useRef<HTMLButtonElement>(null);
   const [size, setSize] = useState<{ slug: string; v?: string }>({ slug: "" });
   const pickedSize = item && size.slug === item.slug ? size.v : item?.sizes[Math.min(2, item.sizes.length - 1)];
+  // Quantité propre à l'article ouvert : elle revient à 1 quand on passe à un autre.
+  const [count, setCount] = useState<{ slug: string; n: number }>({ slug: "", n: 1 });
+  const qty = item && count.slug === item.slug ? count.n : 1;
+  const setQty = (n: number) => item && setCount({ slug: item.slug, n });
 
   const sections = useMemo(() => {
     if (!item) return [];
@@ -71,7 +76,8 @@ export function QuickView({ item, all, catLabel, onClose, onPick, onAdd }: Props
               </div>
               <div className="f-act">
                 {/* Style « Signature » choisi par Rhamone (21 oct.) : panier bordeaux avec sac, cœur rond, lien vers la fiche. */}
-                <button className="add" type="button" onClick={() => onAdd(item, pickedSize)}><svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>Au panier</button>
+                <QtyStepper value={qty} onChange={setQty} />
+                <button className="add" type="button" onClick={() => onAdd(item, pickedSize, qty)}><svg className="bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>Au panier</button>
                 <EnvieButton compact item={{ slug: item.slug, name: item.n, brand: item.brand, category: item.cat, prices: item.p, color: item.c, accent: item.a, photo: item.photos?.front }} />
                 <Link className="f-more" href={`/produit/${item.slug}`}>Fiche complète <span aria-hidden="true">→</span></Link>
               </div>
