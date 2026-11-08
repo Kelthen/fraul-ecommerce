@@ -139,14 +139,16 @@ p { margin: 0; }
 .row::-webkit-scrollbar { display: none; }
 .looks-wrap { display: grid; gap: 10px; }
 .looks-scene { position: relative; height: min(58svh, 620px); min-height: 360px; margin-inline: -16px; overflow: hidden; touch-action: pan-y; user-select: none; perspective: 1200px; }
-.looker { position: absolute; left: 50%; bottom: 14px; height: calc(100% - 36px); aspect-ratio: 1 / 2.2; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 100%; transition: transform 0.7s cubic-bezier(.2,.7,.2,1), opacity 0.7s, filter 0.7s; }
+.looker { position: absolute; left: 50%; bottom: 14px; height: calc(100% - 36px); aspect-ratio: 1 / 2.2; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 100%; transition: transform 0.95s cubic-bezier(.34,1.32,.5,1), opacity 0.6s ease, filter 0.95s ease; }
 .looker::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -10px; height: 22px; border-radius: 50%; background: radial-gradient(closest-side, rgba(10, 10, 12, 0.22), transparent); z-index: -1; }
 .looker:focus, .looker:focus-visible { outline: none; } /* aucun cadre autour des personnages (Rhamone, 8 nov.) ; le clavier garde les flèches */
 .looker { -webkit-tap-highlight-color: transparent; }
 .looker img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; display: block; pointer-events: none; }
-.looker.is-center img { animation: look-breathe 5s ease-in-out infinite; transform-origin: 50% 100%; }
-@keyframes look-breathe { 50% { transform: scale(1.012) translateY(-2px); } }
-@media (prefers-reduced-motion: reduce) { .looker { transition: none; } .looker.is-center img { animation: none; } }
+.looker img { animation-duration: 0.9s; animation-timing-function: cubic-bezier(.3,.6,.3,1); transform-origin: 50% 100%; }
+/* À chaque changement de look, chacun fait un pas (léger rebond, comme un pas en avant) : deux noms identiques pour relancer l'animation. */
+@keyframes look-step-a { 0% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-7px) rotate(-1.2deg); } 70% { transform: translateY(0) rotate(0.6deg); } 100% { transform: none; } }
+@keyframes look-step-b { 0% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-7px) rotate(-1.2deg); } 70% { transform: translateY(0) rotate(0.6deg); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .looker { transition: none; } .looker img { animation: none !important; } }
 .looks-bar { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; text-align: center; }
 .looks-caption { display: grid; gap: 2px; }
 .looks-caption b { font-size: 15px; }
@@ -157,11 +159,11 @@ p { margin: 0; }
 .looks-dots span.on { background: var(--bordeaux); }
 .looks-side { display: none; }
 @media (min-width: 900px) {
-  .looks-scene { height: min(72svh, 620px); }
-  .looks-wrap.is-open { grid-template-columns: 1fr 340px; column-gap: 28px; }
-  .looks-wrap.is-open > :not(.looks-side):not(dialog) { grid-column: 1; }
-  .looks-wrap.is-open .looks-side { display: grid; align-content: start; gap: 14px; grid-column: 2; grid-row: 1 / span 3; padding-top: 24px; }
-  .looks-scene { margin-inline: 0; }
+  /* Grand écran : la scène prend toute la largeur de l'écran et presque toute sa hauteur ; la liste des pièces
+     flotte en haut à gauche, au-dessus des petits personnages. */
+  .looks-wrap { position: relative; }
+  .looks-scene { height: min(74svh, 860px); margin-inline: calc(50% - 50vw); }
+  .looks-wrap.is-open .looks-side { display: grid; align-content: start; gap: 14px; position: absolute; top: 16px; left: 0; width: 340px; max-height: calc(100% - 140px); overflow: auto; padding: 18px; border-radius: 16px; background: rgba(255, 254, 247, 0.92); backdrop-filter: blur(8px); box-shadow: 0 12px 40px rgba(10, 10, 12, 0.12); z-index: 20; }
   .looks-side h3 { font-size: 26px; margin: 0; }
 }
 .look-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }

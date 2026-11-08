@@ -6,6 +6,12 @@ Proposition de Rhamone, 8 novembre 2026. À discuter et affiner avant réalisati
 
 Retravailler l'accueil TakeUrClothes, dont le logo est conservé, pour rendre les vrais articles plus désirables et présenter des looks portés. Garder une entrée claire vers le Walk, qui reste au cœur du site.
 
+## Retour de Rhamone sur le défilé actuel — 8 novembre
+
+Après avoir vu la preview, Rhamone souhaite que les personnages progressent **du plus petit à gauche au plus grand à droite**, comme les barres de réseau d'un téléphone. Il ne veut plus de disposition en « ^ » avec le plus grand personnage au milieu. Cette direction remplace les mentions antérieures d'un personnage central agrandi.
+
+Le reste de la présentation lui convient. La suppression du cadre rouge a été traitée dans la PR #102, mergée. Garder les personnages entiers, le défilé et l'accès aux pièces de chaque look ; vérifier la lisibilité, le toucher et le mouvement sur téléphone et ordinateur. Faire une nouvelle proposition avec une preview réelle pour validation par Rhamone avant merge. La manière exacte de gérer la sélection dans cette composition reste à montrer sur la preview, sans supposer que l'élément sélectionné doit revenir au centre.
+
 ## Expérience envisagée
 
 - Sur l'accueil, plusieurs mannequins portant des tenues défilent horizontalement, comme dans la vidéo de référence de Viktor Oddy transmise par Rhamone.
