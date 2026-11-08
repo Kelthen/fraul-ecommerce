@@ -56,6 +56,9 @@ export function ArticleForm({ article, brands: initialBrands, categories, colors
   const [front, setFront] = useState(article?.photos.front ?? "");
   const [back, setBack] = useState(article?.photos.back ?? "");
   const [details, setDetails] = useState<string[]>(article?.photos.details ?? []);
+  const [byColor, setByColor] = useState<Record<string, { front: string; back?: string }>>(article?.photos.byColor ?? {});
+  const putColor = (hex: string, view: "front" | "back", url: string) =>
+    setByColor((m) => ({ ...m, [hex]: { ...(m[hex] ?? { front: "" }), [view]: url } }));
   const [busy, setBusy] = useState<string | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -113,7 +116,8 @@ export function ArticleForm({ article, brands: initialBrands, categories, colors
       colors: picked,
       sizes: sizes.split(",").map((s) => s.trim()).filter(Boolean),
       supplierRef,
-      photos: { front, back: back || undefined, details },
+      // Photos des autres couleurs cochées (la première couleur garde les photos principales).
+      photos: { front, back: back || undefined, details, byColor: Object.fromEntries(picked.slice(1).filter((h) => byColor[h]?.front).map((h) => [h, { front: byColor[h].front, ...(byColor[h].back ? { back: byColor[h].back } : {}) }])) },
       onSite,
     }).catch((e: unknown) =>
       // Réussi : le serveur renvoie à la liste, et Next le signale en rejetant la promesse. Ce n'est pas une panne.
@@ -230,6 +234,25 @@ export function ArticleForm({ article, brands: initialBrands, categories, colors
         <div className="admin-thumbs">{details.map((d) => photo(d, () => setDetails((x) => x.filter((y) => y !== d))))}</div>
         {details.length < 6 && <input type="file" accept="image/*" multiple onChange={(e) => send(e.target.files, (u) => setDetails((x) => [...x, u].slice(0, 6)))} />}
       </fieldset>
+
+      {picked.length > 1 && (
+        // Une couleur sans photo garde les photos principales sur le site.
+        <fieldset>
+          <legend>Photos des autres couleurs (facultatif)</legend>
+          {picked.slice(1).map((hex) => {
+            const p = byColor[hex];
+            const name = colors.find((c) => c.hex === hex)?.name ?? hex;
+            return (
+              <div key={hex} className="admin-color-photos">
+                <p className="muted"><span className="admin-dot" style={{ background: hex }} /> {name} · face</p>
+                {p?.front ? photo(p.front, () => putColor(hex, "front", "")) : <input type="file" accept="image/*" onChange={(e) => send(e.target.files, (u) => putColor(hex, "front", u))} />}
+                <p className="muted">{name} · dos</p>
+                {p?.back ? photo(p.back, () => putColor(hex, "back", "")) : <input type="file" accept="image/*" onChange={(e) => send(e.target.files, (u) => putColor(hex, "back", u))} />}
+              </div>
+            );
+          })}
+        </fieldset>
+      )}
 
       <label className="admin-check">
         <input type="checkbox" checked={onSite} onChange={(e) => setOnSite(e.target.checked)} />

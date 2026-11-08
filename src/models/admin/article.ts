@@ -15,7 +15,8 @@ export type ArticleInput = {
   colors: string[];
   sizes: string[];
   supplierRef?: string;
-  photos: { front: string; back?: string; details: string[] };
+  /** byColor : photos d'une autre couleur que la première (clé #RRGGBB), face obligatoire, dos facultatif. */
+  photos: { front: string; back?: string; details: string[]; byColor?: Record<string, { front: string; back?: string }> };
   onSite: boolean;
 };
 
@@ -30,7 +31,7 @@ export const cleanPhotoUrl = (u: string) => u.replace(/\s+/g, "").replace(/([^:]
 /** La fiche avec ses adresses de photos nettoyées (à appeler avant articleProblems et l'enregistrement). */
 export const cleanArticle = (a: ArticleInput): ArticleInput => ({
   ...a,
-  photos: { front: cleanPhotoUrl(a.photos.front), back: a.photos.back ? cleanPhotoUrl(a.photos.back) : undefined, details: a.photos.details.map(cleanPhotoUrl) },
+  photos: { front: cleanPhotoUrl(a.photos.front), back: a.photos.back ? cleanPhotoUrl(a.photos.back) : undefined, details: a.photos.details.map(cleanPhotoUrl), byColor: cleanByColor(a.photos.byColor) },
 });
 
 /** Problèmes de la fiche, en clair, prêts à afficher. Tableau vide = fiche correcte. */
@@ -45,7 +46,9 @@ export function articleProblems(a: ArticleInput, known: { brands: string[]; cate
   if (!a.colors.length || a.colors.length > 6 || !a.colors.every((c) => HEX.test(c))) p.push("Couleur : touche au moins une pastille de couleur (6 au plus).");
   if (!a.sizes.length || a.sizes.length > 15 || a.sizes.some((s) => !s.trim() || s.length > 12)) p.push("Tailles : 1 à 15, séparées par des virgules.");
   if (a.supplierRef && a.supplierRef.length > 80) p.push("Référence fournisseur trop longue.");
-  const all = [a.photos.front, ...(a.photos.back ? [a.photos.back] : []), ...a.photos.details];
+  const extra = Object.entries(a.photos.byColor ?? {});
+  const all = [a.photos.front, ...(a.photos.back ? [a.photos.back] : []), ...a.photos.details, ...extra.flatMap(([, v]) => [v.front, ...(v.back ? [v.back] : [])])];
+  if (extra.some(([hex]) => !a.colors.slice(1).includes(hex))) p.push("Photos d'une couleur qui n'est plus cochée : retire-les.");
   if (!a.photos.front) p.push("Ajoute au moins la photo de face.");
   else if (!all.every((u) => PHOTO.test(u))) p.push("Une photo n'a pas été envoyée correctement : remets-la.");
   if (a.photos.details.length > 6) p.push("6 photos de détail au plus.");
@@ -106,4 +109,15 @@ export function filterArticles<T extends { name: string; brand: string; category
 export function findDuplicate<T extends { slug: string; brand: string; name: string }>(list: T[], a: { slug?: string; brand: string; name: string }): T | null {
   const key = (n: string) => fold(n).replace(/[^a-z0-9]+/g, " ").trim();
   return list.find((x) => x.slug !== a.slug && x.brand === a.brand && key(x.name) === key(a.name)) ?? null;
+}
+
+/** Photos par couleur, nettoyées ; les couleurs sans photo de face sont ignorées. */
+function cleanByColor(b: Record<string, { front: string; back?: string }> | undefined) {
+  if (!b) return undefined;
+  const out: Record<string, { front: string; back?: string }> = {};
+  for (const [hex, v] of Object.entries(b).slice(0, 6)) {
+    const front = v?.front ? cleanPhotoUrl(v.front) : "";
+    if (front) out[hex] = { front, ...(v.back ? { back: cleanPhotoUrl(v.back) } : {}) };
+  }
+  return Object.keys(out).length ? out : undefined;
 }

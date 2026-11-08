@@ -20,10 +20,10 @@ export type Row = {
   sizes: string[] | null;
   brands: { slug: string } | null;
   categories: { code: string } | null;
-  product_images: { view: "front" | "back" | "detail"; path: string; position: number }[];
+  product_images: { view: "front" | "back" | "detail"; path: string; position: number; color?: string | null }[];
 };
 
-const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position)";
+const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position,color)";
 
 /** Transforme une ligne de la base en article du site ; null si elle est incomplète (marque ou catégorie inconnue). */
 export function toProduct(r: Row, brands: Brand[], categories: Category[], accentFor: (c: string) => string): PricedProduct | null {
@@ -31,7 +31,17 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
   const cat = categories.find((c) => c.id === r.categories?.code);
   const name = r.title?.fr;
   if (!brand || !cat || !name || r.cost == null || !r.weight_g || !r.colors.length) return null;
-  const imgs = [...r.product_images].sort((a, b) => a.position - b.position);
+  const sorted = [...r.product_images].sort((a, b) => a.position - b.position);
+  const imgs = sorted.filter((i) => !i.color);
+  // Photos par couleur (migration 0018) : seulement pour les couleurs proposées, face obligatoire.
+  const byColor: Record<string, { front: string; back?: string }> = {};
+  for (const i of sorted) {
+    if (!i.color || i.view === "detail" || !r.colors.includes(i.color)) continue;
+    const c = (byColor[i.color] ??= { front: "" });
+    if (i.view === "front") c.front = i.path;
+    else c.back = i.path;
+  }
+  for (const k of Object.keys(byColor)) if (!byColor[k].front) delete byColor[k];
   const front = imgs.find((i) => i.view === "front")?.path;
   if (!front) return null;
   return {
@@ -46,6 +56,7 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
     colors: r.colors,
     sizes: r.sizes?.length ? r.sizes : cat.sizes,
     image: { front, back: imgs.find((i) => i.view === "back")?.path, details: imgs.filter((i) => i.view === "detail").map((i) => i.path) },
+    ...(Object.keys(byColor).length ? { imageByColor: byColor } : {}),
   };
 }
 

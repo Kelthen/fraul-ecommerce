@@ -72,3 +72,11 @@ test("doublon : même marque et même nom, sans tenir compte des majuscules ni d
   assert.equal(findDuplicate(list, { brand: "trapstar", name: "Hoodie noir" }), null);
   assert.equal(findDuplicate(list, { brand: "nike", name: "Hoodie noir", slug: "nike-hoodie-noir" }), null); // lui-même
 });
+
+test("photos par couleur : seulement pour une autre couleur cochée, adresses vérifiées", () => {
+  const url = "https://abc.supabase.co/storage/v1/object/public/produits/2026/b.jpg";
+  const two = { ...ok, colors: ["#141416", "#680209"] };
+  assert.deepEqual(articleProblems({ ...two, photos: { ...ok.photos, byColor: { "#680209": { front: url } } } }, known), []);
+  assert.match(articleProblems({ ...two, photos: { ...ok.photos, byColor: { "#F1ECE0": { front: url } } } }, known).join(), /plus cochée/);
+  assert.match(articleProblems({ ...two, photos: { ...ok.photos, byColor: { "#680209": { front: "https://ailleurs.com/x.jpg" } } } }, known).join(), /remets-la/);
+});

@@ -61,6 +61,8 @@ export type Product = {
   sizes: string[];
   /** Photos : face obligatoire, dos et détails si elles existent. Un article sans photo n'est pas sur le site. */
   image: { front: string; back?: string; details?: string[] };
+  /** Photos d'une autre couleur que la première (clé #RRGGBB). Sans entrée : les photos principales. */
+  imageByColor?: Record<string, { front: string; back?: string }>;
 };
 
 /** Article côté serveur : coût (¥), poids (g) et prix tapé en dollars. Ne jamais l'envoyer au navigateur. */
