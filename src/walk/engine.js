@@ -587,9 +587,22 @@ export function startWalk(root, o) {
     const sun = new THREE.DirectionalLight(0xfff6ea, DL.sun); sun.position.set(10, 30, 20); scene.add(sun);
 
     // Coque du mall : sols en pierre claire polie, plafond blanc, bandeaux lumineux
-    const floorM = std(0xe2dbcf, 0.32, 0.08), ceilM = lam(0xfbfaf6), wallM = lam(0xefe9df), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    flat(scene, 2 * BAR_X, -BAR_Z, floorM, 0, 0, BAR_Z / 2);
-    flat(scene, 2 * STEM_X, STEM_END, floorM, 0, 0, STEM_END / 2);
+    // Sol de luxe (plan du mall réaliste, #109) : grandes dalles ivoire polies, joints fins, veinage presque invisible.
+    const floorTex = (() => {
+      const [c, x] = U.cv(1024, 1024), t = U.T(c);
+      x.fillStyle = "#e8dfd1"; x.fillRect(0, 0, 1024, 1024);
+      for (let i = 0; i < 26; i++) { // veines très légères
+        x.strokeStyle = `rgba(150,132,108,${0.05 + Math.random() * 0.05})`; x.lineWidth = 1 + Math.random() * 2; x.beginPath();
+        let px = Math.random() * 1024, py = Math.random() * 1024; x.moveTo(px, py);
+        for (let k = 0; k < 6; k++) { px += (Math.random() - 0.3) * 220; py += (Math.random() - 0.5) * 160; x.lineTo(px, py); } x.stroke();
+      }
+      x.strokeStyle = "rgba(140,122,98,0.55)"; x.lineWidth = 2.5; [0, 512, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
+      t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
+    })();
+    const floorAt = (w, d) => { const t = floorTex.clone(); t.needsUpdate = true; t.repeat.set(w / 2.4, d / 2.4); return new THREE.MeshStandardMaterial({ map: t, roughness: 0.22, metalness: 0.04 }); };
+    const ceilM = lam(0xfbfaf6), wallM = lam(0xefe9df), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    flat(scene, 2 * BAR_X, -BAR_Z, floorAt(2 * BAR_X, -BAR_Z), 0, 0, BAR_Z / 2);
+    flat(scene, 2 * STEM_X, STEM_END, floorAt(2 * STEM_X, STEM_END), 0, 0, STEM_END / 2);
     flat(scene, 2 * BAR_X, -BAR_Z, ceilM, 0, CEIL, BAR_Z / 2, false);
     flat(scene, 2 * STEM_X, STEM_END, ceilM, 0, CEIL, STEM_END / 2, false);
     // Incrustations de sol (allée) couleur perle
@@ -600,6 +613,11 @@ export function startWalk(root, o) {
     // Bandeaux lumineux au plafond
     [-3.5, 3.5].forEach((x) => add(scene, new THREE.BoxGeometry(0.12, 0.03, STEM_END - 2), white, x, CEIL - 0.02, STEM_END / 2));
     [-9, -23].forEach((z) => add(scene, new THREE.BoxGeometry(2 * BAR_X - 6, 0.03, 0.12), white, 0, CEIL - 0.02, z));
+    // Reflets des bandeaux dans le sol poli : une traînée claire et floue sous chaque bandeau (pas de miroir : léger au téléphone).
+    const sheen = (() => { const [c, x] = U.cv(64, 8), t = U.T(c); const g = x.createLinearGradient(0, 0, 64, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 8); return t; })();
+    const sheenM = new THREE.MeshBasicMaterial({ map: sheen, transparent: true, opacity: 0.55, depthWrite: false });
+    [-3.5, 3.5].forEach((x) => { const m = add(scene, new THREE.PlaneGeometry(0.9, STEM_END - 2), sheenM, x, 0.006, STEM_END / 2); m.rotation.x = -Math.PI / 2; });
+    [-9, -23].forEach((z) => { const m = add(scene, new THREE.PlaneGeometry(0.9, 2 * BAR_X - 6), sheenM, 0, 0.006, z); m.rotation.set(-Math.PI / 2, 0, Math.PI / 2); });
     // Spots
     const spotPos = [];
     for (let z = 3; z < STEM_END - 1; z += 3) for (const x of [-5, 0, 5]) spotPos.push([x, z]);
@@ -709,10 +727,11 @@ export function startWalk(root, o) {
     function buildDetail(sh, k) {
       const d = new THREE.Group(), st = sh.st; sh.g.add(d); sh.detail = d;
       [-1, 1].forEach((sd) => {
-        add(d, new THREE.PlaneGeometry(1.35, 3.2), new THREE.MeshBasicMaterial({ map: glow }), sd * 3.25, 1.8, 0.41);
+        // Fond lumineux au fond de la vitrine intégrée (facades.ts), le mannequin devant, derrière le verre.
+        add(d, new THREE.PlaneGeometry(1.35, 3.6), new THREE.MeshBasicMaterial({ map: glow, transparent: true, opacity: 0.85 }), sd * 3.25, 2.1, -0.44);
         // Un homme à gauche, une femme à droite ; tant que le modèle femme n'est pas là, l'homme seul.
         if (sd > 0 && !MANNEQUIN_F) return;
-        const m = U.mannequin(st, sd > 0 ? 1 : 0); m.position.set(sd * 3.25, 0, 0.9); m.rotation.y = -sd * 0.2; d.add(m);
+        const m = U.mannequin(st, sd > 0 ? 1 : 0); m.position.set(sd * 3.25, 0.14, -0.05); m.rotation.y = -sd * 0.12; d.add(m);
       });
       const fl = add(d, new THREE.PlaneGeometry(8, 6.4), lam(0xdcd0bd), 0, 0.005, -3.4); fl.rotation.x = -Math.PI / 2;
       [-1, 1].forEach((sd) => add(d, new THREE.PlaneGeometry(6.4, CEIL), lam(0xf1ece3), sd * 4, CEIL / 2, -3.4, -sd * Math.PI / 2));

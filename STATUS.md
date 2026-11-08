@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Walk : mall réaliste, 1re étape** (`feat/rhamon/mall-luxe`, plan de ChatGPT #109) : sol en grandes dalles ivoire polies avec reflets des bandeaux ; vitrines intégrées de chaque côté de la porte (haut aligné sur la porte, cadre champagne, verre, mannequin derrière sur un socle) pour les 3 types de façade. Fait en code (three.js), sans Blender. Reste : pierre et métal plus fins, lumière, après avis de Rhamone.
+
 - **Accueil : taille des personnages du défilé** — retour de Rhamone du 8 novembre : progression du plus petit à gauche au plus grand à droite, plutôt qu'un grand personnage au milieu. Le reste lui convient ; cadre rouge corrigé dans #102. Détail : `docs/ACCUEIL-LOOKS.md` ; nouvelle preview à valider avant merge.
 
 - **Walk : portant** (`feat/rhamon/portant`, plan de ChatGPT #97, à fermer quand fini) : hauts un peu moins serrés ; pantalons et shorts aussi de côté sur cintre à pinces. Reste à étudier : photo détourée de la pièce choisie.
