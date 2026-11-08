@@ -9,11 +9,15 @@ type Opts = {
   ceil: number;
   /** Enseigne déjà dessinée (nom ou logo). */
   sign: T.Texture;
+  /** Matières faites dans Blender : pierre claire et métal champagne brossé (facultatives). */
+  tex?: { stone?: T.Texture; metal?: T.Texture };
 };
 
-export function createFacade(THREE: typeof T, { type, bg, ceil, sign }: Opts) {
+export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opts) {
   const g = new THREE.Group();
   const std = (c: number, r: number, m = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
+  // Champagne brossé (cadres) et pierre claire (portique), avec la matière Blender quand elle est là.
+  const champagne = () => new THREE.MeshStandardMaterial({ color: tex?.metal ? 0xffffff : 0xd4bb8a, map: tex?.metal ?? null, roughness: 0.35, metalness: 0.35, emissive: 0x3a2e1a, emissiveIntensity: 0.25 });
   const box = (w: number, h: number, d: number, mat: T.Material, x: number, y: number, z: number) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     m.position.set(x, y, z);
@@ -64,16 +68,16 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign }: Opts) {
     // Verrière : côtés vitrés, grand bandeau à la couleur de la marque qui avance au-dessus de la porte.
     const metal = std(0x2a2a2d, 0.35, 0.6);
     [-1, 1].forEach((s) => box(0.06, 4.2, 0.08, metal, s * 4.1, 2.1, 0.42));
-    niche(std(0xd4bb8a, 0.28, 0.8));
+    niche(champagne());
     box(8.3, ceil - 4.2, 0.9, brand, 0, 4.2 + (ceil - 4.2) / 2, 0.45);
     box(8.3, 0.03, 0.06, light, 0, 4.18, 0.86);
     placeSign(6.2, 1.21, 5.3, 0.91);
     doorFrame(metal);
   } else if (type === 2) {
     // Portique : mur de pierre, colonnes, fronton à la couleur de la marque, vitrines encadrées, laiton.
-    const stone = std(0xe9e1d2, 0.7);
+    const stone = new THREE.MeshStandardMaterial({ color: tex?.stone ? 0xf6f1e8 : 0xe9e1d2, map: tex?.stone ?? null, roughness: 0.7 });
     const column = std(0xf5f0e6, 0.45);
-    const brass = std(0xc8a96a, 0.35, 0.6);
+    const brass = champagne();
     sides(stone);
     lintel(stone);
     niche(brass);
@@ -90,9 +94,9 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign }: Opts) {
     doorFrame(brass);
   } else {
     // Enseigne : mur plein à la couleur de la marque.
-    const metal = std(0xc9c3b9, 0.3, 0.7);
+    const metal = champagne();
     sides(brand);
-    niche(std(0xd4bb8a, 0.28, 0.8));
+    niche(champagne());
     lintel(brand);
     placeSign(4.6, 0.9, 5.2, 0.41);
     doorFrame(metal);

@@ -599,7 +599,17 @@ export function startWalk(root, o) {
       x.strokeStyle = "rgba(140,122,98,0.55)"; x.lineWidth = 2.5; [0, 512, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
     })();
-    const floorAt = (w, d) => { const t = floorTex.clone(); t.needsUpdate = true; t.repeat.set(w / 2.4, d / 2.4); return new THREE.MeshStandardMaterial({ map: t, roughness: 0.22, metalness: 0.04 }); };
+    // Matières faites dans Blender (assets-src/blender/textures-mall.py) : marbre, pierre claire, champagne brossé.
+    // Le dessin ci-dessus reste affiché tant que la photo de la matière n'est pas chargée.
+    const loader = new THREE.TextureLoader();
+    const mallTex = (name, rx, ry, then) => loader.load(`/textures/mall/${name}.jpg`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; then(t); kick(); });
+    const floorAt = (w, d) => {
+      const t = floorTex.clone(); t.needsUpdate = true; t.repeat.set(w / 2.4, d / 2.4);
+      const m = new THREE.MeshStandardMaterial({ map: t, color: 0xddd3c4, roughness: 0.22, metalness: 0.04 });
+      mallTex("marbre", w / 2.4, d / 2.4, (tx) => { m.map = tx; m.needsUpdate = true; });
+      return m;
+    };
+    const facadeTex = { stone: loader.load("/textures/mall/pierre.jpg", (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 3); kick(); }), metal: loader.load("/textures/mall/champagne.jpg", (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; kick(); }) };
     const ceilM = lam(0xfbfaf6), wallM = lam(0xefe9df), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
     flat(scene, 2 * BAR_X, -BAR_Z, floorAt(2 * BAR_X, -BAR_Z), 0, 0, BAR_Z / 2);
     flat(scene, 2 * STEM_X, STEM_END, floorAt(2 * STEM_X, STEM_END), 0, 0, STEM_END / 2);
@@ -716,7 +726,7 @@ export function startWalk(root, o) {
       const st = SHOPS[k], g = new THREE.Group();
       g.position.set(s.x, 0, s.z); g.rotation.y = Math.atan2(s.nx, s.nz); scene.add(g);
       const big = st.logo || shopType(k) === 1; // bandeau de la verrière ou logo : enseigne plus fine
-      g.add(createFacade(THREE, { type: shopType(k), bg: st.bg, ceil: CEIL, sign: U.wordTex(st, big ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) }));
+      g.add(createFacade(THREE, { type: shopType(k), bg: st.bg, ceil: CEIL, tex: facadeTex, sign: U.wordTex(st, big ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) }));
       add(g, new THREE.BoxGeometry(0.5, CEIL, 0.7), pillarM, -SLOT / 2 + 0.05, CEIL / 2, 0.35);
       // Fond lumineux visible par la porte (l'intérieur détaillé vient à l'approche)
       const backdrop = add(g, new THREE.PlaneGeometry(4.6, 4.1), new THREE.MeshBasicMaterial({ map: glow }), 0, 2.05, -0.3);
