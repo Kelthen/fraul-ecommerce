@@ -194,6 +194,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-08 | **Dépôt GitHub public jusqu'à la fin du site**, puis privé avec Vercel Pro (le plan gratuit ne déploie pas un dépôt privé d'organisation : essayé le 8 nov., previews bloquées). D'ici là : **aucune clé, aucune adresse e-mail, aucune donnée client** dans le dépôt. | Rhamone |
 | 2026-11-08 | **ChatGPT travaille aussi sur le dépôt** : règles dans `AGENTS.md` (branche + PR, jamais `main`, pas de base/Stripe/prix/admin sans accord). Chaque PR de ChatGPT est relue par Claude avant le merge. Protéger `main` dans GitHub (Settings → Branches) : à faire par Rhamone. | Rhamone |
 | 2026-11-06 | Fiche article de l'admin : le champ « Nom » s'appelle **« Description »**. Le texte s'affiche toujours comme titre de l'article sur le site, sous la marque. | Serge, capture du 6 nov. |
 | 2026-11-06 | **Double vérification de l'admin coupée jusqu'au lancement** : le code e-mail (ou Telegram) suffit d'ici là. Le code reste en place ; le jour J, `ADMIN_2FA=true` dans Vercel. | Serge, chat du 6 nov. |
