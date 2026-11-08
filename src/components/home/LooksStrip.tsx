@@ -80,21 +80,21 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
           const leaving = rank === n - 1 && n > 5;
           const far = leaving ? 0 : Math.min(rank, 5);
           const center = rank === 0;
-          // 5 personnes à la fois (Rhamone, 8 nov.).
-          const X = (wide ? [146, 36, -60, -137, -199, -240] : [43, -12, -44, -66, -82, -95])[far] + (leaving ? 90 : 0);
+          // 5 personnes à la fois sur ordinateur, 4 au téléphone (Rhamone, 8 nov. : à 5, « trop serré »).
+          const X = (wide ? [146, 36, -60, -137, -199, -240] : [40, -24, -66, -96, -125, -150])[far] + (leaving ? 90 : 0);
           return (
             <button
               key={l.id}
               type="button"
               className={center ? "looker is-center" : "looker"}
               style={{
-                transform: `translateX(calc(-50% + ${X}%)) scale(${leaving ? 1.05 : (wide ? [1, 0.82, 0.66, 0.53, 0.43, 0.35] : [1, 0.66, 0.48, 0.37, 0.29, 0.23])[far]})`,
+                transform: `translateX(calc(-50% + ${X}%)) scale(${leaving ? 1.05 : (wide ? [1, 0.82, 0.66, 0.53, 0.43, 0.35] : [1, 0.64, 0.46, 0.34, 0.26, 0.2])[far]})`,
                 // Flou de profondeur : plus le personnage est petit (loin), plus il est flou (Rhamone, 8 nov. : « air chic »).
                 filter: far ? `blur(${[0, 0.6, 1.3, 2.1, 3, 3.6][far]}px) saturate(${1 - far * 0.08})` : undefined,
                 transitionDelay: `${(leaving ? 0 : far) * 70}ms`, // la file avance l'un après l'autre
                 zIndex: leaving ? 11 : 10 - far,
-                opacity: leaving || far > 4 ? 0 : 1,
-                pointerEvents: leaving || far > 4 ? "none" : undefined,
+                opacity: leaving || far > (wide ? 4 : 3) ? 0 : 1,
+                pointerEvents: leaving || far > (wide ? 4 : 3) ? "none" : undefined,
               }}
               onClick={() => {
                 if (swiped.current) return;
