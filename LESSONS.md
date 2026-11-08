@@ -343,3 +343,7 @@
 ### L-60 — Après une action serveur qui enregistre, rediriger depuis le serveur
 - **Erreur :** la fiche article ne se fermait pas après « Enregistrer » sur le téléphone de l'équipe : le `router.push` du navigateur, lancé après l'action, restait sans effet. Pas reproduit en local, où tout répond tout de suite.
 - **Règle :** une action serveur qui enregistre puis change de page appelle `redirect()` elle-même, comme le recommande la doc de Next (« Redirect after a mutation »). Côté client, la promesse est alors rejetée avec un `digest` `NEXT_REDIRECT` : ne pas l'afficher comme une erreur.
+
+### L-61 — Des personnes mises en scène, pas des photos dans des cadres
+- **Erreur :** le défilé de looks montrait les mannequins dans des cartes à coins arrondis (corps rognés), puis sur un fond gris : Rhamone voyait le cadre des images et un fond qui ne se fondait pas dans le site (8 nov. 2026).
+- **Règle :** pour une scène de personnages (looks, Walk), **détourer** les photos (fond transparent, `rembg`, modèle `isnet-general-use`, puis WebP) et les poser sur le fond du site, sans cadre ni bord visible, avec une ombre au sol. Profondeur : ceux des côtés nettement plus petits, un peu flous. Vérifier en capture téléphone **et** ordinateur avant de pousser.

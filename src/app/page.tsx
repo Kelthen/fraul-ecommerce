@@ -3,11 +3,14 @@ import { BrandTile } from "@/components/BrandTile";
 import { CircleForm } from "@/components/CircleForm";
 import { IconArrow, IconCheck, IconLock, IconPin, IconSpark, IconWalk } from "@/components/Icons";
 import { ProductCard } from "@/components/ProductCard";
-import { getBrands, getNewArrivals, getWalkBrands } from "@/lib/catalog";
+import { LooksStrip } from "@/components/home/LooksStrip";
+import { getBrands, getNewArrivals, getProducts, getWalkBrands } from "@/lib/catalog";
+import { TEST_LOOKS, resolveLooks } from "@/models/home/looks";
 import { signCss, signWord } from "@/lib/catalog/brands";
 
 export default async function Home() {
-  const [walkBrands, brands, news] = await Promise.all([getWalkBrands(), getBrands(), getNewArrivals()]);
+  const [walkBrands, brands, news, products] = await Promise.all([getWalkBrands(), getBrands(), getNewArrivals(), getProducts()]);
+  const looks = resolveLooks(TEST_LOOKS, products);
   const featured = walkBrands.slice(0, 8);
   const fronts = [...walkBrands, ...walkBrands];
 
@@ -62,6 +65,20 @@ export default async function Home() {
           <li><IconLock /> Paiement sécurisé</li>
         </ul>
       </section>
+
+      {looks.length > 0 && (
+        // Défilé de looks (docs/ACCUEIL-LOOKS.md) : textes décidés par l'équipe, à confirmer.
+        <section className="sec wrap" id="looks" aria-labelledby="looks-title">
+          <div className="head">
+            <div>
+              <p className="eyebrow">Portés ensemble</p>
+              <h2 id="looks-title">Les looks</h2>
+            </div>
+            <p className="muted">Touche un look pour voir ses pièces.</p>
+          </div>
+          <LooksStrip looks={looks} />
+        </section>
+      )}
 
       <section className="sec wrap" id="nouveautes" aria-labelledby="new-title">
         <div className="head">

@@ -54,7 +54,7 @@ export function WalkExperience({ data, startBrand }: Props) {
   );
   const catLabel = useCallback((cat: CategoryId) => data.categories.find((c) => c.id === cat)?.label ?? cat, [data]);
   const addItem = useCallback(
-    (it: FicheItem, size?: string) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }),
+    (it: FicheItem, size?: string, qty = 1) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }, qty),
     [add],
   );
   // La fiche vient de s'ouvrir ou de se fermer : le moteur remet le fond inerte et le focus à jour.
