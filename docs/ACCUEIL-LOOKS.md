@@ -13,6 +13,19 @@ Retravailler l'accueil TakeUrClothes, dont le logo est conservé, pour rendre le
 - Le visuel proposé en session est une direction de travail, pas une validation de tous les textes, images ou détails de navigation.
 - Les pièces affichées doivent correspondre aux vrais articles du catalogue ; vérifier leur disponibilité et leurs liens.
 
+## Retour sur la preview de la PR #96 — 8 novembre
+
+Rhamone a vu la preview téléphone et ne valide pas le défilement : les grandes cartes rectangulaires à coins arrondis, où les personnages sont rognés (tête ou pieds), ne reproduisent pas l'effet de la vidéo. Revoir la mise en scène du défilé avant toute validation. Ne pas toucher à sa branche sans coordination.
+
+### Références à regarder avant une nouvelle proposition
+
+- [Vidéo de référence sur X](https://x.com/viktoroddy/status/2118835087366291650) : regarder le mouvement réel. Le défilé montre plusieurs personnes dans un même espace clair, un personnage au centre et les autres autour avec un effet de profondeur. En sélection, le personnage entier reste visible et la liste des pièces apparaît sur le côté sur ordinateur.
+- [Maquette discutée sur téléphone](../assets-src/references/accueil-looks/proposition-mobile.png) : plusieurs personnages visibles dans un espace commun ; en choisissant un look, ses pièces apparaissent. Les textes et le libellé « Walk » de cette maquette ne sont pas validés.
+
+### Direction à proposer
+
+Défilement fluide des personnages dans une scène commune, en s'appuyant sur la vidéo plutôt que sur un carrousel de cartes. Un geste amène le look choisi au centre ; toucher le personnage permet d'accéder à ses articles. Garder la tête, les vêtements et les chaussures visibles sur téléphone. La vidéo montre l'ordinateur : proposer une adaptation téléphone et la montrer à Rhamone avant de modifier l'expérience. Les noms, photos, liens et prix viennent du catalogue ; ne pas inventer de prix barrés ou de remises vus dans la référence.
+
 ## Visuels validés pour travailler
 
 Rhamone envisage soit de fournir des photos de mannequins portant les articles, soit de créer des images de mannequins à partir des photos des vrais articles. Un premier essai est fait en session avec l'ensemble Nike noir et gris. Les images produites doivent être comparées aux vraies pièces : coupe, couleurs, logos et détails peuvent changer. Pas de visuel mensonger présenté comme une photo fidèle.
