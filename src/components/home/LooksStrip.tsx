@@ -80,7 +80,9 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
               className={center ? "looker is-center" : "looker"}
               style={{
                 transform: `translateX(calc(-50% + ${X}%)) scale(${leaving ? 1.05 : [1, 0.74, 0.56, 0.42, 0.32][far]})`,
-                filter: far ? `saturate(${1 - far * 0.08})` : undefined,
+                // Flou de profondeur : plus le personnage est petit (loin), plus il est flou (Rhamone, 8 nov. : « air chic »).
+                filter: far ? `blur(${[0, 0.8, 1.8, 3][far]}px) saturate(${1 - far * 0.1})` : undefined,
+                transitionDelay: `${(leaving ? 0 : far) * 70}ms`, // la file avance l'un après l'autre
                 zIndex: leaving ? 11 : 10 - far,
                 opacity: leaving || far > 3 ? 0 : 1,
                 pointerEvents: leaving || far > 3 ? "none" : undefined,
@@ -94,7 +96,7 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
               tabIndex={far > 1 ? -1 : 0}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- photos des looks, déjà réduites */}
-              <img src={l.photo ?? l.items[0].image.front} alt="" draggable={false} loading={far > 1 ? "lazy" : "eager"} />
+              <img src={l.photo ?? l.items[0].image.front} alt="" draggable={false} style={{ animationName: idx % 2 ? "look-step-a" : "look-step-b" }} loading={far > 1 ? "lazy" : "eager"} />
             </button>
           );
         })}
