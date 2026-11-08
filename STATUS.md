@@ -200,6 +200,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-08 | **Looks de l'accueil depuis l'admin** (`/admin/looks`, table `looks`, migration 0020) : Jean Paul met la photo d'une personne entière sur fond uni, un nom, et touche 2 à 6 articles portés. La photo est détourée automatiquement ; le look apparaît alors sur l'accueil. Tant qu'aucun look n'est en ligne, l'accueil montre les 6 looks de test. | Rhamone |
 | 2026-11-08 | **Détourage automatique des photos** (face et dos) par GitHub Actions toutes les 10 min (`.github/workflows/detourage.yml`, `scripts/detourage.py`, modèle birefnet-general-lite) → stockage `produits/detoure/`, colonne `product_images.cutout` (migration 0019). Le Walk et la fiche article montrent l'article détouré, sans cadre ; sinon la photo d'origine. **Secret GitHub `SUPABASE_SERVICE_ROLE_KEY` à ajouter par Rhamone.** | Rhamone |
 | 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |
 | 2026-11-08 | **Photos par couleur** : une couleur peut avoir ses propres photos (face, dos) ; sans photo, les photos principales. **Pas de gestion de stock** pour l'instant. | Rhamone |

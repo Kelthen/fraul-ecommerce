@@ -91,6 +91,15 @@ export async function loadCategoryRows(): Promise<CategoryRow[] | null> {
   return read<CategoryRow>("categories?select=code,slug,name,slot,sizes,weight_g&order=position.asc");
 }
 
+export type LookRow = { id: string; title: string; cutout: string | null; items: string[] };
+
+/** Looks de l'accueil ajoutés dans l'admin, visibles et déjà détourés (sinon on attend le détourage). */
+export async function loadLookRows(): Promise<LookRow[] | null> {
+  "use cache";
+  cacheTag(CATALOGUE_TAG);
+  return read<LookRow>("looks?select=id,title,cutout,items&on_site=is.true&cutout=not.is.null&cutout=neq.&order=position.asc,created_at.desc");
+}
+
 export async function loadBrandRows(): Promise<BrandRow[] | null> {
   "use cache";
   cacheTag(CATALOGUE_TAG);

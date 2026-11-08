@@ -60,6 +60,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
       <div className="admin-acts">
         <Link className="pill solid" href="/admin/articles">Articles et prix</Link>
         <Link className="pill ghost" href="/admin/boutiques">Boutiques</Link>
+        <Link className="pill ghost" href="/admin/looks">Looks</Link>
         <Link className="pill ghost" href="/admin/commandes">Commandes</Link>
       </div>
       {finds.length > 0 && <p className="admin-msg">{finds.length} demande(s) Finds à traiter.</p>}

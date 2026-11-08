@@ -21,7 +21,7 @@ type Props = {
  * Réduit une photo du téléphone (souvent 4 à 12 Mo) à 1400 px au plus, en JPEG, puis baisse la qualité
  * jusqu'à passer sous 900 Ko : l'envoi au serveur est limité (next.config.ts, serverActions.bodySizeLimit).
  */
-async function shrink(file: File): Promise<Blob> {
+export async function shrink(file: File): Promise<Blob> {
   const img = await createImageBitmap(file);
   const scale = Math.min(1, 1400 / Math.max(img.width, img.height));
   const c = document.createElement("canvas");
