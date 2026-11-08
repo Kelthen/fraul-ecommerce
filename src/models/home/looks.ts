@@ -14,12 +14,12 @@ export type Look = {
 export const TEST_LOOKS: Look[] = [
   // Photos : essais de ChatGPT validés par Rhamone le 8 nov. (docs/ACCUEIL-LOOKS.md). Chaussures illustratives, non vendues ;
   // petits textes parfois déformés (t-shirt Valley) : à corriger ou remplacer par des photos fidèles avant la mise en ligne.
-  { id: "corteiz-noir", title: "Tout noir Corteiz", photo: "/images/looks/look-corteiz.jpg", items: ["corteiz-hoodie-corteiz-noir", "corteiz-jogging-corteiz-noir"] },
-  { id: "valley-acne", title: "Valley Dreams et Acne Studios", photo: "/images/looks/look-valley-acne.jpg", items: ["valley-dreams-t-shirt-valley-blanc", "acne-studios-pant-delave-acne-studios"] },
-  { id: "denim-tears", title: "Corteiz x Denim Tears", photo: "/images/looks/look-corteiz-denim-tears.jpg", items: ["corteiz-hoodie-corteiz-x-denim-tears", "corteiz-pant-corteiz-x-denim"] },
-  { id: "acne-kappa", title: "Acne Studios x Kappa", photo: "/images/looks/look-acne-kappa.jpg", items: ["acne-studios-veste-acne-studios-x-kappa-noir", "acne-studios-pant-acne-studios-x-kappa-noir"] },
-  { id: "gallery-acne", title: "Gallery Dept et Acne Studios", photo: "/images/looks/look-gallery-acne.jpg", items: ["gallery-dept-gallery-dept-long-sleeve-pocket-tee", "acne-studios-pant-delave-acne-studios"] },
-  { id: "paly-acne", title: "Paly Wood et Acne Studios", photo: "/images/looks/look-paly-acne.jpg", items: ["paly-wood-t-shirt-paly-blanc", "acne-studios-pant-acne-studios-x-kappa-noir"] },
+  { id: "corteiz-noir", title: "Tout noir Corteiz", photo: "/images/looks/look-corteiz.webp", items: ["corteiz-hoodie-corteiz-noir", "corteiz-jogging-corteiz-noir"] },
+  { id: "valley-acne", title: "Valley Dreams et Acne Studios", photo: "/images/looks/look-valley-acne.webp", items: ["valley-dreams-t-shirt-valley-blanc", "acne-studios-pant-delave-acne-studios"] },
+  { id: "denim-tears", title: "Corteiz x Denim Tears", photo: "/images/looks/look-corteiz-denim-tears.webp", items: ["corteiz-hoodie-corteiz-x-denim-tears", "corteiz-pant-corteiz-x-denim"] },
+  { id: "acne-kappa", title: "Acne Studios x Kappa", photo: "/images/looks/look-acne-kappa.webp", items: ["acne-studios-veste-acne-studios-x-kappa-noir", "acne-studios-pant-acne-studios-x-kappa-noir"] },
+  { id: "gallery-acne", title: "Gallery Dept et Acne Studios", photo: "/images/looks/look-gallery-acne.webp", items: ["gallery-dept-gallery-dept-long-sleeve-pocket-tee", "acne-studios-pant-delave-acne-studios"] },
+  { id: "paly-acne", title: "Paly Wood et Acne Studios", photo: "/images/looks/look-paly-acne.webp", items: ["paly-wood-t-shirt-paly-blanc", "acne-studios-pant-acne-studios-x-kappa-noir"] },
 ];
 
 /**

@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/lib/catalog";
 import { Price } from "../Price";
 
-// Défilé de looks de l'accueil (retour de Rhamone du 8 nov., docs/ACCUEIL-LOOKS.md) : une scène claire commune,
+// Défilé de looks de l'accueil (retours de Rhamone du 8 nov., docs/ACCUEIL-LOOKS.md) : mannequins détourés posés
+// sur le fond du site (aucun cadre), effet de profondeur 3D :
 // le personnage du centre en entier et en grand, les autres en profondeur. Glisser (ou flèches) amène le suivant
 // au centre ; toucher le personnage du centre ouvre ses pièces (volet par le bas au téléphone, à côté sur ordinateur).
 
@@ -76,9 +77,10 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
               type="button"
               className={center ? "looker is-center" : "looker"}
               style={{
-                transform: `translateX(calc(-50% + ${Math.sign(off) * [0, 62, 104, 140][Math.min(far, 3)]}%)) scale(${[1, 0.74, 0.58, 0.5][Math.min(far, 3)]})`,
+                transform: `translateX(calc(-50% + ${Math.sign(off) * [0, 78, 128, 165][Math.min(far, 3)]}%)) rotateY(${-Math.sign(off) * Math.min(far, 2) * 9}deg) scale(${[1, 0.58, 0.43, 0.36][Math.min(far, 3)]})`,
+                filter: far ? `blur(${far * 1.2}px) saturate(${1 - far * 0.12})` : undefined,
                 zIndex: 10 - far,
-                opacity: far > 2 ? 0 : 1 - far * 0.12,
+                opacity: far > 2 ? 0 : [1, 0.9, 0.65][far],
                 pointerEvents: far > 2 ? "none" : undefined,
               }}
               onClick={() => {
