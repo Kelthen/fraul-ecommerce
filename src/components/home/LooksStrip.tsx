@@ -77,23 +77,24 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
           // File « barres de réseau » (Rhamone, 8 nov., #103) : le look choisi est le plus grand, à droite ;
           // les suivants attendent à sa gauche, de plus en plus petits. « Suivant » fait avancer la file vers la droite.
           const rank = (i - idx + n) % n; // 0 : choisi ; 1, 2, 3 : les suivants ; le dernier vient de sortir à droite
-          const leaving = rank === n - 1 && n > 4;
-          const far = leaving ? 0 : Math.min(rank, 4);
+          const leaving = rank === n - 1 && n > 5;
+          const far = leaving ? 0 : Math.min(rank, 5);
           const center = rank === 0;
-          const X = (wide ? [105, -15, -115, -200, -270] : [36, -34, -92, -138, -175])[far] + (leaving ? 90 : 0);
+          // 5 personnes à la fois (Rhamone, 8 nov.).
+          const X = (wide ? [146, 36, -60, -137, -199, -240] : [43, -12, -44, -66, -82, -95])[far] + (leaving ? 90 : 0);
           return (
             <button
               key={l.id}
               type="button"
               className={center ? "looker is-center" : "looker"}
               style={{
-                transform: `translateX(calc(-50% + ${X}%)) scale(${leaving ? 1.05 : (wide ? [1, 0.8, 0.64, 0.5, 0.4] : [1, 0.74, 0.56, 0.42, 0.32])[far]})`,
+                transform: `translateX(calc(-50% + ${X}%)) scale(${leaving ? 1.05 : (wide ? [1, 0.82, 0.66, 0.53, 0.43, 0.35] : [1, 0.66, 0.48, 0.37, 0.29, 0.23])[far]})`,
                 // Flou de profondeur : plus le personnage est petit (loin), plus il est flou (Rhamone, 8 nov. : « air chic »).
-                filter: far ? `blur(${[0, 0.8, 1.8, 3][far]}px) saturate(${1 - far * 0.1})` : undefined,
+                filter: far ? `blur(${[0, 0.6, 1.3, 2.1, 3, 3.6][far]}px) saturate(${1 - far * 0.08})` : undefined,
                 transitionDelay: `${(leaving ? 0 : far) * 70}ms`, // la file avance l'un après l'autre
                 zIndex: leaving ? 11 : 10 - far,
-                opacity: leaving || far > 3 ? 0 : 1,
-                pointerEvents: leaving || far > 3 ? "none" : undefined,
+                opacity: leaving || far > 4 ? 0 : 1,
+                pointerEvents: leaving || far > 4 ? "none" : undefined,
               }}
               onClick={() => {
                 if (swiped.current) return;
