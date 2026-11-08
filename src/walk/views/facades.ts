@@ -10,7 +10,7 @@ type Opts = {
   /** Enseigne déjà dessinée (nom ou logo). */
   sign: T.Texture;
   /** Matières faites dans Blender : pierre claire et métal champagne brossé (facultatives). */
-  tex?: { stone?: T.Texture; metal?: T.Texture };
+  tex?: { stone?: T.Texture; metal?: T.Texture; env?: T.Texture };
 };
 
 /** Ombre douce et ronde (dessinée une fois) : sous le mannequin, sur le socle des vitrines. */
@@ -32,7 +32,7 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opt
   const g = new THREE.Group();
   const std = (c: number, r: number, m = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
   // Champagne brossé (cadres) et pierre claire (portique), avec la matière Blender quand elle est là.
-  const champagne = () => new THREE.MeshStandardMaterial({ color: tex?.metal ? 0xffffff : 0xd4bb8a, map: tex?.metal ?? null, roughness: 0.35, metalness: 0.35, emissive: 0x3a2e1a, emissiveIntensity: 0.25 });
+  const champagne = () => new THREE.MeshStandardMaterial({ color: tex?.metal ? 0xffffff : 0xd4bb8a, map: tex?.metal ?? null, roughness: 0.35, metalness: 0.35, emissive: 0x3a2e1a, emissiveIntensity: 0.25, envMap: tex?.env ?? null, envMapIntensity: 0.9 });
   const box = (w: number, h: number, d: number, mat: T.Material, x: number, y: number, z: number) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     m.position.set(x, y, z);
@@ -65,7 +65,8 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opt
   const niche = (frame: T.Material) => {
     const back = new THREE.MeshLambertMaterial({ color: 0xf4ede2 });
     const socle = std(0xece6dc, 0.35);
-    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.12, depthWrite: false });
+    // Verre : reflet doux de l'ambiance du mall (lot 1), toujours transparent pour voir le mannequin.
+    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.12, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 0.6 });
     [-1, 1].forEach((s) => {
       const cx = s * 3.25;
       box(OPEN, TOP, 0.04, back, cx, TOP / 2, -0.47); // fond

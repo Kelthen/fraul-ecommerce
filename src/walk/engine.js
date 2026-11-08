@@ -30,6 +30,8 @@ let MANNEQUIN_F = null;
 let CAISSE = null;
 /** Olivier en pot de marbre modélisé dans Blender (assets-src/blender/plante-mall.py → public/models/plante.glb). */
 let PLANTE = null;
+/** Reflet du mall dans le sol poli (three/examples Reflector) ; absent = traînées claires sous les bandeaux. */
+let REFLECTOR = null;
 
 /**
  * Démarre le Walk dans `root`.
@@ -37,7 +39,8 @@ let PLANTE = null;
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
  *                    onAdd, onExit, onFallback, onFiche, onConcierge, startShop, startStore,
  *                    mode (forme du mall, src/walk/modes ; « t » par défaut),
- *                    hour (heure décimale pour la lumière ; par défaut l'heure locale du visiteur)
+ *                    hour (heure décimale pour la lumière ; par défaut l'heure locale du visiteur),
+ *                    reflet (false : sol sans reflet du mall, pour comparer sur la preview avec ?reflet=0)
  * @returns {{ destroy(): void, closeFiche(): void, showItem(slug: string): void, refocus(): void, closeConcierge(): void, setCaisse(on: boolean): void }}
  */
 export function startWalk(root, o) {
@@ -185,7 +188,7 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante")]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null)]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
@@ -589,29 +592,37 @@ export function startWalk(root, o) {
     const sun = new THREE.DirectionalLight(0xfff6ea, DL.sun); sun.position.set(10, 30, 20); scene.add(sun);
 
     // Coque du mall : sols en pierre claire polie, plafond blanc, bandeaux lumineux
-    // Sol de luxe (plan du mall réaliste, #109) : grandes dalles ivoire polies, joints fins, veinage presque invisible.
+    // Sol de luxe (plan du mall réaliste #109, lot 1) : grandes dalles ivoire polies de 1,20 m, joints fins, veinage presque invisible.
     const floorTex = (() => {
       const [c, x] = U.cv(1024, 1024), t = U.T(c);
-      x.fillStyle = "#e8dfd1"; x.fillRect(0, 0, 1024, 1024);
-      for (let i = 0; i < 26; i++) { // veines très légères
-        x.strokeStyle = `rgba(150,132,108,${0.05 + Math.random() * 0.05})`; x.lineWidth = 1 + Math.random() * 2; x.beginPath();
-        let px = Math.random() * 1024, py = Math.random() * 1024; x.moveTo(px, py);
-        for (let k = 0; k < 6; k++) { px += (Math.random() - 0.3) * 220; py += (Math.random() - 0.5) * 160; x.lineTo(px, py); } x.stroke();
-      }
-      x.strokeStyle = "rgba(140,122,98,0.55)"; x.lineWidth = 2.5; [0, 512, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
+      x.fillStyle = "#e3d9c9"; x.fillRect(0, 0, 1024, 1024);
+      x.strokeStyle = "rgba(140,122,98,0.45)"; x.lineWidth = 2; [0, 512, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
     })();
-    // Matières faites dans Blender (assets-src/blender/textures-mall.py) : marbre, pierre claire, champagne brossé.
+    // Matières faites dans Blender (assets-src/blender/textures-mall.py) : dalles, pierre claire, champagne brossé.
+    // Ce sont des couleurs (sRGB) : sans ce réglage, three.js les lit trop claires et le sol paraît délavé (#109, lot 1).
     // Le dessin ci-dessus reste affiché tant que la photo de la matière n'est pas chargée.
     const loader = new THREE.TextureLoader();
-    const mallTex = (name, rx, ry, then) => loader.load(`/textures/mall/${name}.jpg`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; then(t); kick(); });
+    const colorTex = (url, then) => { const t = loader.load(url, (tx) => { then?.(tx); kick(); }); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t; };
+    // Ambiance réfléchie (sol, métal, verre) : un petit mall lumineux flouté, calculé une fois. Bandeaux du plafond et vitrines
+    // chaudes y brillent ; le soir, le fond s'assombrit mais les lumières restent. Ne reflète pas les boutiques : voir le reflet plus bas.
+    const envMap = (() => {
+      const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene(), n = DL.night;
+      const glow = (r, g, b, k) => new THREE.MeshBasicMaterial({ color: new THREE.Color(r * k, g * k, b * k) });
+      const room = new THREE.Mesh(new THREE.BoxGeometry(24, 7, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color(SKY).multiplyScalar(lerp(0.22, 0.12, n)), side: THREE.BackSide }));
+      room.position.y = 3.5; es.add(room);
+      [-3.5, 3.5].forEach((x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 44), glow(1, 0.98, 0.94, 4)); m.position.set(x, 6.9, 0); es.add(m); });
+      [-1, 1].forEach((sd) => { for (let z = -18; z <= 18; z += 8.5) { const m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 4), glow(1, 0.86, 0.66, lerp(1.4, 2.2, n))); m.position.set(sd * 11.9, 2.2, z); m.rotation.y = -sd * Math.PI / 2; es.add(m); } });
+      const rt = pm.fromScene(es, 0.035); pm.dispose(); return rt.texture;
+    })();
     const floorAt = (w, d) => {
       const t = floorTex.clone(); t.needsUpdate = true; t.repeat.set(w / 2.4, d / 2.4);
-      const m = new THREE.MeshStandardMaterial({ map: t, color: 0xddd3c4, roughness: 0.22, metalness: 0.04 });
-      mallTex("marbre", w / 2.4, d / 2.4, (tx) => { m.map = tx; m.needsUpdate = true; });
+      const m = new THREE.MeshStandardMaterial({ map: t, color: 0xbdb3a4, roughness: 0.28, metalness: 0, envMap, envMapIntensity: 0.5 });
+      colorTex("/textures/mall/dalles.jpg", (tx) => { tx.repeat.set(w / 4.8, d / 4.8); m.map = tx; m.needsUpdate = true; });
       return m;
     };
-    const facadeTex = { stone: loader.load("/textures/mall/pierre.jpg", (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 3); kick(); }), metal: loader.load("/textures/mall/champagne.jpg", (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; kick(); }) };
+    const facadeTex = { stone: colorTex("/textures/mall/pierre.jpg"), metal: colorTex("/textures/mall/champagne.jpg"), env: envMap };
+    facadeTex.stone.repeat.set(2, 3);
     const ceilM = lam(0xfbfaf6), wallM = lam(0xefe9df), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
     flat(scene, 2 * BAR_X, -BAR_Z, floorAt(2 * BAR_X, -BAR_Z), 0, 0, BAR_Z / 2);
     flat(scene, 2 * STEM_X, STEM_END, floorAt(2 * STEM_X, STEM_END), 0, 0, STEM_END / 2);
@@ -625,11 +636,52 @@ export function startWalk(root, o) {
     // Bandeaux lumineux au plafond
     [-3.5, 3.5].forEach((x) => add(scene, new THREE.BoxGeometry(0.12, 0.03, STEM_END - 2), white, x, CEIL - 0.02, STEM_END / 2));
     [-9, -23].forEach((z) => add(scene, new THREE.BoxGeometry(2 * BAR_X - 6, 0.03, 0.12), white, 0, CEIL - 0.02, z));
-    // Reflets des bandeaux dans le sol poli : une traînée claire et floue sous chaque bandeau (pas de miroir : léger au téléphone).
-    const sheen = (() => { const [c, x] = U.cv(64, 8), t = U.T(c); const g = x.createLinearGradient(0, 0, 64, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 8); return t; })();
-    const sheenM = new THREE.MeshBasicMaterial({ map: sheen, transparent: true, opacity: 0.55, depthWrite: false });
-    [-3.5, 3.5].forEach((x) => { const m = add(scene, new THREE.PlaneGeometry(0.9, STEM_END - 2), sheenM, x, 0.006, STEM_END / 2); m.rotation.x = -Math.PI / 2; });
-    [-9, -23].forEach((z) => { const m = add(scene, new THREE.PlaneGeometry(0.9, 2 * BAR_X - 6), sheenM, 0, 0.006, z); m.rotation.set(-Math.PI / 2, 0, Math.PI / 2); });
+    // Reflet du mall dans le sol poli (#109, lot 1) : UN seul miroir, qui suit la caméra, en basse définition et flouté, avec
+    // un fondu sur les bords ; il ne dessine que les 30 m les plus proches. Plus fort quand on regarde loin (comme une vraie
+    // pierre polie), discret à ses pieds. ?reflet=0 : l'ancien sol (traînées claires fixes sous les bandeaux), pour comparer.
+    let mirror = null;
+    if (REFLECTOR && o.reflet !== false) {
+      const shader = {
+        uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null }, texel: { value: new THREE.Vector2(1 / 256, 1 / 256) }, strength: { value: lerp(0.26, 0.36, DL.night) } },
+        vertexShader: `uniform mat4 textureMatrix; varying vec4 vUv; varying vec3 vWorld; varying vec2 vLocal;
+          void main() { vUv = textureMatrix * vec4(position, 1.0); vWorld = (modelMatrix * vec4(position, 1.0)).xyz; vLocal = position.xy / 15.0;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `uniform sampler2D tDiffuse; uniform vec2 texel; uniform float strength; varying vec4 vUv; varying vec3 vWorld; varying vec2 vLocal;
+          void main() {
+            vec2 p = vUv.xy / vUv.w; vec3 c = vec3(0.0);
+            for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++) c += texture2D(tDiffuse, p + vec2(float(i), float(j)) * texel * 1.6).rgb;
+            c /= 9.0;
+            vec3 v = normalize(cameraPosition - vWorld);
+            float fres = mix(0.35, 1.0, pow(1.0 - clamp(v.y, 0.0, 1.0), 3.0));
+            float edge = 1.0 - smoothstep(0.6, 1.0, length(vLocal));
+            gl_FragColor = vec4(c, strength * fres * edge);
+          }`,
+      };
+      mirror = new REFLECTOR(new THREE.PlaneGeometry(30, 30), { textureWidth: 256, textureHeight: 256, clipBias: 0.003, shader });
+      mirror.rotation.x = -Math.PI / 2; mirror.position.y = 0.002; mirror.renderOrder = -1;
+      Object.assign(mirror.material, { transparent: true, depthWrite: false });
+      const draw = mirror.onBeforeRender;
+      mirror.onBeforeRender = (r, sc, cam) => { // le reflet ne dessine que le proche : moitié moins de travail au loin
+        const far = cam.far; cam.far = 30; cam.updateProjectionMatrix(); draw(r, sc, cam); cam.far = far; cam.updateProjectionMatrix();
+      };
+      scene.add(mirror);
+    } else {
+      // Sans miroir : une traînée claire et floue sous chaque bandeau (l'ancien reflet, léger au téléphone).
+      const sheen = (() => { const [c, x] = U.cv(64, 8), t = U.T(c); const g = x.createLinearGradient(0, 0, 64, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 8); return t; })();
+      const sheenM = new THREE.MeshBasicMaterial({ map: sheen, transparent: true, opacity: 0.55, depthWrite: false });
+      [-3.5, 3.5].forEach((x) => { const m = add(scene, new THREE.PlaneGeometry(0.9, STEM_END - 2), sheenM, x, 0.006, STEM_END / 2); m.rotation.x = -Math.PI / 2; });
+      [-9, -23].forEach((z) => { const m = add(scene, new THREE.PlaneGeometry(0.9, 2 * BAR_X - 6), sheenM, 0, 0.006, z); m.rotation.set(-Math.PI / 2, 0, Math.PI / 2); });
+    }
+    // Lumière qui varie (#109, lot 1) : halo chaud des vitrines sur le sol devant chaque boutique, plus fort le soir ;
+    // ombre douce au pied des murs et des façades pour ancrer les volumes. Dessins plats, aucune lumière en plus.
+    const grad = (stops, w = 128, h = 128, radial = true) => {
+      const [c, x] = U.cv(w, h), t = U.T(c);
+      const g = radial ? x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2) : x.createLinearGradient(0, 0, 0, h);
+      stops.forEach(([p, col]) => g.addColorStop(p, col)); x.fillStyle = g; x.fillRect(0, 0, w, h); return t;
+    };
+    const poolM = new THREE.MeshBasicMaterial({ map: grad([[0, "rgba(255,214,160,1)"], [0.55, "rgba(255,214,160,0.35)"], [1, "rgba(255,214,160,0)"]]), transparent: true, opacity: lerp(0.1, 0.3, DL.night), depthWrite: false, blending: THREE.AdditiveBlending });
+    const footM = new THREE.MeshBasicMaterial({ map: grad([[0, "rgba(70,52,34,0.55)"], [1, "rgba(70,52,34,0)"]], 4, 64, false), transparent: true, depthWrite: false });
+    const foot = (parent, w, x, z, ry = 0) => { const m = add(parent, new THREE.PlaneGeometry(w, 0.7), footM, x, 0.003, z); m.rotation.set(-Math.PI / 2, 0, ry); return m; };
     // Spots
     const spotPos = [];
     for (let z = 3; z < STEM_END - 1; z += 3) for (const x of [-5, 0, 5]) spotPos.push([x, z]);
@@ -650,6 +702,8 @@ export function startWalk(root, o) {
         const len = e - s, mid = (s + e) / 2;
         if (horiz) add(scene, new THREE.BoxGeometry(len, CEIL, 0.4), wallM, mid, CEIL / 2, z0);
         else add(scene, new THREE.BoxGeometry(0.4, CEIL, len), wallM, x0, CEIL / 2, mid);
+        // ombre au pied du mur, côté allée (les murs bordent l'allée : on la pose des deux côtés, l'autre est caché)
+        [-1, 1].forEach((sd) => { if (horiz) foot(scene, len, mid, z0 + sd * 0.55, sd > 0 ? 0 : Math.PI); else foot(scene, len, x0 + sd * 0.55, mid, sd > 0 ? Math.PI / 2 : -Math.PI / 2); });
       });
     }
     const along = (f) => SLOTS.slice(0, N).filter(f);
@@ -734,6 +788,8 @@ export function startWalk(root, o) {
       add(g, new THREE.BoxGeometry(0.5, CEIL, 0.7), pillarM, -SLOT / 2 + 0.05, CEIL / 2, 0.35);
       // Fond lumineux visible par la porte (l'intérieur détaillé vient à l'approche)
       const backdrop = add(g, new THREE.PlaneGeometry(4.6, 4.1), new THREE.MeshBasicMaterial({ map: glow }), 0, 2.05, -0.3);
+      const pool = add(g, new THREE.PlaneGeometry(9, 4.2), poolM, 0, 0.005, 2.0); pool.rotation.x = -Math.PI / 2; // halo des vitrines
+      foot(g, SLOT, 0, 0.8); // ombre au pied de la façade
       const hit = add(g, new THREE.PlaneGeometry(SLOT - 0.4, CEIL), new THREE.MeshBasicMaterial({ visible: false }), 0, CEIL / 2, 0.5);
       hit.userData.shop = k; hits.push(hit);
       shops.push({ g, st, s, detail: null, backdrop });
@@ -806,6 +862,10 @@ export function startWalk(root, o) {
     function resize() {
       const w = stage.clientWidth || innerWidth, h = stage.clientHeight || innerHeight, a = w / h;
       renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 66 : 52; camera.updateProjectionMatrix();
+      if (mirror) { // reflet en basse définition (≈ 40 % de l'image) : flou naturel, coût réduit au téléphone
+        const rw = Math.round(w * renderer.getPixelRatio() * 0.4), rh = Math.round(h * renderer.getPixelRatio() * 0.4);
+        mirror.getRenderTarget().setSize(rw, rh); mirror.material.uniforms.texel.value.set(1 / rw, 1 / rh);
+      }
       const hHalf = Math.atan(Math.tan(camera.fov * Math.PI / 360) * a);
       dist = clamp(((a < 1 ? 9.2 : 13) / 2) / Math.tan(hHalf), 7, 12); kick();
     }
@@ -844,6 +904,7 @@ export function startWalk(root, o) {
       entrance.update(cam.z);
       camera.position.set(cam.x + px * 0.35, EYE - py * 0.12, cam.z);
       camera.lookAt(cam.lx - px * 0.6, cam.ly - py * 0.3, cam.lz);
+      if (mirror) mirror.position.set(camera.position.x, 0.002, camera.position.z);
       renderer.render(scene, camera);
       if (more) kick();
     }
