@@ -49,7 +49,7 @@ export function WalkExperience({ data, startBrand }: Props) {
   const [concierge, setConcierge] = useState<{ brand: string } | null>(null);
   // Tous les articles du mall, pour les propositions sous la fiche en grand.
   const allItems = useMemo(
-    () => data.allBrands.flatMap((b) => Object.entries(data.items[b.slug] ?? {}).flatMap(([cat, rows]) => rows.map((r) => toItem(data, b.name, cat as CategoryId, r)))),
+    () => data.allBrands.flatMap((b) => Object.entries(data.items[b.slug] ?? {}).flatMap(([cat, rows]) => (rows ?? []).map((r) => toItem(data, b.name, cat as CategoryId, r)))),
     [data],
   );
   const catLabel = useCallback((cat: CategoryId) => data.categories.find((c) => c.id === cat)?.label ?? cat, [data]);

@@ -3,6 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
+_Dernière mise à jour : 2026-11-08 par rhamon (nouveau type de vêtement depuis l'admin)_
 _Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
 _Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
@@ -19,12 +20,13 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 **Code (Serge)**
 - [x] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
-- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge et Frank, partenaire de Jean Paul, ajouté le 5 nov. ; Jean Paul à ajouter quand il donne son adresse), Telegram en secours
+- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge, Jean Paul et Frank, son partenaire, ajoutés le 5 nov.), Telegram en secours
 - [x] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
 - [x] Webhook Stripe : traiter les 4 événements ajoutés au webhook (`checkout.session.async_payment_failed` → annuler + prévenir ; `checkout.session.expired` → relance panier ; `charge.refunded` → commande « remboursée » ; `charge.dispute.created` → alerte Telegram). Aujourd'hui ils sont reçus et ignorés.
 - [x] **Filtres du catalogue** (Rhamone, 4 nov.) : page « Tout voir » + pages marque et type avec un bouton **« Filtrer »** (volet par le bas au téléphone) : **Type** (hoodies, pantalons, sneakers, chaussettes…), **Marque**, **Couleur** (pastilles), **Taille** ; **Tri** : nouveautés, prix croissant, prix décroissant. Filtres actifs en petites pastilles retirables ; filtres dans l'adresse (lien partageable sur WhatsApp) ; ne proposer que les valeurs qui ont des articles. Petits boutons, photos d'abord (L-58).
 - [x] **Rayons manquants dans le Walk** : seuls 6 types ont un rayon (`RACKS` de `src/walk/models/store-layout.ts` : tee, hoodie, pants, cap, sneaker, bag). Les **vestes, shorts, chaussettes, lunettes, montres, bijoux** sont en vente sur le site mais **absents des boutiques du Walk** (ex. shorts et doudoune Trapstar). Pour chacun : dessin (`art.ts`) + place sur le portant (`store-layout.ts`) + `npm run smoke` (L-34). Un rayon apparaît tout seul dès qu'une boutique a un article de ce type (rayon vide caché, L-35).
-- [ ] Un **type de vêtement tout nouveau** (ex. « maillots ») n'est pas proposé dans l'admin : l'ajouter au code (`CATEGORIES`) ; plus tard, éventuellement depuis l'admin.
+- [x] Un **type de vêtement tout nouveau** (ex. « maillots ») : « + Nouveau type… » dans la fiche article (nom, tailles, poids moyen, où ça se porte), enregistré dans la base (migration 0017, appliquée) — rhamon, 8 nov.
+  - [ ] Un type créé ainsi est visible sur le site (Tout voir, pages marque et type) mais **pas encore dans le Walk** : il lui faut un dessin et une place sur le portant (`src/walk/`), comme les 12 types du code.
 - [ ] **SEO** :
   - [ ] Favicon et icônes : `src/app/icon.png` (512 px), `apple-icon.png` (180 px), remplacer `favicon.ico` (aujourd'hui celui par défaut). **Attend le logo** (ligne « Bloqué »).
   - [x] Image de partage (Open Graph / WhatsApp / iMessage) : `opengraph-image.png` 1200×630 par défaut, et une par fiche produit (photo de face).
@@ -49,7 +51,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 **Rhamone / Jean Paul**
 - [ ] **Logo TakeUrClothes** (fichier SVG ou PNG fond transparent) → favicon, icônes, image de partage, e-mails
-- [ ] Ajouter Jean Paul au groupe Telegram + son ID Telegram dans `TELEGRAM_ALLOWED_USERS` ; son e-mail pour `ADMIN_EMAILS`
+- [ ] Ajouter Jean Paul au groupe Telegram + son ID Telegram dans `TELEGRAM_ALLOWED_USERS` (son e-mail est dans `ADMIN_EMAILS` depuis le 5 nov.)
 - [ ] Vrais prix (USD) et coûts (¥) de chaque article, saisis dans `/admin/articles`
 - [ ] Renouveler les clés collées dans le chat le 4 nov. (Stripe `whsec_` + `rk_live`, Resend, Turnstile), puis les remettre dans Vercel et Supabase
 - [ ] Compte Stripe vérifié (pays de l'entreprise, identité, banque)
