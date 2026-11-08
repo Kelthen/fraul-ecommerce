@@ -13,7 +13,7 @@ import { createEntrance } from "./views/entrance";
 import { createFacade } from "./views/facades";
 import { CAISSE_TEXT, CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
-import { RACKS as CAR, STORE_ZONES as ZONES, route } from "./models/store-layout";
+import { RACKS as CAR, SIDE_VISIBLE, STORE_ZONES as ZONES, route } from "./models/store-layout";
 import { AT_CAISSE, AT_CONCIERGE, AT_EXIT, EYE, lastStop, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
 import { daylightAt, localHour } from "./models/daylight";
 import { shopType } from "./models/mall-layout";
@@ -1087,7 +1087,7 @@ export function startWalk(root, o) {
     const UP = V(0, 1, 0), tmp = V(0, 0, 0), tmp2 = V(0, 0, 0);
     const kick = () => { if (!raf && !dead) raf = requestAnimationFrame(frame); };
     function layout(car, isActive, now) {
-      const fi = Math.round(car.f), cfg = car.cfg, side = cfg.side, L = side ? 12 : 3.4;
+      const fi = Math.round(car.f), cfg = car.cfg, side = cfg.side, L = side ? SIDE_VISIBLE : 3.4;
       car.meshes.forEach((m, k) => {
         const d = k - car.f, ad = Math.abs(d);
         if (ad > L) { m.visible = false; return; } m.visible = true;
