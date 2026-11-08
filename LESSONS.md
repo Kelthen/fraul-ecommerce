@@ -347,3 +347,7 @@
 ### L-61 — Des personnes mises en scène, pas des photos dans des cadres
 - **Erreur :** le défilé de looks montrait les mannequins dans des cartes à coins arrondis (corps rognés), puis sur un fond gris : Rhamone voyait le cadre des images et un fond qui ne se fondait pas dans le site (8 nov. 2026).
 - **Règle :** pour une scène de personnages (looks, Walk), **détourer** les photos (fond transparent, `rembg`, modèle `isnet-general-use`, puis WebP) et les poser sur le fond du site, sans cadre ni bord visible, avec une ombre au sol. Profondeur : ceux des côtés nettement plus petits, un peu flous. Vérifier en capture téléphone **et** ordinateur avant de pousser.
+
+### L-62 — `npm run check` avant chaque push, pas seulement lint, tsc et build
+- **Erreur :** #101 (portant moins serré) a été mergée avec lint, tsc et build au vert, mais un test du Walk échouait : les portants veste et t-shirt se chevauchaient. ChatGPT l'a vu dans #103 (8 nov. 2026).
+- **Règle :** avant de pousser, lancer **`npm run check`** (il contient les tests du Walk et des modèles). Un réglage de mesure du Walk (`store-layout.ts`) se vérifie toujours avec `walk.test.ts`.
