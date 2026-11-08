@@ -150,7 +150,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
-- **Accueil : défilé de looks** — idée de Rhamone à affiner, inspirée de la vidéo de mannequins et articles associés. Notes et questions : `docs/ACCUEIL-LOOKS.md`. Propositions en parallèle, pas de code validé à ce stade.
+- **Accueil : défilé de looks** — idée de Rhamone inspirée de la vidéo de mannequins et articles associés. Deux essais visuels appréciés le 8 novembre, avec réserves sur la fidélité à corriger avant mise en ligne. Références et articles : `docs/ACCUEIL-LOOKS.md`. Claude dirige la réalisation ; validation de la preview par Rhamone avant merge.
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
