@@ -65,7 +65,8 @@ export type Product = {
   colors: string[];
   sizes: string[];
   /** Photos : face obligatoire, dos et détails si elles existent. Un article sans photo n'est pas sur le site. */
-  image: { front: string; back?: string; details?: string[] };
+  /** `cut` : versions détourées (fond transparent) de la face et du dos, quand elles existent (migration 0019). */
+  image: { front: string; back?: string; details?: string[]; cut?: { front?: string; back?: string } };
   /** Photos d'une autre couleur que la première (clé #RRGGBB). Sans entrée : les photos principales. */
   imageByColor?: Record<string, { front: string; back?: string }>;
 };

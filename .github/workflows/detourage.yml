@@ -1,0 +1,29 @@
+name: Détourage des photos
+# Enlève le fond des nouvelles photos produit (scripts/detourage.py). Toutes les 10 minutes, ou à la main.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+concurrency:
+  group: detourage
+  cancel-in-progress: false
+jobs:
+  detourage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/detourage-requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: ~/.rembg
+          key: rembg-birefnet-general-lite
+      - run: pip install -r scripts/detourage-requirements.txt
+      - run: python scripts/detourage.py
+        env:
+          SUPABASE_URL: https://rqrdccsxyyufqlenmpct.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

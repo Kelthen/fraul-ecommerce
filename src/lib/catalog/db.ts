@@ -20,10 +20,10 @@ export type Row = {
   sizes: string[] | null;
   brands: { slug: string } | null;
   categories: { code: string } | null;
-  product_images: { view: "front" | "back" | "detail"; path: string; position: number; color?: string | null }[];
+  product_images: { view: "front" | "back" | "detail"; path: string; position: number; color?: string | null; cutout?: string | null }[];
 };
 
-const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position,color)";
+const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position,color,cutout)";
 
 /** Transforme une ligne de la base en article du site ; null si elle est incomplète (marque ou catégorie inconnue). */
 export function toProduct(r: Row, brands: Brand[], categories: Category[], accentFor: (c: string) => string): PricedProduct | null {
@@ -55,7 +55,12 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
     accent: accentFor(r.colors[0]),
     colors: r.colors,
     sizes: r.sizes?.length ? r.sizes : cat.sizes,
-    image: { front, back: imgs.find((i) => i.view === "back")?.path, details: imgs.filter((i) => i.view === "detail").map((i) => i.path) },
+    image: {
+      front,
+      back: imgs.find((i) => i.view === "back")?.path,
+      details: imgs.filter((i) => i.view === "detail").map((i) => i.path),
+      ...cutOf(imgs),
+    },
     ...(Object.keys(byColor).length ? { imageByColor: byColor } : {}),
   };
 }
@@ -121,4 +126,11 @@ export function mergeCategories(code: Category[], rows: CategoryRow[] | null): C
     .filter((r) => !code.some((c) => c.id === r.code))
     .map((r): Category => ({ id: r.code, slug: r.slug, label: r.name.fr ?? r.code, slot: r.slot, sizes: r.sizes, ...(r.weight_g ? { weight: r.weight_g } : {}) }));
   return [...code, ...extra];
+}
+
+/** Versions détourées de la face et du dos (rangées par le détourage automatique), s'il y en a. */
+function cutOf(imgs: Row["product_images"]): { cut?: { front?: string; back?: string } } {
+  const front = imgs.find((i) => i.view === "front")?.cutout || undefined;
+  const back = imgs.find((i) => i.view === "back")?.cutout || undefined;
+  return front || back ? { cut: { ...(front ? { front } : {}), ...(back ? { back } : {}) } } : {};
 }

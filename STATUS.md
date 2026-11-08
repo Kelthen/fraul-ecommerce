@@ -198,6 +198,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-08 | **Détourage automatique des photos** (face et dos) par GitHub Actions toutes les 10 min (`.github/workflows/detourage.yml`, `scripts/detourage.py`, modèle birefnet-general-lite) → stockage `produits/detoure/`, colonne `product_images.cutout` (migration 0019). Le Walk et la fiche article montrent l'article détouré, sans cadre ; sinon la photo d'origine. **Secret GitHub `SUPABASE_SERVICE_ROLE_KEY` à ajouter par Rhamone.** | Rhamone |
 | 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |
 | 2026-11-08 | **Photos par couleur** : une couleur peut avoir ses propres photos (face, dos) ; sans photo, les photos principales. **Pas de gestion de stock** pour l'instant. | Rhamone |
 | 2026-11-08 | **Dépôt GitHub public jusqu'à la fin du site**, puis privé avec Vercel Pro (le plan gratuit ne déploie pas un dépôt privé d'organisation : essayé le 8 nov., previews bloquées). D'ici là : **aucune clé, aucune adresse e-mail, aucune donnée client** dans le dépôt. | Rhamone |

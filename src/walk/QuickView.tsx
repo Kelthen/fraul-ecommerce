@@ -13,7 +13,7 @@ import type { PriceTable } from "@/models/pricing/public";
 /** Article tel que la fiche en grand le reçoit (moteur du Walk ou catalogue compact). */
 export type FicheItem = {
   slug: string; n: string; p: PriceTable; c: string; a: string; vars: string[]; sizes: string[];
-  brand: string; cat: CategoryId; photos: { front: string; back?: string; details?: string[] } | null;
+  brand: string; cat: CategoryId; photos: { front: string; back?: string; details?: string[]; cut?: { front?: string; back?: string } } | null;
 };
 
 type Props = {

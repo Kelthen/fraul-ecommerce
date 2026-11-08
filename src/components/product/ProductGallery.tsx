@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
-import { cutoutOf } from "@/walk/cutouts";
 
 /** Une vue de l'article : une photo, ou un dessin quand la photo manque. */
 export type GalleryView = { label: string; src?: string; art?: ReactNode };
@@ -109,16 +108,17 @@ export function ProductGallery({ name, views, className }: Props) {
   );
 }
 
-const isCut = (src: string) => src.startsWith("/images/cutouts/");
+/** Photo détourée (dossier « detoure » du stockage, rempli par le détourage automatique). */
+const isCut = (src: string) => src.includes("/produits/detoure/");
 
 /** Vues d'un article à partir de ses photos : face, dos, puis autant de détails qu'il y en a (numérotés s'il y en a plusieurs). */
-export function photoViews(image: { front: string; back?: string; details?: string[] }): GalleryView[] {
+export function photoViews(image: { front: string; back?: string; details?: string[]; cut?: { front?: string; back?: string } }): GalleryView[] {
   const details = image.details ?? [];
   return [
     // Face et dos détourés quand c'est possible : l'article seul, sur le fond du site (Rhamone, 8 nov. : « deux couleurs
     // différentes cassent le mood, l'article doit être mis en valeur »).
-    { src: cutoutOf(image.front), label: "Face" },
-    ...(image.back ? [{ src: cutoutOf(image.back), label: "Dos" }] : []),
+    { src: image.cut?.front ?? image.front, label: "Face" },
+    ...(image.back ? [{ src: image.cut?.back ?? image.back, label: "Dos" }] : []),
     ...details.map((src, i) => ({ src, label: details.length > 1 ? `Détail ${i + 1}` : "Détail" })),
   ];
 }

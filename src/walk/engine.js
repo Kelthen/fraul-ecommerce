@@ -263,9 +263,9 @@ export function startWalk(root, o) {
       x.scale(k, k); x.imageSmoothingQuality = "high";
       const top = hang || clip ? 64 : 4, card = { x: 10, y: top, w: 236, h: H - top - 6 };
       const rr = (p) => { const r = 14; x.beginPath(); x.moveTo(p.x + r, p.y); x.arcTo(p.x + p.w, p.y, p.x + p.w, p.y + p.h, r); x.arcTo(p.x + p.w, p.y + p.h, p.x, p.y + p.h, r); x.arcTo(p.x, p.y + p.h, p.x, p.y, r); x.arcTo(p.x, p.y, p.x + p.w, p.y, r); x.closePath(); };
-      // Photo détourée (fond transparent, /images/cutouts/) : le vêtement seul, pendu au crochet, sans carte ni cadre
+      // Photo détourée (fond transparent, dossier « produits/detoure/ » du stockage) : le vêtement seul, pendu au crochet, sans carte ni cadre
       // (Rhamone, 8 nov. : « pas de cadres, bien neutre, comme en 3D »). Sinon : la photo sur sa carte blanche, comme avant.
-      const cutout = /\/images\/cutouts\//.test(src);
+      const cutout = src.includes("/produits/detoure/");
       if (hang || clip) hook(x, 128);
       if (!cutout) { x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore(); }
       const img = webImage();
