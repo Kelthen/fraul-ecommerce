@@ -150,6 +150,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Walk : portant** (`feat/rhamon/portant`, plan de ChatGPT #97, à fermer quand fini) : hauts un peu moins serrés ; pantalons et shorts aussi de côté sur cintre à pinces. Reste à étudier : photo détourée de la pièce choisie.
+
 - **Accueil : défilé de looks, version de test** (`feat/rhamon/looks-accueil`) : 6 looks avec photo de mannequin, faits avec les vrais articles, sous l'entrée du Walk, en **scène** (personnage au centre en entier, les autres en profondeur, glisser ou flèches ; retour de Rhamone du 8 nov. : pas de cartes) ; toucher le personnage ouvre ses pièces (photo, prix, fiche). Photos : essais de ChatGPT validés par Rhamone le 8 nov. (`assets-src/looks/`) ; textes déformés et chaussures illustratives à corriger avant la mise en ligne. Un look sans photo montrerait les photos de ses pièces. Version finale : looks ajoutés depuis l'admin (photo + pièces), après validation de Rhamone. Notes : `docs/ACCUEIL-LOOKS.md`.
 
 | Quoi | Qui | Branche / PR | Depuis |

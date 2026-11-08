@@ -24,18 +24,19 @@ type V3 = [number, number, number];
  * `pull` est grand : l'article choisi vient près de soi et occupe ~70 % de la largeur du téléphone (photo en grand, Rhamone 19 oct.).
  * `side` : portant de hauts vus de côté, serrés (pas entre deux pièces, en mètres) ; seule la pièce choisie se met de face
  * (Rhamone, 22 oct. : « dans le rayon, on n'affiche pas le devant »). `sp` est alors l'écart autour de la pièce choisie.
+ * 8 nov. (docs/PLAN-PORTANT.md) : pièces un peu moins serrées (0,17 → 0,21 m pour les hauts) ; pantalons et shorts aussi de côté.
  */
 export type Rack = { o: V3; d: V3; out: V3; sp: number; size: [number, number]; pull: number; rise: number; close: number; side?: number };
 
 export const RACKS: Record<string, Rack> = {
-  tee: { o: [-5.5, 1.375, -6.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.8, rise: 0.18, close: 1.0, side: 0.17 },
-  hoodie: { o: [-5.5, 1.375, -12.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.8, rise: 0.18, close: 1.0, side: 0.17 },
-  pants: { o: [5.5, 1.3, -11.9], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.62, size: [0.8, 1.0], pull: 1.5, rise: 0.18, close: 0.85 },
+  tee: { o: [-5.5, 1.375, -6.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.8, rise: 0.18, close: 1.0, side: 0.21 },
+  hoodie: { o: [-5.5, 1.375, -12.4], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.68, 0.85], pull: 1.8, rise: 0.18, close: 1.0, side: 0.21 },
+  pants: { o: [5.5, 1.3, -11.9], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.62, size: [0.8, 1.0], pull: 1.5, rise: 0.18, close: 0.85, side: 0.19 },
   cap: { o: [5.8, 1.52, -4.8], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.5, size: [0.46, 0.5], pull: 1.6, rise: 0.04, close: 1.5 },
   sneaker: { o: [-3.75, 1.53, -15.7], d: [1, 0, 0], out: [0, 0, 1], sp: 0.62, size: [0.58, 0.32], pull: 0.95, rise: 0.1, close: 2.0 },
   bag: { o: [0, 1.12, -8.8], d: [1, 0, 0], out: [0, 0, 1], sp: 0.42, size: [0.34, 0.38], pull: 1.1, rise: 0.42, close: 1.8 },
-  jacket: { o: [-5.5, 1.3, -1.9], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.72, 0.98], pull: 1.8, rise: 0.22, close: 0.95, side: 0.14 },
-  shorts: { o: [5.5, 1.35, -1.6], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.42, size: [0.72, 0.72], pull: 1.5, rise: 0.12, close: 1.05 },
+  jacket: { o: [-5.5, 1.3, -1.9], d: [0, 0, -1], out: [1, 0, 0], sp: 0.62, size: [0.72, 0.98], pull: 1.8, rise: 0.22, close: 0.95, side: 0.19 },
+  shorts: { o: [5.5, 1.35, -1.6], d: [0, 0, 1], out: [-1, 0, 0], sp: 0.62, size: [0.72, 0.72], pull: 1.5, rise: 0.12, close: 1.05, side: 0.19 },
   socks: { o: [3.75, 1.55, -15.7], d: [1, 0, 0], out: [0, 0, 1], sp: 0.5, size: [0.34, 0.38], pull: 1.5, rise: 0.05, close: 2 },
   glasses: { o: [3.75, 1.87, -15.7], d: [1, 0, 0], out: [0, 0, 1], sp: 0.5, size: [0.44, 0.24], pull: 1.5, rise: -0.27, close: 2 },
   watch: { o: [3.75, 1.11, -15.7], d: [1, 0, 0], out: [0, 0, 1], sp: 0.5, size: [0.3, 0.36], pull: 1.5, rise: 0.5, close: 2 },

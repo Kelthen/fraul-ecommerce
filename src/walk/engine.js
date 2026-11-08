@@ -304,6 +304,7 @@ export function startWalk(root, o) {
       const [cn, x] = cv(SIDE_W * k, 320 * k), tex = T(cn);
       const draw = (c) => {
         x.setTransform(k, 0, 0, k, 0, 0); x.clearRect(0, 0, SIDE_W, 320);
+        if (type === "pants" || type === "shorts") return drawBottom(c);
         const hood = type !== "tee", cx = 50, ny = 66, D = hood ? 46 : 42, hem = ny + (hood ? 228 : 220);
         const sl = hood ? ny + 190 : ny + 68, sw = hood ? 36 : 44, sx = cx - 2;
         const shade = (f) => { const t = new THREE.Color(c).multiplyScalar(f); return `#${t.getHexString()}`; };
@@ -328,6 +329,28 @@ export function startWalk(root, o) {
         hook(x, cx);
         tex.needsUpdate = true;
       };
+      /**
+       * Pantalon ou short vu de côté (plan du portant, 8 nov.) : pendu par la taille à un cintre à pinces, vu par la tranche
+       * (barre et pinces fines), une jambe droite qui tombe, la couture de côté et le pli. Même hauteur et même crochet que les hauts.
+       */
+      function drawBottom(c) {
+        const cx = 50, top = 74, hem = type === "shorts" ? top + 118 : top + 226, W = 30;
+        const shade = (f) => { const t = new THREE.Color(c).multiplyScalar(f); return `#${t.getHexString()}`; };
+        const fill = (d, col) => { x.fillStyle = col; x.fill(new Path2D(d)); };
+        hook(x, cx);
+        x.fillStyle = "#7a6238"; x.fillRect(cx - 18, 66, 36, 4); // barre du cintre, vue par la tranche
+        x.fillStyle = "#2a2a2c"; [cx - 13, cx + 9].forEach((px) => x.fillRect(px, 68, 4, 9)); // pinces
+        fill(`M${cx - W / 2} ${top} H${cx + W / 2} L${cx + W / 2 + 4} ${top + 46} Q${cx + W / 2 + 3} ${top + 80} ${cx + W / 2 - 1} ${hem} H${cx - W / 2 - 1} Q${cx - W / 2 - 2} ${top + 60} ${cx - W / 2} ${top} Z`, c);
+        fill(`M${cx - W / 2} ${top} H${cx + W / 2} V${top + 8} H${cx - W / 2} Z`, shade(0.78)); // ceinture
+        fill(`M${cx - W / 2 - 1} ${hem - 7} H${cx + W / 2 - 1} V${hem} H${cx - W / 2 - 1} Z`, shade(0.82)); // ourlet
+        x.save(); x.globalCompositeOperation = "source-atop";
+        const g = x.createLinearGradient(cx - W, 0, cx + W, 0); g.addColorStop(0, "rgba(255,255,255,.14)"); g.addColorStop(0.5, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.28)");
+        x.fillStyle = g; x.fillRect(0, 0, SIDE_W, 320);
+        x.strokeStyle = "rgba(0,0,0,.16)"; x.lineWidth = 1.4; x.stroke(new Path2D(`M${cx + 2} ${top + 10} Q${cx + 4} ${(top + hem) / 2} ${cx + 1} ${hem - 8}`)); // couture de côté
+        x.strokeStyle = "rgba(255,255,255,.12)"; x.lineWidth = 1; x.stroke(new Path2D(`M${cx - 8} ${top + 30} L${cx - 9} ${hem - 8}`)); // pli
+        x.restore();
+        tex.needsUpdate = true;
+      }
       draw(color);
       if (img) { const im = webImage(); im.onload = () => { const c = photoColor(im); if (c) { draw(c); onLoad(); } }; im.src = img; }
       return tex;
@@ -1033,7 +1056,7 @@ export function startWalk(root, o) {
       const { it, cat } = m.userData; if (!it || !it.img || m.userData.hi) return; m.userData.hi = true;
       m.children.slice(0, 2).forEach((mesh, i) => { const old = mesh.material.map; mesh.material.map = U.photoTexture(cat, it.img[i], () => kick(), 4); mesh.material.needsUpdate = true; old.dispose(); });
     }
-    // Vue de côté d'un haut, à la couleur de sa photo (ou de son dessin).
+    // Vue de côté d'un haut ou d'un bas, à la couleur de sa photo (ou de son dessin).
     const sideMat = (cat, it) => new THREE.MeshLambertMaterial({ map: U.sideTexture(cat, it.c, it.img && it.img[0], () => kick()), transparent: true, alphaTest: 0.04 });
     const cars = {};
     Object.entries(CAR).forEach(([cat, cfg]) => {
