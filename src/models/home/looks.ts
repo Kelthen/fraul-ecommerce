@@ -12,7 +12,10 @@ export type Look = {
 
 /** Looks de test, avec des pièces en ligne le 8 nov. 2026 (décidé par l'équipe, à remplacer par ceux de Jean Paul). */
 export const TEST_LOOKS: Look[] = [
-  { id: "corteiz-noir", title: "Tout noir Corteiz", items: ["corteiz-hoodie-corteiz-noir", "corteiz-jogging-corteiz-noir"] },
+  // Photos : essais de ChatGPT appréciés par Rhamone le 8 nov. (docs/ACCUEIL-LOOKS.md). Chaussures illustratives, non vendues ;
+  // texte du t-shirt Valley déformé : à corriger ou remplacer par une photo fidèle avant la mise en ligne.
+  { id: "corteiz-noir", title: "Tout noir Corteiz", photo: "/images/looks/look-corteiz.jpg", items: ["corteiz-hoodie-corteiz-noir", "corteiz-jogging-corteiz-noir"] },
+  { id: "valley-acne", title: "Valley Dreams et Acne Studios", photo: "/images/looks/look-valley-acne.jpg", items: ["valley-dreams-t-shirt-valley-blanc", "acne-studios-pant-delave-acne-studios"] },
   { id: "denim-tears", title: "Corteiz x Denim Tears", items: ["corteiz-hoodie-corteiz-x-denim-tears", "corteiz-pant-corteiz-x-denim"] },
   { id: "acne-kappa", title: "Acne Studios x Kappa", items: ["acne-studios-veste-acne-studios-x-kappa-noir", "acne-studios-pant-acne-studios-x-kappa-noir"] },
   { id: "travis-flammes", title: "Travis Scott, été", items: ["travis-scott-hoodie-etoile-delave", "travis-scott-short-delave-flammes"] },
