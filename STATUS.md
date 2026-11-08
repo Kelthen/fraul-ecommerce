@@ -152,7 +152,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
-- **Walk : finitions luxe et vitrines intégrées — plan validé, réalisation à faire** (Rhamone, 8 novembre). Architecture actuelle et trois styles conservés ; sol ivoire poli, métal champagne, vitrines latérales au même plan et à la même hauteur que la grande entrée, mannequins derrière le verre. Une zone témoin Blender puis preview navigateur avant généralisation. Référence et cotes : `docs/PLAN-MALL-REALISTE.md`. Ce plan ne modifie pas le site.
+- **Walk : finitions luxe — première étape livrée dans #111, revue et suite dans #109** (Rhamone, 8 novembre). Vitrines intégrées, textures Blender et olivier déjà présents sur `main` (`551fa3b`). Reste : sol moins plat et répétitif, reflets cohérents, lumière et lisibilité du verre ; cadrage Finds et panneau plus discret à présenter avant réalisation. Suite préparée en cinq lots : sol/lumière, vitrine témoin, Finds, plantes/raccords, déclinaison des trois façades. Architecture conservée ; visuel puis preview validés avant généralisation. Comparaison du sol, cotes, sources et critères : `docs/PLAN-MALL-REALISTE.md`. #109 reste une PR de documentation en brouillon, à ne pas merger.
 
 - **Accueil : taille des personnages du défilé** — retour de Rhamone du 8 novembre : progression du plus petit à gauche au plus grand à droite, plutôt qu'un grand personnage au milieu. Le reste lui convient ; cadre rouge corrigé dans #102. Détail : `docs/ACCUEIL-LOOKS.md` ; nouvelle preview à valider avant merge.
 

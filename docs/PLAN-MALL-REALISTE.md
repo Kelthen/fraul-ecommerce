@@ -3,12 +3,55 @@
 > Direction validée par Rhamone le 8 novembre 2026 : « on garde l'architecture actu », « un sol tres moderne, bcp de luxe dans l'ensemble », « les vitrines au même niveau que la grande porte d'entrée de la boutique ». Go : « voila lets go ».
 > Plan de réalisation, pas une modification du site. Première livraison : une zone témoin modélisée dans Blender et vérifiée dans le navigateur. Validation visuelle avant généralisation et merge de la réalisation.
 
+## Reprise après la première réalisation — 8 novembre 2026
+
+Demande de Rhamone : « compare le sol », « mets a jour les remarques et tout pour claude », puis « prepare le reste de la modelisation ». **Préparer la suite et ses visuels ; les nouveaux détails de Finds restent à valider avant réalisation.**
+
+**Déjà livré dans #111**, mergée sur `main` (`551fa3b`) : vitrines intégrées des trois façades, mannequins reculés dans les niches, textures marbre/pierre/champagne issues de `assets-src/blender/textures-mall.py`, olivier issu de `assets-src/blender/plante-mall.py`, ombres douces sous les socles. Réutiliser ces travaux. Les premiers commentaires indiquant l'absence de travail Blender sont dépassés par la version finale de #111.
+
+Contrôle du site public : textures et plante chargées, entrée/sortie de boutique fonctionnelles, pas d'erreur JavaScript relevée ; vues PC 1440 × 900 et téléphone simulé 390 × 844, à 14 h et 19 h. Ce contrôle ne mesure pas la fluidité sur un vrai téléphone. [Capture après #111, PC à 14 h](../assets-src/references/mall-realiste/revue-apres-111-sol.png). La capture utilisateur de Finds présente un autre arrêt et peut correspondre à une version antérieure : les arbres en boules y sont un constat sur cette capture, pas la preuve que le nouveau GLB manque partout.
+
+### Sol : écart avec la cible approuvée
+
+| Point | Rendu observé | Cible / correction à vérifier |
+|---|---|---|
+| Reflets | Bandes blanches fixes ; presque aucun reflet lisible des boutiques ou mannequins. | Reflets doux et cohérents avec les éléments proches et le déplacement de caméra. |
+| Matière | Aspect pâle et assez plat, malgré le motif marbré. | Pierre polie avec relief lumineux discret, sans aspect mouillé ni miroir. |
+| Veinage | Motif visible et répétition perceptible sur la longueur de l'allée. | Veines plus discrètes, répétition moins reconnaissable, grandes dalles et joints fins. |
+| Lumière | Sol et murs éclairés de façon assez uniforme. | Gradations douces, vitrines légèrement plus lumineuses, ombres de contact qui ancrent les objets. |
+
+**Ordre technique : couleur → lumière → reflets → texture.** Dans `engine.js`, `mallTex()` charge les JPEG sans définir leur encodage ; vérifier aussi `facadeTex`. Avec Three.js 0.128, déclarer les cartes de couleur en `sRGBEncoding` si elles sont bien exportées en sRGB ; laisser les cartes de données (normal, rugosité, AO) linéaires. C'est une cause possible du rendu délavé, pas un diagnostic suffisant à elle seule. Éviter une double conversion.
+
+Les plans `sheenM` sont des dégradés blancs fixes, pas des reflets de la scène. Baisser seulement la rugosité ou ajouter des veines ne résoudra pas ce point. Tester d'abord un environnement filtré partagé pour les matériaux ; il donne une réponse lumineuse, mais ne reflète pas automatiquement les boutiques proches. Si nécessaire, prototyper **un seul reflet planaire limité à la zone témoin**, résolution réduite et coût mesuré. Ne pas le multiplier par boutique. Montrer le compromis sur téléphone avant de choisir la technique finale. Les plafonniers en `MeshBasicMaterial` paraissent lumineux sans éclairer les objets voisins : traiter séparément l'éclairage réel.
+
+### Finds : cadrage et finitions à présenter
+
+Sur la capture de Rhamone, le haut du TUC est coupé, le panneau « Finds · Sur demande » masque la sculpture et le comptoir occupe presque tout le champ. **Proposition à visualiser** : reculer légèrement le point de vue et intégrer une inscription plus discrète sur le comptoir. Garder le TUC, le comptoir courbe ivoire/bordeaux, leur implantation et l'accès au formulaire. Ne pas supprimer ni réécrire les textes sans validation.
+
+Repères pour reprendre exactement l'existant : `src/walk/views/concierge.ts` (comptoir, panneau), `initMall()` dans `src/walk/engine.js` (TUC et plantes), `src/walk/modes/t.ts` et `src/walk/models/mall-layout.ts` (arrêt et implantation). Comptoir : rayon 1,60 m, hauteur 1 m, plateau à 1,01 m ; panneau actuel 2,20 × 0,69 m, centre à Y = 2,05 m. Importer ces proportions avant toute retouche. Vérifier le cadrage sans changer le parcours global.
+
+## Suite de modélisation — lots courts, dans cet ordre
+
+| Lot | Travail Blender / préparation | Raccordement et réussite visible |
+|---|---|---|
+| 1. Sol et lumière témoins | Reprendre le script de textures existant ; préparer un morceau d'allée aux cotes actuelles, veinage discret, joints fins et UV à échelle réelle. Réutiliser une façade et les GLB pour juger les reflets. | `engine.js`, `src/walk/models/daylight.ts` : couleur correcte, ombres de contact, reflets doux. Comparaison jour/soir au même angle ; validation de ce lot avant extension. |
+| 2. Finitions d'une vitrine | Reprendre la niche déjà livrée : cadres séparés, petits biseaux, pierre, métal champagne, verre et socle. Mesurer les GLB avant d'ajuster la profondeur ; ne pas recréer les mannequins. | `src/walk/views/facades.ts`, `buildDetail()` : personnage entier, pieds posés, verre perceptible et transparent, haut aligné sur l'entrée, passage libre. Une vue de face et une vue depuis l'allée. |
+| 3. Centre Finds | Préparer une scène avec le TUC et le comptoir aux dimensions actuelles. Présenter le cadrage corrigé et la proposition de panneau discret ; après validation, biseaux et matières satinées sur les volumes conservés. | `concierge.ts`, `engine.js`, mode T : TUC lisible, comptoir moins envahissant, bouton et clic sur le comptoir toujours fonctionnels. Validation du visuel avant export de remplacement. |
+| 4. Plantes et raccords | Inspecter l'olivier déjà livré avant de le retoucher. Si nécessaire, affiner feuillage, tronc, bord du pot et contact au sol ; réutiliser le même asset avec variations de rotation. | `plante-mall.py`, `public/models/plante.glb` : pas de grandes masses polygonales dominantes au premier plan ; silhouette crédible sans surcharge de transparence. Conserver les positions et le secours en cas d'échec de chargement. |
+| 5. Déclinaison et continuité | Après validation, appliquer les finitions aux trois styles et aux raccords mur/sol/plafond. Réutiliser les portes d'entrée et la caisse existantes, harmoniser leurs matières seulement si nécessaire. | `facades.ts`, `entrance.ts`, `caisse.ts` : architecture et colonnes intactes, aucune rupture de matière, portes et caisse fonctionnelles. Pas de nouveau mall monolithique. |
+
+**Dossier de travail Blender proposé** : `assets-src/blender/mall-finitions.blend` et `assets-src/blender/mall-finitions.py` (à créer dans la PR de réalisation, pas présents dans ce plan). Collections séparées `Gabarit`, `Sol`, `Facade`, `Vitrines`, `Finds`, `Vegetation`, `Lumieres`. Le script doit mettre à jour les objets par nom, sauvegarder et exporter seulement le lot travaillé, sans reconstruire chaque fois toute la scène via MCP. Garder les scripts et assets de #111 comme point de départ.
+
+**Livraison par lot** : source éditable + script reproductible, textures/GLB seulement si nécessaires au moteur, liste des fichiers remplacés, captures avant/après au même cadrage et lien de preview. Les noms de marques, produits et mannequins restent pilotés par le site, hors texture de décor. Un rendu Cycles seul ne valide pas le résultat WebGL ; vérifier l'export dans le navigateur avant de détailler les zones suivantes.
+
+**Premier retour attendu** : une comparaison visuelle de la zone témoin pour les lots 1–2, et une proposition de cadrage Finds. Ne pas lancer tous les lots à la fois. Conserver la caisse et les mannequins existants ; aucune nouvelle tenue 3D, animation de foule ou refonte du portant dans ce chantier.
+
 ## Lire et démarrer
 
 1. Regarder la référence ci-dessous et les mesures (§ Dimensions).
 2. Lire les règles du dépôt, puis seulement les parties concernées de `facades.ts`, `mall-layout.ts`, `initMall()` / `buildDetail()` dans `engine.js` et `daylight.ts`.
-3. Vérifier les PR ouvertes : #107 touche le détourage et le moteur du Walk ; conserver ce travail lors de l'intégration. #108 concerne les looks, sujet séparé. État vérifié au départ de ce plan, à revérifier avant de coder.
-4. Construire une boutique témoin du type « enseigne », avec son morceau d'allée, en réutilisant les objets existants. Fournir une vue de face et une vue depuis l'allée avant d'étendre aux deux autres types.
+3. Repartir de `origin/main` à jour et vérifier les PR ouvertes. #107, #108, #110 et #111 sont maintenant mergées ; préserver leurs changements. #109 reste le dossier de plan, pas une branche d'implémentation à reprendre telle quelle.
+4. Reprendre une boutique témoin du type « enseigne », avec son morceau d'allée et les vitrines de #111. Fournir une vue de face et une vue depuis l'allée avant d'étendre les nouvelles finitions aux deux autres types.
 
 ## Références et limites
 
@@ -47,7 +90,7 @@ Source : `src/walk/models/mall-layout.ts` et `src/walk/views/facades.ts`, base `
 
 Élévation de principe : **vitrine gauche — entrée libre — vitrine droite**, sommet commun à 4,20 m. Le socle du mannequin reste bas ; sa hauteur et la profondeur de niche sont des réglages techniques à vérifier avec les dimensions réelles du GLB, pas des cotes validées dans l'image.
 
-Dans `engine.js`, `buildDetail()` place aujourd'hui les mannequins à X = ±3,25, Z = +0,90, devant des fonds à Z = +0,41. **Il faut reculer les mannequins et remplacer les panneaux opaques concernés pour créer de vraies niches** : ajouter une vitre devant les panneaux actuels les masquerait. Mesurer la boîte englobante de chaque mannequin, conserver son échelle, vérifier mains et chaussures derrière la vitre et pieds sur le socle.
+Dans `engine.js`, `buildDetail()` plaçait initialement les mannequins à X = ±3,25, Z = +0,90. **#111 les a déjà reculés à Y = 0,14, Z = −0,05 dans les niches**, dont l'ouverture utile est de 1,45 m et le sommet à 4,20 m. Conserver ce travail et vérifier la boîte englobante de chaque mannequin : mains et chaussures derrière la vitre, pieds sur le socle, échelle inchangée.
 
 L'origine du module reste au sol, au centre de la façade. Blender : mètres, Z vertical ; export glTF vers Y vertical. Vérifier les axes après réimport pour éviter une double rotation. L'emplacement et l'orientation globaux restent calculés par `SLOTS` et `shopType(k)`.
 
@@ -64,13 +107,13 @@ L'origine du module reste au sol, au centre de la façade. Blender : mètres, Z 
 
 La version actuelle utilise Three.js 0.128 : vérifier les matériaux/extensions réellement pris en charge par son chargeur GLB. Un matériau Blender complexe ou un éclairage Cycles ne se transfère pas automatiquement. Les surfaces statiques peuvent recevoir des textures de matière et d'occlusion précalculées ; éviter de cuire une lumière de plein jour qui annulerait le cycle soir/nuit.
 
-## Réalisation Blender en trois étapes
+## Méthode Blender pour chaque lot
 
-1. **Gabarit et vitrines.** Reprendre les cotes du code, réutiliser les mannequins GLB, créer les niches latérales et cadres séparés. Garder objets, matières et origine clairement nommés (`Facade`, `Vitrine_G`, `Vitrine_D`, `Verre_G`, `Verre_D`, `Socle_G`, `Socle_D`, `Repere_Enseigne`). Regrouper les opérations MCP dans un script reproductible, sans recréer toute la scène à chaque ajustement. Montrer vue de face et vue depuis l'allée.
+1. **Gabarit et vitrines.** Reprendre les cotes du code et les niches de #111, réutiliser les mannequins GLB, compléter uniquement les finitions nécessaires. Garder objets, matières et origine clairement nommés (`Facade`, `Vitrine_G`, `Vitrine_D`, `Verre_G`, `Verre_D`, `Socle_G`, `Socle_D`, `Repere_Enseigne`). Regrouper les opérations MCP dans un script reproductible, sans recréer toute la scène à chaque ajustement. Montrer vue de face et vue depuis l'allée.
 2. **Matières et lumière.** Appliquer le tableau ci-dessus, préparer UV et textures exportables. Réutiliser caisse et mannequins ; ne pas modéliser une nouvelle collection de vêtements. Produire un rendu au cadrage de référence, puis un GLB de la zone témoin. Garder enseigne, mannequins et produits indépendants du décor pour éviter les doublons et garder les données dynamiques.
 3. **Vérification navigateur.** Intégrer seulement la zone témoin sur une branche de réalisation depuis `main` à jour. Comparer même angle, même heure et même viewport, puis téléphone. Ajuster les reflets selon le coût mesuré. Après validation de Rhamone, appliquer les finitions aux trois styles en gardant leurs différences et la génération paramétrique du mall.
 
-Livrables de réalisation : `.blend` éditable et script dans `assets-src/`, GLB et textures optimisés dans `public/`, captures avant/après, lien réel de preview. Cette PR de plan contient seulement la note et les références ; aucun de ces livrables 3D n'est encore produit. Auteur des commits : Kelthen, sans signature supplémentaire.
+Livrables de réalisation : `.blend` éditable et script dans `assets-src/`, GLB et textures optimisés dans `public/`, captures avant/après, lien réel de preview. Cette PR de plan contient seulement la note et les références ; #111 fournit déjà les scripts de textures/plante et leurs assets. Aucun `.blend` de zone témoin n'a été trouvé dans le dépôt contrôlé. Compléter l'existant selon les lots ci-dessus. Auteur des commits : Kelthen, sans signature supplémentaire.
 
 ## Réussite et contrôles
 
