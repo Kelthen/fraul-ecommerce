@@ -19,7 +19,7 @@ export type AdminArticle = {
   sizes: string[] | null;
   supplierRef: string | null;
   onSite: boolean;
-  photos: { front?: string; back?: string; details: string[] };
+  photos: { front?: string; back?: string; details: string[]; byColor?: Record<string, { front: string; back?: string }> };
 };
 
 type Row = {
@@ -35,14 +35,22 @@ type Row = {
   on_site: boolean;
   brands: { slug: string };
   categories: { code: string };
-  product_images: { view: "front" | "back" | "detail"; path: string; position: number }[];
+  product_images: { view: "front" | "back" | "detail"; path: string; position: number; color: string | null }[];
 };
 
 const SELECT =
-  "select=id,slug,title,price_usd,cost,weight_g,colors,sizes,supplier_ref,on_site,brands(slug),categories(code),product_images(view,path,position)";
+  "select=id,slug,title,price_usd,cost,weight_g,colors,sizes,supplier_ref,on_site,brands(slug),categories(code),product_images(view,path,position,color)";
 
 const toArticle = (r: Row): AdminArticle => {
-  const imgs = [...r.product_images].sort((a, b) => a.position - b.position);
+  const sorted = [...r.product_images].sort((a, b) => a.position - b.position);
+  const imgs = sorted.filter((i) => !i.color);
+  const byColor: Record<string, { front: string; back?: string }> = {};
+  for (const i of sorted) {
+    if (!i.color || i.view === "detail") continue;
+    const c = (byColor[i.color] ??= { front: "" });
+    if (i.view === "front") c.front = i.path;
+    else c.back = i.path;
+  }
   return {
     slug: r.slug,
     name: r.title.fr ?? r.slug,
@@ -59,6 +67,7 @@ const toArticle = (r: Row): AdminArticle => {
       front: imgs.find((i) => i.view === "front")?.path,
       back: imgs.find((i) => i.view === "back")?.path,
       details: imgs.filter((i) => i.view === "detail").map((i) => i.path),
+      ...(Object.keys(byColor).length ? { byColor } : {}),
     },
   };
 };
@@ -111,7 +120,14 @@ export async function saveArticle(a: ArticleInput & { slug: string }, isNew: boo
     ...(a.photos.back ? ([["back", a.photos.back]] as ["back", string][]) : []),
     ...a.photos.details.map((d) => ["detail", d] as ["detail", string]),
   ];
-  await db.insert("product_images", views.map(([view, path], position) => ({ product_id: id, view, path, position })));
+  const colored = Object.entries(a.photos.byColor ?? {}).flatMap(([color, v]) => [
+    { view: "front", path: v.front, color },
+    ...(v.back ? [{ view: "back", path: v.back, color }] : []),
+  ]);
+  await db.insert("product_images", [
+    ...views.map(([view, path], position) => ({ product_id: id, view, path, position, color: null })),
+    ...colored.map((c, k) => ({ product_id: id, ...c, position: views.length + k })),
+  ]);
 }
 
 export async function setOnSite(slug: string, onSite: boolean): Promise<void> {

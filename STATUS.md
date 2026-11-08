@@ -198,6 +198,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |
+| 2026-11-08 | **Photos par couleur** : une couleur peut avoir ses propres photos (face, dos) ; sans photo, les photos principales. **Pas de gestion de stock** pour l'instant. | Rhamone |
 | 2026-11-08 | **Dépôt GitHub public jusqu'à la fin du site**, puis privé avec Vercel Pro (le plan gratuit ne déploie pas un dépôt privé d'organisation : essayé le 8 nov., previews bloquées). D'ici là : **aucune clé, aucune adresse e-mail, aucune donnée client** dans le dépôt. | Rhamone |
 | 2026-11-08 | **ChatGPT travaille aussi sur le dépôt** : règles dans `AGENTS.md` (branche + PR, jamais `main`, pas de base/Stripe/prix/admin sans accord). Chaque PR de ChatGPT est relue par Claude avant le merge. Protéger `main` dans GitHub (Settings → Branches) : à faire par Rhamone. | Rhamone |
 | 2026-11-06 | Fiche article de l'admin : le champ « Nom » s'appelle **« Description »**. Le texte s'affiche toujours comme titre de l'article sur le site, sous la marque. | Serge, capture du 6 nov. |
