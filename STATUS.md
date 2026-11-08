@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Walk : finitions luxe et vitrines intégrées — plan validé, réalisation à faire** (Rhamone, 8 novembre). Architecture actuelle et trois styles conservés ; sol ivoire poli, métal champagne, vitrines latérales au même plan et à la même hauteur que la grande entrée, mannequins derrière le verre. Une zone témoin Blender puis preview navigateur avant généralisation. Référence et cotes : `docs/PLAN-MALL-REALISTE.md`. Ce plan ne modifie pas le site.
+
 - **Accueil : taille des personnages du défilé** — retour de Rhamone du 8 novembre : progression du plus petit à gauche au plus grand à droite, plutôt qu'un grand personnage au milieu. Le reste lui convient ; cadre rouge corrigé dans #102. Détail : `docs/ACCUEIL-LOOKS.md` ; nouvelle preview à valider avant merge.
 
 - **Walk : portant** (`feat/rhamon/portant`, plan de ChatGPT #97, à fermer quand fini) : hauts un peu moins serrés ; pantalons et shorts aussi de côté sur cintre à pinces. Reste à étudier : photo détourée de la pièce choisie.
@@ -200,6 +202,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-08 | **Mall plus réaliste et luxueux, architecture conservée.** Sol moderne ivoire poli, pierre claire, métal champagne brossé, couleurs de marques et bordeaux conservés. Mannequins dans des vitrines latérales intégrées, alignées en plan et en hauteur avec l'entrée de la boutique. Go pour la zone témoin Blender ; preview avant généralisation. Les colonnes et trois styles actuels priment sur les simplifications du visuel. Complète la décision du 28 octobre sans réintroduire un décor de remplacement. Plan : `docs/PLAN-MALL-REALISTE.md`. | Rhamone, conversation et visuel validé |
 | 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |
 | 2026-11-08 | **Photos par couleur** : une couleur peut avoir ses propres photos (face, dos) ; sans photo, les photos principales. **Pas de gestion de stock** pour l'instant. | Rhamone |
 | 2026-11-08 | **Dépôt GitHub public jusqu'à la fin du site**, puis privé avec Vercel Pro (le plan gratuit ne déploie pas un dépôt privé d'organisation : essayé le 8 nov., previews bloquées). D'ici là : **aucune clé, aucune adresse e-mail, aucune donnée client** dans le dépôt. | Rhamone |
