@@ -89,7 +89,7 @@
 - Refuser un doublon : « Gucci » et « gucci » = la même boutique (comparer les slugs).
 
 ### 2. ✅ Connexion admin par e-mail, faite par Serge le 4 nov. (les e-mails marchent depuis le 4 nov. : Resend vérifié, SMTP Supabase réglé)
-- **Liste d'admins** dans Vercel (`ADMIN_EMAILS`, séparés par des virgules) : Rhamone (`rhamonkota@gmail.com`), Serge, Jean Paul (**e-mail de Jean Paul : à demander à Rhamone**).
+- **Liste d'admins** dans Vercel (`ADMIN_EMAILS`, séparés par des virgules) : Rhamone, Serge, Jean Paul et Frank (adresses dans Vercel seulement, jamais dans le dépôt).
 - `/admin` : on tape son e-mail, on reçoit un **code à 6 chiffres valable 10 min** (par Resend) ; si l'e-mail n'est pas dans la liste, **rien n'est envoyé**, et le message reste le même pour ne rien révéler. 5 essais au plus.
 - **Double vérification, prête mais coupée jusqu'au lancement** (décision de Serge, 6 nov.) : le jour J, `ADMIN_2FA=true` dans Vercel. Sans elle, le premier code ouvre l'admin. Quand elle est allumée : après le code, le code d'une application d'authentification (Google Authenticator, Microsoft Authenticator…). QR code à la première connexion, alerte Telegram et e-mail à chaque changement d'application.
 - **Depuis « Mon compte »** (#85) : « Accès équipe » envoie le même code par e-mail, puis mène à la même 2e étape. Le mot de passe ne compte pas comme vérification : il se réinitialise par ce même e-mail.

@@ -25,9 +25,12 @@ export type Brand = {
   style: BrandStyle;
 };
 
-export type CategoryId =
+/** Les 12 types du code (dessins et portants du Walk). */
+export type KnownCategoryId =
   | "tee" | "hoodie" | "jacket" | "pants" | "shorts" | "socks" | "sneaker"
   | "cap" | "glasses" | "watch" | "jewelry" | "bag";
+/** Un type du code, ou un type créé depuis l'admin (son code est son adresse, ex. « maillots »). */
+export type CategoryId = KnownCategoryId | (string & {});
 
 /**
  * Emplacement d'une pièce dans « Crée ta tenue ». Une seule pièce par emplacement :
@@ -43,6 +46,8 @@ export type Category = {
   label: string;
   slot: OutfitSlot;
   sizes: string[];
+  /** Poids moyen en grammes, proposé dans la fiche article. */
+  weight?: number;
 };
 
 export type Product = {

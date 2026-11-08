@@ -1,7 +1,8 @@
 // Point d'accès unique au catalogue. Les pages n'appellent que ces fonctions.
 // Articles : la base (src/lib/catalog/db.ts), modifiable depuis l'admin ; copie de secours si elle ne répond pas.
-// Boutiques : la base aussi. Une marque sans article ou masquée n'existe pas sur le site. Catégories : dans le code.
-import { loadBrandRows, loadSiteRows, toBrand, toProduct } from "./db";
+// Boutiques : la base aussi. Une marque sans article ou masquée n'existe pas sur le site.
+// Types : les 12 du code, plus ceux créés depuis l'admin (base).
+import { loadBrandRows, loadCategoryRows, loadSiteRows, mergeCategories, toBrand, toProduct } from "./db";
 import { BRANDS, CATEGORIES, REAL_SNAPSHOT, accentFor } from "./fallback";
 import { priceTable } from "@/models/pricing/price";
 import type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
@@ -29,18 +30,23 @@ export async function getBrand(slug: string): Promise<Brand | undefined> {
   return (await getBrands()).find((b) => b.slug === slug);
 }
 
-export function getCategory(id: CategoryId): Category {
-  return CATEGORIES.find((c) => c.id === id)!;
+/** Tous les types de vêtement, dans l'ordre d'affichage. */
+export async function getCategories(): Promise<Category[]> {
+  return mergeCategories(CATEGORIES, await loadCategoryRows());
+}
+
+export async function getCategory(id: CategoryId): Promise<Category> {
+  return (await getCategories()).find((c) => c.id === id) ?? { id, slug: id, label: id, slot: "accessory", sizes: [] };
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
-  return CATEGORIES.find((c) => c.slug === slug);
+  return (await getCategories()).find((c) => c.slug === slug);
 }
 
 /** Articles du site : la base, ou la copie de secours si elle ne répond pas. */
 async function pricedProducts(): Promise<PricedProduct[]> {
-  const [rows, brands] = await Promise.all([loadSiteRows(), visibleBrands()]);
-  return rows ? rows.map((r) => toProduct(r, brands, CATEGORIES, accentFor)).filter((p): p is PricedProduct => p !== null) : REAL_SNAPSHOT;
+  const [rows, brands, categories] = await Promise.all([loadSiteRows(), visibleBrands(), getCategories()]);
+  return rows ? rows.map((r) => toProduct(r, brands, categories, accentFor)).filter((p): p is PricedProduct => p !== null) : REAL_SNAPSHOT;
 }
 
 /** Faux si le site montre sa copie de secours : ses prix peuvent être périmés, on n'encaisse pas. */
@@ -73,8 +79,9 @@ export async function getProductsByCategory(id: CategoryId): Promise<Product[]> 
 
 /** Catégories qui ont au moins un article, dans l'ordre d'affichage. */
 export async function getStockedCategories(): Promise<Category[]> {
-  const stocked = new Set((await pricedProducts()).map((p) => p.category));
-  return CATEGORIES.filter((c) => stocked.has(c.id));
+  const [products, categories] = await Promise.all([pricedProducts(), getCategories()]);
+  const stocked = new Set(products.map((p) => p.category));
+  return categories.filter((c) => stocked.has(c.id));
 }
 
 /** Nouveautés : une pièce par marque d'abord, puis les suivantes. */

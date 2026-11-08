@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CatalogBrowser, CatalogFallback } from "@/components/catalog/CatalogBrowser";
-import { CATEGORIES, getProducts } from "@/lib/catalog";
+import { getCategories, getProducts } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Tout voir",
@@ -20,7 +20,7 @@ export default async function AllProductsPage() {
         </div>
       </div>
       <Suspense fallback={<CatalogFallback products={products} />}>
-        <CatalogBrowser products={products} categories={CATEGORIES.map(({ id, label }) => ({ id, label }))} />
+        <CatalogBrowser products={products} categories={(await getCategories()).map(({ id, label }) => ({ id, label }))} />
       </Suspense>
     </section>
   );

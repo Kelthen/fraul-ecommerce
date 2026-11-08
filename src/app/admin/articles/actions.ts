@@ -2,11 +2,12 @@
 
 import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { CATEGORIES } from "@/lib/catalog/fallback";
+import { getCategories } from "@/lib/catalog";
 import { CATALOGUE_TAG } from "@/lib/catalog/db";
 import { isAdmin } from "@/lib/server/admin-session";
-import { deleteArticle, getArticle, listArticles, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
+import { createCategory, deleteArticle, getArticle, listArticles, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";
+import { categoryProblems, categorySlug, type CategoryInput } from "@/models/admin/category";
 import { articleProblems, cleanArticle, findDuplicate, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
 
 // Actions de l'admin des articles. Une action serveur est une adresse publique : chacune revérifie la session.
@@ -34,7 +35,7 @@ export async function uploadPhotoAction(form: FormData): Promise<{ url: string }
 export async function saveArticleAction(raw: ArticleInput): Promise<{ errors: string[] }> {
   const input = cleanArticle(raw);
   if (!(await isAdmin())) return { errors: ["Session expirée : reconnecte-toi."] };
-  const known = { brands: (await listBoutiques()).map((b) => b.slug), categories: CATEGORIES.map((c) => c.id) };
+  const known = { brands: (await listBoutiques()).map((b) => b.slug), categories: (await getCategories()).map((c) => c.id) };
   const errors = articleProblems(input, known);
   if (errors.length) return { errors };
   const isNew = !input.slug;
@@ -84,4 +85,29 @@ export async function deleteArticleAction(form: FormData): Promise<void> {
     msg = "La suppression a échoué. Réessaie dans un instant.";
   }
   redirect(`/admin/articles?msg=${encodeURIComponent(msg)}`);
+}
+
+export type NewType = { id: string; label: string; sizes: string[]; weight: number };
+
+/** « + Nouveau type » de la fiche article : le type est créé et choisi pour l'article. */
+export async function createTypeAction(raw: CategoryInput): Promise<{ type: NewType } | { errors: string[] }> {
+  if (!(await isAdmin())) return { errors: ["Session expirée : reconnecte-toi."] };
+  const input: CategoryInput = {
+    label: String(raw.label ?? "").trim().slice(0, 60),
+    sizes: (Array.isArray(raw.sizes) ? raw.sizes : []).map((s) => String(s).trim()).filter(Boolean),
+    weightG: Number(raw.weightG),
+    slot: raw.slot,
+  };
+  const all = await getCategories();
+  const errors = categoryProblems(input, all.flatMap((c) => [c.slug, c.id, c.label.toLowerCase()]));
+  if (errors.length) return { errors };
+  const slug = categorySlug(input.label);
+  try {
+    await createCategory({ slug, label: input.label, slot: input.slot, sizes: input.sizes, weightG: input.weightG });
+    updateTag(CATALOGUE_TAG);
+    return { type: { id: slug, label: input.label, sizes: input.sizes, weight: input.weightG } };
+  } catch (e) {
+    console.error("[admin articles] nouveau type", e);
+    return { errors: ["La création a échoué. Réessaie dans un instant."] };
+  }
 }

@@ -77,6 +77,15 @@ export async function loadSiteRows(): Promise<Row[] | null> {
 }
 
 /** Boutiques visibles, dans l'ordre du mall ; null si la base ne répond pas. */
+export type CategoryRow = { code: string; slug: string; name: { fr?: string }; slot: Category["slot"]; sizes: string[]; weight_g: number | null };
+
+/** Types de vêtement de la base (ceux du code, plus ceux créés depuis l'admin). */
+export async function loadCategoryRows(): Promise<CategoryRow[] | null> {
+  "use cache";
+  cacheTag(CATALOGUE_TAG);
+  return read<CategoryRow>("categories?select=code,slug,name,slot,sizes,weight_g&order=position.asc");
+}
+
 export async function loadBrandRows(): Promise<BrandRow[] | null> {
   "use cache";
   cacheTag(CATALOGUE_TAG);
@@ -104,4 +113,12 @@ async function read<T>(path: string): Promise<T[] | null> {
     console.error("[catalogue] base injoignable, copie de secours utilisée :", e);
     return null;
   }
+}
+
+/** Liste des types : ceux du code d'abord (dessins du Walk), puis ceux créés depuis l'admin. */
+export function mergeCategories(code: Category[], rows: CategoryRow[] | null): Category[] {
+  const extra = (rows ?? [])
+    .filter((r) => !code.some((c) => c.id === r.code))
+    .map((r): Category => ({ id: r.code, slug: r.slug, label: r.name.fr ?? r.code, slot: r.slot, sizes: r.sizes, ...(r.weight_g ? { weight: r.weight_g } : {}) }));
+  return [...code, ...extra];
 }

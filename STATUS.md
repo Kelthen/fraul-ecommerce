@@ -3,6 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
+_Dernière mise à jour : 2026-11-08 par rhamon (nouveau type de vêtement depuis l'admin)_
 _Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
 _Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
@@ -19,12 +20,13 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 **Code (Serge)**
 - [x] « + Nouvelle marque » depuis la fiche article (logo ou 2 couleurs, couleurs reprises du logo) — `docs/ADMIN-ARTICLES.md`
-- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge et Frank, partenaire de Jean Paul, ajouté le 5 nov. ; Jean Paul à ajouter quand il donne son adresse), Telegram en secours
+- [x] Connexion admin par e-mail (`ADMIN_EMAILS` : Rhamone, Serge, Jean Paul et Frank, son partenaire, ajoutés le 5 nov.), Telegram en secours
 - [x] Page compte client style Nike (case « nouveautés » à l'inscription, grille, « Se déconnecter » discret)
 - [x] Webhook Stripe : traiter les 4 événements ajoutés au webhook (`checkout.session.async_payment_failed` → annuler + prévenir ; `checkout.session.expired` → relance panier ; `charge.refunded` → commande « remboursée » ; `charge.dispute.created` → alerte Telegram). Aujourd'hui ils sont reçus et ignorés.
 - [x] **Filtres du catalogue** (Rhamone, 4 nov.) : page « Tout voir » + pages marque et type avec un bouton **« Filtrer »** (volet par le bas au téléphone) : **Type** (hoodies, pantalons, sneakers, chaussettes…), **Marque**, **Couleur** (pastilles), **Taille** ; **Tri** : nouveautés, prix croissant, prix décroissant. Filtres actifs en petites pastilles retirables ; filtres dans l'adresse (lien partageable sur WhatsApp) ; ne proposer que les valeurs qui ont des articles. Petits boutons, photos d'abord (L-58).
 - [x] **Rayons manquants dans le Walk** : seuls 6 types ont un rayon (`RACKS` de `src/walk/models/store-layout.ts` : tee, hoodie, pants, cap, sneaker, bag). Les **vestes, shorts, chaussettes, lunettes, montres, bijoux** sont en vente sur le site mais **absents des boutiques du Walk** (ex. shorts et doudoune Trapstar). Pour chacun : dessin (`art.ts`) + place sur le portant (`store-layout.ts`) + `npm run smoke` (L-34). Un rayon apparaît tout seul dès qu'une boutique a un article de ce type (rayon vide caché, L-35).
-- [ ] Un **type de vêtement tout nouveau** (ex. « maillots ») n'est pas proposé dans l'admin : l'ajouter au code (`CATEGORIES`) ; plus tard, éventuellement depuis l'admin.
+- [x] Un **type de vêtement tout nouveau** (ex. « maillots ») : « + Nouveau type… » dans la fiche article (nom, tailles, poids moyen, où ça se porte), enregistré dans la base (migration 0017, appliquée) — rhamon, 8 nov.
+  - [ ] Un type créé ainsi est visible sur le site (Tout voir, pages marque et type) mais **pas encore dans le Walk** : il lui faut un dessin et une place sur le portant (`src/walk/`), comme les 12 types du code.
 - [ ] **SEO** :
   - [ ] Favicon et icônes : `src/app/icon.png` (512 px), `apple-icon.png` (180 px), remplacer `favicon.ico` (aujourd'hui celui par défaut). **Attend le logo** (ligne « Bloqué »).
   - [x] Image de partage (Open Graph / WhatsApp / iMessage) : `opengraph-image.png` 1200×630 par défaut, et une par fiche produit (photo de face).
@@ -49,7 +51,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 **Rhamone / Jean Paul**
 - [ ] **Logo TakeUrClothes** (fichier SVG ou PNG fond transparent) → favicon, icônes, image de partage, e-mails
-- [ ] Ajouter Jean Paul au groupe Telegram + son ID Telegram dans `TELEGRAM_ALLOWED_USERS` ; son e-mail pour `ADMIN_EMAILS`
+- [ ] Ajouter Jean Paul au groupe Telegram + son ID Telegram dans `TELEGRAM_ALLOWED_USERS` (son e-mail est dans `ADMIN_EMAILS` depuis le 5 nov.)
 - [ ] Vrais prix (USD) et coûts (¥) de chaque article, saisis dans `/admin/articles`
 - [ ] Renouveler les clés collées dans le chat le 4 nov. (Stripe `whsec_` + `rk_live`, Resend, Turnstile), puis les remettre dans Vercel et Supabase
 - [ ] Compte Stripe vérifié (pays de l'entreprise, identité, banque)
@@ -150,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Walk : portant** (`feat/rhamon/portant`, plan de ChatGPT #97, à fermer quand fini) : hauts un peu moins serrés ; pantalons et shorts aussi de côté sur cintre à pinces. Reste à étudier : photo détourée de la pièce choisie.
+
 - **Accueil : défilé de looks, version de test** (`feat/rhamon/looks-accueil`) : 6 looks avec photo de mannequin, faits avec les vrais articles, sous l'entrée du Walk, en **scène** (personnage au centre en entier, les autres en profondeur, glisser ou flèches ; retour de Rhamone du 8 nov. : pas de cartes) ; toucher le personnage ouvre ses pièces (photo, prix, fiche). Photos : essais de ChatGPT validés par Rhamone le 8 nov. (`assets-src/looks/`) ; textes déformés et chaussures illustratives à corriger avant la mise en ligne. Un look sans photo montrerait les photos de ses pièces. Version finale : looks ajoutés depuis l'admin (photo + pièces), après validation de Rhamone. Notes : `docs/ACCUEIL-LOOKS.md`.
 
 | Quoi | Qui | Branche / PR | Depuis |
@@ -196,6 +200,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 |---|---|---|
 | 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |
 | 2026-11-08 | **Photos par couleur** : une couleur peut avoir ses propres photos (face, dos) ; sans photo, les photos principales. **Pas de gestion de stock** pour l'instant. | Rhamone |
+| 2026-11-08 | **Dépôt GitHub public jusqu'à la fin du site**, puis privé avec Vercel Pro (le plan gratuit ne déploie pas un dépôt privé d'organisation : essayé le 8 nov., previews bloquées). D'ici là : **aucune clé, aucune adresse e-mail, aucune donnée client** dans le dépôt. | Rhamone |
 | 2026-11-08 | **ChatGPT travaille aussi sur le dépôt** : règles dans `AGENTS.md` (branche + PR, jamais `main`, pas de base/Stripe/prix/admin sans accord). Chaque PR de ChatGPT est relue par Claude avant le merge. Protéger `main` dans GitHub (Settings → Branches) : à faire par Rhamone. | Rhamone |
 | 2026-11-06 | Fiche article de l'admin : le champ « Nom » s'appelle **« Description »**. Le texte s'affiche toujours comme titre de l'article sur le site, sous la marque. | Serge, capture du 6 nov. |
 | 2026-11-06 | **Double vérification de l'admin coupée jusqu'au lancement** : le code e-mail (ou Telegram) suffit d'ici là. Le code reste en place ; le jour J, `ADMIN_2FA=true` dans Vercel. | Serge, chat du 6 nov. |
