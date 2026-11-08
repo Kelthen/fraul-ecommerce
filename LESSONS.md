@@ -351,3 +351,8 @@
 ### L-62 — `npm run check` avant chaque push, pas seulement lint, tsc et build
 - **Erreur :** #101 (portant moins serré) a été mergée avec lint, tsc et build au vert, mais un test du Walk échouait : les portants veste et t-shirt se chevauchaient. ChatGPT l'a vu dans #103 (8 nov. 2026).
 - **Règle :** avant de pousser, lancer **`npm run check`** (il contient les tests du Walk et des modèles). Un réglage de mesure du Walk (`store-layout.ts`) se vérifie toujours avec `walk.test.ts`.
+
+### L-63 — Réalisme du mall : conserver l'architecture et terminer la validation avant transmission
+- **Projet / date :** TakeUrClothes, 2026-11-08.
+- **Ce qui s'est passé :** une première proposition redessinait une boutique ; Rhamone a précisé de garder l'architecture actuelle, puis de finir ensemble les choix avant de transmettre le plan de réalisation.
+- **Règle :** partir d'une capture du Walk et de ses cotes ; améliorer les matières et les éléments explicitement validés. Distinguer l'ambiance de référence des dimensions réelles, signaler les détails simplifiés dans l'image (colonnes, vitrines). Consolider le plan après le go ; ne pas transmettre chaque étape du brainstorming comme une nouvelle consigne.
