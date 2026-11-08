@@ -28,6 +28,8 @@ const WOMAN_READY = true;
 let MANNEQUIN_F = null;
 /** Comptoir de la Caisse modélisé dans Blender par Rhamone (public/models/caisse.glb, préparé par scripts/prep-decor.mjs). */
 let CAISSE = null;
+/** Olivier en pot de marbre modélisé dans Blender (assets-src/blender/plante-mall.py → public/models/plante.glb). */
+let PLANTE = null;
 
 /**
  * Démarre le Walk dans `root`.
@@ -183,7 +185,7 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null]); if (CAISSE) walkMaterials(CAISSE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante")]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
@@ -712,6 +714,8 @@ export function startWalk(root, o) {
     bar(t, h, xC - w / 2 + t / 2, h / 2); bar(w - t, t, xC + t / 2, h - t / 2); bar(w - t, t, xC + t / 2, t / 2); // C
     const leafA = lam(0x6b7a55), leafB = lam(0x56653f), trunkM = lam(0x7a6450), potM = std(0xdcd3c4, 0.5);
     [[-5.5, -3.5], [5.5, -3.5], [-5.5, 3.5], [5.5, 3.5]].forEach(([x, z], k) => {
+      // Olivier en pot de marbre modélisé dans Blender (assets-src/blender/plante-mall.py) ; sinon l'arbre dessiné.
+      if (PLANTE) { const p = PLANTE.clone(); p.position.set(x, 0, z); p.rotation.y = k * 1.3; C.add(p); return; }
       const t = new THREE.Group(); t.position.set(x, 0, z); C.add(t);
       add(t, new THREE.CylinderGeometry(0.75, 0.6, 0.9, 20), potM, 0, 0.45, 0);
       add(t, new THREE.CylinderGeometry(0.08, 0.12, 2.0, 8), trunkM, 0, 1.9, 0);

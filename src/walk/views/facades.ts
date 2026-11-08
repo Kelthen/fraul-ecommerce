@@ -13,6 +13,21 @@ type Opts = {
   tex?: { stone?: T.Texture; metal?: T.Texture };
 };
 
+/** Ombre douce et ronde (dessinée une fois) : sous le mannequin, sur le socle des vitrines. */
+let SOFT: T.Texture | null = null;
+function softShadow(THREE: typeof T): T.Texture {
+  if (SOFT) return SOFT;
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const x = c.getContext("2d")!;
+  const g = x.createRadialGradient(64, 64, 4, 64, 64, 64);
+  g.addColorStop(0, "rgba(40,30,20,0.55)");
+  g.addColorStop(1, "rgba(40,30,20,0)");
+  x.fillStyle = g;
+  x.fillRect(0, 0, 128, 128);
+  return (SOFT = new THREE.CanvasTexture(c));
+}
+
 export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opts) {
   const g = new THREE.Group();
   const std = (c: number, r: number, m = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
@@ -57,6 +72,14 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opt
       [-1, 1].forEach((e) => box(0.04, TOP, 0.85, back, cx + e * OPEN / 2, TOP / 2, -0.04)); // joues
       box(OPEN, 0.05, 0.85, light, cx, TOP - 0.03, -0.04); // plafond lumineux, lumière chaude sur le mannequin
       box(OPEN - 0.1, 0.14, 0.7, socle, cx, 0.07, -0.08); // socle
+      const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.6), new THREE.MeshBasicMaterial({ map: softShadow(THREE), transparent: true, depthWrite: false }));
+      sh.rotation.x = -Math.PI / 2;
+      sh.position.set(cx, 0.142, -0.06);
+      g.add(sh); // ombre du mannequin sur le socle
+      const base = new THREE.Mesh(new THREE.PlaneGeometry(OPEN + 0.3, 1.1), new THREE.MeshBasicMaterial({ map: softShadow(THREE), transparent: true, opacity: 0.6, depthWrite: false }));
+      base.rotation.x = -Math.PI / 2;
+      base.position.set(cx, 0.004, 0.1);
+      g.add(base); // le socle se pose sur le sol
       [-1, 1].forEach((e) => box(0.05, TOP, 0.08, frame, cx + e * (OPEN / 2 + 0.02), TOP / 2, 0.42)); // cadre champagne
       box(OPEN + 0.09, 0.05, 0.08, frame, cx, TOP, 0.42);
       box(OPEN + 0.09, 0.05, 0.08, frame, cx, 0.025, 0.42);
