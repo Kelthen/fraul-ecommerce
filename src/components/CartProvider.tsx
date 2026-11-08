@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_QTY, clampQty } from "@/models/cart/limits";
 import { isPriceTable, type PriceTable } from "@/models/pricing/public";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -74,12 +75,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     (line, qty = 1) => {
       setLines((prev) => {
         const i = prev.findIndex((l) => l.slug === line.slug && l.size === line.size && l.color === line.color);
-        if (i >= 0) return prev.map((l, k) => (k === i ? { ...l, qty: l.qty + qty } : l));
-        return [...prev, { ...line, qty }];
+        if (i >= 0) return prev.map((l, k) => (k === i ? { ...l, qty: clampQty(l.qty + qty) } : l));
+        return [...prev, { ...line, qty: clampQty(qty) }];
       });
-      toast(`Ajouté : ${line.name}${line.size ? ` · ${line.size}` : ""}`);
+      // Le paiement refuse plus de MAX_QTY exemplaires d'un même article : on s'arrête là, et on le dit.
+      const had = lines.find((l) => l.slug === line.slug && l.size === line.size && l.color === line.color)?.qty ?? 0;
+      toast(had + qty > MAX_QTY ? `${MAX_QTY} exemplaires au maximum par article` : `Ajouté${qty > 1 ? ` (${qty})` : ""} : ${line.name}${line.size ? ` · ${line.size}` : ""}`);
     },
-    [toast],
+    [toast, lines],
   );
 
   const clear = useCallback(() => setLines([]), []);
@@ -89,7 +92,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       lines,
       count: lines.reduce((a, l) => a + l.qty, 0),
       add,
-      setQty: (i, qty) => setLines((p) => (qty <= 0 ? p.filter((_, k) => k !== i) : p.map((l, k) => (k === i ? { ...l, qty } : l)))),
+      setQty: (i, qty) => setLines((p) => (qty <= 0 ? p.filter((_, k) => k !== i) : p.map((l, k) => (k === i ? { ...l, qty: clampQty(qty) } : l)))),
       setSize: (i, size) => setLines((p) => p.map((l, k) => (k === i ? { ...l, size } : l))),
       remove: (i) => setLines((p) => p.filter((_, k) => k !== i)),
       clear,
