@@ -150,7 +150,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
-- **Accueil : défilé de looks, version de test** (`feat/rhamon/looks-accueil`) : 6 looks faits avec les vrais articles, sous l'entrée du Walk ; toucher un look ouvre ses pièces (photo, prix, fiche). Deux looks ont une photo de mannequin (essais de ChatGPT appréciés par Rhamone le 8 nov. : Corteiz, Valley Dreams + Acne ; texte du t-shirt déformé et chaussures illustratives, à corriger avant la mise en ligne) ; les autres montrent les photos de leurs pièces. Version finale : looks ajoutés depuis l'admin (photo + pièces), après validation de Rhamone. Notes : `docs/ACCUEIL-LOOKS.md`.
+- **Accueil : défilé de looks, version de test** (`feat/rhamon/looks-accueil`) : 6 looks avec photo de mannequin, faits avec les vrais articles, sous l'entrée du Walk ; toucher un look ouvre ses pièces (photo, prix, fiche). Photos : essais de ChatGPT validés par Rhamone le 8 nov. (`assets-src/looks/`) ; textes déformés et chaussures illustratives à corriger avant la mise en ligne. Un look sans photo montrerait les photos de ses pièces. Version finale : looks ajoutés depuis l'admin (photo + pièces), après validation de Rhamone. Notes : `docs/ACCUEIL-LOOKS.md`.
 
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|

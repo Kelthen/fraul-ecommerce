@@ -25,8 +25,14 @@ Le 8 novembre, Rhamone a apprécié les deux essais ci-dessous et a donné son a
 |---|---|---|
 | `assets-src/looks/look-corteiz.jpg` | `/produit/corteiz-hoodie-corteiz-noir` et `/produit/corteiz-jogging-corteiz-noir` | Inspirées des Air Jordan 1 Chicago |
 | `assets-src/looks/look-valley-acne.jpg` | `/produit/valley-dreams-t-shirt-valley-blanc` et `/produit/acne-studios-pant-delave-acne-studios` | Inspirées des Air Jordan 4 |
+| `assets-src/looks/look-corteiz-denim-tears.jpg` | `/produit/corteiz-hoodie-corteiz-x-denim-tears` et `/produit/corteiz-pant-corteiz-x-denim` | Inspirées des Air Jordan 4 |
+| `assets-src/looks/look-acne-kappa.jpg` | `/produit/acne-studios-veste-acne-studios-x-kappa-noir` et `/produit/acne-studios-pant-acne-studios-x-kappa-noir` | Inspirées des Air Jordan 4 |
+| `assets-src/looks/look-gallery-acne.jpg` | `/produit/gallery-dept-gallery-dept-long-sleeve-pocket-tee` et `/produit/acne-studios-pant-delave-acne-studios` | Inspirées des Air Jordan 4 |
+| `assets-src/looks/look-paly-acne.jpg` | `/produit/paly-wood-t-shirt-paly-blanc` et `/produit/acne-studios-pant-acne-studios-x-kappa-noir` | Inspirées des Air Jordan 4 |
 
-Les quatre articles figuraient sur le site au moment de l'essai ; revérifier leur disponibilité avant de les montrer. Les chaussures sont une illustration : leur fidélité à un modèle réel n'a pas été vérifiée et elles ne doivent pas être présentées comme des produits vendus. Plusieurs petits textes sur le t-shirt Valley Dreams sont déformés : les corriger ou utiliser une photo fidèle avant toute mise en ligne. Comparer les coupes, couleurs, badges et imprimés aux photos du catalogue. Pour un look Nike Tech Fleece, Rhamone demande des Nike Air Force 1 ; pour les autres, des Jordan. Ne pas faire croire que des articles absents du catalogue sont disponibles.
+Rhamone valide ces quatre essais supplémentaires le 8 novembre pour préparer un test à six looks. Les personnages varient ; le défilé et l'affichage des articles restent à réaliser. Ce sont des images de référence à contrôler, pas des photos fournisseur.
+
+Les articles figuraient sur le site au moment de l'essai ; revérifier leur disponibilité avant de les montrer. Les chaussures sont une illustration : leur fidélité à un modèle réel n'a pas été vérifiée et elles ne doivent pas être présentées comme des produits vendus. Plusieurs petits textes sur le t-shirt Valley Dreams sont déformés : les corriger ou utiliser une photo fidèle avant toute mise en ligne. Comparer aussi les imprimés du t-shirt Paly Wood, les motifs Corteiz × Denim Tears et les badges et inscriptions Acne/Kappa aux photos du catalogue. Pour un look Nike Tech Fleece, Rhamone demande des Nike Air Force 1 ; pour les autres, des Jordan. Ne pas faire croire que des articles absents du catalogue sont disponibles.
 
 ## Organisation
 
