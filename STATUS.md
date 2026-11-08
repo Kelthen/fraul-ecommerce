@@ -150,6 +150,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Walk : présentation des vêtements sur portant** — direction discutée avec Rhamone le 8 novembre : espacement revu, mouvement inspiré de la vidéo et extension aux vêtements suspendus. Plan et maquette : `docs/PLAN-PORTANT.md`. Comportement au doigt à confirmer ; pas de code réalisé dans ce plan.
+
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
 | **Admin articles + tableau de bord pour Jean Paul** : PR 1 « articles dans la base » (code prêt, migration 0010 appliquée, **import fait le 3 nov. : 23 articles**), puis /admin/articles, /admin (stats), compte admin de Jean Paul. **Serge reprend** : tout est dans `docs/ADMIN-ARTICLES.md` | rhamon → serge | `feat/rhamon/catalogue-base` | 2026-11-04 |
