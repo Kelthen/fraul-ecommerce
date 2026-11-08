@@ -150,6 +150,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Accueil : défilé de looks, version de test** (`feat/rhamon/looks-accueil`) : 6 looks faits avec les vrais articles, sous l'entrée du Walk ; toucher un look ouvre ses pièces (photo, prix, fiche). Sans photo de mannequin, le look montre les photos de ses pièces. Version finale : looks ajoutés depuis l'admin (photo + pièces), après validation de Rhamone. Notes : `docs/ACCUEIL-LOOKS.md`.
+
 | Quoi | Qui | Branche / PR | Depuis |
 |---|---|---|---|
 | **Admin articles + tableau de bord pour Jean Paul** : PR 1 « articles dans la base » (code prêt, migration 0010 appliquée, **import fait le 3 nov. : 23 articles**), puis /admin/articles, /admin (stats), compte admin de Jean Paul. **Serge reprend** : tout est dans `docs/ADMIN-ARTICLES.md` | rhamon → serge | `feat/rhamon/catalogue-base` | 2026-11-04 |
