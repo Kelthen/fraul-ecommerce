@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { Product } from "@/lib/catalog";
 import { Price } from "../Price";
 
@@ -10,11 +10,19 @@ import { Price } from "../Price";
 // le personnage du centre en entier et en grand, les autres en profondeur. Glisser (ou flèches) amène le suivant
 // au centre ; toucher le personnage du centre ouvre ses pièces (volet par le bas au téléphone, à côté sur ordinateur).
 
+const WIDE = "(min-width: 900px)";
+
 type ShownLook = { id: string; title: string; photo?: string; items: Product[] };
 
 export function LooksStrip({ looks }: { looks: ShownLook[] }) {
   const [idx, setIdx] = useState(0);
   const [open, setOpen] = useState(false);
+  // Grand écran : la file prend toute la largeur (Rhamone, 8 nov. : « utilise la grandeur de l'écran »).
+  const wide = useSyncExternalStore(
+    (cb) => { const m = matchMedia(WIDE); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); },
+    () => matchMedia(WIDE).matches,
+    () => false,
+  );
   const sheet = useRef<HTMLDialogElement>(null);
   const start = useRef<number | null>(null);
   const swiped = useRef(false);
@@ -72,14 +80,14 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
           const leaving = rank === n - 1 && n > 4;
           const far = leaving ? 0 : Math.min(rank, 4);
           const center = rank === 0;
-          const X = [36, -34, -92, -138, -175][far] + (leaving ? 90 : 0);
+          const X = (wide ? [105, -15, -115, -200, -270] : [36, -34, -92, -138, -175])[far] + (leaving ? 90 : 0);
           return (
             <button
               key={l.id}
               type="button"
               className={center ? "looker is-center" : "looker"}
               style={{
-                transform: `translateX(calc(-50% + ${X}%)) scale(${leaving ? 1.05 : [1, 0.74, 0.56, 0.42, 0.32][far]})`,
+                transform: `translateX(calc(-50% + ${X}%)) scale(${leaving ? 1.05 : (wide ? [1, 0.8, 0.64, 0.5, 0.4] : [1, 0.74, 0.56, 0.42, 0.32])[far]})`,
                 // Flou de profondeur : plus le personnage est petit (loin), plus il est flou (Rhamone, 8 nov. : « air chic »).
                 filter: far ? `blur(${[0, 0.8, 1.8, 3][far]}px) saturate(${1 - far * 0.1})` : undefined,
                 transitionDelay: `${(leaving ? 0 : far) * 70}ms`, // la file avance l'un après l'autre

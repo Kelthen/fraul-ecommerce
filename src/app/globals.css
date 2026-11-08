@@ -159,11 +159,11 @@ p { margin: 0; }
 .looks-dots span.on { background: var(--bordeaux); }
 .looks-side { display: none; }
 @media (min-width: 900px) {
-  .looks-scene { height: min(72svh, 620px); }
-  .looks-wrap.is-open { grid-template-columns: 1fr 340px; column-gap: 28px; }
-  .looks-wrap.is-open > :not(.looks-side):not(dialog) { grid-column: 1; }
-  .looks-wrap.is-open .looks-side { display: grid; align-content: start; gap: 14px; grid-column: 2; grid-row: 1 / span 3; padding-top: 24px; }
-  .looks-scene { margin-inline: 0; }
+  /* Grand écran : la scène prend toute la largeur de l'écran et presque toute sa hauteur ; la liste des pièces
+     flotte en haut à gauche, au-dessus des petits personnages. */
+  .looks-wrap { position: relative; }
+  .looks-scene { height: min(74svh, 860px); margin-inline: calc(50% - 50vw); }
+  .looks-wrap.is-open .looks-side { display: grid; align-content: start; gap: 14px; position: absolute; top: 16px; left: 0; width: 340px; max-height: calc(100% - 140px); overflow: auto; padding: 18px; border-radius: 16px; background: rgba(255, 254, 247, 0.92); backdrop-filter: blur(8px); box-shadow: 0 12px 40px rgba(10, 10, 12, 0.12); z-index: 20; }
   .looks-side h3 { font-size: 26px; margin: 0; }
 }
 .look-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
