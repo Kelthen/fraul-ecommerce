@@ -1,5 +1,6 @@
 "use client";
 
+import { cutoutOf } from "./cutouts";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -34,7 +35,8 @@ function toItem(data: WalkData, brand: string, cat: CategoryId, [slug, n, p, c, 
     slug, n, p, c, a: ACCENT_DARK.includes(c) ? "#EAE0C8" : "#420A0D", vars, sizes: data.categories.find((x) => x.id === cat)?.sizes ?? [], brand, cat,
     photos: photos ?? null,
     // Moteur 3D : photo de face et de dos du portant (le dos reprend la face s'il manque).
-    img: photos ? [photos.front, photos.back ?? photos.front] : null,
+    // Version détourée quand elle existe (src/walk/cutouts.ts) : le vêtement pend au crochet sans carte.
+    img: photos ? [cutoutOf(photos.front), cutoutOf(photos.back ?? photos.front)] : null,
   };
 }
 

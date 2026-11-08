@@ -263,10 +263,19 @@ export function startWalk(root, o) {
       x.scale(k, k); x.imageSmoothingQuality = "high";
       const top = hang || clip ? 64 : 4, card = { x: 10, y: top, w: 236, h: H - top - 6 };
       const rr = (p) => { const r = 14; x.beginPath(); x.moveTo(p.x + r, p.y); x.arcTo(p.x + p.w, p.y, p.x + p.w, p.y + p.h, r); x.arcTo(p.x + p.w, p.y + p.h, p.x, p.y + p.h, r); x.arcTo(p.x, p.y + p.h, p.x, p.y, r); x.arcTo(p.x, p.y, p.x + p.w, p.y, r); x.closePath(); };
+      // Photo détourée (fond transparent, /images/cutouts/) : le vêtement seul, pendu au crochet, sans carte ni cadre
+      // (Rhamone, 8 nov. : « pas de cadres, bien neutre, comme en 3D »). Sinon : la photo sur sa carte blanche, comme avant.
+      const cutout = /\/images\/cutouts\//.test(src);
       if (hang || clip) hook(x, 128);
-      x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore();
+      if (!cutout) { x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore(); }
       const img = webImage();
       img.onload = () => {
+        if (cutout) {
+          const s = Math.min(card.w / img.width, card.h / img.height), w = img.width * s, h = img.height * s;
+          x.save(); x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4;
+          x.drawImage(img, card.x + (card.w - w) / 2, card.y + (hang || clip ? 0 : (card.h - h) / 2), w, h); x.restore();
+          tex.needsUpdate = true; onLoad(); return;
+        }
         const inner = { x: card.x + 6, y: card.y + 6, w: card.w - 12, h: card.h - 12 };
         const s = Math.max(inner.w / img.width, inner.h / img.height), w = img.width * s, h = img.height * s;
         x.save(); rr(inner); x.clip(); x.drawImage(img, inner.x + (inner.w - w) / 2, inner.y + (inner.h - h) / 2, w, h); x.restore();
