@@ -15,7 +15,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/produit/[slug]">): Promise<Metadata> {
   const p = await getProduct((await params).slug);
   if (!p) return {};
-  const cat = getCategory(p.category);
+  const cat = await getCategory(p.category);
   return {
     title: `${p.name} ${p.brandName}`,
     description: `${p.name} ${p.brandName} (${cat.label.toLowerCase()}). Tailles ${p.sizes.join(", ")}. Pièce authentique, suivi de commande à chaque étape.`,
@@ -29,7 +29,7 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
   const product = await getProduct(slug);
   if (!product) notFound();
   const all = await getProducts();
-  const cat = getCategory(product.category);
+  const cat = await getCategory(product.category);
   // Mêmes propositions que la fiche en grand du Walk (src/models/catalog/related.ts).
   const tag = (p: (typeof all)[number]) => ({ slug: p.slug, brand: p.brandName, cat: p.category, photo: !!p.image, p });
   const sections = related(all.map(tag), tag(product));

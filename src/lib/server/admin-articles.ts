@@ -154,3 +154,9 @@ export async function uploadPhoto(file: File): Promise<string> {
   if (!res.ok) throw new Error(`Stockage (${res.status}) : ${(await res.text()).slice(0, 200)}`);
   return `${SUPABASE_URL}/storage/v1/object/public/produits/${path}`;
 }
+
+/** Nouveau type de vêtement (créé depuis la fiche article), placé après les autres. */
+export async function createCategory(c: { slug: string; label: string; slot: string; sizes: string[]; weightG: number }): Promise<void> {
+  const [last] = await db.select<{ position: number }>("categories", "select=position&order=position.desc&limit=1");
+  await db.insert("categories", { code: c.slug, slug: c.slug, name: { fr: c.label.trim() }, slot: c.slot, sizes: c.sizes, weight_g: Math.round(c.weightG), position: (last?.position ?? 0) + 1 });
+}

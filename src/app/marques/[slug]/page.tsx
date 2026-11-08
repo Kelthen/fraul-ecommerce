@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { IconWalk } from "@/components/Icons";
-import { CATEGORIES, getBrand, getBrands, getProductsByBrand } from "@/lib/catalog";
+import { getBrand, getCategories, getBrands, getProductsByBrand } from "@/lib/catalog";
 import { signCss, signWord } from "@/lib/catalog/brands";
 import { SITE_URL } from "@/lib/format";
 import { breadcrumbJsonLd, jsonLdHtml } from "@/models/seo/jsonld";
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/marques/[slug]">)
   const brand = await getBrand((await params).slug);
   if (!brand) return {};
   const stocked = new Set((await getProductsByBrand(brand.slug)).map((p) => p.category));
-  const kinds = CATEGORIES.filter((c) => stocked.has(c.id)).map((c) => c.label.toLowerCase()).join(", ");
+  const kinds = (await getCategories()).filter((c) => stocked.has(c.id)).map((c) => c.label.toLowerCase()).join(", ");
   return {
     title: `${brand.name} — boutique`,
     description: `La boutique ${brand.name} chez TakeUrClothes : ${kinds}. Pièces authentiques, suivi de commande à chaque étape.`,
@@ -55,7 +55,7 @@ export default async function BrandPage({ params }: PageProps<"/marques/[slug]">
       </section>
       <div className="wrap" style={{ paddingBottom: 24, paddingTop: 16 }}>
         <Suspense fallback={<CatalogFallback products={products} />}>
-          <CatalogBrowser products={products} categories={CATEGORIES.map(({ id, label }) => ({ id, label }))} grouped />
+          <CatalogBrowser products={products} categories={(await getCategories()).map(({ id, label }) => ({ id, label }))} grouped />
         </Suspense>
       </div>
     </>

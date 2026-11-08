@@ -7,7 +7,7 @@ import { db } from "./db";
 
 /** Identifiant de la variante (produit × couleur × taille) dans la base, créée si besoin. */
 export async function ensureVariant(p: PricedProduct, size: string, colorName: string, skuPrefix = ""): Promise<string> {
-  const cat = getCategory(p.category);
+  const cat = await getCategory(p.category);
   const [brand] = await db.insert<{ id: string }>("brands", { slug: p.brandSlug, name: p.brandName }, "slug");
   const [category] = await db.insert<{ id: string }>(
     "categories",

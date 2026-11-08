@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CATEGORIES, COLORS, WEIGHT_G } from "@/lib/catalog/fallback";
+import { getCategories } from "@/lib/catalog";
+import { COLORS, WEIGHT_G } from "@/lib/catalog/fallback";
+import type { KnownCategoryId } from "@/lib/catalog/types";
 import { COLOR_NAMES } from "@/lib/catalog/palette";
 import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle } from "@/lib/server/admin-articles";
@@ -36,7 +38,7 @@ async function Sheet({ searchParams }: { searchParams: PageProps<"/admin/article
   const slug = typeof sp.slug === "string" ? sp.slug : null;
   const article = slug ? await getArticle(slug).catch(() => null) : null;
   if (slug && !article) return <p className="todo">Article introuvable.</p>;
-  const boutiques = await listBoutiques().catch(() => null);
+  const [boutiques, categories] = await Promise.all([listBoutiques().catch(() => null), getCategories()]);
   if (!boutiques) return <p className="todo">La base ne répond pas. Réessaie dans un instant.</p>;
   return (
     <>
@@ -44,7 +46,7 @@ async function Sheet({ searchParams }: { searchParams: PageProps<"/admin/article
       <ArticleForm
         article={article}
         brands={boutiques.map((b) => ({ slug: b.slug, name: b.name }))}
-        categories={CATEGORIES.map((c) => ({ id: c.id, label: c.label, sizes: c.sizes, weight: WEIGHT_G[c.id] }))}
+        categories={categories.map((c) => ({ id: c.id, label: c.label, sizes: c.sizes, weight: c.weight ?? WEIGHT_G[c.id as KnownCategoryId] ?? 500 }))}
         colors={COLORS.map((hex) => ({ hex, name: COLOR_NAMES[hex] ?? hex }))}
       />
       {article && (

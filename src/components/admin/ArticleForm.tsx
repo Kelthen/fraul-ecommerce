@@ -5,6 +5,7 @@ import { marginsAction, saveArticleAction, uploadPhotoAction } from "@/app/admin
 import type { AdminArticle } from "@/lib/server/admin-articles";
 import type { ZoneMargin } from "@/models/admin/article";
 import { NewBrandPanel } from "./NewBrandPanel";
+import { NewTypePanel } from "./NewTypePanel";
 
 // Formulaire d'article de l'admin, pensé pour le téléphone de Jean Paul : photos prises ou choisies,
 // réduites ici (1600 px, JPEG) avant l'envoi, prix en dollars, marge visible dans chaque devise avant d'enregistrer.
@@ -37,10 +38,13 @@ async function shrink(file: File): Promise<Blob> {
 }
 
 const NEW_BRAND = "__nouvelle";
+const NEW_TYPE = "__nouveau-type";
 
 const isRedirect = (e: unknown) => String((e as { digest?: unknown } | null)?.digest ?? "").startsWith("NEXT_REDIRECT");
 
-export function ArticleForm({ article, brands: initialBrands, categories, colors }: Props) {
+export function ArticleForm({ article, brands: initialBrands, categories: initialCategories, colors }: Props) {
+  const [categories, setCategories] = useState(initialCategories);
+  const [addingType, setAddingType] = useState(false);
   const [brands, setBrands] = useState(initialBrands);
   const [addingBrand, setAddingBrand] = useState(false);
   const [brand, setBrand] = useState(article?.brand ?? "");
@@ -155,11 +159,24 @@ export function ArticleForm({ article, brands: initialBrands, categories, colors
       )}
       <label>
         Catégorie
-        <select value={category} onChange={(e) => onCategory(e.target.value)} required>
+        <select value={category} onChange={(e) => (e.target.value === NEW_TYPE ? setAddingType(true) : onCategory(e.target.value))} required>
           <option value="" disabled>Choisir…</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+          <option value={NEW_TYPE}>+ Nouveau type…</option>
         </select>
       </label>
+      {addingType && (
+        <NewTypePanel
+          onCancel={() => setAddingType(false)}
+          onCreated={(t) => {
+            setCategories((list) => [...list, t]);
+            setCategory(t.id);
+            setSizes(t.sizes.join(", "));
+            if (!weightG) setWeightG(String(t.weight));
+            setAddingType(false);
+          }}
+        />
+      )}
       <label>
         Description
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Hoodie noir, logo rouge" maxLength={120} required />
