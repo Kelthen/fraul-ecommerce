@@ -5,6 +5,16 @@
 
 ## Reprise après la première réalisation — 8 novembre 2026
 
+### Dernier accord : lot 1 apprécié, go pour la suite
+
+Après la comparaison « AVANT / APRÈS (lot 1) » fournie dans la conversation, Rhamone confirme : « Oui j’aime maintenant suivant », puis « Ok go go go go » pour la suite décrite ci-dessous. **Conserver la direction du sol montrée à droite** ; cette appréciation sur image ne constitue pas une mesure de fluidité ni une validation des reflets en mouvement.
+
+**Prochaine livraison : lot 2, une vitrine témoin ERD**, en reprenant la boutique de cette comparaison pour éviter de changer de référence. Préparer verre aux reflets légers, cadres champagne brossés avec petits biseaux sans épaissir les profils, lumière chaude douce sur les mannequins, socles en pierre et ombres de contact. Conserver dimensions, mannequins entiers, entrée libre et sommet des vitrines aligné sur la porte. Fichiers et raccordements : ligne du lot 2 dans le tableau ci-dessous.
+
+**À montrer avant généralisation** : vues de face et depuis l'allée, avant/après au même cadrage, puis preview téléphone/PC avec déplacement pour vérifier verre et reflets. Les vêtements doivent rester lisibles derrière le verre. Ne pas ajouter de mobilier ni modifier le sol déjà apprécié pour compenser un problème d'éclairage.
+
+**Suite autorisée, séquencée** : Finds (cadrage et panneau à présenter), plantes/raccords, puis déclinaison aux trois architectures et harmonisation entrée/caisse. Réutiliser les assets existants. Chaque nouveau choix visuel passe par une présentation et une validation avant réalisation ; chaque réalisation passe par une preview avant généralisation ou merge. Le go ne demande pas de produire tous les lots simultanément. Pour la vie du mall, affiner les changements d'articles, le cycle jour/soir et les portes existants ; aucun nouvel effet décoratif demandé.
+
 Demande de Rhamone : « compare le sol », « mets a jour les remarques et tout pour claude », puis « prepare le reste de la modelisation ». **Préparer la suite et ses visuels ; les nouveaux détails de Finds restent à valider avant réalisation.**
 
 **Déjà livré dans #111**, mergée sur `main` (`551fa3b`) : vitrines intégrées des trois façades, mannequins reculés dans les niches, textures marbre/pierre/champagne issues de `assets-src/blender/textures-mall.py`, olivier issu de `assets-src/blender/plante-mall.py`, ombres douces sous les socles. Réutiliser ces travaux. Les premiers commentaires indiquant l'absence de travail Blender sont dépassés par la version finale de #111.
@@ -44,7 +54,7 @@ Repères pour reprendre exactement l'existant : `src/walk/views/concierge.ts` (c
 
 **Livraison par lot** : source éditable + script reproductible, textures/GLB seulement si nécessaires au moteur, liste des fichiers remplacés, captures avant/après au même cadrage et lien de preview. Les noms de marques, produits et mannequins restent pilotés par le site, hors texture de décor. Un rendu Cycles seul ne valide pas le résultat WebGL ; vérifier l'export dans le navigateur avant de détailler les zones suivantes.
 
-**Premier retour attendu** : une comparaison visuelle de la zone témoin pour les lots 1–2, et une proposition de cadrage Finds. Ne pas lancer tous les lots à la fois. Conserver la caisse et les mannequins existants ; aucune nouvelle tenue 3D, animation de foule ou refonte du portant dans ce chantier.
+**Prochain retour attendu après l'accord sur le comparatif du lot 1** : une comparaison visuelle de la vitrine ERD pour le lot 2 ; la proposition de cadrage Finds vient ensuite. Ne pas lancer tous les lots à la fois. Conserver la caisse et les mannequins existants ; aucune nouvelle tenue 3D, animation de foule ou refonte du portant dans ce chantier.
 
 ## Lire et démarrer
 
