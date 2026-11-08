@@ -114,6 +114,9 @@ export async function saveArticle(a: ArticleInput & { slug: string }, isNew: boo
     if (!rows.length) throw new Error("Article introuvable");
     id = rows[0].id;
   }
+  // Les photos déjà détourées le restent : on garde leur version détourée d'après leur adresse.
+  const before = await db.select<{ path: string; cutout: string | null }>("product_images", `select=path,cutout&product_id=${eq(id)}`);
+  const cut = (path: string) => before.find((b) => b.path === path)?.cutout ?? null;
   await db.remove("product_images", `product_id=${eq(id)}`);
   const views: ["front" | "back" | "detail", string][] = [
     ["front", a.photos.front],
@@ -125,8 +128,8 @@ export async function saveArticle(a: ArticleInput & { slug: string }, isNew: boo
     ...(v.back ? [{ view: "back", path: v.back, color }] : []),
   ]);
   await db.insert("product_images", [
-    ...views.map(([view, path], position) => ({ product_id: id, view, path, position, color: null })),
-    ...colored.map((c, k) => ({ product_id: id, ...c, position: views.length + k })),
+    ...views.map(([view, path], position) => ({ product_id: id, view, path, position, color: null, cutout: cut(path) })),
+    ...colored.map((c, k) => ({ product_id: id, ...c, position: views.length + k, cutout: cut(c.path) })),
   ]);
 }
 
