@@ -22,3 +22,20 @@ Ce dépôt est le site e-commerce TakeUrClothes, en production. Deux humains (Rh
 7. **Aucune trace d'IA** dans Git et GitHub (pas de « Co-Authored-By », « Generated with… », lien de session). Auteur Git : `Kelthen`.
 8. **Textes du site en français**, copiés mot pour mot depuis `docs/CONTENT.md` quand ils y sont. **Aucun pays affiché** sur le site. Pas de logos de marques copiés.
 9. Next.js 16 a changé : lis `node_modules/next/dist/docs/` avant d'utiliser une API (bloc ci-dessus).
+
+## Travailler avec Claude (Rhamone, 8 nov. 2026) — pour ne pas gaspiller et bien créer
+
+Claude réalise ; toi, tu prépares et tu vérifies. Claude relit tes PR et te répond en commentaire quand une consigne manque de précision : applique ses remarques.
+
+**Une demande à Claude = une note courte et précise** (dans `docs/…` ou la PR) :
+1. **Quoi**, en une phrase, avec les **mots de Rhamone** entre guillemets.
+2. **Où** : la page et le fichier (`src/components/home/LooksStrip.tsx`…), après avoir cherché dans le code.
+3. **Ce qui existe déjà** et ce qui ne doit pas changer (une décision de STATUS ou une leçon de LESSONS qui s'applique).
+4. **Critère de réussite** visible : ce que Rhamone doit voir au téléphone (ex. « le plus grand à droite, les autres de plus en plus petits à gauche »).
+5. **Références** : capture ou image dans `assets-src/references/<sujet>/`, avec ce qu'elle valide et ce qu'elle ne valide pas.
+
+**À éviter** : répéter tout le contexte du projet, proposer plusieurs variantes sans en recommander une, écrire « à préparer » sans dire quoi.
+
+**Vérifier** : avant chaque PR, `npm run check` (lint, CSS, types, **tous les tests**, build). Si un test échoue, même hors de ton sujet, dis-le en tête de la PR avec le nom du test (comme pour #103 : très utile).
+
+**Images** générées : personnage entier sur un fond uni clair (Claude les détoure), vraies pièces du catalogue, et note ce qui n'est pas fidèle (texte déformé, chaussures inventées).
