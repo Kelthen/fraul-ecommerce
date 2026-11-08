@@ -17,6 +17,8 @@ Retravailler l'accueil TakeUrClothes, dont le logo est conservé, pour rendre le
 
 Rhamone envisage soit de fournir des photos de mannequins portant les articles, soit de créer des images de mannequins à partir des photos des vrais articles. Un premier essai est fait en session avec l'ensemble Nike noir et gris. Les images produites doivent être comparées aux vraies pièces : coupe, couleurs, logos et détails peuvent changer. Pas de visuel mensonger présenté comme une photo fidèle.
 
+Retour de Rhamone : varier les personnages comme dans la photo de référence (femmes et hommes, apparences et poses diverses). Les chaussures inventées du premier essai sont refusées : utiliser de vrais modèles Nike, New Balance ou ASICS, à identifier précisément avec leurs photos. Le texte du short généré était déformé : contrôler les inscriptions. Les essais utilisaient la copie du dépôt ; certains articles n'étaient pas présents dans le catalogue affiché sur le site le 8 novembre. Vérifier le catalogue actuel avant de sélectionner les vêtements et leurs fiches.
+
 ## Organisation
 
 - Étape actuelle : discussion et propositions en parallèle ; aucune implémentation de l'accueil n'est validée à ce stade.
