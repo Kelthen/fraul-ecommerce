@@ -545,6 +545,11 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .admin-chip { font: 600 11px/1 var(--body); padding: 6px 9px; border: 0; border-radius: 999px; background: rgba(255, 254, 247, 0.9); color: var(--ink); cursor: pointer; }
 .admin-color-photos { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line); }
 .admin-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--line); vertical-align: -1px; }
+.admin-pick { list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-height: 60svh; overflow: auto; }
+@media (min-width: 720px) { .admin-pick { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.admin-pick button { display: grid; gap: 2px; width: 100%; padding: 4px; border: 2px solid transparent; border-radius: 12px; text-align: left; font-size: 12px; }
+.admin-pick button[aria-pressed="true"] { border-color: var(--bordeaux); background: rgba(104, 2, 9, 0.05); }
+.admin-pick img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 8px; }
 .admin-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
 .admin-filters input, .admin-filters select { font: 14px/1.2 var(--body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: inherit; min-width: 0; }
 .admin-filters input { flex: 1 1 100%; }

@@ -1,7 +1,7 @@
 """Détourage automatique des photos produit (Rhamone, 8 nov. 2026).
 
 Lancé par .github/workflows/detourage.yml toutes les 10 minutes. Prend les photos de face et de dos pas encore
-traitées (product_images.cutout null), enlève le fond (rembg, modèle birefnet-general-lite : bon aussi sur les
+traitées (product_images.cutout null), et les photos des looks (looks.cutout null), enlève le fond (rembg, modèle birefnet-general-lite : bon aussi sur les
 vêtements blancs), range le WebP transparent dans le stockage « produits/detoure/<id>.webp » et note son adresse.
 En cas d'échec : cutout = '' (le site garde la photo d'origine, on ne réessaie pas en boucle).
 Variables : SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (secrets GitHub, jamais dans le dépôt).
@@ -31,7 +31,9 @@ def main():
     if not KEY:
         print("SUPABASE_SERVICE_ROLE_KEY absente : rien à faire.")
         return
-    rows = json.loads(call("GET", f"/rest/v1/product_images?select=id,path&cutout=is.null&view=in.(front,back)&limit={LIMIT}"))
+    # Photos produit (face, dos) et photos des looks de l'accueil (/admin/looks) pas encore détourées.
+    rows = [{**r, "table": "product_images", "name": r["id"]} for r in json.loads(call("GET", f"/rest/v1/product_images?select=id,path&cutout=is.null&view=in.(front,back)&limit={LIMIT}"))]
+    rows += [{"id": r["id"], "path": r["photo"], "table": "looks", "name": f"look-{r['id']}"} for r in json.loads(call("GET", "/rest/v1/looks?select=id,photo&cutout=is.null&limit=20"))]
     print(len(rows), "photo(s) à détourer")
     if not rows:
         return
@@ -49,13 +51,13 @@ def main():
             cut.thumbnail((1200, 1200), Image.LANCZOS)
             buf = io.BytesIO()
             cut.save(buf, "WEBP", quality=84, method=6)
-            name = f"detoure/{row['id']}.webp"
+            name = f"detoure/{row['name']}.webp"
             call("POST", f"/storage/v1/object/produits/{name}", buf.getvalue(), "image/webp", {"x-upsert": "true", "Cache-Control": "max-age=31536000"})
             done = f"{URL}/storage/v1/object/public/produits/{name}"
         except Exception as e:  # une photo illisible ne bloque pas les autres
             print("échec", row["id"], e, file=sys.stderr)
             done = ""
-        call("PATCH", f"/rest/v1/product_images?id=eq.{row['id']}", {"cutout": done}, extra={"Prefer": "return=minimal"})
+        call("PATCH", f"/rest/v1/{row['table']}?id=eq.{row['id']}", {"cutout": done}, extra={"Prefer": "return=minimal"})
         print("ok" if done else "vide", row["id"])
 
 

@@ -51,6 +51,7 @@ async function List({ searchParams }: { searchParams: PageProps<"/admin/articles
       <nav className="admin-bar">
         <Link className="admin-add" href="/admin/articles/fiche">+ Ajouter</Link>
         <Link className="link" href="/admin/boutiques">Boutiques</Link>
+        <Link className="link" href="/admin/looks">Looks</Link>
         <Link className="link" href="/admin/commandes">Commandes</Link>
         <span className="muted">{articles.filter((a) => a.onSite).length} en ligne · {articles.filter((a) => !a.onSite).length} masqué(s)</span>
       </nav>

@@ -5,12 +5,15 @@ import { IconArrow, IconCheck, IconLock, IconPin, IconSpark, IconWalk } from "@/
 import { ProductCard } from "@/components/ProductCard";
 import { LooksStrip } from "@/components/home/LooksStrip";
 import { getBrands, getNewArrivals, getProducts, getWalkBrands } from "@/lib/catalog";
+import { loadLookRows } from "@/lib/catalog/db";
 import { TEST_LOOKS, resolveLooks } from "@/models/home/looks";
 import { signCss, signWord } from "@/lib/catalog/brands";
 
 export default async function Home() {
   const [walkBrands, brands, news, products] = await Promise.all([getWalkBrands(), getBrands(), getNewArrivals(), getProducts()]);
-  const looks = resolveLooks(TEST_LOOKS, products);
+  // Looks ajoutés par Jean Paul dans l'admin (détourés) ; les looks de test tant qu'il n'y en a aucun.
+  const fromAdmin = ((await loadLookRows()) ?? []).map((r) => ({ id: r.id, title: r.title, photo: r.cutout!, items: r.items }));
+  const looks = resolveLooks(fromAdmin.length ? fromAdmin : TEST_LOOKS, products);
   const featured = walkBrands.slice(0, 8);
   const fronts = [...walkBrands, ...walkBrands];
 
