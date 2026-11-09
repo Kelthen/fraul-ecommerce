@@ -152,7 +152,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
-- **Fiche produit : zoom à deux doigts et police des aides photo** (`fix/rhamon/zoom-fiche`) : écarter deux doigts zoome la photo (×4 au plus), un doigt la déplace, rapprocher dézoome ; le navigateur ne zoome plus toute la page sur la photo (ça faisait planter le téléphone dans la fiche en grand du Walk, vidéo de Rhamone du 8 nov.). « Touche pour agrandir » en Monomakh. Titre de l'accueil « Le shopping se visite » en « Sawith Mono » : **police introuvable sous ce nom, en attente de précision de Rhamone**. — rhamon
+- **Fiche produit : zoom à deux doigts et police des aides photo** (`fix/rhamon/zoom-fiche`) : écarter deux doigts zoome la photo (×4 au plus), un doigt la déplace, rapprocher dézoome ; le navigateur ne zoome plus toute la page sur la photo (ça faisait planter le téléphone dans la fiche en grand du Walk, vidéo de Rhamone du 8 nov.). « Touche pour agrandir » en Monomakh. Titre de l'accueil « Le shopping se visite » : Rhamone veut **Sawith Mono** (Pekotype, police payante) ; en attendant la licence, **Martian Mono** (gratuite, très proche) — décidé par l'équipe, à confirmer. Avec le fichier de la police achetée : `src/app/fonts/` + `next/font/local` (voir `layout.tsx`). — rhamon
 
 - **Walk : mall réaliste, 1re étape** (`feat/rhamon/mall-luxe`, plan de ChatGPT #109) : sol en grandes dalles ivoire polies avec reflets des bandeaux ; vitrines intégrées de chaque côté de la porte (haut aligné sur la porte, cadre champagne, verre, mannequin derrière sur un socle) pour les 3 types de façade. Matières faites dans Blender (marbre veiné, pierre claire, champagne brossé ; script `assets-src/blender/textures-mall.py`, images `public/textures/mall/`, 46 Ko en tout). Olivier en pot de marbre (assets-src/blender/plante-mall.py → public/models/plante.glb, 105 Ko) au centre ; ombres douces sous les socles et les mannequins.
 
@@ -186,6 +186,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## ⏳ Bloqué — attend le client
 
+- **Détourage du hoodie Travis Scott « noir délavé, étoile rose » (photo de dos)** : un rectangle blanc reste sous le vêtement (capture de Rhamone du 8 nov.). À reprendre avec l'accès au stockage Supabase : vérifier la photo d'origine, refaire le détourage de cette photo (ou garder la photo d'origine). Pas fait à l'aveugle pendant l'absence de Rhamone (données de production). — demandé le 9 nov.
+- **Licence de la police Sawith Mono** (Pekotype, payante) pour le titre de l'accueil : achat à décider par Rhamone (argent). — 9 nov.
 > Domaine en ligne : **www.take-ur-clothes.com** (Rhamone, 3 nov.). Paiement fermé tant que `PAYMENTS_OPEN` n'est pas `true`.
 
 | Élément attendu | Demandé le | Relancé le |

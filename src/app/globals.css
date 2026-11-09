@@ -122,7 +122,7 @@ p { margin: 0; }
 .front .dr { margin: 12px 22% 0; background: linear-gradient(180deg, #fffaf2, #e6dccd 70%, #cbbfae); border: 2px solid #d9d2c7; border-bottom: 0; }
 .mall-copy { flex: 1; display: flex; align-items: flex-end; padding-block: 8px 40px; }
 .mall-copy > .wrap { width: 100%; }
-.mall-copy h1 { font-size: clamp(52px, 13vw, 168px); line-height: 0.88; margin: 10px 0 16px; }
+.mall-copy h1 { font: 500 clamp(40px, 10vw, 128px)/0.95 var(--font-title-mono), "Courier New", monospace; letter-spacing: -0.04em; margin: 10px 0 16px; }
 .mall-copy h1 em { font-style: italic; color: var(--bordeaux); }
 .mall-copy p.lead { max-width: 42ch; font-size: 16px; color: var(--muted); }
 .hero-acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
