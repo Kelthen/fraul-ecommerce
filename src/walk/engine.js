@@ -11,7 +11,7 @@ import { createCaisse } from "./views/caisse";
 import { createConciergeDesk } from "./views/concierge";
 import { createEntrance } from "./views/entrance";
 import { createFacade } from "./views/facades";
-import { CAISSE_TEXT, CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
+import { CAISSE_TEXT, CONCIERGE_TEXT, ENTRANCE_TEXT, STORE_EXIT_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, SIDE_VISIBLE, STORE_ZONES as ZONES, route } from "./models/store-layout";
 import { AT_CAISSE, AT_CONCIERGE, AT_EXIT, EYE, lastStop, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
@@ -1072,7 +1072,7 @@ export function startWalk(root, o) {
       const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.42)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
       ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
       const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
-      blob(0, -8.8, 150, 0.36); [[-3.6, -0.7], [3.6, -0.7], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
+      blob(0, -8.8, 150, 0.36); [[-3.6, -0.7], [4.6, -0.75], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
       floor = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), color: IN.floor }), 0, 0, -8); floor.rotation.x = -Math.PI / 2;
     }
     const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: IN.ceil }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
@@ -1087,6 +1087,42 @@ export function startWalk(root, o) {
     add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
     const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
     add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
+
+    /* Côté intérieur de la porte (direction validée par Rhamone, 9 nov.) : tableau « Thank you. See you soon. » au-dessus
+       de la sortie, grand écran vertical qui montre les looks de la marque, et la porte qu'on touche pour sortir. */
+    const INSIDE = -0.16, face = (m) => { m.rotation.y = Math.PI; return m; };
+    { const [c, x] = U.cv(800, 210);
+      x.fillStyle = "#FFFEF7"; x.fillRect(0, 0, 800, 210); x.strokeStyle = "#C8A96A"; x.lineWidth = 12; x.strokeRect(6, 6, 788, 198);
+      x.fillStyle = "#680209"; x.textAlign = "center"; x.textBaseline = "middle"; x.font = `500 70px ${o.fonts.serif}`;
+      x.fillText(STORE_EXIT_TEXT.line1, 400, 72); x.fillText(STORE_EXIT_TEXT.line2, 400, 146);
+      face(add(new THREE.PlaneGeometry(1.5, 0.394), basic({ map: U.T(c) }), 0, 3.08, INSIDE)); // juste au-dessus de la porte (2,80 m)
+    }
+    const doorHit = face(add(new THREE.PlaneGeometry(3.2, 2.8), basic({ visible: false }), 0, 1.4, -0.02));
+    doorHit.userData.action = "exit";
+    // Écran : looks dont une pièce est de cette marque (même source que l'accueil). Plusieurs : défilement lent ; un seul :
+    // fixe ; aucun : pas d'écran. Toucher l'écran ouvre le rayon de la pièce du look, cette pièce devant soi.
+    const looks = (o.getLooks ? o.getLooks(st.name) : []).filter((l) => l.items.length);
+    let screen = null;
+    if (looks.length) {
+      const W = 1.2, H = 2.3, cx = 2.4, cy = 0.2 + H / 2; // à gauche de la porte vue de l'intérieur, près d'elle : visible depuis le centre
+      add(new THREE.BoxGeometry(W + 0.08, H + 0.08, 0.06), basic({ color: 0x0a0a0c }), cx, cy, INSIDE + 0.01);
+      const [c, x] = U.cv(480, 920), tex = U.T(c);
+      screen = face(add(new THREE.PlaneGeometry(W, H), basic({ map: tex }), cx, cy, INSIDE - 0.025));
+      screen.userData = { action: "look", k: 0 };
+      const show = (k) => {
+        const l = looks[k % looks.length]; screen.userData.k = k % looks.length;
+        const im = new Image(); im.crossOrigin = "anonymous";
+        im.onload = () => {
+          // Personnage entier, sans étirement : la photo tient dans l'écran, fond gris clair autour.
+          x.fillStyle = "#e9e7e2"; x.fillRect(0, 0, 480, 920);
+          const s = Math.min(480 / im.width, 920 / im.height), w = im.width * s, h = im.height * s;
+          x.drawImage(im, (480 - w) / 2, (920 - h) / 2, w, h); tex.needsUpdate = true; kick();
+        };
+        im.src = l.photo;
+      };
+      show(0);
+      if (looks.length > 1 && !RM) { const t = setInterval(() => { if (!storeEl.hidden && STORE && STORE.brand === st.name) show(screen.userData.k + 1); }, 7000); ac.signal.addEventListener("abort", () => clearInterval(t)); }
+    }
 
     // Mur du fond : panneau de la marque + étagères à sneakers éclairées.
     // Sur téléphone, la liste des rayons passe devant ce panneau : le nom de la marque descend alors sur l'îlot (Rhamone, 21 oct.).
@@ -1128,7 +1164,8 @@ export function startWalk(root, o) {
     const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
 
     // Mannequins habillés par le gabarit de la marque
-    [[-3.6, -0.7, 0.45, 0], [3.6, -0.7, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
+    // Celui de droite (vu de la porte), près de l'entrée, est dans le coin pour laisser l'écran des looks dégagé (9 nov.).
+    [[-3.6, -0.7, 0.45, 0], [4.6, -0.75, -0.6, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
 
     // Signalétique
     // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
@@ -1297,7 +1334,7 @@ export function startWalk(root, o) {
        Au clavier : ← → tournent, ↑ ↓ avancent et reculent. « Rayons » reste un raccourci. */
     // Surface praticable : loin des portants (articles tirés vers soi), des étagères du fond, de l'îlot et des mannequins.
     const FREE = { x: 4.4, zFront: -0.7, zBack: -14.2 }, ISLE = { x0: -2.3, x1: 2.3, z0: -10.6, z1: -7.0 };
-    const DUMMIES = [[-3.6, -0.7], [3.6, -0.7], [-1.95, -14.6], [1.95, -14.6]];
+    const DUMMIES = [[-3.6, -0.7], [4.6, -0.75], [-1.95, -14.6], [1.95, -14.6]];
     function walkable(x, z) {
       x = clamp(x, -FREE.x, FREE.x); z = clamp(z, FREE.zBack, FREE.zFront);
       if (x > ISLE.x0 && x < ISLE.x1 && z > ISLE.z0 && z < ISLE.z1) { // sortir de l'îlot par le bord le plus proche
@@ -1357,6 +1394,13 @@ export function startWalk(root, o) {
         const m = o.material; return !(m && m.transparent && !o.userData.cat && (m.opacity ?? 1) < 0.5);
       });
       storeEl.dataset.pick = hit ? (hit.object.parent?.userData.it ? "article" : hit.object.userData.cat ? "panneau" : hit.object === floor || hit.point.y < 0.08 ? "sol" : "autre") : "rien"; // lu par le test téléphone
+      // Porte : sortir devant la même boutique ; écran : le rayon de la pièce du look affiché.
+      const act = hit && hit.object.userData.action;
+      if (act === "exit") { storeEl.dataset.pick = "porte"; closeLayer("store"); return; }
+      if (act === "look") {
+        const l = looks[hit.object.userData.k], [slug, cat] = l.items[0]; storeEl.dataset.pick = "ecran";
+        if (cars[cat]) { api.onPickRayon(cat, slug); return; }
+      }
       // Vêtement visé à l'écran : un toucher près d'un article le prend (zone généreuse au doigt), s'il n'est pas
       // derrière un mur ou un meuble (plus loin que ce que le rayon a touché).
       const tapX = e.clientX - r.left, tapY = e.clientY - r.top, wallD = hit ? hit.distance + 0.3 : Infinity;

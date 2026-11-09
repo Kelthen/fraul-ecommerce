@@ -22,6 +22,8 @@ export type WalkData = {
   categories: Pick<Category, "id" | "label" | "sizes">[];
   /** Articles par marque puis par rayon. */
   items: Record<string, Partial<Record<CategoryId, WalkItem[]>>>;
+  /** Looks de l'accueil par boutique : photo, titre, pièces de cette marque [slug, rayon]. */
+  looks?: Record<string, { photo: string; title: string; items: [string, CategoryId][] }[]>;
 };
 
 type Props = { data: WalkData; startBrand?: string };
@@ -95,6 +97,7 @@ export function WalkExperience({ data, startBrand }: Props) {
         const b = brandOf(brandName);
         return (b ? data.items[b.slug]?.[cat] ?? [] : []).map((r) => toItem(data, brandName, cat, r));
       },
+      getLooks: (brandName: string) => { const b = brandOf(brandName); return b ? data.looks?.[b.slug] ?? [] : []; },
       onAdd: (it: { slug: string; n: string; p: PriceTable; c: string; a: string; brand: string; cat: string; sizes: string[]; photos: FicheItem["photos"] }, size?: string) =>
         addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }),
       onExit: () => router.push("/"),
