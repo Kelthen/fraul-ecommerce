@@ -1,5 +1,7 @@
 # Walk : rendre le produit sélectionné lisible et désirable
 
+**Responsable de réalisation : côté Serge pour le code, les photos et les réglages de présentation.** Rhamone réalise les assets Blender et valide les previews. Voir [la répartition complète](REPARTITION-WALK-SERGE-RHAMONE.md), qui inclut les tâches pouvant commencer sans attendre les modèles.
+
 Demande de Rhamone, 9 novembre : accessoires trop hauts, sneakers trop petites, bijoux confondus avec les rayons derrière, mannequin blanc envahissant, photo de montre à conserver complète ; « Il faut bien lui détailler et photos ». Accord « Exactement » sur la présentation adaptée à chaque photo et le mannequin hors cadrage de consultation. Dossier de préparation pour #114, sans modification du site. Les valeurs ci-dessous sont des points de départ à vérifier sur preview, pas des mesures déjà validées.
 
 ## Images et provenance

@@ -1,5 +1,7 @@
 # Walk — finitions luxe et vitrines intégrées
 
+**Attribution actuelle (9 novembre)** : [Serge : tout le code du site ; Rhamone : Blender](REPARTITION-WALK-SERGE-RHAMONE.md). Ce document de répartition prime sur les anciennes attributions ; il précise tâches autonomes, assets attendus et raccordements.
+
 > Direction validée par Rhamone le 8 novembre 2026 : « on garde l'architecture actu », « un sol tres moderne, bcp de luxe dans l'ensemble », « les vitrines au même niveau que la grande porte d'entrée de la boutique ». Go : « voila lets go ».
 > Plan de réalisation, pas une modification du site. Première livraison : une zone témoin modélisée dans Blender et vérifiée dans le navigateur. Validation visuelle avant généralisation et merge de la réalisation.
 

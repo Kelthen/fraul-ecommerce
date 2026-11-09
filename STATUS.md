@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Répartition Walk décidée par Rhamone le 9 novembre : Serge et son Claude prennent tout le code hors Blender ; Rhamone réalise les assets Blender et supervise.** Cadrage/tailles/photos, écran, 360°, sortie, données et rendu WebGL côté Serge ; modèles, géométrie, UV et textures Blender côté Rhamone. Un seul responsable du moteur `engine.js` côté Serge pour éviter les modifications concurrentes. Reprendre #114 sans refaire l'existant ; tâches, ordre et contrat de livraison : `docs/REPARTITION-WALK-SERGE-RHAMONE.md` dans #109. Les confirmations de prise en charge restent à faire par l'équipe.
+
 - **Présentation accessoires/sneakers/bijoux : reprise demandée et principe validé (« Exactement »)**. Produit grand et centré dans la zone utile, mannequin et autres rayons hors du premier plan ; photo choisie par article, original conservé si détourage inadapté. Revue illustrée, cas G-Shock, contrôle photo, fonds et tests : `docs/REVUE-PRESENTATION-PRODUITS.md` (#109 → #114). Captures PC utilisateur à joindre dès réception des fichiers ; les chemins Windows seuls ne sont pas accessibles ici. Fonds finaux et tableau au-dessus du mannequin encore à visualiser.
 
 - **Portants/cintres : finitions validées (« Good »)** — crochet court en contact avec la barre, cintre noir mat sans doublon photographié, tube champagne et fixations propres. Conserver angle 45°, espacement et animation. Référence et critères dans `docs/PLAN-MALL-REALISTE.md` (#109), à reprendre avec #114 ; vérifier repos/sélection/retour avant généralisation.
