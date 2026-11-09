@@ -30,6 +30,10 @@ let MANNEQUIN_F = null;
 let CAISSE = null;
 /** Olivier en pot de marbre modélisé dans Blender (assets-src/blender/plante-mall.py → public/models/plante.glb). */
 let PLANTE = null;
+/** Vitrine finie dans Blender (assets-src/blender/vitrine-temoin.py → public/models/vitrine.glb) : cadre et socle. */
+let VITRINE = null;
+/** Boutique témoin du lot 2 (#109) : seule à recevoir la vitrine finie tant que Rhamone n'a pas validé la preview. */
+const TEMOIN = (st) => st.name === "ERD";
 /** Reflet du mall dans le sol poli (three/examples Reflector) ; absent = traînées claires sous les bandeaux. */
 let REFLECTOR = null;
 
@@ -188,9 +192,18 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null)]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR, VITRINE] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null), loadModel("vitrine").then(vitrineKit)]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
+  }
+
+  // Cadre et socle de la vitrine finie : formes seules (position du fichier intégrée), matières posées par la façade.
+  function vitrineKit(root3d) {
+    if (!root3d) return null;
+    root3d.updateMatrixWorld(true);
+    const get = (n) => { const m = root3d.getObjectByName(n); if (!m?.isMesh) return null; const geo = m.geometry.clone(); geo.applyMatrix4(m.matrixWorld); return new THREE.Mesh(geo); };
+    const cadre = get("Cadre"), socle = get("Socle");
+    return cadre && socle ? { cadre, socle } : null;
   }
 
   // Chargés avec three.js ; un modèle qui manque ou tarde (plus de 4 s) laisse la version dessinée (mannequin, Caisse).
@@ -784,7 +797,7 @@ export function startWalk(root, o) {
       const st = SHOPS[k], g = new THREE.Group();
       g.position.set(s.x, 0, s.z); g.rotation.y = Math.atan2(s.nx, s.nz); scene.add(g);
       const big = st.logo || shopType(k) === 1; // bandeau de la verrière ou logo : enseigne plus fine
-      g.add(createFacade(THREE, { type: shopType(k), bg: st.bg, ceil: CEIL, tex: facadeTex, sign: U.wordTex(st, big ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) }));
+      g.add(createFacade(THREE, { type: shopType(k), bg: st.bg, ceil: CEIL, tex: facadeTex, kit: TEMOIN(st) && VITRINE ? VITRINE : undefined, sign: U.wordTex(st, big ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) }));
       add(g, new THREE.BoxGeometry(0.5, CEIL, 0.7), pillarM, -SLOT / 2 + 0.05, CEIL / 2, 0.35);
       // Fond lumineux visible par la porte (l'intérieur détaillé vient à l'approche)
       const backdrop = add(g, new THREE.PlaneGeometry(4.6, 4.1), new THREE.MeshBasicMaterial({ map: glow }), 0, 2.05, -0.3);
