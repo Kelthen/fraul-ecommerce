@@ -10,8 +10,24 @@ type Opts = {
   /** Enseigne déjà dessinée (nom ou logo). */
   sign: T.Texture;
   /** Matières faites dans Blender : pierre claire et métal champagne brossé (facultatives). */
-  tex?: { stone?: T.Texture; metal?: T.Texture };
+  tex?: { stone?: T.Texture; metal?: T.Texture; env?: T.Texture };
+  /** Vitrine finie dans Blender (plan #109, lot 2 : assets-src/blender/vitrine-temoin.py) : cadre biseauté et socle en
+   *  pierre. Donnée seulement à la boutique témoin tant que Rhamone n'a pas validé la preview ; sinon les pavés d'avant. */
+  kit?: { cadre: T.Mesh; socle: T.Mesh };
 };
+
+/** Dégradés dessinés une fois (verre et lumière de la vitrine témoin). */
+const CACHE: Record<string, T.Texture> = {};
+function painted(THREE: typeof T, key: string, w: number, h: number, draw: (x: CanvasRenderingContext2D) => void): T.Texture {
+  if (CACHE[key]) return CACHE[key];
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  draw(c.getContext("2d")!);
+  const t = new THREE.CanvasTexture(c);
+  t.encoding = THREE.sRGBEncoding;
+  return (CACHE[key] = t);
+}
 
 /** Ombre douce et ronde (dessinée une fois) : sous le mannequin, sur le socle des vitrines. */
 let SOFT: T.Texture | null = null;
@@ -28,11 +44,11 @@ function softShadow(THREE: typeof T): T.Texture {
   return (SOFT = new THREE.CanvasTexture(c));
 }
 
-export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opts) {
+export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex, kit }: Opts) {
   const g = new THREE.Group();
   const std = (c: number, r: number, m = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
   // Champagne brossé (cadres) et pierre claire (portique), avec la matière Blender quand elle est là.
-  const champagne = () => new THREE.MeshStandardMaterial({ color: tex?.metal ? 0xffffff : 0xd4bb8a, map: tex?.metal ?? null, roughness: 0.35, metalness: 0.35, emissive: 0x3a2e1a, emissiveIntensity: 0.25 });
+  const champagne = () => new THREE.MeshStandardMaterial({ color: tex?.metal ? 0xffffff : 0xd4bb8a, map: tex?.metal ?? null, roughness: 0.35, metalness: 0.35, emissive: 0x3a2e1a, emissiveIntensity: 0.25, envMap: tex?.env ?? null, envMapIntensity: 0.9 });
   const box = (w: number, h: number, d: number, mat: T.Material, x: number, y: number, z: number) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     m.position.set(x, y, z);
@@ -63,9 +79,11 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opt
       box(OPEN, ceil - TOP, d, mat, cx, TOP + (ceil - TOP) / 2, z); // au-dessus, au niveau du linteau de la porte
     });
   const niche = (frame: T.Material) => {
+    if (kit) return nicheFinie(frame);
     const back = new THREE.MeshLambertMaterial({ color: 0xf4ede2 });
     const socle = std(0xece6dc, 0.35);
-    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.12, depthWrite: false });
+    // Verre : reflet doux de l'ambiance du mall (lot 1), toujours transparent pour voir le mannequin.
+    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.12, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 0.6 });
     [-1, 1].forEach((s) => {
       const cx = s * 3.25;
       box(OPEN, TOP, 0.04, back, cx, TOP / 2, -0.47); // fond
@@ -84,6 +102,49 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex }: Opt
       box(OPEN + 0.09, 0.05, 0.08, frame, cx, TOP, 0.42);
       box(OPEN + 0.09, 0.05, 0.08, frame, cx, 0.025, 0.42);
       box(OPEN, TOP - 0.05, 0.01, glass, cx, TOP / 2, 0.38); // verre
+    });
+  };
+
+  // Vitrine témoin (lot 2) : mêmes cotes, mais cadre biseauté et socle en pierre de Blender, verre qu'on devine (reflets
+  // en biais très légers), lumière chaude qui descend sur le mannequin. Le mannequin et le fond lumineux viennent du moteur.
+  const nicheFinie = (frame: T.Material) => {
+    const back = new THREE.MeshLambertMaterial({ color: 0xf6eee1 });
+    const pierre = new THREE.MeshStandardMaterial({ color: tex?.stone ? 0xfbf6ee : 0xece6dc, map: tex?.stone ?? null, roughness: 0.42, envMap: tex?.env ?? null, envMapIntensity: 0.5 });
+    const warm = new THREE.MeshBasicMaterial({ color: 0xffe6c2 });
+    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.04, metalness: 0.4, transparent: true, opacity: 0.1, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 1 });
+    const streaks = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.22,
+      map: painted(THREE, "reflets", 256, 512, (x) => {
+        x.fillStyle = "#000"; x.fillRect(0, 0, 256, 512);
+        x.translate(128, 256); x.rotate(-0.5); // deux traînées en biais, comme le reflet d'un bandeau du plafond
+        [[-60, 46, 0.18], [40, 18, 0.12]].forEach(([cx, w, a]) => {
+          const g = x.createLinearGradient(cx - w, 0, cx + w, 0);
+          g.addColorStop(0, "rgba(255,250,240,0)"); g.addColorStop(0.5, `rgba(255,250,240,${a})`); g.addColorStop(1, "rgba(255,250,240,0)");
+          x.fillStyle = g; x.fillRect(cx - w, -400, 2 * w, 800);
+        });
+      }) });
+    const cone = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.13,
+      map: painted(THREE, "faisceau", 128, 256, (x) => { // faisceau chaud : étroit en haut, large et fondu en bas
+        const g = x.createLinearGradient(0, 0, 0, 256);
+        g.addColorStop(0, "rgba(255,214,160,0.3)"); g.addColorStop(0.75, "rgba(255,214,160,0.06)"); g.addColorStop(1, "rgba(255,214,160,0)");
+        x.fillStyle = g; x.beginPath(); x.moveTo(56, 0); x.lineTo(72, 0); x.lineTo(112, 256); x.lineTo(16, 256); x.closePath(); x.fill();
+      }) });
+    const shadow = new THREE.MeshBasicMaterial({ map: softShadow(THREE), transparent: true, depthWrite: false });
+    [-1, 1].forEach((s) => {
+      const cx = s * 3.25;
+      box(OPEN, TOP, 0.04, back, cx, TOP / 2, -0.47); // fond
+      [-1, 1].forEach((e) => box(0.04, TOP, 0.85, back, cx + e * OPEN / 2, TOP / 2, -0.04)); // joues
+      box(OPEN - 0.06, 0.03, 0.5, warm, cx, TOP - 0.06, -0.12); // plafonnier chaud
+      const f = new THREE.Mesh(kit!.cadre.geometry, frame); f.position.x = cx; g.add(f);
+      const so = new THREE.Mesh(kit!.socle.geometry, pierre); so.position.x = cx; g.add(so);
+      const c = new THREE.Mesh(new THREE.PlaneGeometry(1.3, TOP - 0.1), cone);
+      c.position.set(cx, (TOP - 0.1) / 2 + 0.1, 0.2); g.add(c); // faisceau devant le mannequin, derrière le verre
+      const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.6), shadow);
+      sh.rotation.x = -Math.PI / 2; sh.position.set(cx, 0.142, -0.06); g.add(sh); // ombre du mannequin sur le socle
+      const base = new THREE.Mesh(new THREE.PlaneGeometry(OPEN + 0.3, 1.1), shadow);
+      base.rotation.x = -Math.PI / 2; base.position.set(cx, 0.004, 0.1); g.add(base); // le socle se pose sur le sol
+      box(OPEN - 0.01, TOP - 0.05, 0.01, glass, cx, TOP / 2, 0.39); // verre
+      const r = new THREE.Mesh(new THREE.PlaneGeometry(OPEN - 0.02, TOP - 0.06), streaks);
+      r.position.set(cx, TOP / 2, 0.396); g.add(r); // reflets sur le verre
     });
   };
 

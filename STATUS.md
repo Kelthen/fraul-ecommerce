@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-09 par rhamon (zoom à deux doigts, police des aides photo)_
+_Dernière mise à jour : 2026-11-09 par rhamon (zoom à deux doigts, polices ; mall réaliste lots 1 à 3)_
 _Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
 _Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
@@ -75,6 +75,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## ✅ En ligne
 
+- **Walk : mall réaliste, 1re étape** (#111, plan #109) : sol en grandes dalles ivoire polies avec reflets des bandeaux ; vitrines intégrées de chaque côté de la porte (haut aligné sur la porte, cadre champagne, verre, mannequin derrière sur un socle) pour les 3 types de façade. Matières faites dans Blender (marbre veiné, pierre claire, champagne brossé ; script `assets-src/blender/textures-mall.py`, images `public/textures/mall/`, 46 Ko en tout). Olivier en pot de marbre (assets-src/blender/plante-mall.py → public/models/plante.glb, 105 Ko) au centre ; ombres douces sous les socles et les mannequins. — rhamon
 - Règles de démarrage + kit NBW (CLAUDE.md, STATUS.md, LESSONS.md, briefing, modèle de PR, notifications, script photos) — rhamon
 - Architecture cible — `docs/ARCHITECTURE.md`
 - Site Next.js : accueil = entrée du mall, marques, catégories, fiche produit, Crée ta tenue, panier, suivi, pages légales (squelettes)
@@ -154,7 +155,11 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 - **Fiche produit : zoom à deux doigts et police des aides photo** (`fix/rhamon/zoom-fiche`) : écarter deux doigts zoome la photo (×4 au plus), un doigt la déplace, rapprocher dézoome ; le navigateur ne zoome plus toute la page sur la photo (ça faisait planter le téléphone dans la fiche en grand du Walk, vidéo de Rhamone du 8 nov.). « Touche pour agrandir » en Monomakh. Titre de l'accueil « Le shopping se visite » : Rhamone veut **Sawith Mono** (Pekotype, police payante) ; en attendant la licence, **Martian Mono** (gratuite, très proche) — décidé par l'équipe, à confirmer. Avec le fichier de la police achetée : `src/app/fonts/` + `next/font/local` (voir `layout.tsx`). — rhamon
 
-- **Walk : mall réaliste, 1re étape** (`feat/rhamon/mall-luxe`, plan de ChatGPT #109) : sol en grandes dalles ivoire polies avec reflets des bandeaux ; vitrines intégrées de chaque côté de la porte (haut aligné sur la porte, cadre champagne, verre, mannequin derrière sur un socle) pour les 3 types de façade. Matières faites dans Blender (marbre veiné, pierre claire, champagne brossé ; script `assets-src/blender/textures-mall.py`, images `public/textures/mall/`, 46 Ko en tout). Olivier en pot de marbre (assets-src/blender/plante-mall.py → public/models/plante.glb, 105 Ko) au centre ; ombres douces sous les socles et les mannequins.
+- **Walk : mall réaliste, lot 1 « sol et lumière »** (plan #109, rhamon, 8 nov.) : sol en grandes dalles ivoire de 1,20 m faites dans Blender (veinage discret, différent sur chaque dalle, joints fins ; `assets-src/blender/textures-mall.py` → `public/textures/mall/dalles.jpg`) ; couleurs des matières corrigées (sol, pierre et champagne n'étaient plus délavés) ; **vrai reflet du mall dans le sol** (un seul miroir qui suit la caméra, flouté, basse définition, 30 m autour) ; ambiance réfléchie sur le métal champagne et le verre ; halo chaud des vitrines sur le sol (plus fort le soir) ; ombre douce au pied des murs et des façades. Comparer sur la preview avec `?reflet=0` (ancien sol) et `?heure=19`. Avant/après : `assets-src/references/mall-realiste/lot1-*.jpg`. Sol validé sur le comparatif par Rhamone (« Oui j'aime maintenant suivant », 8 nov.).
+  - **Lot 2, vitrine témoin ERD** (même PR) : cadre champagne d'un seul profil à petits biseaux avec une feuillure en retrait, socle en pierre posé sur un retrait (ligne d'ombre), faits dans Blender (`assets-src/blender/vitrine-temoin.py` → `public/models/vitrine.glb`, 58 Ko) ; verre qu'on devine (deux reflets en biais très légers, ambiance réfléchie) ; faisceau chaud discret sur le mannequin. Mêmes cotes, mannequins entiers, entrée libre. **Seulement chez ERD** (la marque, pas le numéro de boutique) jusqu'à validation de la preview, puis déclinaison aux 3 façades (lot 5). Avant/après : `assets-src/references/mall-realiste/lot2-*.jpg`.
+    Vitrine ERD validée par Rhamone sur la preview (« C'est bien », 9 nov.).
+  - **Lot 3, Finds — proposition à valider** (même PR) : plus de panneau sur pied qui cachait le « TUC » ; « Finds · Sur demande » en lettres ivoire sur un bandeau bordeaux qui suit la courbe du comptoir (mêmes textes) ; caméra un peu plus loin et regard un peu plus haut (TUC entier, comptoir moins envahissant) ; toucher le TUC ouvre aussi Finds. Retirée si Rhamone ne la valide pas.
+  - Reste : plantes/raccords, déclinaison de la vitrine finie aux 3 façades.
 
 - **Accueil : taille des personnages du défilé** — retour de Rhamone du 8 novembre : progression du plus petit à gauche au plus grand à droite, plutôt qu'un grand personnage au milieu. Le reste lui convient ; cadre rouge corrigé dans #102. Détail : `docs/ACCUEIL-LOOKS.md` ; nouvelle preview à valider avant merge.
 
