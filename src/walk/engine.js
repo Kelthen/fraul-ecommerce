@@ -779,6 +779,9 @@ export function startWalk(root, o) {
     bar(w, t, xT, h - t / 2); bar(t, h - t, xT, (h - t) / 2); // T
     bar(t, h, xU - w / 2 + t / 2, h / 2); bar(t, h, xU + w / 2 - t / 2, h / 2); bar(w - 2 * t, t, xU, t / 2); // U
     bar(t, h, xC - w / 2 + t / 2, h / 2); bar(w - t, t, xC + t / 2, h - t / 2); bar(w - t, t, xC + t / 2, t / 2); // C
+    // Le « TUC » et son socle ouvrent Finds aussi (lot 3, #109) : avec le recul, ils occupent le milieu de l'écran.
+    add(F, new THREE.PlaneGeometry(6.2, h), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }), 0, h / 2, 0.4); // creux des lettres compris
+    C.traverse((m) => { if (m.isMesh) { m.userData.desk = true; deskHits.push(m); } });
     const leafA = lam(0x6b7a55), leafB = lam(0x56653f), trunkM = lam(0x7a6450), potM = std(0xdcd3c4, 0.5);
     [[-5.5, -3.5], [5.5, -3.5], [-5.5, 3.5], [5.5, 3.5]].forEach(([x, z], k) => {
       // Olivier en pot de marbre modélisé dans Blender (assets-src/blender/plante-mall.py) ; sinon l'arbre dessiné.
