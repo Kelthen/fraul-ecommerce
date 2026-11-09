@@ -278,11 +278,13 @@ export function startWalk(root, o) {
         const R = 3 * k, [tc, tx] = cv(Math.round(img.width * Math.min(1, (card.w * R) / img.width)), Math.round(img.height * Math.min(1, (card.w * R) / img.width)));
         tx.imageSmoothingQuality = "high"; tx.drawImage(img, 0, 0, tc.width, tc.height);
         const clean = cutout || knockOut(tx, tc.width, tc.height);
-        if (!clean) { x.save(); x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore(); } // photo illisible (autre site) : la carte, comme avant
         const b = clean ? opaqueBox(tx, tc.width, tc.height) : { x: 0, y: 0, w: tc.width, h: tc.height };
         const s = Math.min(card.w / b.w, card.h / b.h), w = b.w * s, h = b.h * s;
         const px0 = card.x + (card.w - w) / 2, py0 = hang || clip ? card.y - 6 : card.y + (card.h - h) / 2;
-        x.save(); x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4; x.drawImage(tc, b.x, b.y, b.w, b.h, px0, py0, w, h); x.restore();
+        // Fond pas uni (ou photo illisible) : la photo seule, coins arrondis, sans carte blanche autour.
+        x.save(); if (!clean) { rr({ x: px0, y: py0, w, h }); x.clip(); } else { x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4; }
+        x.drawImage(tc, b.x, b.y, b.w, b.h, px0, py0, w, h); x.restore();
+        if ((hang || clip) && clean) hanger(x, px0, py0, w, h, clip);
         tex.needsUpdate = true; onLoad();
       };
       img.src = src;
@@ -296,6 +298,9 @@ export function startWalk(root, o) {
       const bg = [at(0), at(W - 1), at((H - 1) * W), at(H * W - 1)].reduce((a, v) => a.map((c, i) => c + v[i] / 4), [0, 0, 0]);
       if (bg[0] + bg[1] + bg[2] < 450) return true; // fond sombre ou photo de mise en scène : on n'y touche pas
       const near = (i) => Math.abs(p[i * 4] - bg[0]) + Math.abs(p[i * 4 + 1] - bg[1]) + Math.abs(p[i * 4 + 2] - bg[2]) < 54;
+      // Fond vraiment uni sur tout le tour seulement (sinon, ex. sol en marbre, la photo serait déchirée) : photo entière.
+      let edge = 0, uni = 0; for (let i = 0; i < W; i += 3) { edge += 2; uni += near(i) + near((H - 1) * W + i); } for (let j = 0; j < H; j += 3) { edge += 2; uni += near(j * W) + near(j * W + W - 1); }
+      if (uni / edge < 0.92) return false;
       const seen = new Uint8Array(W * H), stack = [];
       for (let i = 0; i < W; i++) stack.push(i, (H - 1) * W + i);
       for (let j = 0; j < H; j++) stack.push(j * W, j * W + W - 1);
@@ -325,9 +330,37 @@ export function startWalk(root, o) {
       return `rgb(${med(0)},${med(1)},${med(2)})`;
     }
     // Crochet en « ? » qui sort du col (le cintre est caché dans les épaules) : fin, laiton. Mesures sur 256 points de large.
+    // Vrai cintre (Rhamone, 9 nov.) : la barre des épaules passe DERRIÈRE le vêtement (on ne la voit que par l'encolure ou
+    // entre les bras) ; pour un bas, une barre à pinces au ras de la taille, pinces devant.
+    function hanger(x, gx, gy, w, h, clip) {
+      const cx = gx + w / 2, wood = "#8a6a42", light = "#c9a96a";
+      x.save(); x.lineCap = "round";
+      if (clip) {
+        const y = gy + 3, x0 = cx - w * 0.46, x1 = cx + w * 0.46;
+        x.globalCompositeOperation = "destination-over";
+        x.strokeStyle = wood; x.lineWidth = 4; x.beginPath(); x.moveTo(x0, y); x.lineTo(x1, y); x.stroke();
+        x.globalCompositeOperation = "source-over";
+        [x0 + 6, x1 - 6].forEach((px) => { x.fillStyle = "#3a3a3d"; x.fillRect(px - 4, y - 3, 8, 11); x.fillStyle = light; x.fillRect(px - 4, y - 3, 8, 2); });
+      } else {
+        // Au niveau des épaules, sous la capuche, et pas plus large que le buste à cette hauteur (jamais visible entre
+        // la manche et le corps) : caché par le vêtement, sauf par l'encolure.
+        const sy = gy + h * 0.33; let half = w * 0.26;
+        try {
+          const k = x.getTransform().a, row = x.getImageData(0, Math.round(sy * k), x.canvas.width, 1).data, c0 = Math.round(cx * k);
+          let l = c0, r = c0; while (l > 0 && row[l * 4 + 3] > 24) l--; while (r < x.canvas.width - 1 && row[r * 4 + 3] > 24) r++;
+          half = Math.min(half, (Math.min(c0 - l, r - c0) / k) - 4);
+        } catch { /* image illisible : largeur par défaut */ }
+        if (half < 6) { x.restore(); return; }
+        x.globalCompositeOperation = "destination-over";
+        x.strokeStyle = wood; x.lineWidth = 5; x.beginPath(); x.moveTo(cx - half, sy + 8); x.quadraticCurveTo(cx, sy - 14, cx + half, sy + 8); x.stroke();
+        x.strokeStyle = light; x.lineWidth = 1.6; x.beginPath(); x.moveTo(cx - half, sy + 6); x.quadraticCurveTo(cx, sy - 16, cx + half, sy + 6); x.stroke();
+      }
+      x.restore();
+    }
     function hook(x, cx) {
       x.save(); x.lineCap = "round";
-      const p = new Path2D(`M${cx} 66 V36 C${cx} 28 ${cx + 10} 27 ${cx + 10} 19 C${cx + 10} 11 ${cx - 2} 9 ${cx - 4} 16`);
+      // Crochet de vrai cintre : court, il sort du col (Rhamone, 9 nov.).
+      const p = new Path2D(`M${cx} 66 V42 C${cx} 35 ${cx + 9} 34 ${cx + 9} 27 C${cx + 9} 20 ${cx - 2} 18 ${cx - 4} 24`);
       x.strokeStyle = "#7a6238"; x.lineWidth = 3.2; x.stroke(p); x.strokeStyle = "#c9a96a"; x.lineWidth = 1.9; x.stroke(p);
       x.fillStyle = "#7a6238"; x.fillRect(cx - 2.5, 61, 5, 6); x.restore();
     }
