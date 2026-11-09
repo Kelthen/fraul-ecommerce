@@ -236,6 +236,8 @@ export function WalkExperience({ data, startBrand }: Props) {
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
           </button>
         </div>
+        {/* Visite libre (#109) : disparaît dès qu'on a tourné le regard une fois. */}
+        <p className="look-hint">Glisse pour regarder autour · touche le sol pour avancer · touche un article</p>
         <div className="s-bottom" id="sBottom" hidden>
           {/* Rayons en liste verticale sur le décor, façon menu de jeu (Rhamone, 21 oct.) ; aussi dans chaque rayon,
               dans un coin (22 oct.) : en bas à gauche sur PC, repliée derrière « Rayons » sur téléphone. */}

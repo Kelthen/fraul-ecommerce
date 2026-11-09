@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Boutique : visite libre à 360° — prototype à valider** (`feat/rhamon/boutique-360`, plan #109) : hors d'un rayon, glisser tourne le regard (jamais de fiche après avoir tourné), toucher le sol y emmène (îlot contourné, jamais à travers les meubles, repère au sol), toucher un article ouvre sa fiche sans passer par « Rayons », toucher le panneau d'un rayon l'ouvre ; fermer la fiche garde le point de vue ; en sortant d'un rayon (←) on revient là où l'on était. Clavier : ← → tournent, ↑ ↓ avancent. « Rayons » reste un raccourci. Aide affichée une fois. **Vêtements des portants inclinés à 45°** (photo visible de biais, plus de profil) ; la pièce choisie se met de face (Rhamone, 9 nov.). — rhamon
+
 - **Walk : mall réaliste, 1re étape** (`feat/rhamon/mall-luxe`, plan de ChatGPT #109) : sol en grandes dalles ivoire polies avec reflets des bandeaux ; vitrines intégrées de chaque côté de la porte (haut aligné sur la porte, cadre champagne, verre, mannequin derrière sur un socle) pour les 3 types de façade. Matières faites dans Blender (marbre veiné, pierre claire, champagne brossé ; script `assets-src/blender/textures-mall.py`, images `public/textures/mall/`, 46 Ko en tout). Olivier en pot de marbre (assets-src/blender/plante-mall.py → public/models/plante.glb, 105 Ko) au centre ; ombres douces sous les socles et les mannequins.
 
 - **Accueil : taille des personnages du défilé** — retour de Rhamone du 8 novembre : progression du plus petit à gauche au plus grand à droite, plutôt qu'un grand personnage au milieu. Le reste lui convient ; cadre rouge corrigé dans #102. Détail : `docs/ACCUEIL-LOOKS.md` ; nouvelle preview à valider avant merge.
@@ -202,6 +204,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-09 | **Vêtements des portants inclinés à ~45°** dans les boutiques, pour voir la photo (plus de pièces de profil). | Rhamone |
 | 2026-11-08 | **Looks de l'accueil depuis l'admin** (`/admin/looks`, table `looks`, migration 0020) : Jean Paul met la photo d'une personne entière sur fond uni, un nom, et touche 2 à 6 articles portés. La photo est détourée automatiquement ; le look apparaît alors sur l'accueil. Tant qu'aucun look n'est en ligne, l'accueil montre les 6 looks de test. | Rhamone |
 | 2026-11-08 | **Détourage automatique des photos** (face et dos) par GitHub Actions toutes les 10 min (`.github/workflows/detourage.yml`, `scripts/detourage.py`, modèle birefnet-general-lite) → stockage `produits/detoure/`, colonne `product_images.cutout` (migration 0019). Le Walk et la fiche article montrent l'article détouré, sans cadre ; sinon la photo d'origine. **Secret GitHub `SUPABASE_SERVICE_ROLE_KEY` à ajouter par Rhamone.** | Rhamone |
 | 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |

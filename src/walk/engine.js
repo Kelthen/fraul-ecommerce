@@ -888,7 +888,7 @@ export function startWalk(root, o) {
     if (dead) return;
     if (!ok) { o.onFallback(slugOf(brand)); return; }
     try {
-      if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); }
+      if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); STORE.onPickRayon = (cat) => goZone(cat); }
     } catch { STORE = null; o.onFallback(slugOf(brand)); return; }
     if (brand !== sBrand) lastCat = null;
     sBrand = brand; sFromWalk = fromWalk; sCat = null;
@@ -913,11 +913,12 @@ export function startWalk(root, o) {
   // Rayon : animé = on marche jusqu'au centre ; sinon on remet juste l'état (la boutique se ferme derrière).
   function closeRayon(anim) {
     sCat = null; STORE.setActive(null); title(); sUI("walk");
-    if (anim) STORE.walk("hub", () => sUI("hub"));
+    if (anim) STORE.walkBack(() => sUI("hub")); // retour là où l'on était dans la boutique (visite libre), sinon au centre
   }
   function goZone(cat) {
     lastCat = cat;
     gesture("rayon");
+    if (!sCat) STORE.remember();
     openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
     STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); title(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
@@ -987,6 +988,7 @@ export function startWalk(root, o) {
     const basic = (opt) => new THREE.MeshBasicMaterial(opt);
     const lamCache = {}; const lam = (c) => lamCache[c] || (lamCache[c] = new THREE.MeshLambertMaterial({ color: c }));
     const add = (geo, mat, x, y, z, ry = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; scene.add(m); return m; };
+    let floor = null;
     scene.add(new THREE.HemisphereLight(0xffffff, 0x8e8982, 1.0));
     const dl = new THREE.DirectionalLight(0xffffff, 0.45); dl.position.set(2, 6, 4); scene.add(dl);
     const pl = new THREE.PointLight(0xffffff, 0.5, 12, 1.5); pl.position.set(0, 3.5, -2); scene.add(pl);
@@ -1012,7 +1014,7 @@ export function startWalk(root, o) {
       ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
       const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
       blob(0, -8.8, 150, 0.36); [[-3.6, -0.7], [3.6, -0.7], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
-      const fl = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), color: IN.floor }), 0, 0, -8); fl.rotation.x = -Math.PI / 2;
+      floor = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), color: IN.floor }), 0, 0, -8); floor.rotation.x = -Math.PI / 2;
     }
     const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: IN.ceil }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
     const white = basic({ color: 0xffffff });
@@ -1137,14 +1139,18 @@ export function startWalk(root, o) {
           m.position.lerp(tmp, closeAmt); s = lerp(s, cfg.close, closeAmt);
         }
         m.scale.setScalar(s);
-        if (isF) m.lookAt(tmp.set(cam.pos.x, m.position.y, cam.pos.z)); else m.lookAt(tmp.copy(m.position).add(car.out));
+        if (isF) m.lookAt(tmp.set(cam.pos.x, m.position.y, cam.pos.z));
+        // Portant de côté : chaque pièce pend tournée à 45° vers le début du portant (Rhamone, 9 nov. : « un peu
+        // inclinés pour qu'on puisse les voir »), et se redresse de face quand elle est choisie.
+        else if (side) { const t = (Math.PI / 4) * (1 - w); m.lookAt(tmp.copy(m.position).addScaledVector(car.out, Math.cos(t)).addScaledVector(car.d, -Math.sin(t))); }
+        else m.lookAt(tmp.copy(m.position).add(car.out));
         if (isF) {
           const age = (now - car.swingT) / 1000;
           if (age < 1.6) m.rotateZ(Math.sin(age * 7) * 0.08 * Math.exp(-age * 2.4));
           if (closeAmt > 0) m.rotateY(yaw * closeAmt);
         }
         const op = (1 - smooth(L - (side ? 1.5 : 0.7), L, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1);
-        const face = side ? w : 1, sd = m.userData.side; // de côté : le devant n'apparaît que sur la pièce choisie
+        const face = 1, sd = m.userData.side; // la photo se voit toujours (de biais sur le portant), plus de profil
         m.userData.mats.forEach((mt) => (mt.opacity = op * face));
         m.children[0].visible = m.children[1].visible = face > 0.01;
         if (sd) { sd.material.opacity = op * (1 - face); sd.visible = face < 0.99; }
@@ -1195,9 +1201,11 @@ export function startWalk(root, o) {
 
     // Glisser : faire défiler le rayon, ou tourner l'article en gros plan. Toucher : avancer un article / fiche en grand.
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+    ray.params.Line.threshold = 0.01; // les arêtes de la cloche de verre ne bloquent pas le toucher
     let drag = null;
-    canvas.addEventListener("pointerdown", (e) => { if (!active) return; drag = { x: e.clientX, f0: cars[active].f, y0: yaw, moved: 0 }; try { canvas.setPointerCapture(e.pointerId); } catch { /* ignoré */ } }, sig);
+    canvas.addEventListener("pointerdown", (e) => { if (!active) { exploreDown(e); return; } drag = { x: e.clientX, f0: cars[active].f, y0: yaw, moved: 0 }; try { canvas.setPointerCapture(e.pointerId); } catch { /* ignoré */ } }, sig);
     canvas.addEventListener("pointermove", (e) => {
+      if (!active) { exploreMove(e); return; }
       if (!drag) return; const dx = e.clientX - drag.x; drag.moved = Math.max(drag.moved, Math.abs(dx));
       if (drag.moved > 6) {
         dragging = true;
@@ -1207,6 +1215,7 @@ export function startWalk(root, o) {
       }
     }, sig);
     const endDrag = (e) => {
+      if (!active) { exploreUp(e); return; }
       if (!drag) return; const c = cars[active];
       if (drag.moved <= 6 && e.type === "pointerup") {
         const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
@@ -1219,6 +1228,83 @@ export function startWalk(root, o) {
     canvas.addEventListener("pointerup", endDrag, sig);
     canvas.addEventListener("pointercancel", endDrag, sig);
 
+    /* Visite libre à 360° (plan #109, Rhamone 9 nov. : « une expérience en 360 qui te fait tourner la tête dans une
+       boutique », « aller où tu veux avec les doigts ou la souris et cliquer sur les articles sans forcément passer par
+       Rayons »). Hors d'un rayon : glisser tourne le regard (jamais de fiche après avoir tourné), toucher le sol y
+       emmène en contournant l'îlot, toucher un article ouvre sa fiche, toucher le panneau d'un rayon l'ouvre.
+       Au clavier : ← → tournent, ↑ ↓ avancent et reculent. « Rayons » reste un raccourci. */
+    // Surface praticable : loin des portants (articles tirés vers soi), des étagères du fond, de l'îlot et des mannequins.
+    const FREE = { x: 4.4, zFront: -0.7, zBack: -14.2 }, ISLE = { x0: -2.3, x1: 2.3, z0: -10.6, z1: -7.0 };
+    const DUMMIES = [[-3.6, -0.7], [3.6, -0.7], [-1.95, -14.6], [1.95, -14.6]];
+    function walkable(x, z) {
+      x = clamp(x, -FREE.x, FREE.x); z = clamp(z, FREE.zBack, FREE.zFront);
+      if (x > ISLE.x0 && x < ISLE.x1 && z > ISLE.z0 && z < ISLE.z1) { // sortir de l'îlot par le bord le plus proche
+        const d = [[x - ISLE.x0, ISLE.x0, z], [ISLE.x1 - x, ISLE.x1, z], [z - ISLE.z0, x, ISLE.z0], [ISLE.z1 - z, x, ISLE.z1]].sort((a, b) => a[0] - b[0])[0];
+        x = d[1]; z = d[2];
+      }
+      DUMMIES.forEach(([mx, mz]) => { const dx = x - mx, dz = z - mz, d = Math.hypot(dx, dz); if (d < 0.9) { const k = 0.9 / Math.max(d, 0.01); x = mx + dx * k; z = mz + dz * k; } });
+      return [clamp(x, -FREE.x, FREE.x), clamp(z, FREE.zBack, FREE.zFront)];
+    }
+    // Repère de destination : un anneau discret au sol, qui s'efface à l'arrivée.
+    const marker = add(new THREE.RingGeometry(0.16, 0.2, 32), basic({ color: new THREE.Color(st.bg), transparent: true, opacity: 0.85, depthWrite: false }), 0, 0.01, 0);
+    marker.rotation.x = -Math.PI / 2; marker.visible = false;
+    const dirOf = () => tmp2.subVectors(cam.look, cam.pos).normalize();
+    function aim(yawA, pitchA) { // regard horizontal libre, un peu vers le haut ou le bas, jamais retourné
+      const p = clamp(pitchA, -0.65, 0.5);
+      cam.look.set(cam.pos.x + Math.sin(yawA) * Math.cos(p) * 8, cam.pos.y + Math.sin(p) * 8, cam.pos.z - Math.cos(yawA) * Math.cos(p) * 8);
+      kick();
+    }
+    const angles = () => { const d = dirOf(); return { yaw: Math.atan2(d.x, -d.z), pitch: Math.asin(clamp(d.y, -1, 1)) }; };
+    let saved = null; // endroit et regard d'où l'on est parti vers un rayon : on y revient en sortant du rayon
+    function walkTo(x, z, toLook, cb) {
+      const [tx, tz] = walkable(x, z), a = [cam.pos.x, cam.pos.z];
+      const d = dirOf(), look = toLook || V(tx + d.x * 8, 1.5, tz + d.z * 8);
+      marker.position.set(tx, 0.01, tz); marker.visible = !toLook;
+      if (RM || dist2(a, [tx, tz]) < 0.05) { cam.walk = null; cam.pos.set(tx, 1.6, tz); cam.look.copy(look); marker.visible = false; kick(); if (cb) cb(); return; }
+      const curve = new THREE.CatmullRomCurve3(route(a, [tx, tz]).map(([px, pz]) => V(px, 1.65, pz)), false, "centripetal"), len = curve.getLength();
+      cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 3.2, 0.35, 1.4) * 1000, fromLook: cam.look.clone(), toLook: look, cb: () => { marker.visible = false; if (cb) cb(); } };
+      kick();
+    }
+    let ex = null;
+    const pointers = new Set();
+    function exploreDown(e) {
+      pointers.add(e.pointerId);
+      if (pointers.size > 1) { if (ex) ex.multi = true; return; } // deux doigts : ni tour ni toucher
+      ex = { x: e.clientX, y: e.clientY, moved: 0, ...angles(), multi: false };
+      try { canvas.setPointerCapture(e.pointerId); } catch { /* ignoré */ }
+    }
+    function exploreMove(e) {
+      if (!ex || ex.multi || cam.walk) return;
+      const dx = e.clientX - ex.x, dy = e.clientY - ex.y; ex.moved = Math.max(ex.moved, Math.hypot(dx, dy));
+      if (ex.moved > 6) { dragging = true; aim(ex.yaw - dx * 0.0055, ex.pitch + dy * 0.0045); gesture("look"); }
+    }
+    function exploreUp(e) {
+      pointers.delete(e.pointerId);
+      const t = ex; if (pointers.size === 0) { ex = null; dragging = false; }
+      if (!t || t.multi || t.moved > 6 || e.type !== "pointerup" || cam.walk) return; // après avoir tourné : jamais de fiche
+      const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      // Premier objet vraiment touché : on ne clique pas à travers un mur, un meuble ou le verre de l'îlot.
+      const hit = ray.intersectObjects(scene.children, true).find((h) => {
+        const o = h.object;
+        // Un article : touché sur toute sa largeur de face, même quand on le voit de profil sur le portant (bande fine).
+        if (o.parent && o.parent.userData.it) return o.parent.visible;
+        if (!o.visible || o === marker) return false;
+        const m = o.material; return !(m && m.transparent && !o.userData.cat && (m.opacity ?? 1) < 0.5);
+      });
+      if (!hit) return;
+      const o = hit.object, it = o.parent && o.parent.userData.it;
+      if (it) { gesture("pick"); openFiche(it); return; }
+      if (o.userData.cat && o.userData.stocked) { api.onPickRayon(o.userData.cat); return; }
+      if (o === floor || hit.point.y < 0.08) { gesture("move"); walkTo(hit.point.x, hit.point.z); }
+    }
+    window.addEventListener("keydown", (e) => {
+      if (storeEl.hidden || active || cam.walk || e.target.closest?.("input, textarea, [role=dialog] .f-body")) return;
+      const k = e.key, a = angles();
+      if (k === "ArrowLeft" || k === "ArrowRight") { e.preventDefault(); aim(a.yaw + (k === "ArrowLeft" ? -0.35 : 0.35), a.pitch); }
+      else if (k === "ArrowUp" || k === "ArrowDown") { e.preventDefault(); const d = dirOf(), s = k === "ArrowUp" ? 1.5 : -1.5; walkTo(cam.pos.x + d.x * s, cam.pos.z + d.z * s); }
+    }, sig);
+
     function resize() {
       const w = storeEl.clientWidth || innerWidth, h = storeEl.clientHeight || innerHeight, a = w / h;
       renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 72 : 56; camera.updateProjectionMatrix();
@@ -1229,6 +1315,11 @@ export function startWalk(root, o) {
 
     const api = {
       brand: st.name, place, walk, resize,
+      /** Retient l'endroit et le regard actuels (avant d'aller à un rayon). */
+      remember() { saved = { x: cam.pos.x, z: cam.pos.z, look: cam.look.clone() }; },
+      /** Revient à l'endroit retenu (en sortant d'un rayon), sinon au centre. */
+      walkBack(cb) { if (saved) { const s = saved; saved = null; walkTo(s.x, s.z, s.look, cb); } else walk("hub", cb); },
+      onPickRayon: () => {},
       /** Prépare l'affichage (shaders) en coulisse, pour que la première image soit immédiate à l'entrée. */
       warm() { try { place("hub"); renderer.compile(scene, camera); } catch { /* ignoré */ } },
       setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; watermark(cat); if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
