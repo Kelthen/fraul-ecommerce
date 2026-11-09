@@ -83,6 +83,8 @@ export function WalkExperience({ data, startBrand }: Props) {
     // ?heure=19 : voir le mall à une autre heure (essai sur la preview) ; sinon l'heure locale du visiteur.
     const hq = new URLSearchParams(location.search).get("heure");
     const hour = hq !== null && Number(hq) >= 0 && Number(hq) < 24 ? Number(hq) : undefined;
+    // ?reflet=0 : sol sans reflet du mall (comparaison sur la preview, plan #109 lot 1).
+    const reflet = new URLSearchParams(location.search).get("reflet") !== "0";
 
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -105,6 +107,7 @@ export function WalkExperience({ data, startBrand }: Props) {
       onFiche: (it: FicheItem | null) => setFiche(it ? { ...it } : null),
       onConcierge: (c: { brand: string } | null) => setConcierge(c),
       hour,
+      reflet,
       startShop: shopIndex >= 0 ? shopIndex : undefined,
       startStore: shopIndex < 0 ? startName : undefined,
     }));

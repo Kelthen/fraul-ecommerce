@@ -46,7 +46,7 @@ test("Finds : un arrêt vers la 10e boutique, face au comptoir, entre deux bouti
   const { after, slot } = MALL.concierge;
   const pt = pathAt(progressForConcierge(N, MALL), N, 10, MALL);
   assert.equal(pt.shop, AT_CONCIERGE);
-  assert.ok(Math.abs(pt.x - (slot.x + slot.nx * 7)) < 1e-9 && Math.abs(pt.z - (slot.z + slot.nz * 7)) < 1e-9);
+  assert.ok(Math.abs(pt.x - (slot.x + slot.nx * 8.5)) < 1e-9 && Math.abs(pt.z - (slot.z + slot.nz * 8.5)) < 1e-9); // recul du lot 3 (#109)
   assert.equal(pathAt(progressForShop(after - 1, N, MALL), N, 10, MALL).shop, after - 1);
   assert.equal(pathAt(progressForShop(after, N, MALL), N, 10, MALL).shop, after);
   assert.ok(after >= 9 && after <= 11, `arrêt après ${after} boutiques`);

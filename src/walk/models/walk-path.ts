@@ -14,7 +14,7 @@ type Node = PathNode;
 /** Arrêts qui ne sont pas des boutiques. */
 export const AT_ENTRY = -1, AT_EXIT = -2, AT_CAISSE = -3, AT_CONCIERGE = -4;
 /** On s'arrête plus près du comptoir Finds que d'une vitrine. */
-const CONCIERGE_DIST = 0.7;
+const CONCIERGE_DIST = 0.85; // un peu de recul (lot 3, #109) : le « TUC » entier, le comptoir moins envahissant
 /** Et plus près encore du comptoir de la Caisse. */
 const CAISSE_DIST = 0.6;
 /** Nombre d'étapes après l'entrée : les vitrines, Finds, la Caisse si elle est là, la sortie. */
@@ -35,7 +35,7 @@ export function pathAt(p: number, n: number, dist: number, mall: MallLayout, wit
     return { p: [s.x + s.nx * dist, s.z + s.nz * dist], l: [s.x, LOOK_Y, s.z] };
   };
   const c = CON.slot, cd = dist * CONCIERGE_DIST;
-  const concierge: Node = { p: [c.x + c.nx * cd, c.z + c.nz * cd], l: [c.x, LOOK_Y - 1, c.z] }; // regard plus bas : le comptoir et le « TUC » montent au-dessus du panneau
+  const concierge: Node = { p: [c.x + c.nx * cd, c.z + c.nz * cd], l: [c.x, LOOK_Y - 0.7, c.z] }; // regard un peu bas : comptoir et « TUC » entiers
   const ca = dist * CAISSE_DIST, caisse: Node = { p: [CA.x + CA.nx * ca, CA.z + CA.nz * ca], l: [CA.x, LOOK_Y - 1.1, CA.z] };
   // Étapes : 0 entrée, puis les boutiques avec Finds après les `after` premières, la Caisse (n + 2) si elle est là, la sortie.
   const last = lastStop(n, withCaisse);
