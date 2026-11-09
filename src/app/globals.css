@@ -17,6 +17,7 @@
   --line: rgba(10, 10, 12, 0.12);
   --display: var(--font-serif), "Didot", "Bodoni 72", Georgia, serif;
   --body: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
+  --note: var(--font-note), Georgia, serif;
   --tabbar: 64px;
   color-scheme: light;
 }
@@ -381,14 +382,15 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .gal-slide:not(.is-cut) .gal-zoom img { object-fit: cover; }
 /* Photo détourée : l'article seul, posé avec une ombre douce. */
 .gal-slide.is-cut .gal-zoom img { padding: 6%; box-sizing: border-box; filter: drop-shadow(0 14px 18px rgba(10, 10, 12, 0.16)); }
-.gal-zoom { position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; overflow: hidden; }
+.gal-zoom { position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; overflow: hidden;  touch-action: pan-x pan-y; }
+/* pan-x pan-y : le glissement entre les vues reste, mais le navigateur ne zoome plus la page sur la photo (le zoom à deux doigts est géré par la galerie). */
 .gal-track.zoomed .gal-zoom { cursor: zoom-out; }
 .gal-zoom img { width: 100%; height: 100%; object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; }
 /* En grand : la photo prend aussi la place des miniatures (Rhamone, 8 nov.). */
 .gal.is-big .gal-slide { aspect-ratio: 4 / 5; transition: aspect-ratio .3s ease; }
 .gal-shrink { position: absolute; top: 10px; left: 10px; width: 36px; height: 36px; border-radius: 999px; border: 0; background: rgba(10, 10, 12, 0.72); color: var(--ivory); font-size: 20px; line-height: 1; cursor: pointer; }
 .gal-count { position: absolute; top: 10px; right: 10px; padding: 6px 10px; border-radius: 999px; background: rgba(10, 10, 12, 0.72); color: var(--ivory); font: 600 11px/1 var(--body); font-variant-numeric: tabular-nums; pointer-events: none; }
-.gal-hint { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); padding: 6px 10px; border-radius: 999px; background: rgba(255, 254, 247, 0.85); font: 600 10px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); pointer-events: none; white-space: nowrap; }
+.gal-hint { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); padding: 6px 10px; border-radius: 999px; background: rgba(255, 254, 247, 0.85); font: 400 12px/1 var(--note); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); pointer-events: none; white-space: nowrap; }
 .gal-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 254, 247, 0.9); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
 .gal-arrow.l { left: 8px; } .gal-arrow.r { right: 8px; }
 .gal-arrow:disabled { opacity: 0; pointer-events: none; }

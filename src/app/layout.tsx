@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bodoni_Moda, Montserrat } from "next/font/google";
+import { Bodoni_Moda, Monomakh, Montserrat } from "next/font/google";
 import { AccountProvider } from "@/components/AccountProvider";
 import { CartProvider } from "@/components/CartProvider";
 import { EnviesProvider } from "@/components/EnviesProvider";
@@ -11,6 +11,8 @@ import "./globals.css";
 
 const serif = Bodoni_Moda({ variable: "--font-serif", subsets: ["latin"], style: ["normal", "italic"], display: "swap" });
 const sans = Montserrat({ variable: "--font-sans", subsets: ["latin"], style: ["normal", "italic"], display: "swap" });
+// Petits textes d'aide sur les photos (« Touche pour agrandir »), choix de Rhamone du 9 nov. 2026.
+const note = Monomakh({ variable: "--font-note", subsets: ["latin"], weight: "400", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -38,7 +40,7 @@ const orgJsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="fr" className={`${serif.variable} ${sans.variable} ${note.variable}`}>
       <body>
         <a className="skip" href="#contenu">
           Aller au contenu
