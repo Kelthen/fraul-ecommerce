@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Mannequins de vitrine : duo homme/femme et pose féminine validés** par Rhamone (« oui je valide »). Reprendre les GLB existants : tombé du tee, raccord taille, mains/chaussures et poses ; femme avec main sur la hanche, léger déhanché et genou relâché. Référence finale et consignes Blender dans `docs/PLAN-MALL-REALISTE.md`, section « Mannequins ». Illustration validée, modèles améliorés encore à réaliser et vérifier dans la vitrine ERD avant généralisation ; garder l'architecture.
+
 - **Boutique : exploration 360° demandée par Rhamone**, au doigt et à la souris, déplacement libre dans l'espace praticable et sélection directe des articles sans passer obligatoirement par « Rayons ». Scène 3D et déplacements par rayons déjà présents ; contrôles libres à prototyper. Brief complet avec les finitions du mall dans `docs/PLAN-MALL-REALISTE.md` (#109), section « Brief consolidé ». Préparer une réalisation séparée pour les interactions ; visuel/prototype et preview avant généralisation.
 
 - **Mall : go pour le lot 2 après appréciation du sol sur le comparatif** — Rhamone : « Oui j’aime maintenant suivant », puis « Ok go go go go ». Prochaine livraison : vitrine témoin ERD (verre, champagne, lumière, socles), vues de face et depuis l'allée puis preview. Ensuite Finds, plantes/raccords et harmonisation, avec validation par étape. Voir la section « Dernier accord » de `docs/PLAN-MALL-REALISTE.md` dans #109. La fluidité et les reflets en mouvement restent à vérifier.

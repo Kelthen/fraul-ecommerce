@@ -5,6 +5,20 @@
 
 ## Reprise après la première réalisation — 8 novembre 2026
 
+### Mannequins : duo et pose féminine validés
+
+Rhamone a demandé d'examiner les modèles actuels avant de proposer, puis a validé la direction retravaillée, le mélange homme/femme et enfin la pose féminine ci-dessous : **« oui je valide »**. Cette référence complète le lot 2 et autorise la reprise des modèles existants dans Blender ; les consignes plus anciennes de simple réutilisation ne doivent pas empêcher ces améliorations. Architecture et dimensions des vitrines restent conservées.
+
+![Duo validé : homme détendu, femme avec main sur la hanche](../assets-src/references/mall-realiste/mannequins-duo-valide.png)
+
+- **Référence finale** : cette image remplace les propositions de poses précédentes. Homme en appui naturel, bras détendus ; femme avec main droite sur la hanche, léger déhanché et genou gauche relâché. Deux silhouettes distinctes, résine blanche mate, tête abstraite sobre, personnages entiers. Pose statique ; aucune animation de marche ou rotation automatique demandée.
+- **Ce qui existe déjà** : `assets-src/models/fraul_mannequin.glb`, sorties `public/models/mannequin.glb` et `mannequin-femme.glb`, préparation dans `scripts/prep-mannequin.mjs`. La variante féminine actuelle vient de la déformation du même modèle via `scripts/mannequin-femme.mjs`. Les deux GLB ont été examinés de face, trois quarts et profil sous lumière neutre ; le blanc et les bras fléchis existaient déjà. Ne pas présenter ces éléments comme nouveaux.
+- **Reprise précise** : t-shirt avec vraie aisance et tombé naturel, épaules moins anguleuses, col/manches/ourlet propres ; supprimer l'effet de bande irrégulière à la jonction pantalon ; améliorer mains et chaussures, puis ajuster les poses. Sur la femme, adapter les vêtements à sa silhouette sans simplement comprimer le modèle masculin. Vérifier aussi dos et profil pour la future exploration à 360°.
+- **Limite du visuel** : illustration de direction, pas rendu d'un GLB déjà réalisé. Tee noir, pantalon anthracite et chaussures blanches neutres servent à valider forme, matière et pose ; ce ne sont pas des références catalogue ni des Nike/Jordan validées. Préserver les couleurs et inscriptions de marques pilotées par le site. Ne pas prétendre que les mannequins portent les vrais articles sans travail et correspondance produit vérifiés.
+- **Blender et export** : repartir du modèle source, conserver corps/vêtements/chaussures distincts et sauvegarder une source éditable avec script reproductible. Préparer les deux poses dans Blender, puis exporter des modèles statiques allégés ; adapter le pipeline existant pour qu'une ancienne déformation féminine ou retouche du tee ne déforme pas une seconde fois le nouveau modèle. Préserver les noms de matières attendus par le moteur ou fournir leur correspondance. Comparer le rendu avant/après simplification.
+- **Intégration témoin** : un homme et une femme dans les vitrines latérales, en vérifiant l'activation effective de la variante féminine dans `engine.js`. Mesurer la largeur du coude posé sur la hanche et la boîte englobante complète : aucun membre ne traverse verre ou cadre de la baie utile de 1,45 m. Pieds posés, pas de double socle entre la plaque du GLB et le socle de vitrine ; préserver les proportions plutôt que réduire arbitrairement le personnage.
+- **Livraison attendue** : comparaison des deux modèles de face/profil/trois quarts, puis duo dans la boutique ERD, captures téléphone/PC et preview réelle avant généralisation. Donner poids et nombre de triangles de chaque export, mesurer l'effet sur la fluidité. La validation de cette illustration autorise la réalisation ; elle ne vaut pas validation automatique du rendu navigateur ou merge.
+
 ### Brief consolidé : ensemble du mall et boutique à 360°
 
 Rhamone demande de transmettre **toutes les consignes ensemble**, avec une nouvelle expérience intérieure : « une experience en 360 qui te fais tourner la tete dans une boutique », « aller ou tu veux avec les doigts ou la souris et cliquer pour les articles sans forcement cliquer sur le bouton rayons ».
