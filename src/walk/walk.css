@@ -71,6 +71,14 @@
 .fw .store[data-mode="rayon"] .s-bottom:not(.open) .s-cats { display: none; }
 .fw .store[data-mode="rayon"] .s-bottom.open .s-cats { margin-top: 6px; }
 .fw .store[data-mode="rayon"] .s-cats .s-cat { width: min(220px, 60vw); height: 38px; }
+/* Visite libre au téléphone : la liste des rayons est repliée derrière « Rayons » aussi au centre de la boutique, pour
+   laisser voir la scène (retour de Rhamone, 9 nov. : menu trop présent). Elle reste à un toucher. */
+@media (max-width: 760px) {
+  .fw .store[data-mode="hub"] .s-label { display: none; }
+  .fw .store[data-mode="hub"] .s-tog { display: inline-flex; align-self: flex-start; }
+  .fw .store[data-mode="hub"] .s-bottom:not(.open) .s-cats { display: none; }
+  .fw .store[data-mode="hub"] .s-bottom.open .s-cats { margin-top: 6px; }
+}
 @media (min-width: 1260px) { /* assez de place à gauche de la fiche (760 px au centre) */
   .fw .store[data-mode="rayon"] .s-bottom { top: auto; bottom: 24px; z-index: 3; }
   .fw .store[data-mode="rayon"] .s-tog { display: none; }

@@ -32,6 +32,8 @@ let CAISSE = null;
 let PLANTE = null;
 /** Vitrine finie dans Blender (assets-src/blender/vitrine-temoin.py → public/models/vitrine.glb) : cadre et socle. */
 let VITRINE = null;
+/** Îlot central de la boutique fini dans Blender (assets-src/blender/ilot-boutique.py → public/models/ilot.glb). */
+let ILOT = null;
 /** Boutique témoin du lot 2 (#109) : seule à recevoir la vitrine finie tant que Rhamone n'a pas validé la preview. */
 const TEMOIN = (st) => st.name === "ERD";
 /** Reflet du mall dans le sol poli (three/examples Reflector) ; absent = traînées claires sous les bandeaux. */
@@ -192,7 +194,7 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR, VITRINE] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null), loadModel("vitrine").then(vitrineKit)]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR, VITRINE, ILOT] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null), loadModel("vitrine").then(vitrineKit), loadModel("ilot")]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
@@ -1036,6 +1038,7 @@ export function startWalk(root, o) {
     const cats = $("#sCats"); cats.textContent = ""; rayons().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     // On arrive directement au centre, devant le choix des rayons (plus de marche depuis la porte).
     STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
+    setTimeout(() => { if (STORE && STORE.brand === brand && !storeEl.hidden) STORE.gallery(); }, 500); // la galerie derrière soi, après l'entrée
   }
   /** Durée du fondu à l'entrée et à la sortie d'une boutique (ms). */
   const FADE_MS = 150;
@@ -1125,52 +1128,72 @@ export function startWalk(root, o) {
     const lamCache = {}; const lam = (c) => lamCache[c] || (lamCache[c] = new THREE.MeshLambertMaterial({ color: c }));
     const add = (geo, mat, x, y, z, ry = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; scene.add(m); return m; };
     let floor = null;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8e8982, 1.0));
-    const dl = new THREE.DirectionalLight(0xffffff, 0.45); dl.position.set(2, 6, 4); scene.add(dl);
-    const pl = new THREE.PointLight(0xffffff, 0.5, 12, 1.5); pl.position.set(0, 3.5, -2); scene.add(pl);
+    // Lumière réglée pour des matières éclairées (sol, murs, îlot) : plus basse que pour les anciens aplats, sinon tout blanchit.
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8e8982, 0.62));
+    const dl = new THREE.DirectionalLight(0xfff6ea, 0.32); dl.position.set(2, 6, 4); scene.add(dl);
+    const pl = new THREE.PointLight(0xfff4e6, 0.22, 10, 1.6); pl.position.set(0, 3.5, -2); scene.add(pl); // douce : pas de tache claire sur le sol poli
 
     // Ambiance selon l'architecture de la boutique : claire, plus froide (verrière) ou chaude (portique).
     const IN = [{ wall: 0xffffff, floor: 0xffffff, ceil: 0xf1efeb }, { wall: 0xe6eaec, floor: 0xc4c9ce, ceil: 0xe9ecee }, { wall: 0xfff2df, floor: 0xe6bd8e, ceil: 0xfaf3e6 }][shopType(Math.max(0, SHOP_NAMES.indexOf(st.name)))];
 
-    /* Surfaces à lumière « cuite » : ombres et reflets peints une fois dans les textures */
-    { const [c, x] = U.cv(512, 256);
-      const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, "#f4f2ee"); g.addColorStop(0.72, "#e2ded8"); g.addColorStop(0.93, "#cdc8c1"); g.addColorStop(1, "#a8a39c");
-      x.fillStyle = g; x.fillRect(0, 0, 512, 256);
-      for (let i = 0; i < 7; i++) { const gx = (i + 0.5) * 512 / 7, r = x.createRadialGradient(gx, 0, 4, gx, 0, 130); r.addColorStop(0, "rgba(255,255,255,.6)"); r.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = r; x.fillRect(gx - 140, 0, 280, 150); }
-      const wallM = basic({ map: U.T(c), color: IN.wall });
+    /* Finitions de l'intérieur (Rhamone, 9 nov. : « retaper le sol et tout », « travail propre ») : mêmes matières que le
+       mall validé (dalles ivoire, pierre claire, champagne), éclairées pour de vrai au lieu d'aplats peints ; les ombres
+       au pied des murs et des meubles restent peintes, sur une couche à part. L'ambiance de chaque architecture est gardée. */
+    const texL = new THREE.TextureLoader();
+    const colorMap = (url, rx, ry) => { const t = texL.load(url, () => kick()); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; return t; };
+    // Ambiance réfléchie de la boutique (plafond clair, bandeaux et spots) : reflets doux sur le sol poli et le métal.
+    // Calculée une seule fois pour toutes les boutiques (entrer doit rester immédiat).
+    const envMap = SR.env || (SR.env = (() => {
+      const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene();
+      const room = new THREE.Mesh(new THREE.BoxGeometry(12, 4.2, 16), new THREE.MeshBasicMaterial({ color: 0x302e2b, side: THREE.BackSide })); room.position.y = 2.1; es.add(room);
+      [-2, 2].forEach((x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 15), new THREE.MeshBasicMaterial({ color: new THREE.Color(3.5, 3.4, 3.2) })); m.position.set(x, 4.15, 0); es.add(m); });
+      const rt = pm.fromScene(es, 0.04); pm.dispose(); return rt.texture;
+    })());
+    const TINT = [{ floor: 0xb3a999, wall: 0xe9e3d9 }, { floor: 0xadb0b1, wall: 0xdadfe2 }, { floor: 0xb9a68d, wall: 0xeedfcb }][shopType(Math.max(0, SHOP_NAMES.indexOf(st.name)))];
+    { // Murs en pierre claire (grain fin), plinthe sombre au sol, corniche lumineuse sous le plafond.
+      // Une seule sorte de matière à reflets dans la boutique (sol, marbre, champagne) ; le reste en matière simple éclairée :
+      // la carte graphique prépare moins de choses et entrer reste immédiat (test téléphone).
+      const wallM = new THREE.MeshLambertMaterial({ map: colorMap("/textures/mall/pierre.jpg", 6, 2), color: TINT.wall });
       add(new THREE.PlaneGeometry(16, 4.2), wallM, -6, 2.1, -8, Math.PI / 2);
       add(new THREE.PlaneGeometry(16, 4.2), wallM, 6, 2.1, -8, -Math.PI / 2);
       add(new THREE.PlaneGeometry(12, 4.2), wallM, 0, 2.1, -16);
+      const plinth = lam(0x2b2724), cove = basic({ color: 0xfff6e8 });
+      [-1, 1].forEach((sd) => { add(new THREE.BoxGeometry(0.03, 0.09, 16), plinth, sd * 5.985, 0.045, -8); add(new THREE.BoxGeometry(0.06, 0.025, 16), cove, sd * 5.97, 4.12, -8); });
+      add(new THREE.BoxGeometry(12, 0.09, 0.03), plinth, 0, 0.045, -15.985); add(new THREE.BoxGeometry(12, 0.025, 0.06), cove, 0, 4.12, -15.97);
     }
-    { const [c, x] = U.cv(512, 704), X = (v) => (v + 6) / 12 * 512, Y = (z) => (z + 16) / 16 * 704;
-      x.fillStyle = "#a39f98"; x.fillRect(0, 0, 512, 704);
-      for (let i = 0; i < 5000; i++) { x.fillStyle = `rgba(${Math.random() < 0.5 ? "255,255,255" : "0,0,0"},${(Math.random() * 0.05).toFixed(3)})`; x.fillRect(Math.random() * 512, Math.random() * 704, 2, 2); }
-      [-2, 2].forEach((sx) => { const g = x.createLinearGradient(X(sx) - 44, 0, X(sx) + 44, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,.3)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(X(sx) - 44, Y(-15.6), 88, Y(-0.4) - Y(-15.6)); });
-      const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.42)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
-      ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
+    { // Sol : les dalles ivoire du mall (grandes dalles, joints fins), reflet doux de l'éclairage.
+      floor = add(new THREE.PlaneGeometry(12, 16), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 12 / 4.8, 16 / 4.8), color: TINT.floor, roughness: 0.36, metalness: 0, envMap, envMapIntensity: 0.4 }), 0, 0, -8);
+      floor.rotation.x = -Math.PI / 2;
+      // Ombres peintes (couche transparente) : pied des murs, sous l'îlot et les mannequins ; reflets des bandeaux.
+      const [c, x] = U.cv(512, 704), X = (v) => (v + 6) / 12 * 512, Y = (z) => (z + 16) / 16 * 704;
+      [-2, 2].forEach((sx) => { const g = x.createLinearGradient(X(sx) - 30, 0, X(sx) + 30, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,.22)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(X(sx) - 30, Y(-15.6), 60, Y(-0.4) - Y(-15.6)); });
+      const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.34)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
+      ao(0, 0, 0, 36, 0, 0, 512, 36); ao(0, 0, 36, 0, 0, 0, 36, 704); ao(512, 0, 476, 0, 476, 0, 36, 704);
       const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
-      blob(0, -8.8, 150, 0.36); [[-3.6, -0.7], [4.6, -0.75], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
-      floor = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), color: IN.floor }), 0, 0, -8); floor.rotation.x = -Math.PI / 2;
+      blob(0, -8.8, 120, 0.32); [[-3.6, -0.7], [4.6, -0.75], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 26, 0.4));
+      const shade = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), transparent: true, depthWrite: false }), 0, 0.003, -8); shade.rotation.x = -Math.PI / 2;
     }
-    const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: IN.ceil }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
+    const ceil = add(new THREE.PlaneGeometry(12, 16), lam(IN.ceil), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
     const white = basic({ color: 0xffffff });
     [-2, 2].forEach((sx) => add(new THREE.BoxGeometry(0.14, 0.03, 15.2), white, sx, 4.18, -8));
     const spotGeo = new THREE.CircleGeometry(0.07, 16);
     for (let z = -1.2; z > -15.5; z -= 1.6) [-4.6, 4.6].forEach((sx) => { const s = add(spotGeo, white, sx, 4.19, z); s.rotation.x = Math.PI / 2; });
 
     // Façade à la couleur de la marque, sol extérieur, enseigne (nom ou logo)
-    const facadeM = basic({ color: new THREE.Color(st.bg) });
+    const facadeM = new THREE.MeshLambertMaterial({ color: new THREE.Color(st.bg) }); // éclairée : plus un aplat
     add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, -3.8, 2.1, 0); add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, 3.8, 2.1, 0);
     add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
     const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
     /* La galerie vue par la porte (Rhamone, 9 nov. : « voir une autre boutique à travers la porte », impression de centre
        commercial) : le vrai voisinage, tiré du plan du mall (SLOTS), placé dans le repère de cette boutique — sol, plafond
        et façades des boutiques qui sont réellement en face ou en biais. Aucune boutique inventée ; dessin léger (6 au plus). */
-    { const k0 = SHOP_NAMES.indexOf(st.name);
+    // Construite juste après l'entrée (elle est dans le dos du visiteur qui arrive) : entrer reste immédiat.
+    const buildGallery = () => { const k0 = SHOP_NAMES.indexOf(st.name);
       if (k0 >= 0 && k0 < N) {
         const s0 = SLOTS[k0], a0 = Math.atan2(s0.nx, s0.nz), ca = Math.cos(a0), sa = Math.sin(a0);
         const local = (x, z) => { const dx = x - s0.x, dz = z - s0.z; return [dx * ca - dz * sa, dx * sa + dz * ca]; };
-        const mallFloor = add(new THREE.PlaneGeometry(40, 34), basic({ color: 0xe9e1d4 }), 0, -0.003, 17.2); mallFloor.rotation.x = -Math.PI / 2;
+        ext.visible = false; // le sol uni de secours laisse la place aux dalles de la galerie
+        const mallFloor = add(new THREE.PlaneGeometry(40, 34), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 40 / 4.8, 34 / 4.8), color: 0xbdb3a4, roughness: 0.3, envMap, envMapIntensity: 0.4 }), 0, -0.003, 17.2); mallFloor.rotation.x = -Math.PI / 2; // les dalles du mall
         const mallCeil = add(new THREE.PlaneGeometry(40, 34), basic({ color: 0xfbfaf6 }), 0, CEIL, 17.2); mallCeil.rotation.x = Math.PI / 2;
         [-3.5, 3.5].forEach((x) => add(new THREE.BoxGeometry(0.12, 0.03, 32), basic({ color: 0xffffff }), x, CEIL - 0.02, 17.2));
         const glow = U.glowTex(true);
@@ -1184,7 +1207,8 @@ export function startWalk(root, o) {
             const bd = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.1), basic({ map: glow })); bd.position.set(0, 2.05, -0.3); g.add(bd); // intérieur lumineux
           });
       }
-    }
+    };
+    let galleryDone = false;
     add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
 
     /* Côté intérieur de la porte (direction validée par Rhamone, 9 nov.) : tableau « Thank you. See you soon. » au-dessus
@@ -1203,19 +1227,25 @@ export function startWalk(root, o) {
     const looks = (o.getLooks ? o.getLooks(st.name) : []).filter((l) => l.items.length);
     let screen = null;
     if (looks.length) {
-      const W = 1.2, H = 2.3, cx = 2.4, cy = 0.2 + H / 2; // à gauche de la porte vue de l'intérieur, près d'elle : visible depuis le centre
-      add(new THREE.BoxGeometry(W + 0.08, H + 0.08, 0.06), basic({ color: 0x0a0a0c }), cx, cy, INSIDE + 0.01);
-      const [c, x] = U.cv(480, 920), tex = U.T(c);
-      screen = face(add(new THREE.PlaneGeometry(W, H), basic({ map: tex }), cx, cy, INSIDE - 0.025));
+      // Vrai écran mural : la surface prend exactement les proportions de la photo (personnage entier, sans marge ni
+      // étirement), cadre noir fin et brillant (Rhamone, 9 nov. : le cadre gris épais faisait « boîte »).
+      const H = 2.3, cx = 2.4, B = 0.028; // à gauche de la porte vue de l'intérieur, près d'elle : visible depuis le centre
+      const bezel = add(new THREE.BoxGeometry(1, 1, 0.05), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0x161616, roughness: 0.25, metalness: 0.5, envMap, envMapIntensity: 0.8 }), cx, 0.2 + H / 2, INSIDE + 0.005);
+      const [c, x] = U.cv(512, 768), tex = U.T(c);
+      screen = face(add(new THREE.PlaneGeometry(1, 1), basic({ map: tex }), cx, 0.2 + H / 2, INSIDE - 0.026));
       screen.userData = { action: "look", k: 0 };
+      const size = (ar) => { const W = H * ar; screen.scale.set(W, H, 1); bezel.scale.set(W + 2 * B, H + 2 * B, 1); screen.position.x = bezel.position.x = Math.min(cx, 4.4 - W / 2); };
+      size(2 / 3);
       const show = (k) => {
         const l = looks[k % looks.length]; screen.userData.k = k % looks.length;
         const im = webImage();
         im.onload = () => {
-          // Personnage entier, sans étirement : la photo tient dans l'écran, fond gris clair autour.
-          x.fillStyle = "#e9e7e2"; x.fillRect(0, 0, 480, 920);
-          const s = Math.min(480 / im.width, 920 / im.height), w = im.width * s, h = im.height * s;
-          x.drawImage(im, (480 - w) / 2, (920 - h) / 2, w, h); tex.needsUpdate = true; kick();
+          const ar = clamp(im.width / im.height, 0.4, 0.8); size(ar);
+          c.width = 512; c.height = Math.round(512 / ar);
+          // Photo détourée (transparente) : fond clair de studio derrière le personnage, jamais de noir.
+          const g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, "#f1efea"); g.addColorStop(1, "#dedad2");
+          x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
+          x.drawImage(im, 0, 0, c.width, c.height); tex.needsUpdate = true; kick();
         };
         im.src = l.photo;
       };
@@ -1253,14 +1283,22 @@ export function startWalk(root, o) {
     // Mur à casquettes
     add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
 
-    // Vitrine à accessoires (îlot central)
-    add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
-    add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
+    // Vitrine à accessoires (îlot central) : modèle Blender (corps en pierre sur socle en retrait, plateau en marbre qui
+    // déborde, fins cadres champagne autour du verre), matières du site ; à défaut, les blocs d'avant.
+    if (ILOT) {
+      const metal = new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0xffffff, roughness: 0.3, metalness: 0.6, envMap, envMapIntensity: 1 });
+      const mats = { Pierre: new THREE.MeshLambertMaterial({ map: colorMap("/textures/mall/pierre.jpg", 1, 1), color: 0xf2ece3 }),
+        Marbre: new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 1, 1), color: 0xe4ddd2, roughness: 0.18, envMap, envMapIntensity: 0.8 }), Champagne: metal };
+      const il = ILOT.clone(true); il.traverse((m) => { if (m.isMesh) m.material = mats[m.material.name] || mats.Pierre; }); scene.add(il);
+    } else {
+      add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
+      add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
+    }
     const tableSign = add(new THREE.PlaneGeometry(2.3, 0.45), basic({ map: U.wordTex(st, { bg: st.bg }) }), 0, 0.52, -7.99);
     // Cloche en verre assez haute pour que les sacs soient bien dedans, même vus d'en haut
     const glassG = new THREE.BoxGeometry(2.3, 0.62, 1.5);
     add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.23, -8.8);
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
+    if (!ILOT) { const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges); }
 
     // Mannequins habillés par le gabarit de la marque
     // Celui de droite (vu de la porte), près de l'entrée, est dans le coin pour laisser l'écran des looks dégagé (9 nov.).
@@ -1539,6 +1577,8 @@ export function startWalk(root, o) {
 
     const api = {
       brand: st.name, place, walk, resize,
+      /** Construit la galerie vue par la porte, une fois, juste après l'entrée. */
+      gallery() { if (galleryDone || dead) return; galleryDone = true; buildGallery(); kick(); },
       /** Retient l'endroit et le regard actuels (avant d'aller à un rayon). */
       remember() { saved = { x: cam.pos.x, z: cam.pos.z, look: cam.look.clone() }; },
       /** Revient à l'endroit retenu (en sortant d'un rayon), sinon au centre. */
