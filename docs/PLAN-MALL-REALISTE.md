@@ -5,6 +5,18 @@
 
 ## Reprise après la première réalisation — 8 novembre 2026
 
+### Portants et cintres : finitions validées
+
+Sur la capture du rayon vestes Acne Studios, Rhamone demande de peaufiner portants et cintres, puis valide l'illustration ci-dessous (« Good »). **Validation des finitions et de l'accrochage au repos uniquement** : conserver inclinaison à 45°, espacement et animation de sélection existants. L'image ne valide pas un nouvel alignement de tous les articles de face, ni un nouveau vêtement.
+
+![Finitions du portant et des cintres](../assets-src/references/mall-realiste/portant-cintres-finitions.png)
+
+- **Cible** : tube cylindrique métallique champagne brossé, fixations latérales crédibles, petits biseaux, ombres de contact ; cintre noir mat adapté au vêtement ; crochet fin et court réellement posé sur la barre. Aucun crochet démesuré ou flottant, aucune barre traversant le vêtement.
+- **Existant inspecté dans #114** : `hook()` et `hanger()` dans `src/walk/engine.js` dessinent le support dans la texture de photo ; la veste de la capture possède déjà un cintre noir visible. Vérifier la photo avant d'ajouter un support : ne pas superposer deux cintres ou crochets. La taille du crochet doit suivre l'échelle du cintre, pas une marge arbitraire de la photo.
+- **Raccord** : définir un point d'accrochage commun barre/crochet et un point de col ou de taille par type d'article. Conserver les cintres à pinces pour pantalons/shorts. Réutiliser un support léger commun quand nécessaire, sans obliger à modéliser chaque vêtement. Les photos originales restent la source : les détails réinterprétés de la veste illustrée ne sont pas des modifications catalogue autorisées.
+- **Sélection** : le visuel au repos ne résout pas à lui seul le mouvement de sortie du vêtement. Montrer le passage repos → sélection → retour : vêtement et cintre doivent rester solidaires, sans double crochet ou flottement involontaire. Ne pas supprimer l'animation validée pour reproduire cette image fixe ; présenter tout ajustement nécessaire avant changement.
+- **Où et vérification** : `engine.js` (textures/supports et animation), `src/walk/models/store-layout.ts` (dimensions et espacement à préserver). Prototype sur la veste de la capture, puis un haut sans cintre photographié et un pantalon à pinces. Captures et courte séquence mobile/PC avant généralisation aux catégories suspendues ; aucune refonte des étagères chaussures/accessoires.
+
 ### Intérieur vers galerie : continuité du centre commercial
 
 **Direction validée : « Nice, go »**, puis correction explicite de Rhamone : message en anglais, sans emoji peace. Le visuel ci-dessous reprend cette correction : « Thank you. » / « See you soon. ». Cette demande constitue une exception explicite à la règle de textes français pour ce tableau uniquement. Il remplace les essais avec inscription directement au mur, petit écran et pancarte 20 % suspendue près de la sortie.

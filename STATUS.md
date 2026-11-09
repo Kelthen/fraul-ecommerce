@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Portants/cintres : finitions validées (« Good »)** — crochet court en contact avec la barre, cintre noir mat sans doublon photographié, tube champagne et fixations propres. Conserver angle 45°, espacement et animation. Référence et critères dans `docs/PLAN-MALL-REALISTE.md` (#109), à reprendre avec #114 ; vérifier repos/sélection/retour avant généralisation.
+
 - **Intérieur : visuel grand écran/tableau/promotion validé (« Nice, go »)**. Tableau « Thank you. See you soon. » au-dessus de la sortie ; grand écran vertical avec les looks de l'accueil correspondant à la boutique ; pancarte sur pied avancée dans l'espace de vente, remise réelle uniquement (30 % illustratif). Clic sur la porte → sortie devant la même boutique. Référence finale et spécifications dans #109, `docs/PLAN-MALL-REALISTE.md`, à intégrer avec #114/#112. Remplace message long, petit écran et pancarte suspendue 20 % ; preview avant généralisation.
 
 - **Boutique → galerie : continuité visuelle demandée**, suite à la capture Valley Dreams. Voir le vrai mall et les boutiques voisines par la porte depuis l'intérieur ; tableau « Thank you. See you soon. » validé. Complément à #114, coordonné avec les finitions #112 ; note technique, raccord des ouvertures et critères dans `docs/PLAN-MALL-REALISTE.md` (#109). Aucun étage demandé.
