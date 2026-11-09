@@ -269,22 +269,48 @@ export function startWalk(root, o) {
       // (Rhamone, 8 nov. : « pas de cadres, bien neutre, comme en 3D »). Sinon : la photo sur sa carte blanche, comme avant.
       const cutout = src.includes("/produits/detoure/");
       if (hang || clip) hook(x, 128);
-      if (!cutout) { x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore(); }
+      // Photo pas encore détourée : plus de carte blanche (Rhamone, 9 nov. : « enlever le background blanc ») ; son fond uni
+      // est effacé ici, à partir des bords, en attendant le détourage automatique (scripts/detourage.py).
       const img = webImage();
       img.onload = () => {
-        if (cutout) {
-          const s = Math.min(card.w / img.width, card.h / img.height), w = img.width * s, h = img.height * s;
-          x.save(); x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4;
-          x.drawImage(img, card.x + (card.w - w) / 2, card.y + (hang || clip ? 0 : (card.h - h) / 2), w, h); x.restore();
-          tex.needsUpdate = true; onLoad(); return;
-        }
-        const inner = { x: card.x + 6, y: card.y + 6, w: card.w - 12, h: card.h - 12 };
-        const s = Math.max(inner.w / img.width, inner.h / img.height), w = img.width * s, h = img.height * s;
-        x.save(); rr(inner); x.clip(); x.drawImage(img, inner.x + (inner.w - w) / 2, inner.y + (inner.h - h) / 2, w, h); x.restore();
+        // Photo à fond transparent (détourée, ou fond effacé ici), recadrée au ras du vêtement : le haut du vêtement
+        // vient sous le crochet, qui entre dans le col (Rhamone, 9 nov. : le crochet flottait au-dessus de la pièce).
+        const R = 3 * k, [tc, tx] = cv(Math.round(img.width * Math.min(1, (card.w * R) / img.width)), Math.round(img.height * Math.min(1, (card.w * R) / img.width)));
+        tx.imageSmoothingQuality = "high"; tx.drawImage(img, 0, 0, tc.width, tc.height);
+        const clean = cutout || knockOut(tx, tc.width, tc.height);
+        if (!clean) { x.save(); x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore(); } // photo illisible (autre site) : la carte, comme avant
+        const b = clean ? opaqueBox(tx, tc.width, tc.height) : { x: 0, y: 0, w: tc.width, h: tc.height };
+        const s = Math.min(card.w / b.w, card.h / b.h), w = b.w * s, h = b.h * s;
+        const px0 = card.x + (card.w - w) / 2, py0 = hang || clip ? card.y - 6 : card.y + (card.h - h) / 2;
+        x.save(); x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4; x.drawImage(tc, b.x, b.y, b.w, b.h, px0, py0, w, h); x.restore();
         tex.needsUpdate = true; onLoad();
       };
       img.src = src;
       return tex;
+    }
+    // Efface le fond uni d'une photo (blanc, gris clair…) : remplissage depuis les bords, tant que la couleur reste proche
+    // de celle des coins. Le vêtement, d'une autre couleur, arrête le remplissage. false si la photo ne peut pas être lue.
+    function knockOut(x, W, H) {
+      let d; try { d = x.getImageData(0, 0, W, H); } catch { return false; }
+      const p = d.data, at = (i) => [p[i * 4], p[i * 4 + 1], p[i * 4 + 2]];
+      const bg = [at(0), at(W - 1), at((H - 1) * W), at(H * W - 1)].reduce((a, v) => a.map((c, i) => c + v[i] / 4), [0, 0, 0]);
+      if (bg[0] + bg[1] + bg[2] < 450) return true; // fond sombre ou photo de mise en scène : on n'y touche pas
+      const near = (i) => Math.abs(p[i * 4] - bg[0]) + Math.abs(p[i * 4 + 1] - bg[1]) + Math.abs(p[i * 4 + 2] - bg[2]) < 54;
+      const seen = new Uint8Array(W * H), stack = [];
+      for (let i = 0; i < W; i++) stack.push(i, (H - 1) * W + i);
+      for (let j = 0; j < H; j++) stack.push(j * W, j * W + W - 1);
+      while (stack.length) {
+        const i = stack.pop(); if (seen[i] || !near(i)) continue; seen[i] = 1; p[i * 4 + 3] = 0;
+        const cx = i % W; if (cx > 0) stack.push(i - 1); if (cx < W - 1) stack.push(i + 1); if (i >= W) stack.push(i - W); if (i < W * (H - 1)) stack.push(i + W);
+      }
+      x.putImageData(d, 0, 0); return true;
+    }
+    // Cadre des pixels visibles d'une photo à fond transparent (sans la marge vide autour du vêtement).
+    function opaqueBox(x, W, H) {
+      let d; try { d = x.getImageData(0, 0, W, H).data; } catch { return { x: 0, y: 0, w: W, h: H }; }
+      let x0 = W, y0 = H, x1 = -1, y1 = -1;
+      for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) if (d[(j * W + i) * 4 + 3] > 24) { if (i < x0) x0 = i; if (i > x1) x1 = i; if (j < y0) y0 = j; if (j > y1) y1 = j; }
+      return x1 < 0 ? { x: 0, y: 0, w: W, h: H } : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
     }
     // Couleur dominante d'une photo produit (le centre du vêtement, sans le fond), pour sa vue de côté.
     function photoColor(img) {
@@ -888,7 +914,7 @@ export function startWalk(root, o) {
     if (dead) return;
     if (!ok) { o.onFallback(slugOf(brand)); return; }
     try {
-      if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); STORE.onPickRayon = (cat) => goZone(cat); }
+      if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); }
     } catch { STORE = null; o.onFallback(slugOf(brand)); return; }
     if (brand !== sBrand) lastCat = null;
     sBrand = brand; sFromWalk = fromWalk; sCat = null;
@@ -915,13 +941,13 @@ export function startWalk(root, o) {
     sCat = null; STORE.setActive(null); title(); sUI("walk");
     if (anim) STORE.walkBack(() => sUI("hub")); // retour là où l'on était dans la boutique (visite libre), sinon au centre
   }
-  function goZone(cat) {
+  function goZone(cat, slug) {
     lastCat = cat;
     gesture("rayon");
     if (!sCat) STORE.remember();
     openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
-    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); title(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
+    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); if (slug) STORE.show(slug); title(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
   }
   // Seuls les rayons qui ont des articles s'affichent (Serge, 4 nov., remplace « mêmes rayons partout » du 19 oct.).
   const rayons = () => CATS.filter(([id]) => id in CAR && products(sBrand, id).length > 0);
@@ -1121,6 +1147,7 @@ export function startWalk(root, o) {
     let raf = 0, active = null, closeAmt = 0, closeT = 0, yaw = 0, dragging = false;
     const UP = V(0, 1, 0), tmp = V(0, 0, 0), tmp2 = V(0, 0, 0);
     const kick = () => { if (!raf && !dead) raf = requestAnimationFrame(frame); };
+    const ITEM_BIG = 1.3;
     function layout(car, isActive, now) {
       const fi = Math.round(car.f), cfg = car.cfg, side = cfg.side, L = side ? SIDE_VISIBLE : 3.4;
       car.meshes.forEach((m, k) => {
@@ -1131,7 +1158,9 @@ export function startWalk(root, o) {
         const along = side ? d * side + (isActive ? Math.sign(d) * Math.min(ad, 1) * (cfg.sp - side) : 0) : d * cfg.sp;
         const back = side ? Math.min(ad, L) * 0.012 : Math.min(ad, 3) * 0.03;
         m.position.copy(car.o).addScaledVector(car.d, along).addScaledVector(car.out, w * cfg.pull - back).addScaledVector(UP, w * cfg.rise);
-        let s = 1 + 0.12 * w;
+        // Pièces pendues plus grandes (Rhamone, 9 nov. : « agrandir les articles »), toujours accrochées à la tringle.
+        const big = side ? ITEM_BIG : 1; if (big !== 1) m.position.y -= ((big - 1) * cfg.size[1]) / 2;
+        let s = (1 + 0.12 * w) * big;
         if (isF && closeAmt > 0) {
           sharpen(m);
           tmp2.subVectors(cam.look, cam.pos).normalize();
@@ -1231,7 +1260,7 @@ export function startWalk(root, o) {
     /* Visite libre à 360° (plan #109, Rhamone 9 nov. : « une expérience en 360 qui te fait tourner la tête dans une
        boutique », « aller où tu veux avec les doigts ou la souris et cliquer sur les articles sans forcément passer par
        Rayons »). Hors d'un rayon : glisser tourne le regard (jamais de fiche après avoir tourné), toucher le sol y
-       emmène en contournant l'îlot, toucher un article ouvre sa fiche, toucher le panneau d'un rayon l'ouvre.
+       emmène en contournant l'îlot, toucher un article ouvre son rayon (l'article devant soi), toucher le panneau d'un rayon l'ouvre.
        Au clavier : ← → tournent, ↑ ↓ avancent et reculent. « Rayons » reste un raccourci. */
     // Surface praticable : loin des portants (articles tirés vers soi), des étagères du fond, de l'îlot et des mannequins.
     const FREE = { x: 4.4, zFront: -0.7, zBack: -14.2 }, ISLE = { x0: -2.3, x1: 2.3, z0: -10.6, z1: -7.0 };
@@ -1281,20 +1310,39 @@ export function startWalk(root, o) {
     function exploreUp(e) {
       pointers.delete(e.pointerId);
       const t = ex; if (pointers.size === 0) { ex = null; dragging = false; }
+      storeEl.dataset.pick = !t ? "sans-appui" : t.multi ? "deux-doigts" : t.moved > 6 ? "glisse" : cam.walk ? "en-marche" : "";
       if (!t || t.multi || t.moved > 6 || e.type !== "pointerup" || cam.walk) return; // après avoir tourné : jamais de fiche
       const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
       // Premier objet vraiment touché : on ne clique pas à travers un mur, un meuble ou le verre de l'îlot.
-      const hit = ray.intersectObjects(scene.children, true).find((h) => {
+      const all = ray.intersectObjects(scene.children, true);
+      const hit = all.find((h) => {
         const o = h.object;
         // Un article : touché sur toute sa largeur de face, même quand on le voit de profil sur le portant (bande fine).
         if (o.parent && o.parent.userData.it) return o.parent.visible;
         if (!o.visible || o === marker) return false;
         const m = o.material; return !(m && m.transparent && !o.userData.cat && (m.opacity ?? 1) < 0.5);
       });
+      storeEl.dataset.pick = hit ? (hit.object.parent?.userData.it ? "article" : hit.object.userData.cat ? "panneau" : hit.object === floor || hit.point.y < 0.08 ? "sol" : "autre") : "rien"; // lu par le test téléphone
+      // Vêtement visé à l'écran : un toucher près d'un article le prend (zone généreuse au doigt), s'il n'est pas
+      // derrière un mur ou un meuble (plus loin que ce que le rayon a touché).
+      const tapX = e.clientX - r.left, tapY = e.clientY - r.top, wallD = hit ? hit.distance + 0.3 : Infinity;
+      let best = null;
+      Object.values(cars).forEach((car) => car.meshes.forEach((m) => {
+        if (!m.visible) return;
+        m.getWorldPosition(tmp); const dCam = tmp.distanceTo(camera.position); if (dCam > wallD) return;
+        const h = car.cfg.size[1] * m.scale.y / 2;
+        tmp.project(camera); if (tmp.z > 1) return;
+        const sx = (tmp.x + 1) / 2 * r.width, sy = (1 - tmp.y) / 2 * r.height;
+        m.getWorldPosition(tmp); tmp.y += h; tmp.project(camera);
+        const rad = Math.max(40, Math.abs((1 - tmp.y) / 2 * r.height - sy)), dd = Math.hypot(tapX - sx, tapY - sy);
+        if (dd < rad && (!best || dd / rad < best.q)) best = { q: dd / rad, cat: car.cat, it: m.userData.it };
+      }));
+      if (best) { storeEl.dataset.pick = "article"; gesture("pick"); api.onPickRayon(best.cat, best.it.slug); return; }
       if (!hit) return;
       const o = hit.object, it = o.parent && o.parent.userData.it;
-      if (it) { gesture("pick"); openFiche(it); return; }
+      // Toucher un vêtement ouvre son rayon, ce vêtement devant soi (Rhamone, 9 nov. : « accès au rayon, pas à l'habit »).
+      if (it) { gesture("pick"); api.onPickRayon(o.parent.userData.cat, it.slug); return; }
       if (o.userData.cat && o.userData.stocked) { api.onPickRayon(o.userData.cat); return; }
       if (o === floor || hit.point.y < 0.08) { gesture("move"); walkTo(hit.point.x, hit.point.z); }
     }
@@ -1319,7 +1367,8 @@ export function startWalk(root, o) {
       remember() { saved = { x: cam.pos.x, z: cam.pos.z, look: cam.look.clone() }; },
       /** Revient à l'endroit retenu (en sortant d'un rayon), sinon au centre. */
       walkBack(cb) { if (saved) { const s = saved; saved = null; walkTo(s.x, s.z, s.look, cb); } else walk("hub", cb); },
-      onPickRayon: () => {},
+      /** Toucher un vêtement ou le panneau d'un rayon dans la visite libre : ce rayon, ce vêtement devant soi. */
+      onPickRayon: (cat, slug) => goZone(cat, slug),
       /** Prépare l'affichage (shaders) en coulisse, pour que la première image soit immédiate à l'entrée. */
       warm() { try { place("hub"); renderer.compile(scene, camera); } catch { /* ignoré */ } },
       setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; watermark(cat); if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
