@@ -5,6 +5,8 @@
 
 ## Reprise après la première réalisation — 8 novembre 2026
 
+**Complément du 9 novembre — accessoires, bijoux, sneakers et photos :** lire [la revue détaillée et illustrée](REVUE-PRESENTATION-PRODUITS.md). Elle précise produit sélectionné grand/centré, mannequin hors cadrage, choix de photo par article, conservation de l'original, fonds contrastés, ancrage des cintres et marges de l'écran. Les captures PC récentes de Rhamone sont visibles dans la conversation mais leurs fichiers restent à joindre au dossier ; ne pas les confondre avec les illustrations de référence déjà présentes.
+
 ### Portants et cintres : finitions validées
 
 Sur la capture du rayon vestes Acne Studios, Rhamone demande de peaufiner portants et cintres, puis valide l'illustration ci-dessous (« Good »). **Validation des finitions et de l'accrochage au repos uniquement** : conserver inclinaison à 45°, espacement et animation de sélection existants. L'image ne valide pas un nouvel alignement de tous les articles de face, ni un nouveau vêtement.

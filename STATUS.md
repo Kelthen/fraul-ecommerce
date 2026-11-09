@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Présentation accessoires/sneakers/bijoux : reprise demandée et principe validé (« Exactement »)**. Produit grand et centré dans la zone utile, mannequin et autres rayons hors du premier plan ; photo choisie par article, original conservé si détourage inadapté. Revue illustrée, cas G-Shock, contrôle photo, fonds et tests : `docs/REVUE-PRESENTATION-PRODUITS.md` (#109 → #114). Captures PC utilisateur à joindre dès réception des fichiers ; les chemins Windows seuls ne sont pas accessibles ici. Fonds finaux et tableau au-dessus du mannequin encore à visualiser.
+
 - **Portants/cintres : finitions validées (« Good »)** — crochet court en contact avec la barre, cintre noir mat sans doublon photographié, tube champagne et fixations propres. Conserver angle 45°, espacement et animation. Référence et critères dans `docs/PLAN-MALL-REALISTE.md` (#109), à reprendre avec #114 ; vérifier repos/sélection/retour avant généralisation.
 
 - **Intérieur : visuel grand écran/tableau/promotion validé (« Nice, go »)**. Tableau « Thank you. See you soon. » au-dessus de la sortie ; grand écran vertical avec les looks de l'accueil correspondant à la boutique ; pancarte sur pied avancée dans l'espace de vente, remise réelle uniquement (30 % illustratif). Clic sur la porte → sortie devant la même boutique. Référence finale et spécifications dans #109, `docs/PLAN-MALL-REALISTE.md`, à intégrer avec #114/#112. Remplace message long, petit écran et pancarte suspendue 20 % ; preview avant généralisation.
