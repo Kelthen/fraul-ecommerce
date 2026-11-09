@@ -3,7 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
-_Dernière mise à jour : 2026-11-09 par rhamon (mall réaliste, lots 1 à 3 : sol, vitrine ERD, proposition Finds)_
+_Dernière mise à jour : 2026-11-09 par rhamon (zoom à deux doigts, polices ; mall réaliste lots 1 à 3)_
 _Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
 _Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
@@ -153,6 +153,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Fiche produit : zoom à deux doigts et police des aides photo** (`fix/rhamon/zoom-fiche`) : écarter deux doigts zoome la photo (×4 au plus), un doigt la déplace, rapprocher dézoome ; le navigateur ne zoome plus toute la page sur la photo (ça faisait planter le téléphone dans la fiche en grand du Walk, vidéo de Rhamone du 8 nov.). « Touche pour agrandir » en Monomakh. Titre de l'accueil « Le shopping se visite » : Rhamone veut **Sawith Mono** (Pekotype, police payante) ; en attendant la licence, **Martian Mono** (gratuite, très proche) — décidé par l'équipe, à confirmer. Avec le fichier de la police achetée : `src/app/fonts/` + `next/font/local` (voir `layout.tsx`). — rhamon
+
 - **Walk : mall réaliste, lot 1 « sol et lumière »** (plan #109, rhamon, 8 nov.) : sol en grandes dalles ivoire de 1,20 m faites dans Blender (veinage discret, différent sur chaque dalle, joints fins ; `assets-src/blender/textures-mall.py` → `public/textures/mall/dalles.jpg`) ; couleurs des matières corrigées (sol, pierre et champagne n'étaient plus délavés) ; **vrai reflet du mall dans le sol** (un seul miroir qui suit la caméra, flouté, basse définition, 30 m autour) ; ambiance réfléchie sur le métal champagne et le verre ; halo chaud des vitrines sur le sol (plus fort le soir) ; ombre douce au pied des murs et des façades. Comparer sur la preview avec `?reflet=0` (ancien sol) et `?heure=19`. Avant/après : `assets-src/references/mall-realiste/lot1-*.jpg`. Sol validé sur le comparatif par Rhamone (« Oui j'aime maintenant suivant », 8 nov.).
   - **Lot 2, vitrine témoin ERD** (même PR) : cadre champagne d'un seul profil à petits biseaux avec une feuillure en retrait, socle en pierre posé sur un retrait (ligne d'ombre), faits dans Blender (`assets-src/blender/vitrine-temoin.py` → `public/models/vitrine.glb`, 58 Ko) ; verre qu'on devine (deux reflets en biais très légers, ambiance réfléchie) ; faisceau chaud discret sur le mannequin. Mêmes cotes, mannequins entiers, entrée libre. **Seulement chez ERD** (la marque, pas le numéro de boutique) jusqu'à validation de la preview, puis déclinaison aux 3 façades (lot 5). Avant/après : `assets-src/references/mall-realiste/lot2-*.jpg`.
     Vitrine ERD validée par Rhamone sur la preview (« C'est bien », 9 nov.).
@@ -189,6 +191,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## ⏳ Bloqué — attend le client
 
+- **Détourage du hoodie Travis Scott « noir délavé, étoile rose » (photo de dos)** : un rectangle blanc reste sous le vêtement (capture de Rhamone du 8 nov.). À reprendre avec l'accès au stockage Supabase : vérifier la photo d'origine, refaire le détourage de cette photo (ou garder la photo d'origine). Pas fait à l'aveugle pendant l'absence de Rhamone (données de production). — demandé le 9 nov.
+- **Licence de la police Sawith Mono** (Pekotype, payante) pour le titre de l'accueil : achat à décider par Rhamone (argent). — 9 nov.
 > Domaine en ligne : **www.take-ur-clothes.com** (Rhamone, 3 nov.). Paiement fermé tant que `PAYMENTS_OPEN` n'est pas `true`.
 
 | Élément attendu | Demandé le | Relancé le |
@@ -207,6 +211,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-09 | **Petits textes d'aide sur les photos en Monomakh** (« Touche pour agrandir »). Zoom des photos au téléphone avec deux doigts. | Rhamone |
 | 2026-11-08 | **Looks de l'accueil depuis l'admin** (`/admin/looks`, table `looks`, migration 0020) : Jean Paul met la photo d'une personne entière sur fond uni, un nom, et touche 2 à 6 articles portés. La photo est détourée automatiquement ; le look apparaît alors sur l'accueil. Tant qu'aucun look n'est en ligne, l'accueil montre les 6 looks de test. | Rhamone |
 | 2026-11-08 | **Détourage automatique des photos** (face et dos) par GitHub Actions toutes les 10 min (`.github/workflows/detourage.yml`, `scripts/detourage.py`, modèle birefnet-general-lite) → stockage `produits/detoure/`, colonne `product_images.cutout` (migration 0019). Le Walk et la fiche article montrent l'article détouré, sans cadre ; sinon la photo d'origine. **Secret GitHub `SUPABASE_SERVICE_ROLE_KEY` à ajouter par Rhamone.** | Rhamone |
 | 2026-11-08 | **PR de plan** (ChatGPT, brouillons « préparer… ») : jamais mergées ; on les ferme quand le travail qu'elles décrivent est fini (#95 fermée après #96). | Rhamone |

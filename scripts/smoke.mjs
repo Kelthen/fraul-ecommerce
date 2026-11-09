@@ -61,9 +61,28 @@ await check("fiche produit avec photos (face, dos, détail) et propositions", as
   await page.waitForFunction(() => document.querySelector(".gal-count")?.textContent === "2 / 3");
   await page.getByRole("button", { name: "Détail", exact: true }).click();
   await page.waitForFunction(() => document.querySelector(".gal-count")?.textContent === "3 / 3");
-  await page.locator(".gal-slide").nth(2).locator(".gal-zoom").click();
+  // 1er toucher : la photo en grand (Rhamone, 8 nov.) ; 2e toucher : zoom à cet endroit ; 3e : dézoom.
+  const photo = page.locator(".gal-slide").nth(2).locator(".gal-zoom");
+  await photo.click();
+  await page.locator(".gal.is-big").waitFor({ timeout: 3000 });
+  await photo.click();
   if (!(await page.locator(".gal-track.zoomed").count())) throw new Error("toucher la photo ne zoome pas");
   await shot("04b-produit-photos-zoom");
+  await photo.click();
+  if (await page.locator(".gal-track.zoomed").count()) throw new Error("toucher encore ne dézoome pas");
+  // Deux doigts qui s'écartent : la photo zoome, jamais la page (le zoom de la page plantait le téléphone, 8 nov.).
+  const cdp = await ctx.newCDPSession(page), r = await photo.boundingBox(), cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+  const touch = (type, pts) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
+  await touch("touchStart", [[cx - 30, cy], [cx + 30, cy]]);
+  for (let i = 1; i <= 8; i++) await touch("touchMove", [[cx - 30 - i * 10, cy], [cx + 30 + i * 10, cy]]);
+  await touch("touchEnd", []);
+  await page.locator(".gal-track.zoomed").waitFor({ timeout: 3000 });
+  if ((await page.evaluate(() => visualViewport.scale)) !== 1) throw new Error("le pincement zoome la page au lieu de la photo");
+  await touch("touchStart", [[cx - 110, cy], [cx + 110, cy]]);
+  for (let i = 1; i <= 8; i++) await touch("touchMove", [[cx - 110 + i * 12, cy], [cx + 110 - i * 12, cy]]);
+  await touch("touchEnd", []);
+  await page.locator(".gal-track.zoomed").waitFor({ state: "detached", timeout: 3000 });
+  await page.locator(".gal-shrink").click();
   const n = await page.locator(".grid.rel .card").count();
   if (n < 6 || n > 12) throw new Error(`${n} propositions sous la fiche`);
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
