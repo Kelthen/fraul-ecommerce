@@ -152,6 +152,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Boutique → galerie : continuité visuelle demandée**, suite à la capture Valley Dreams. Voir le vrai mall et les boutiques voisines par la porte depuis l'intérieur ; message de départ discret (« À bientôt. Revenez quand vous voulez. », formulation proposée à valider). Complément à #114, coordonné avec les finitions #112 ; note technique, raccord des ouvertures et critères dans `docs/PLAN-MALL-REALISTE.md` (#109). Aucun étage demandé.
+
 - **Mannequins de vitrine : duo homme/femme et pose féminine validés** par Rhamone (« oui je valide »). Reprendre les GLB existants : tombé du tee, raccord taille, mains/chaussures et poses ; femme avec main sur la hanche, léger déhanché et genou relâché. Référence finale et consignes Blender dans `docs/PLAN-MALL-REALISTE.md`, section « Mannequins ». Illustration validée, modèles améliorés encore à réaliser et vérifier dans la vitrine ERD avant généralisation ; garder l'architecture.
 
 - **Boutique : exploration 360° demandée par Rhamone**, au doigt et à la souris, déplacement libre dans l'espace praticable et sélection directe des articles sans passer obligatoirement par « Rayons ». Scène 3D et déplacements par rayons déjà présents ; contrôles libres à prototyper. Brief complet avec les finitions du mall dans `docs/PLAN-MALL-REALISTE.md` (#109), section « Brief consolidé ». Préparer une réalisation séparée pour les interactions ; visuel/prototype et preview avant généralisation.
