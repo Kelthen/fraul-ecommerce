@@ -5,6 +5,32 @@
 
 ## Reprise après la première réalisation — 8 novembre 2026
 
+### Brief consolidé : ensemble du mall et boutique à 360°
+
+Rhamone demande de transmettre **toutes les consignes ensemble**, avec une nouvelle expérience intérieure : « une experience en 360 qui te fais tourner la tete dans une boutique », « aller ou tu veux avec les doigts ou la souris et cliquer pour les articles sans forcement cliquer sur le bouton rayons ».
+
+**Ensemble à prendre en compte dès la préparation** : conserver le sol apprécié ; finir la vitrine ERD (verre, champagne, éclairage, socles) ; présenter Finds avec TUC entier et panneau discret ; affiner plantes et raccords ; harmoniser les trois architectures, entrée et caisse ; préparer la visite libre décrite ci-dessous. Une transmission complète, mais des réalisations et validations séparées. L'intérieur interactif mérite sa propre PR, sans mélanger les contrôles caméra avec les finitions de façade.
+
+**Existant vérifié sur `main` à `551fa3b`** : l'intérieur est déjà une scène 3D. `src/walk/engine.js` propose une arrivée au centre puis des déplacements vers les zones de rayons ; les gestes et la sélection par raycasting portent sur le rayon actif (`if (!active) return`). `src/walk/models/store-layout.ts` contient `RACKS`, `ZONES`, `ISLAND` et `route()` pour contourner l'îlot. Ce n'est pas encore une exploration libre à 360°. Réutiliser la scène, les produits et le parcours existants ; ne pas remplacer la boutique par une photo panoramique.
+
+**Interaction recommandée à montrer en prototype, puis à faire valider :**
+
+| Geste | Résultat attendu |
+|---|---|
+| Glisser un doigt ou maintenir/glisser la souris sur la scène en exploration | Tourner le regard horizontalement sur 360°, regarder un peu vers le haut/bas sans retournement ni roulis. Aucun gyroscope ou verrouillage de souris obligatoire. |
+| Toucher / cliquer un point libre du sol | Se déplacer vers ce point dans l'espace praticable, pas seulement vers les arrêts de rayons. Petit repère de destination ; obstacle contourné, murs et meubles jamais traversés. |
+| Toucher / cliquer un article visible, sans ouvrir « Rayons » | Sélectionner son véritable identifiant et ouvrir sa fiche existante ; si une approche est nécessaire, elle est courte et automatique. Aucun passage imposé par le menu des catégories. |
+| Fermer la fiche | Retrouver la position et l'orientation d'exploration précédentes. |
+| Utiliser « Rayons » | Garder ce raccourci facultatif et accessible pour aller vite ; il n'est plus obligatoire. |
+
+**Conflits de gestes à résoudre explicitement** : séparer exploration, consultation du portant et fiche. En exploration, glisser tourne la caméra, même si le geste commence sur un article ; un clic bref sélectionne. Dans le portant rapproché, conserver le défilement des vêtements et afficher un retour explicite à l'exploration. Mesurer le déplacement du pointeur sur les deux axes, gérer annulation/multitouch et ne jamais ouvrir une fiche après une rotation. Les boutons et fenêtres capturent leurs propres gestes. Prévoir aussi commandes clavier et raccourcis DOM ; ne pas rendre la boutique utilisable uniquement au pointeur.
+
+**Travail moteur** : isoler les contrôles caméra de `engine.js`, adapter `place()`/`walk()` et le raycasting à tous les articles visibles de la boutique, préserver l'occlusion par murs/meubles (ne pas cliquer à travers). Le `route()` actuel contourne seulement l'îlot : définir une surface praticable avec marges autour des meubles et limites de boutique avant d'autoriser des destinations arbitraires. Pas de caméra qui traverse le stock ou sort du décor. Arrêter les déplacements à la fermeture de la boutique ; conserver retour téléphone, Échap et comportement de réduction des animations.
+
+**Travail Blender** : auditer les faces désormais visibles à 360° (arrière des portants, dessous des étagères, plafond, dos des socles) ; compléter uniquement les surfaces manquantes et leurs matériaux. Garder modules et collisions séparés, cotes du magasin, vrais articles et mobilier actuels. La navigation relève du moteur WebGL, pas de Blender. Ne pas fabriquer une nouvelle collection de vêtements en 3D ; les éventuelles limites des photos planes vues de côté doivent être montrées au prototype.
+
+**Acceptation du prototype intérieur** : depuis l'entrée, faire un tour complet du regard, rejoindre deux points libres hors des arrêts prédéfinis en contournant l'îlot, toucher un article de deux rayons différents sans ouvrir « Rayons », fermer la fiche sans perdre son point de vue, puis sortir normalement. Vérifier téléphone tactile et souris, aucun clic accidentel après glissement, aucun passage à travers les meubles, aucun dos de décor vide. Présenter une courte capture en mouvement et une preview réelle ; mesurer la fluidité sur appareil. La demande valide l'objectif ; les gestes proposés et leur rendu restent à valider dans ce prototype avant généralisation.
+
 ### Dernier accord : lot 1 apprécié, go pour la suite
 
 Après la comparaison « AVANT / APRÈS (lot 1) » fournie dans la conversation, Rhamone confirme : « Oui j’aime maintenant suivant », puis « Ok go go go go » pour la suite décrite ci-dessous. **Conserver la direction du sol montrée à droite** ; cette appréciation sur image ne constitue pas une mesure de fluidité ni une validation des reflets en mouvement.
