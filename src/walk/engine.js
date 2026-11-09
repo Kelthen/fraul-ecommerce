@@ -1038,7 +1038,7 @@ export function startWalk(root, o) {
     const cats = $("#sCats"); cats.textContent = ""; rayons().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     // On arrive directement au centre, devant le choix des rayons (plus de marche depuis la porte).
     STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
-    setTimeout(() => { if (STORE && STORE.brand === brand && !storeEl.hidden) STORE.gallery(); }, 500); // la galerie derrière soi, après l'entrée
+    setTimeout(() => { if (STORE && STORE.brand === brand && !storeEl.hidden) STORE.gallery(); }, 800); // la galerie derrière soi, une fois entré
   }
   /** Durée du fondu à l'entrée et à la sortie d'une boutique (ms). */
   const FADE_MS = 150;
@@ -1124,6 +1124,9 @@ export function startWalk(root, o) {
     const { canvas, renderer, camera } = SR, ac = new AbortController(), sig = { signal: ac.signal };
     life.signal.addEventListener("abort", () => ac.abort());
     const scene = new THREE.Scene(), V = (x, y, z) => new THREE.Vector3(x, y, z);
+    // Par la porte, le mall s'estompe au loin dans un ivoire chaud (profondeur) au lieu d'un fond blanc ; l'intérieur (16 m)
+    // n'est pas touché. Posé dès la création : les matières sont préparées une seule fois (entrer reste immédiat).
+    scene.fog = new THREE.Fog(0xe4ddd1, 22, 70); renderer.setClearColor(0xe4ddd1);
     const basic = (opt) => new THREE.MeshBasicMaterial(opt);
     const lamCache = {}; const lam = (c) => lamCache[c] || (lamCache[c] = new THREE.MeshLambertMaterial({ color: c }));
     const add = (geo, mat, x, y, z, ry = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; scene.add(m); return m; };
@@ -1170,7 +1173,7 @@ export function startWalk(root, o) {
       const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.34)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
       ao(0, 0, 0, 36, 0, 0, 512, 36); ao(0, 0, 36, 0, 0, 0, 36, 704); ao(512, 0, 476, 0, 476, 0, 36, 704);
       const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
-      blob(0, -8.8, 120, 0.32); [[-3.6, -0.7], [4.6, -0.75], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 26, 0.4));
+      blob(0, -8.8, 120, 0.32); [[-3.6, -0.7], [4.3, -13.9], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 26, 0.4));
       const shade = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), transparent: true, depthWrite: false }), 0, 0.003, -8); shade.rotation.x = -Math.PI / 2;
     }
     const ceil = add(new THREE.PlaneGeometry(12, 16), lam(IN.ceil), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
@@ -1180,9 +1183,18 @@ export function startWalk(root, o) {
     for (let z = -1.2; z > -15.5; z -= 1.6) [-4.6, 4.6].forEach((sx) => { const s = add(spotGeo, white, sx, 4.19, z); s.rotation.x = Math.PI / 2; });
 
     // Façade à la couleur de la marque, sol extérieur, enseigne (nom ou logo)
-    const facadeM = new THREE.MeshLambertMaterial({ color: new THREE.Color(st.bg) }); // éclairée : plus un aplat
-    add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, -3.8, 2.1, 0); add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, 3.8, 2.1, 0);
-    add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
+    // Mur de la porte : couleur de la marque, éclairé de l'intérieur (il tourne le dos aux lampes : sans lueur propre, il
+    // paraissait gris et terne). Porte de 4,80 m comme vue du mall, 3,40 m de haut : un bandeau reste pour le tableau.
+    const DOOR_W = 4.8, DOOR_H = 3.4;
+    const brandC = new THREE.Color(st.bg), facadeM = new THREE.MeshLambertMaterial({ color: brandC, emissive: brandC.clone().multiplyScalar(0.32) });
+    const sideW = (12 - DOOR_W) / 2;
+    [-1, 1].forEach((sd) => add(new THREE.BoxGeometry(sideW, 4.2, 0.3), facadeM, sd * (DOOR_W / 2 + sideW / 2), 2.1, 0));
+    add(new THREE.BoxGeometry(DOOR_W, 4.2 - DOOR_H, 0.3), facadeM, 0, DOOR_H + (4.2 - DOOR_H) / 2, 0);
+    { // encadrement champagne de la porte, côté intérieur
+      const jamb = new THREE.MeshLambertMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0xe8d3a8 });
+      [-1, 1].forEach((sd) => add(new THREE.BoxGeometry(0.06, DOOR_H, 0.32), jamb, sd * (DOOR_W / 2 + 0.03), DOOR_H / 2, 0));
+      add(new THREE.BoxGeometry(DOOR_W + 0.12, 0.06, 0.32), jamb, 0, DOOR_H + 0.03, 0);
+    }
     const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
     /* La galerie vue par la porte (Rhamone, 9 nov. : « voir une autre boutique à travers la porte », impression de centre
        commercial) : le vrai voisinage, tiré du plan du mall (SLOTS), placé dans le repère de cette boutique — sol, plafond
@@ -1199,17 +1211,22 @@ export function startWalk(root, o) {
         const glow = U.glowTex(true);
         SLOTS.slice(0, N).map((sl, k) => ({ sl, k, p: local(sl.x, sl.z) }))
           .filter(({ k, p }) => k !== k0 && p[1] > 3 && p[1] < 34 && Math.abs(p[0]) < 26)
-          .sort((a, b) => Math.hypot(...a.p) - Math.hypot(...b.p)).slice(0, 6)
+          // Équilibre (Rhamone, 9 nov.) : la boutique la plus en face de la porte (plus petit angle), et sa voisine qui se voit un peu.
+          .sort((a, b) => Math.abs(a.p[0]) / a.p[1] - Math.abs(b.p[0]) / b.p[1]).slice(0, 2)
           .forEach(({ sl, k, p }) => {
             const g = new THREE.Group(); g.position.set(p[0], 0, p[1]); g.rotation.y = Math.atan2(sl.nx, sl.nz) - a0; scene.add(g);
             const sk = SHOPS[k], big = sk.logo || shopType(k) === 1;
-            g.add(createFacade(THREE, { type: shopType(k), bg: sk.bg, ceil: CEIL, sign: U.wordTex(sk, big ? { w: 1024, h: 200, bg: sk.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: sk.bg, maxW: 430, px: 64 }) }));
+            const fa = createFacade(THREE, { type: shopType(k), bg: sk.bg, ceil: CEIL, sign: U.wordTex(sk, big ? { w: 1024, h: 200, bg: sk.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: sk.bg, maxW: 430, px: 64 }) });
+            // Éclairées comme dans le mall (les lampes de la boutique ne les atteignent pas) : on les voit bien par la porte.
+            fa.traverse((m) => { if (m.isMesh && m.material.emissive) { m.material = m.material.clone(); m.material.emissive = m.material.color.clone().multiplyScalar(0.45); } });
+            g.add(fa);
+            const pil = new THREE.Mesh(new THREE.BoxGeometry(0.5, CEIL, 0.7), new THREE.MeshLambertMaterial({ color: 0xf3efe7, emissive: 0x5a564f })); pil.position.set(-SLOT / 2 + 0.05, CEIL / 2, 0.35); g.add(pil); // pilier entre deux boutiques
             const bd = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.1), basic({ map: glow })); bd.position.set(0, 2.05, -0.3); g.add(bd); // intérieur lumineux
           });
       }
     };
     let galleryDone = false;
-    add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
+    add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.8, 0.16);
 
     /* Côté intérieur de la porte (direction validée par Rhamone, 9 nov.) : tableau « Thank you. See you soon. » au-dessus
        de la sortie, grand écran vertical qui montre les looks de la marque, et la porte qu'on touche pour sortir. */
@@ -1218,9 +1235,9 @@ export function startWalk(root, o) {
       x.fillStyle = "#FFFEF7"; x.fillRect(0, 0, 800, 210); x.strokeStyle = "#C8A96A"; x.lineWidth = 12; x.strokeRect(6, 6, 788, 198);
       x.fillStyle = "#680209"; x.textAlign = "center"; x.textBaseline = "middle"; x.font = `500 70px ${o.fonts.serif}`;
       x.fillText(STORE_EXIT_TEXT.line1, 400, 72); x.fillText(STORE_EXIT_TEXT.line2, 400, 146);
-      face(add(new THREE.PlaneGeometry(1.5, 0.394), basic({ map: U.T(c) }), 0, 3.08, INSIDE)); // juste au-dessus de la porte (2,80 m)
+      face(add(new THREE.PlaneGeometry(1.5, 0.394), basic({ map: U.T(c) }), 0, DOOR_H + (4.2 - DOOR_H) / 2, INSIDE)); // dans le bandeau au-dessus de la porte
     }
-    const doorHit = face(add(new THREE.PlaneGeometry(3.2, 2.8), basic({ visible: false }), 0, 1.4, -0.02));
+    const doorHit = face(add(new THREE.PlaneGeometry(DOOR_W, DOOR_H), basic({ visible: false }), 0, DOOR_H / 2, -0.02));
     doorHit.userData.action = "exit";
     // Écran : looks dont une pièce est de cette marque (même source que l'accueil). Plusieurs : défilement lent ; un seul :
     // fixe ; aucun : pas d'écran. Toucher l'écran ouvre le rayon de la pièce du look, cette pièce devant soi.
@@ -1229,12 +1246,15 @@ export function startWalk(root, o) {
     if (looks.length) {
       // Vrai écran mural : la surface prend exactement les proportions de la photo (personnage entier, sans marge ni
       // étirement), cadre noir fin et brillant (Rhamone, 9 nov. : le cadre gris épais faisait « boîte »).
-      const H = 2.3, cx = 2.4, B = 0.028; // à gauche de la porte vue de l'intérieur, près d'elle : visible depuis le centre
-      const bezel = add(new THREE.BoxGeometry(1, 1, 0.05), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0x161616, roughness: 0.25, metalness: 0.5, envMap, envMapIntensity: 0.8 }), cx, 0.2 + H / 2, INSIDE + 0.005);
+      // Encastré au milieu du pan de mur à gauche de la porte (vu de l'intérieur), affleurant, avec un halo de lumière sur le mur.
+      // Hauteur de la porte, du sol au haut de la porte (dessin de Rhamone, 9 nov.) ; largeur donnée par la photo.
+      const H = DOOR_H - 0.06, cx = DOOR_W / 2 + sideW / 2, B = 0.022;
+      const halo = face(add(new THREE.PlaneGeometry(1, 1), basic({ map: U.glowTex(true), transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }), cx, 0.03 + H / 2, INSIDE - 0.002));
+      const bezel = add(new THREE.BoxGeometry(1, 1, 0.02), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0x161616, roughness: 0.25, metalness: 0.5, envMap, envMapIntensity: 0.8 }), cx, 0.03 + H / 2, INSIDE - 0.004);
       const [c, x] = U.cv(512, 768), tex = U.T(c);
-      screen = face(add(new THREE.PlaneGeometry(1, 1), basic({ map: tex }), cx, 0.2 + H / 2, INSIDE - 0.026));
+      screen = face(add(new THREE.PlaneGeometry(1, 1), basic({ map: tex }), cx, 0.03 + H / 2, INSIDE - 0.016));
       screen.userData = { action: "look", k: 0 };
-      const size = (ar) => { const W = H * ar; screen.scale.set(W, H, 1); bezel.scale.set(W + 2 * B, H + 2 * B, 1); screen.position.x = bezel.position.x = Math.min(cx, 4.4 - W / 2); };
+      const size = (ar) => { const W = H * ar; screen.scale.set(W, H, 1); bezel.scale.set(W + 2 * B, H + 2 * B, 1); halo.scale.set(W * 1.9, H * 1.35, 1); };
       size(2 / 3);
       const show = (k) => {
         const l = looks[k % looks.length]; screen.userData.k = k % looks.length;
@@ -1302,7 +1322,7 @@ export function startWalk(root, o) {
 
     // Mannequins habillés par le gabarit de la marque
     // Celui de droite (vu de la porte), près de l'entrée, est dans le coin pour laisser l'écran des looks dégagé (9 nov.).
-    [[-3.6, -0.7, 0.45, 0], [4.6, -0.75, -0.6, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
+    [[-3.6, -0.7, 0.45, 0], [4.3, -13.9, -0.5, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
 
     // Signalétique
     // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
@@ -1471,7 +1491,7 @@ export function startWalk(root, o) {
        Au clavier : ← → tournent, ↑ ↓ avancent et reculent. « Rayons » reste un raccourci. */
     // Surface praticable : loin des portants (articles tirés vers soi), des étagères du fond, de l'îlot et des mannequins.
     const FREE = { x: 4.4, zFront: -0.7, zBack: -14.2 }, ISLE = { x0: -2.3, x1: 2.3, z0: -10.6, z1: -7.0 };
-    const DUMMIES = [[-3.6, -0.7], [4.6, -0.75], [-1.95, -14.6], [1.95, -14.6]];
+    const DUMMIES = [[-3.6, -0.7], [4.3, -13.9], [-1.95, -14.6], [1.95, -14.6]];
     function walkable(x, z) {
       x = clamp(x, -FREE.x, FREE.x); z = clamp(z, FREE.zBack, FREE.zFront);
       if (x > ISLE.x0 && x < ISLE.x1 && z > ISLE.z0 && z < ISLE.z1) { // sortir de l'îlot par le bord le plus proche
