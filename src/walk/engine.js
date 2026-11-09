@@ -1188,7 +1188,7 @@ export function startWalk(root, o) {
       screen.userData = { action: "look", k: 0 };
       const show = (k) => {
         const l = looks[k % looks.length]; screen.userData.k = k % looks.length;
-        const im = new Image(); im.crossOrigin = "anonymous";
+        const im = webImage();
         im.onload = () => {
           // Personnage entier, sans étirement : la photo tient dans l'écran, fond gris clair autour.
           x.fillStyle = "#e9e7e2"; x.fillRect(0, 0, 480, 920);
