@@ -1163,6 +1163,28 @@ export function startWalk(root, o) {
     add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, -3.8, 2.1, 0); add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, 3.8, 2.1, 0);
     add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
     const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
+    /* La galerie vue par la porte (Rhamone, 9 nov. : « voir une autre boutique à travers la porte », impression de centre
+       commercial) : le vrai voisinage, tiré du plan du mall (SLOTS), placé dans le repère de cette boutique — sol, plafond
+       et façades des boutiques qui sont réellement en face ou en biais. Aucune boutique inventée ; dessin léger (6 au plus). */
+    { const k0 = SHOP_NAMES.indexOf(st.name);
+      if (k0 >= 0 && k0 < N) {
+        const s0 = SLOTS[k0], a0 = Math.atan2(s0.nx, s0.nz), ca = Math.cos(a0), sa = Math.sin(a0);
+        const local = (x, z) => { const dx = x - s0.x, dz = z - s0.z; return [dx * ca - dz * sa, dx * sa + dz * ca]; };
+        const mallFloor = add(new THREE.PlaneGeometry(40, 34), basic({ color: 0xe9e1d4 }), 0, -0.003, 17.2); mallFloor.rotation.x = -Math.PI / 2;
+        const mallCeil = add(new THREE.PlaneGeometry(40, 34), basic({ color: 0xfbfaf6 }), 0, CEIL, 17.2); mallCeil.rotation.x = Math.PI / 2;
+        [-3.5, 3.5].forEach((x) => add(new THREE.BoxGeometry(0.12, 0.03, 32), basic({ color: 0xffffff }), x, CEIL - 0.02, 17.2));
+        const glow = U.glowTex(true);
+        SLOTS.slice(0, N).map((sl, k) => ({ sl, k, p: local(sl.x, sl.z) }))
+          .filter(({ k, p }) => k !== k0 && p[1] > 3 && p[1] < 34 && Math.abs(p[0]) < 26)
+          .sort((a, b) => Math.hypot(...a.p) - Math.hypot(...b.p)).slice(0, 6)
+          .forEach(({ sl, k, p }) => {
+            const g = new THREE.Group(); g.position.set(p[0], 0, p[1]); g.rotation.y = Math.atan2(sl.nx, sl.nz) - a0; scene.add(g);
+            const sk = SHOPS[k], big = sk.logo || shopType(k) === 1;
+            g.add(createFacade(THREE, { type: shopType(k), bg: sk.bg, ceil: CEIL, sign: U.wordTex(sk, big ? { w: 1024, h: 200, bg: sk.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: sk.bg, maxW: 430, px: 64 }) }));
+            const bd = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.1), basic({ map: glow })); bd.position.set(0, 2.05, -0.3); g.add(bd); // intérieur lumineux
+          });
+      }
+    }
     add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
 
     /* Côté intérieur de la porte (direction validée par Rhamone, 9 nov.) : tableau « Thank you. See you soon. » au-dessus
