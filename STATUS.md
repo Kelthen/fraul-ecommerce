@@ -4,6 +4,7 @@
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
 _Dernière mise à jour : 2026-11-09 par rhamon (zoom à deux doigts, polices ; mall réaliste lots 1 à 3)_
+_Dernière mise à jour : 2026-11-11 par serge (typographie accueil et footer, #115)_
 _Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
 _Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
 _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jusqu'au lancement)_
@@ -150,6 +151,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Admin : après « Enregistrer », la fiche article se ferme et la liste s'affiche (le serveur fait la redirection) — serge
 - Admin, fiche article : le champ « Nom » devient « Description » — serge
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
+- **Typographie accueil et footer** (dossier #115) : petit texte sous « Le shopping se visite. » en **Forum** ; titre en mono **Light**, sans gras ni italique bordeaux ; footer entier en mono Light, titres de colonnes en casse naturelle (« Boutique », « Aide », « Nous suivre »). Logo, Monomakh, Bodoni et Montserrat inchangés. Mono = **Martian Mono en attendant la licence commerciale de Sawith Mono** (la licence reçue est « usage personnel ») — serge
 
 ## 🔄 En cours
 
@@ -213,6 +215,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 | Date | Décision | Source |
 |---|---|---|
+| 2026-11-10 | **Typographie validée** : Sawith Mono Light pour le titre de l'accueil et le footer, Forum Regular pour le texte sous le titre. Sawith n'est **pas publiée** tant qu'une licence web commerciale n'est pas achetée (Martian Mono Light en attendant, décidé par l'équipe). | Rhamone (#115) |
 | 2026-11-09 | **Petits textes d'aide sur les photos en Monomakh** (« Touche pour agrandir »). Zoom des photos au téléphone avec deux doigts. | Rhamone |
 | 2026-11-08 | **Looks de l'accueil depuis l'admin** (`/admin/looks`, table `looks`, migration 0020) : Jean Paul met la photo d'une personne entière sur fond uni, un nom, et touche 2 à 6 articles portés. La photo est détourée automatiquement ; le look apparaît alors sur l'accueil. Tant qu'aucun look n'est en ligne, l'accueil montre les 6 looks de test. | Rhamone |
 | 2026-11-08 | **Détourage automatique des photos** (face et dos) par GitHub Actions toutes les 10 min (`.github/workflows/detourage.yml`, `scripts/detourage.py`, modèle birefnet-general-lite) → stockage `produits/detoure/`, colonne `product_images.cutout` (migration 0019). Le Walk et la fiche article montrent l'article détouré, sans cadre ; sinon la photo d'origine. **Secret GitHub `SUPABASE_SERVICE_ROLE_KEY` à ajouter par Rhamone.** | Rhamone |
