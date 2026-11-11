@@ -70,14 +70,14 @@ export function startWalk(root, o) {
    * Si la carte graphique décroche (mémoire saturée, veille), on attend qu'elle revienne et on redessine ;
    * sans retour sous 4 s, on passe à la version sans 3D au lieu de laisser un écran blanc.
    */
-  function survive(canvas, redraw, giveUp) {
+  function survive(canvas, redraw, giveUp, reloadIfFreed = false) {
     let t = 0;
     // Pendant l'attente : un fond et un loader au lieu d'un écran gris (11 nov.).
     const wait = (on) => canvas.parentElement && canvas.parentElement.classList.toggle("gl-wait", on);
     canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); wait(true); clearTimeout(t); t = setTimeout(() => { wait(false); giveUp(); }, 4000); }, { signal: life.signal });
     // Retour de la carte graphique : les dessins libérés après envoi (release) ne peuvent pas être renvoyés. On recharge
     // la page, qui rouvre le même endroit grâce à l'adresse (syncUrl) ; redraw seulement si rien n'a encore été libéré.
-    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); if (released()) { location.reload(); return; } wait(false); redraw(); }, { signal: life.signal });
+    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); if (reloadIfFreed && released()) { location.reload(); return; } wait(false); redraw(); }, { signal: life.signal });
   }
   /** Mémoire graphique, lue à chaque changement de vue avec ?debug3d dans l'adresse : elle ne doit pas grimper. */
   const DEBUG3D = /[?&]debug3d\b/.test(location.search);
@@ -249,14 +249,14 @@ export function startWalk(root, o) {
 
   /* ===== Outils 3D partagés (textures, vêtements, mannequins) ===== */
   let GH = null;
-  function G() {
+  function G({ free = false } = {}) {
     if (GH) return GH;
     const cv = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; };
     const T = (c) => { const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
     // Dessin terminé : une fois envoyé à la carte graphique, sa toile ne sert plus. On la libère (Safari iPhone plafonne la
     // mémoire de toutes les toiles de la page ; au-delà, les nouveaux dessins sortent noirs ou vides : rayon vide,
     // rectangle noir, 11 nov.). Si la carte graphique décroche, la page se recharge sur le même endroit (survive).
-    const release = (tex) => { tex.onUpdate = () => { tex.onUpdate = null; freed = true; const c = tex.image; if (c && c.getContext) c.width = c.height = 1; }; return tex; };
+    const release = (tex) => { if (!free) return tex; tex.onUpdate = () => { tex.onUpdate = null; freed = true; const c = tex.image; if (c && c.getContext) c.width = c.height = 1; }; return tex; };
     function spaced(x, txt, cx, cy, sp) {
       const ws = [...txt].map((ch) => x.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1);
       let px = cx - tot / 2; [...txt].forEach((ch, i) => { x.fillText(ch, px, cy); px += ws[i] + sp; });
@@ -1153,11 +1153,11 @@ export function startWalk(root, o) {
   }
 
   function buildStore(st) {
-    const U = G();
+    const U = G({ free: true }); // boutique : dessins libérés après envoi (voir release)
     if (!SR) {
       const canvas = $("#sgl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: !SMALL, powerPreference: "high-performance" });
       renderer.outputEncoding = THREE.sRGBEncoding; renderer.setClearColor(0xf3efe8);
-      survive(canvas, () => STORE && STORE.resize(), () => { if (!storeEl.hidden) o.onFallback(slugOf(sBrand)); });
+      survive(canvas, () => STORE && STORE.resize(), () => { if (!storeEl.hidden) o.onFallback(slugOf(sBrand)); }, true);
       SR = { canvas, renderer, camera: new THREE.PerspectiveCamera(60, 1, 0.05, 80) };
     }
     const { canvas, renderer, camera } = SR, ac = new AbortController(), sig = { signal: ac.signal };
