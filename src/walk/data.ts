@@ -1,6 +1,4 @@
 import { CATEGORIES, getBrands, getProducts, getWalkBrands } from "@/lib/catalog";
-import { loadLookRows } from "@/lib/catalog/db";
-import { TEST_LOOKS, resolveLooks } from "@/models/home/looks";
 import { RACKS } from "./models/store-layout";
 import type { WalkData, WalkItem } from "./WalkExperience";
 
@@ -16,22 +14,11 @@ export async function getWalkData(): Promise<WalkData> {
     const row: WalkItem = p.image ? [p.slug, p.name, p.prices, p.color, p.colors, p.image] : [p.slug, p.name, p.prices, p.color, p.colors];
     ((items[p.brandSlug] ??= {})[p.category] ??= []).push(row);
   }
-  // Looks de l'accueil, rangés par boutique selon la marque réelle de leurs pièces (un look multimarque va dans chaque
-  // boutique concernée) : l'écran publicitaire de la boutique les fait défiler (Rhamone, 9 nov.). Avec photo seulement.
-  const fromAdmin = ((await loadLookRows()) ?? []).map((r) => ({ id: r.id, title: r.title, photo: r.cutout!, items: r.items }));
-  const looks: WalkData["looks"] = {};
-  for (const l of resolveLooks(fromAdmin.length ? fromAdmin : TEST_LOOKS, products)) {
-    if (!l.photo) continue;
-    for (const b of new Set(l.items.map((p) => p.brandSlug))) {
-      (looks[b] ??= []).push({ photo: l.photo, title: l.title, items: l.items.filter((p) => p.brandSlug === b && inStore(p.category)).map((p) => [p.slug, p.category]) });
-    }
-  }
   const pick = (b: { name: string; slug: string; style: WalkData["shops"][number]["style"] }) => ({ name: b.name, slug: b.slug, style: b.style });
   return {
     shops: shops.map(pick),
     allBrands: brands.map(pick),
     categories: CATEGORIES.filter((c) => inStore(c.id)).map(({ id, label, sizes }) => ({ id, label, sizes })),
     items,
-    looks,
   };
 }
