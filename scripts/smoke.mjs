@@ -214,7 +214,7 @@ await check("prix : devise de la zone, ligne de confirmation, aucun coût dans l
 });
 
 // Au téléphone, la liste des rayons est repliée derrière « Rayons », même au centre de la boutique (9 nov.) : on l'ouvre.
-const openCats = async () => { if ((await page.locator("#sTog").isVisible()) && !(await page.locator("#sCats").isVisible())) await page.locator("#sTog").click(); };
+const openCats = async () => { await page.locator("#store:not([hidden])").waitFor({ timeout: 20000 }); if ((await page.locator("#sTog").isVisible()) && !(await page.locator("#sCats").isVisible())) await page.locator("#sTog").click(); };
 // Va à la boutique k (0 = première) en faisant défiler le mall comme un visiteur.
 // Le nombre de boutiques est lu dans le compteur « Boutique 01 / 06 » (il suit la liste des marques).
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
