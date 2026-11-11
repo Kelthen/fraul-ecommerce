@@ -123,7 +123,7 @@ p { margin: 0; }
 .mall-copy { flex: 1; display: flex; align-items: flex-end; padding-block: 8px 40px; }
 .mall-copy > .wrap { width: 100%; }
 /* Typographie validée par Rhamone (#115) : titre en mono Light, sans gras ni italique, teinte sombre ; texte en Forum. */
-.mall-copy h1 { font: 300 clamp(40px, 10vw, 128px)/1.02 var(--font-title-mono), "Courier New", monospace; letter-spacing: -0.03em; margin: 10px 0 18px; color: var(--ink); font-synthesis: none; }
+.mall-copy h1 { font: 300 clamp(30px, 7vw, 88px)/1.04 var(--font-title-mono), "Courier New", monospace; letter-spacing: -0.03em; margin: 10px 0 18px; color: var(--ink); font-synthesis: none; }
 .mall-copy h1 em { font-style: normal; color: inherit; }
 .mall-copy p.lead { max-width: 52ch; font: 400 clamp(18px, 1.6vw, 21px)/1.55 var(--font-lead), Georgia, serif; color: var(--muted); }
 .hero-acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
