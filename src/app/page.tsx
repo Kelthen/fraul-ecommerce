@@ -158,17 +158,21 @@ export default async function Home() {
             <h2 id="how-title">Une sortie shopping, sans sortir.</h2>
           </div>
         </div>
-        <ol className="grid" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        {/* Moins de texte, plus d'images (Rhamone, 11 nov.) : chaque étape est une vignette. 01 et 02 : le vrai Walk
+            (captures du site) ; 03 : un look porté ; 04 : une pièce du catalogue. Défilement horizontal au téléphone. */}
+        <ol className="how-row">
           {[
-            ["01", "Promène-toi", "Fais défiler pour longer les vitrines du mall, une marque après l'autre."],
-            ["02", "Entre", "Une boutique par marque, vue à hauteur d'yeux. Choisis un rayon, on t'y emmène."],
-            ["03", "Essaie du regard", "La pièce sort du rayon et tourne devant toi : face, dos, couleurs, tailles."],
-            ["04", "Repars avec", "Ajoute au panier sans quitter la boutique, puis suis ta commande étape par étape."],
-          ].map(([n, t, d]) => (
-            <li key={n} style={{ borderTop: "1px solid var(--line)", paddingTop: 18 }}>
-              <span className="eyebrow">{n}</span>
-              <h3 className="how-t">{t}</h3>
-              <p className="muted">{d}</p>
+            { n: "01", t: "Promène-toi", d: "Longe les vitrines du mall.", img: "/images/home/etape-mall.webp" },
+            { n: "02", t: "Entre", d: "Une boutique par marque.", img: "/images/home/etape-boutique.webp" },
+            { n: "03", t: "Essaie du regard", d: "Face, dos, couleurs.", img: looks[0]?.photo ?? news[1]?.image.front },
+            { n: "04", t: "Repars avec", d: "Au panier, puis suivi en direct.", img: news[0]?.image.front },
+          ].map((s) => (
+            <li key={s.n} className="how-card">
+              {/* eslint-disable-next-line @next/next/no-img-element -- captures du Walk et photos du catalogue */}
+              {s.img && <img src={s.img} alt="" loading="lazy" className={s.n === "03" ? "fit" : undefined} />}
+              <span className="how-n">{s.n}</span>
+              <h3 className="how-t">{s.t}</h3>
+              <p>{s.d}</p>
             </li>
           ))}
         </ol>
