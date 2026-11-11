@@ -75,12 +75,15 @@ export function startWalk(root, o) {
     // Pendant l'attente : un fond et un loader au lieu d'un écran gris (11 nov.).
     const wait = (on) => canvas.parentElement && canvas.parentElement.classList.toggle("gl-wait", on);
     canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); wait(true); clearTimeout(t); t = setTimeout(() => { wait(false); giveUp(); }, 4000); }, { signal: life.signal });
-    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); wait(false); redraw(); }, { signal: life.signal });
+    // Retour de la carte graphique : les dessins libérés après envoi (release) ne peuvent pas être renvoyés. On recharge
+    // la page, qui rouvre le même endroit grâce à l'adresse (syncUrl) ; redraw seulement si rien n'a encore été libéré.
+    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); if (released()) { location.reload(); return; } wait(false); redraw(); }, { signal: life.signal });
   }
   /** Mémoire graphique, lue à chaque changement de vue avec ?debug3d dans l'adresse : elle ne doit pas grimper. */
   const DEBUG3D = /[?&]debug3d\b/.test(location.search);
   const memLog = (label, r) => { if (DEBUG3D && r) console.info(`[3d] ${label}`, JSON.stringify(r.info.memory)); };
-  let dead = false;
+  let dead = false, freed = false;
+  const released = () => freed;
 
   /* ===== Gabarit de marque (polices du site passées en options) ===== */
   const FONTS = {
@@ -250,6 +253,10 @@ export function startWalk(root, o) {
     if (GH) return GH;
     const cv = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; };
     const T = (c) => { const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+    // Dessin terminé : une fois envoyé à la carte graphique, sa toile ne sert plus. On la libère (Safari iPhone plafonne la
+    // mémoire de toutes les toiles de la page ; au-delà, les nouveaux dessins sortent noirs ou vides : rayon vide,
+    // rectangle noir, 11 nov.). Si la carte graphique décroche, la page se recharge sur le même endroit (survive).
+    const release = (tex) => { tex.onUpdate = () => { tex.onUpdate = null; freed = true; const c = tex.image; if (c && c.getContext) c.width = c.height = 1; }; return tex; };
     function spaced(x, txt, cx, cy, sp) {
       const ws = [...txt].map((ch) => x.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1);
       let px = cx - tot / 2; [...txt].forEach((ch, i) => { x.fillText(ch, px, cy); px += ws[i] + sp; });
@@ -274,7 +281,7 @@ export function startWalk(root, o) {
       }
       return tex;
     }
-    function labelTex(t, fg = "#1b1b1d") { const [c, x] = cv(1024, 192); x.fillStyle = fg; x.textBaseline = "middle"; x.font = `500 64px ${o.fonts.sans}`; spaced(x, t, 512, 100, 18); return T(c); }
+    function labelTex(t, fg = "#1b1b1d") { const [c, x] = cv(1024, 192); x.fillStyle = fg; x.textBaseline = "middle"; x.font = `500 64px ${o.fonts.sans}`; spaced(x, t, 512, 100, 18); return release(T(c)); }
     function glowTex(light = false) {
       const [c, x] = cv(256, 256); const g = x.createRadialGradient(128, 80, 6, 128, 128, 200);
       const stops = light ? ["#fffdf8", "#eee4d6", "#d6c8b5"] : ["#fff3e2", "#6b5a4c", "#1a1618"];
@@ -316,7 +323,8 @@ export function startWalk(root, o) {
         x.save(); if (!clean) { rr({ x: px0, y: py0, w, h }); x.clip(); } else { x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4; }
         x.drawImage(tc, b.x, b.y, b.w, b.h, px0, py0, w, h); x.restore();
         if ((hang || clip) && clean) hanger(x, px0, py0, w, h, clip);
-        tex.needsUpdate = true; onLoad();
+        tc.width = tc.height = 0; // toile de travail : libérée tout de suite
+        release(tex); tex.needsUpdate = true; onLoad();
       };
       // Réseau du téléphone qui flanche : on réessaie une fois au lieu de laisser le portant vide.
       let retried = false;
