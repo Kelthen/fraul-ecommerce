@@ -15,11 +15,31 @@ export default async function Home() {
   const fromAdmin = ((await loadLookRows()) ?? []).map((r) => ({ id: r.id, title: r.title, photo: r.cutout!, items: r.items }));
   const looks = resolveLooks(fromAdmin.length ? fromAdmin : TEST_LOOKS, products);
   const featured = walkBrands.slice(0, 8);
+  // Plus de pièces sur l'accueil (Rhamone, 11 nov. : « la page d'accueil manque de placement de produit ») : les autres
+  // pièces en ligne, une marque après l'autre, sans répéter les nouveautés.
+  const rest = products.filter((p) => !news.some((n) => n.slug === p.slug));
+  const byBrand = Object.values(Object.groupBy(rest, (p) => p.brandSlug)) as (typeof rest)[];
+  const picks = Array.from({ length: Math.max(0, ...byBrand.map((g) => g.length)) }, (_, i) => byBrand.map((g) => g[i]).filter(Boolean)).flat().slice(0, 12);
   const fronts = [...walkBrands, ...walkBrands];
 
   return (
     <>
-      {/* Entrée du mall : le Walk est l'expérience principale du site. */}
+      {looks.length > 0 && (
+        // Hero de l'accueil : le défilé de looks (Rhamone, 11 nov. : « la partie les looks sera le hero »). Textes décidés par l'équipe, à confirmer.
+        <section className="looks-hero wrap" id="looks" aria-labelledby="looks-title">
+          <div className="head">
+            <div>
+              <p className="eyebrow">Portés ensemble</p>
+              <h1 id="looks-title">Les looks</h1>
+            </div>
+            <p className="muted">Touche un look pour voir ses pièces.</p>
+          </div>
+          <LooksStrip looks={looks} />
+        </section>
+      )}
+
+
+      {/* Entrée du mall, juste après les looks (échange avec le hero, Rhamone, 11 nov.). */}
       <section className="mall-hero" aria-labelledby="hero-title">
         <div className="mall-scene" aria-hidden="true">
           <span className="ceil" />
@@ -39,11 +59,11 @@ export default async function Home() {
         <div className="mall-copy">
           <div className="wrap">
             <p className="eyebrow">Walk · Drop 001</p>
-            <h1 id="hero-title">
+            <h2 id="hero-title">
               Le shopping
               <br />
               <em>se visite.</em>
-            </h1>
+            </h2>
             <p className="lead">
               Streetwear et luxe 100 % authentiques, une boutique par marque. Passe devant les vitrines, entre et repars
               avec tes pièces.
@@ -52,9 +72,10 @@ export default async function Home() {
               <Link className="pill solid" href="/walk">
                 <IconWalk /> Entrer dans le mall
               </Link>
-              <Link className="pill ghost" href="#nouveautes">
+              {/* Lien simple : celui de Next ne refaisait pas défiler vers la même ancre au 2e clic (Rhamone, 11 nov.). */}
+              <a className="pill ghost" href="#nouveautes">
                 Voir les nouveautés
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -69,19 +90,6 @@ export default async function Home() {
         </ul>
       </section>
 
-      {looks.length > 0 && (
-        // Défilé de looks (docs/ACCUEIL-LOOKS.md) : textes décidés par l'équipe, à confirmer.
-        <section className="sec wrap" id="looks" aria-labelledby="looks-title">
-          <div className="head">
-            <div>
-              <p className="eyebrow">Portés ensemble</p>
-              <h2 id="looks-title">Les looks</h2>
-            </div>
-            <p className="muted">Touche un look pour voir ses pièces.</p>
-          </div>
-          <LooksStrip looks={looks} />
-        </section>
-      )}
 
       <section className="sec wrap" id="nouveautes" aria-labelledby="new-title">
         <div className="head">
@@ -99,6 +107,25 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {picks.length > 0 && (
+        <section className="sec wrap" id="selection" aria-labelledby="picks-title">
+          <div className="head">
+            <div>
+              <p className="eyebrow">Dans les boutiques</p>
+              <h2 id="picks-title">À ne pas manquer</h2>
+            </div>
+            <Link className="link" href="/marques">
+              Toutes les marques
+            </Link>
+          </div>
+          <div className="grid">
+            {picks.map((p) => (
+              <ProductCard key={p.slug} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="marquee" aria-hidden="true">
         <div>
@@ -145,7 +172,7 @@ export default async function Home() {
           ].map(([n, t, d]) => (
             <li key={n} style={{ borderTop: "1px solid var(--line)", paddingTop: 18 }}>
               <span className="eyebrow">{n}</span>
-              <h3 style={{ fontSize: 30, margin: "8px 0" }}>{t}</h3>
+              <h3 className="how-t">{t}</h3>
               <p className="muted">{d}</p>
             </li>
           ))}
@@ -161,7 +188,7 @@ export default async function Home() {
         <div className="wrap outfit">
           <div>
             <p className="eyebrow">Drop 001 · Assemble</p>
-            <h2 id="outfit-title" style={{ fontSize: "clamp(38px, 8vw, 72px)", lineHeight: 0.95, margin: "8px 0 16px" }}>
+            <h2 id="outfit-title" className="big-t" style={{ margin: "8px 0 16px" }}>
               Crée ta tenue
             </h2>
             <p style={{ maxWidth: "40ch" }}>Un haut, un bas, une paire : essaie-les sur le mannequin et ajoute la tenue entière au panier.</p>
@@ -186,7 +213,7 @@ export default async function Home() {
         <div className="track-grid">
           <div>
             <p className="eyebrow">Suivi de commande</p>
-            <h2 id="track-title" style={{ fontSize: "clamp(38px, 7vw, 64px)", lineHeight: 1, marginTop: 8 }}>
+            <h2 id="track-title" className="big-t" style={{ marginTop: 8 }}>
               Où est ma commande ?
             </h2>
             <p className="muted" style={{ marginTop: 12, maxWidth: "40ch" }}>

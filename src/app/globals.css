@@ -103,7 +103,7 @@ p { margin: 0; }
 .pearl { background: var(--surface-2); color: var(--ink); }
 .sec.light, .sec.pearl { padding-block: 72px; }
 .head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 24px; }
-.head h2 { font-size: clamp(38px, 8vw, 72px); line-height: 0.95; margin-top: 8px; }
+.head h2, .head h1 { font-size: clamp(38px, 8vw, 72px); line-height: 0.95; margin-top: 8px; }
 .head p { max-width: 40ch; }
 
 /* Accueil : entrée du mall, galerie lumineuse */
@@ -122,7 +122,7 @@ p { margin: 0; }
 .front .dr { margin: 12px 22% 0; background: linear-gradient(180deg, #fffaf2, #e6dccd 70%, #cbbfae); border: 2px solid #d9d2c7; border-bottom: 0; }
 .mall-copy { flex: 1; display: flex; align-items: flex-end; padding-block: 8px 40px; }
 .mall-copy > .wrap { width: 100%; }
-.mall-copy h1 { font: 500 clamp(40px, 10vw, 128px)/0.95 var(--font-title-mono), "Courier New", monospace; letter-spacing: -0.04em; margin: 10px 0 16px; }
+.mall-copy h1, .mall-copy h2 { font: 500 clamp(40px, 10vw, 128px)/0.95 var(--font-title-mono), "Courier New", monospace; letter-spacing: -0.04em; margin: 10px 0 16px; }
 .mall-copy h1 em { font-style: italic; color: var(--bordeaux); }
 .mall-copy p.lead { max-width: 42ch; font-size: 16px; color: var(--muted); }
 .hero-acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
@@ -589,4 +589,19 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .f-see { width: 100%; justify-content: center; }
 @media (min-width: 720px) {
   .f-sheet { inset: 0; width: min(480px, 90vw); max-height: 80dvh; margin: auto; border-radius: 18px; }
+}
+
+/* Accueil (Rhamone, 11 nov.) : les looks en hero, tout en haut ; titres de la page plus petits au téléphone
+   (« la taille des polices sur téléphone est très grande, on réduit très petit »). */
+.looks-hero { padding-block: 22px 8px; }
+@media (min-width: 900px) { .looks-hero { padding-block: 40px 16px; } }
+.how-t { font-size: 30px; margin: 8px 0; }
+.big-t { font-size: clamp(38px, 8vw, 72px); line-height: 0.95; }
+@media (max-width: 600px) {
+  .head h2, .head h1, .big-t { font-size: 26px; line-height: 1.05; }
+  .mall-copy h1, .mall-copy h2 { font-size: 30px; }
+  .how-t { font-size: 20px; margin: 6px 0; }
+  .sec { padding-block: 40px 16px; }
+  .sec.light, .sec.pearl { padding-block: 40px; }
+  .muted, .mall-copy p.lead { font-size: 14px; }
 }

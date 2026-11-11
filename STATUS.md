@@ -152,6 +152,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
 ## 🔄 En cours
+- **Accueil : les looks en hero, titres plus petits au téléphone, plus de pièces** (`feat/rhamon/accueil-looks-hero`, retours de Rhamone du 11 nov.) — le défilé des looks passe tout en haut (titre principal de la page), « Le shopping se visite » prend sa place juste dessous, puis les engagements ; au téléphone, titres et textes nettement plus petits (titres de section 26 px au lieu de 38 à 72, étapes 20 px au lieu de 30) ; « Voir les nouveautés » refait défiler à chaque clic (le lien de Next ne bougeait plus au 2e clic) ; nouvelle grille « À ne pas manquer » : 12 autres pièces en ligne, une marque après l'autre, sans répéter les nouveautés. — rhamon
 
 - **Fiche produit : zoom à deux doigts et police des aides photo** (`fix/rhamon/zoom-fiche`) : écarter deux doigts zoome la photo (×4 au plus), un doigt la déplace, rapprocher dézoome ; le navigateur ne zoome plus toute la page sur la photo (ça faisait planter le téléphone dans la fiche en grand du Walk, vidéo de Rhamone du 8 nov.). « Touche pour agrandir » en Monomakh. Titre de l'accueil « Le shopping se visite » : Rhamone veut **Sawith Mono** (Pekotype, police payante) ; en attendant la licence, **Martian Mono** (gratuite, très proche) — décidé par l'équipe, à confirmer. Avec le fichier de la police achetée : `src/app/fonts/` + `next/font/local` (voir `layout.tsx`). — rhamon
 
