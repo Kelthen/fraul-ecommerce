@@ -213,6 +213,8 @@ await check("prix : devise de la zone, ligne de confirmation, aucun coût dans l
   if (html.includes("revendeur")) throw new Error("le prix d'un groupe est dans la page");
 });
 
+// Au téléphone, la liste des rayons est repliée derrière « Rayons », même au centre de la boutique (9 nov.) : on l'ouvre.
+const openCats = async () => { await page.locator("#store:not([hidden])").waitFor({ timeout: 20000 }); if ((await page.locator("#sTog").isVisible()) && !(await page.locator("#sCats").isVisible())) await page.locator("#sTog").click(); };
 // Va à la boutique k (0 = première) en faisant défiler le mall comme un visiteur.
 // Le nombre de boutiques est lu dans le compteur « Boutique 01 / 06 » (il suit la liste des marques).
 const goShop = (k) => page.locator("#walk").evaluate((el, k) => {
@@ -266,9 +268,11 @@ await check("walk : toucher la vitrine pour entrer", async () => {
   // Les mannequins viennent du modèle Blender de Rhamone (25 oct.), pas du dessin de secours.
   if ((await page.locator("[data-mannequin]").getAttribute("data-mannequin")) !== "blender") throw new Error("mannequin Blender non chargé");
   await shot("11-boutique");
+  if (await page.locator("#sCats").isVisible()) throw new Error("au téléphone, la liste des rayons n'est pas repliée au centre de la boutique");
 });
 
 await check("walk : rayon, défiler ne fait pas sortir, ← revient au centre, ✕ fait sortir", async () => {
+  await openCats();
   await page.locator("#sCats .s-cat").nth(1).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
@@ -392,6 +396,7 @@ await check("retour : fiche en grand → zoom → rayon → boutique → mall �
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);
   await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   if (!(await page.locator("#walk").evaluate((el) => el.inert))) throw new Error("mall non inerte sous la boutique");
+  await openCats();
   await page.locator("#sCats .s-cat").nth(0).click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.locator("#iPage").click();
@@ -476,6 +481,7 @@ await check("entrer et sortir sans attendre (fondu, pas de marche), trajet court
   await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
   const tIn = Date.now() - t;
   t = Date.now();
+  await openCats();
   await page.locator("#sCats .s-cat").first().click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   const tRayon = Date.now() - t;
@@ -530,7 +536,7 @@ await check("boutique avec peu d'articles : seulement ses rayons", async () => {
   if (name.toLowerCase() !== "travis scott") throw new Error(`vitrine affichée : ${name}`);
   const box = await page.locator("#gl").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.42);    // toucher la vitrine = entrer
-  await page.locator("#sCats .s-cat").first().waitFor({ state: "visible", timeout: 20000 });
+  await page.locator("#sCats .s-cat").first().waitFor({ state: "attached", timeout: 20000 });
   // Seulement les rayons qui ont des articles (Serge, 4 nov. 2026).
   const rayons = await page.locator("#sCats .s-cat").allTextContents();
   if (!rayons.includes("Hoodies et sweats") || rayons.includes("Sneakers")) throw new Error(`rayons affichés : ${rayons.join(", ")}`);
@@ -546,6 +552,7 @@ await check("boutique avec peu d'articles : seulement ses rayons", async () => {
   await page.locator("#aisle:not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
   await page.locator("#enter").click();
+  await openCats();
   await page.locator("#sCats .s-cat", { hasText: "Hoodies et sweats" }).click();
   await page.locator("#sInfo:not(.empty):not([hidden])").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1200);
@@ -629,6 +636,7 @@ await check("fiche en grand → « Fiche complète » → retour au Walk : « Fe
   await page.waitForTimeout(800);
   await page.locator("#enter").click();
   await page.locator("#store[data-mode=\"hub\"]:not([hidden])").waitFor({ timeout: 20000 });
+  await openCats();
   await page.locator("#sCats .s-cat").first().click();
   await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 });
   await page.locator("#iPage").click();
@@ -642,7 +650,7 @@ await check("fiche en grand → « Fiche complète » → retour au Walk : « Fe
   // Le moteur repart : on peut rouvrir une fiche et la fermer.
   if (await page.locator("#store:not([hidden])").count() === 0) await page.locator("#enter").click();
   await page.locator("#store[data-mode=\"hub\"]:not([hidden]), #sInfo:not([hidden])").first().waitFor({ timeout: 20000 });
-  if (await page.locator("#sInfo:not([hidden])").count() === 0) { await page.locator("#sCats .s-cat").first().click(); await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 }); }
+  if (await page.locator("#sInfo:not([hidden])").count() === 0) { await openCats(); await page.locator("#sCats .s-cat").first().click(); await page.locator("#sInfo:not([hidden])").waitFor({ timeout: 20000 }); }
   await page.locator("#iPage").click();
   await page.locator("#fiche:not([hidden])").waitFor({ timeout: 5000 });
   await page.locator("#fiche .f-top .ic").click();

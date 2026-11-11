@@ -11,7 +11,7 @@ import { createCaisse } from "./views/caisse";
 import { createConciergeDesk } from "./views/concierge";
 import { createEntrance } from "./views/entrance";
 import { createFacade } from "./views/facades";
-import { CAISSE_TEXT, CONCIERGE_TEXT, ENTRANCE_TEXT } from "../content/walk";
+import { CAISSE_TEXT, CONCIERGE_TEXT, ENTRANCE_TEXT, STORE_EXIT_TEXT } from "../content/walk";
 import { clamp, dist2, ease, lerp, smooth } from "./models/math";
 import { RACKS as CAR, SIDE_VISIBLE, STORE_ZONES as ZONES, route } from "./models/store-layout";
 import { AT_CAISSE, AT_CONCIERGE, AT_EXIT, EYE, lastStop, pathAt as pathAtFor, progressForShop, stopProgress } from "./models/walk-path";
@@ -32,6 +32,8 @@ let CAISSE = null;
 let PLANTE = null;
 /** Vitrine finie dans Blender (assets-src/blender/vitrine-temoin.py → public/models/vitrine.glb) : cadre et socle. */
 let VITRINE = null;
+/** Îlot central de la boutique fini dans Blender (assets-src/blender/ilot-boutique.py → public/models/ilot.glb). */
+let ILOT = null;
 /** Boutique témoin du lot 2 (#109) : seule à recevoir la vitrine finie tant que Rhamone n'a pas validé la preview. */
 const TEMOIN = (st) => st.name === "ERD";
 /** Reflet du mall dans le sol poli (three/examples Reflector) ; absent = traînées claires sous les bandeaux. */
@@ -42,6 +44,7 @@ let REFLECTOR = null;
  * @param {HTMLElement} root
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
  *                    onAdd, onExit, onFallback, onFiche, onConcierge, startShop, startStore,
+ *                    startInside (entrer tout de suite dans la boutique), startRayon ({ cat, slug } : rayon et article à rouvrir),
  *                    mode (forme du mall, src/walk/modes ; « t » par défaut),
  *                    hour (heure décimale pour la lumière ; par défaut l'heure locale du visiteur),
  *                    reflet (false : sol sans reflet du mall, pour comparer sur la preview avec ?reflet=0)
@@ -49,6 +52,12 @@ let REFLECTOR = null;
  */
 export function startWalk(root, o) {
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* Mémoire 3D (11 nov., Safari iPhone rechargeait la page dans un rayon : mémoire graphique saturée).
+     Téléphone : dalles en 1024 px au lieu de 2048 (4 fois moins de mémoire). Une matière chargée une seule fois et
+     partagée : la taille des dalles se règle sur la géométrie (tileUV), pas sur une copie de la texture. */
+  const SMALL = Math.min(screen.width, screen.height) < 700;
+  const texUrl = (u) => (SMALL ? u.replace("/dalles.jpg", "/dalles-1024.jpg") : u);
+  const tileUV = (geo, sx, sy) => { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * sx, uv.getY(i) * sy); uv.needsUpdate = true; return geo; };
   const $ = (s) => root.querySelector(s);
   const life = new AbortController();
   const on = (el, ev, fn, opts = {}) => el.addEventListener(ev, fn, { ...opts, signal: life.signal });
@@ -61,12 +70,20 @@ export function startWalk(root, o) {
    * Si la carte graphique décroche (mémoire saturée, veille), on attend qu'elle revienne et on redessine ;
    * sans retour sous 4 s, on passe à la version sans 3D au lieu de laisser un écran blanc.
    */
-  function survive(canvas, redraw, giveUp) {
+  function survive(canvas, redraw, giveUp, reloadIfFreed = false) {
     let t = 0;
-    canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); clearTimeout(t); t = setTimeout(giveUp, 4000); }, { signal: life.signal });
-    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); redraw(); }, { signal: life.signal });
+    // Pendant l'attente : un fond et un loader au lieu d'un écran gris (11 nov.).
+    const wait = (on) => canvas.parentElement && canvas.parentElement.classList.toggle("gl-wait", on);
+    canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); wait(true); clearTimeout(t); t = setTimeout(() => { wait(false); giveUp(); }, 4000); }, { signal: life.signal });
+    // Retour de la carte graphique : les dessins libérés après envoi (release) ne peuvent pas être renvoyés. On recharge
+    // la page, qui rouvre le même endroit grâce à l'adresse (syncUrl) ; redraw seulement si rien n'a encore été libéré.
+    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); if (reloadIfFreed && released()) { location.reload(); return; } wait(false); redraw(); }, { signal: life.signal });
   }
-  let dead = false;
+  /** Mémoire graphique, lue à chaque changement de vue avec ?debug3d dans l'adresse : elle ne doit pas grimper. */
+  const DEBUG3D = /[?&]debug3d\b/.test(location.search);
+  const memLog = (label, r) => { if (DEBUG3D && r) console.info(`[3d] ${label}`, JSON.stringify(r.info.memory)); };
+  let dead = false, freed = false;
+  const released = () => freed;
 
   /* ===== Gabarit de marque (polices du site passées en options) ===== */
   const FONTS = {
@@ -85,6 +102,7 @@ export function startWalk(root, o) {
   const slugOf = (name) => (o.allBrands.find((b) => b.name === name) || {}).slug;
 
   const CATS = o.categories.map((c) => [c.id, c.label]);
+  const catSlug = (id) => (o.categories.find((c) => c.id === id) || {}).slug || id;
   const catLabel = (c) => CATS.find((x) => x[0] === c)[1];
   const pcache = {};
   const products = (brand, cat) => pcache[brand + "|" + cat] || (pcache[brand + "|" + cat] = o.getItems(brand, cat));
@@ -192,7 +210,7 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR, VITRINE] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null), loadModel("vitrine").then(vitrineKit)]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR, VITRINE, ILOT] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null), loadModel("vitrine").then(vitrineKit), loadModel("ilot")]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
@@ -231,10 +249,14 @@ export function startWalk(root, o) {
 
   /* ===== Outils 3D partagés (textures, vêtements, mannequins) ===== */
   let GH = null;
-  function G() {
+  function G({ free = false } = {}) {
     if (GH) return GH;
     const cv = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; };
     const T = (c) => { const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+    // Dessin terminé : une fois envoyé à la carte graphique, sa toile ne sert plus. On la libère (Safari iPhone plafonne la
+    // mémoire de toutes les toiles de la page ; au-delà, les nouveaux dessins sortent noirs ou vides : rayon vide,
+    // rectangle noir, 11 nov.). Si la carte graphique décroche, la page se recharge sur le même endroit (survive).
+    const release = (tex) => { if (!free) return tex; tex.onUpdate = () => { tex.onUpdate = null; freed = true; const c = tex.image; if (c && c.getContext) c.width = c.height = 1; }; return tex; };
     function spaced(x, txt, cx, cy, sp) {
       const ws = [...txt].map((ch) => x.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1);
       let px = cx - tot / 2; [...txt].forEach((ch, i) => { x.fillText(ch, px, cy); px += ws[i] + sp; });
@@ -259,7 +281,7 @@ export function startWalk(root, o) {
       }
       return tex;
     }
-    function labelTex(t, fg = "#1b1b1d") { const [c, x] = cv(1024, 192); x.fillStyle = fg; x.textBaseline = "middle"; x.font = `500 64px ${o.fonts.sans}`; spaced(x, t, 512, 100, 18); return T(c); }
+    function labelTex(t, fg = "#1b1b1d") { const [c, x] = cv(1024, 192); x.fillStyle = fg; x.textBaseline = "middle"; x.font = `500 64px ${o.fonts.sans}`; spaced(x, t, 512, 100, 18); return release(T(c)); }
     function glowTex(light = false) {
       const [c, x] = cv(256, 256); const g = x.createRadialGradient(128, 80, 6, 128, 128, 200);
       const stops = light ? ["#fffdf8", "#eee4d6", "#d6c8b5"] : ["#fff3e2", "#6b5a4c", "#1a1618"];
@@ -285,22 +307,57 @@ export function startWalk(root, o) {
       // (Rhamone, 8 nov. : « pas de cadres, bien neutre, comme en 3D »). Sinon : la photo sur sa carte blanche, comme avant.
       const cutout = src.includes("/produits/detoure/");
       if (hang || clip) hook(x, 128);
-      if (!cutout) { x.save(); x.shadowColor = "rgba(0,0,0,.25)"; x.shadowBlur = 10; x.fillStyle = "#ffffff"; rr(card); x.fill(); x.restore(); }
+      // Photo pas encore détourée : plus de carte blanche (Rhamone, 9 nov. : « enlever le background blanc ») ; son fond uni
+      // est effacé ici, à partir des bords, en attendant le détourage automatique (scripts/detourage.py).
       const img = webImage();
       img.onload = () => {
-        if (cutout) {
-          const s = Math.min(card.w / img.width, card.h / img.height), w = img.width * s, h = img.height * s;
-          x.save(); x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4;
-          x.drawImage(img, card.x + (card.w - w) / 2, card.y + (hang || clip ? 0 : (card.h - h) / 2), w, h); x.restore();
-          tex.needsUpdate = true; onLoad(); return;
-        }
-        const inner = { x: card.x + 6, y: card.y + 6, w: card.w - 12, h: card.h - 12 };
-        const s = Math.max(inner.w / img.width, inner.h / img.height), w = img.width * s, h = img.height * s;
-        x.save(); rr(inner); x.clip(); x.drawImage(img, inner.x + (inner.w - w) / 2, inner.y + (inner.h - h) / 2, w, h); x.restore();
-        tex.needsUpdate = true; onLoad();
+        // Photo à fond transparent (détourée, ou fond effacé ici), recadrée au ras du vêtement : le haut du vêtement
+        // vient sous le crochet, qui entre dans le col (Rhamone, 9 nov. : le crochet flottait au-dessus de la pièce).
+        const R = 3 * k, [tc, tx] = cv(Math.round(img.width * Math.min(1, (card.w * R) / img.width)), Math.round(img.height * Math.min(1, (card.w * R) / img.width)));
+        tx.imageSmoothingQuality = "high"; tx.drawImage(img, 0, 0, tc.width, tc.height);
+        const clean = cutout || knockOut(tx, tc.width, tc.height);
+        const b = clean ? opaqueBox(tx, tc.width, tc.height) : { x: 0, y: 0, w: tc.width, h: tc.height };
+        const s = Math.min(card.w / b.w, card.h / b.h), w = b.w * s, h = b.h * s;
+        const px0 = card.x + (card.w - w) / 2, py0 = hang || clip ? card.y - 6 : card.y + (card.h - h) / 2;
+        // Fond pas uni (ou photo illisible) : la photo seule, coins arrondis, sans carte blanche autour.
+        x.save(); if (!clean) { rr({ x: px0, y: py0, w, h }); x.clip(); } else { x.shadowColor = "rgba(0,0,0,.22)"; x.shadowBlur = 12; x.shadowOffsetY = 4; }
+        x.drawImage(tc, b.x, b.y, b.w, b.h, px0, py0, w, h); x.restore();
+        if ((hang || clip) && clean) hanger(x, px0, py0, w, h, clip);
+        tc.width = tc.height = 0; // toile de travail : libérée tout de suite
+        release(tex); tex.needsUpdate = true; onLoad();
       };
+      // Réseau du téléphone qui flanche : on réessaie une fois au lieu de laisser le portant vide.
+      let retried = false;
+      img.onerror = () => { if (retried) return; retried = true; setTimeout(() => { img.src = src + (src.includes("?") ? "&" : "?") + "r=1"; }, 1500); };
       img.src = src;
       return tex;
+    }
+    // Efface le fond uni d'une photo (blanc, gris clair…) : remplissage depuis les bords, tant que la couleur reste proche
+    // de celle des coins. Le vêtement, d'une autre couleur, arrête le remplissage. false si la photo ne peut pas être lue.
+    function knockOut(x, W, H) {
+      let d; try { d = x.getImageData(0, 0, W, H); } catch { return false; }
+      const p = d.data, at = (i) => [p[i * 4], p[i * 4 + 1], p[i * 4 + 2]];
+      const bg = [at(0), at(W - 1), at((H - 1) * W), at(H * W - 1)].reduce((a, v) => a.map((c, i) => c + v[i] / 4), [0, 0, 0]);
+      if (bg[0] + bg[1] + bg[2] < 450) return true; // fond sombre ou photo de mise en scène : on n'y touche pas
+      const near = (i) => Math.abs(p[i * 4] - bg[0]) + Math.abs(p[i * 4 + 1] - bg[1]) + Math.abs(p[i * 4 + 2] - bg[2]) < 54;
+      // Fond vraiment uni sur tout le tour seulement (sinon, ex. sol en marbre, la photo serait déchirée) : photo entière.
+      let edge = 0, uni = 0; for (let i = 0; i < W; i += 3) { edge += 2; uni += near(i) + near((H - 1) * W + i); } for (let j = 0; j < H; j += 3) { edge += 2; uni += near(j * W) + near(j * W + W - 1); }
+      if (uni / edge < 0.92) return false;
+      const seen = new Uint8Array(W * H), stack = [];
+      for (let i = 0; i < W; i++) stack.push(i, (H - 1) * W + i);
+      for (let j = 0; j < H; j++) stack.push(j * W, j * W + W - 1);
+      while (stack.length) {
+        const i = stack.pop(); if (seen[i] || !near(i)) continue; seen[i] = 1; p[i * 4 + 3] = 0;
+        const cx = i % W; if (cx > 0) stack.push(i - 1); if (cx < W - 1) stack.push(i + 1); if (i >= W) stack.push(i - W); if (i < W * (H - 1)) stack.push(i + W);
+      }
+      x.putImageData(d, 0, 0); return true;
+    }
+    // Cadre des pixels visibles d'une photo à fond transparent (sans la marge vide autour du vêtement).
+    function opaqueBox(x, W, H) {
+      let d; try { d = x.getImageData(0, 0, W, H).data; } catch { return { x: 0, y: 0, w: W, h: H }; }
+      let x0 = W, y0 = H, x1 = -1, y1 = -1;
+      for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) if (d[(j * W + i) * 4 + 3] > 24) { if (i < x0) x0 = i; if (i > x1) x1 = i; if (j < y0) y0 = j; if (j > y1) y1 = j; }
+      return x1 < 0 ? { x: 0, y: 0, w: W, h: H } : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
     }
     // Couleur dominante d'une photo produit (le centre du vêtement, sans le fond), pour sa vue de côté.
     function photoColor(img) {
@@ -315,9 +372,37 @@ export function startWalk(root, o) {
       return `rgb(${med(0)},${med(1)},${med(2)})`;
     }
     // Crochet en « ? » qui sort du col (le cintre est caché dans les épaules) : fin, laiton. Mesures sur 256 points de large.
+    // Vrai cintre (Rhamone, 9 nov.) : la barre des épaules passe DERRIÈRE le vêtement (on ne la voit que par l'encolure ou
+    // entre les bras) ; pour un bas, une barre à pinces au ras de la taille, pinces devant.
+    function hanger(x, gx, gy, w, h, clip) {
+      const cx = gx + w / 2, wood = "#8a6a42", light = "#c9a96a";
+      x.save(); x.lineCap = "round";
+      if (clip) {
+        const y = gy + 3, x0 = cx - w * 0.46, x1 = cx + w * 0.46;
+        x.globalCompositeOperation = "destination-over";
+        x.strokeStyle = wood; x.lineWidth = 4; x.beginPath(); x.moveTo(x0, y); x.lineTo(x1, y); x.stroke();
+        x.globalCompositeOperation = "source-over";
+        [x0 + 6, x1 - 6].forEach((px) => { x.fillStyle = "#3a3a3d"; x.fillRect(px - 4, y - 3, 8, 11); x.fillStyle = light; x.fillRect(px - 4, y - 3, 8, 2); });
+      } else {
+        // Au niveau des épaules, sous la capuche, et pas plus large que le buste à cette hauteur (jamais visible entre
+        // la manche et le corps) : caché par le vêtement, sauf par l'encolure.
+        const sy = gy + h * 0.33; let half = w * 0.26;
+        try {
+          const k = x.getTransform().a, row = x.getImageData(0, Math.round(sy * k), x.canvas.width, 1).data, c0 = Math.round(cx * k);
+          let l = c0, r = c0; while (l > 0 && row[l * 4 + 3] > 24) l--; while (r < x.canvas.width - 1 && row[r * 4 + 3] > 24) r++;
+          half = Math.min(half, (Math.min(c0 - l, r - c0) / k) - 4);
+        } catch { /* image illisible : largeur par défaut */ }
+        if (half < 6) { x.restore(); return; }
+        x.globalCompositeOperation = "destination-over";
+        x.strokeStyle = wood; x.lineWidth = 5; x.beginPath(); x.moveTo(cx - half, sy + 8); x.quadraticCurveTo(cx, sy - 14, cx + half, sy + 8); x.stroke();
+        x.strokeStyle = light; x.lineWidth = 1.6; x.beginPath(); x.moveTo(cx - half, sy + 6); x.quadraticCurveTo(cx, sy - 16, cx + half, sy + 6); x.stroke();
+      }
+      x.restore();
+    }
     function hook(x, cx) {
       x.save(); x.lineCap = "round";
-      const p = new Path2D(`M${cx} 66 V36 C${cx} 28 ${cx + 10} 27 ${cx + 10} 19 C${cx + 10} 11 ${cx - 2} 9 ${cx - 4} 16`);
+      // Crochet de vrai cintre : court, il sort du col (Rhamone, 9 nov.).
+      const p = new Path2D(`M${cx} 66 V42 C${cx} 35 ${cx + 9} 34 ${cx + 9} 27 C${cx + 9} 20 ${cx - 2} 18 ${cx - 4} 24`);
       x.strokeStyle = "#7a6238"; x.lineWidth = 3.2; x.stroke(p); x.strokeStyle = "#c9a96a"; x.lineWidth = 1.9; x.stroke(p);
       x.fillStyle = "#7a6238"; x.fillRect(cx - 2.5, 61, 5, 6); x.restore();
     }
@@ -586,7 +671,7 @@ export function startWalk(root, o) {
 
   function initMall() {
     const U = G(), canvas = $("#gl"), stage = $("#stage");
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: !SMALL, powerPreference: "high-performance" });
     renderer.outputEncoding = THREE.sRGBEncoding;
     survive(canvas, () => resize(), () => { walkEl.classList.add("nogl"); });
     // Lumière selon l'heure locale du visiteur (src/walk/models/daylight.ts) : jour, soir plus sombre et éclairé, jamais noir
@@ -609,14 +694,14 @@ export function startWalk(root, o) {
     const floorTex = (() => {
       const [c, x] = U.cv(1024, 1024), t = U.T(c);
       x.fillStyle = "#e3d9c9"; x.fillRect(0, 0, 1024, 1024);
-      x.strokeStyle = "rgba(140,122,98,0.45)"; x.lineWidth = 2; [0, 512, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
+      x.strokeStyle = "rgba(140,122,98,0.45)"; x.lineWidth = 2; [0, 256, 512, 768, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
     })();
     // Matières faites dans Blender (assets-src/blender/textures-mall.py) : dalles, pierre claire, champagne brossé.
     // Ce sont des couleurs (sRGB) : sans ce réglage, three.js les lit trop claires et le sol paraît délavé (#109, lot 1).
     // Le dessin ci-dessus reste affiché tant que la photo de la matière n'est pas chargée.
     const loader = new THREE.TextureLoader();
-    const colorTex = (url, then) => { const t = loader.load(url, (tx) => { then?.(tx); kick(); }); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t; };
+    const colorTex = (url, then) => { const t = loader.load(texUrl(url), (tx) => { then?.(tx); kick(); }); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t; };
     // Ambiance réfléchie (sol, métal, verre) : un petit mall lumineux flouté, calculé une fois. Bandeaux du plafond et vitrines
     // chaudes y brillent ; le soir, le fond s'assombrit mais les lumières restent. Ne reflète pas les boutiques : voir le reflet plus bas.
     const envMap = (() => {
@@ -628,17 +713,16 @@ export function startWalk(root, o) {
       [-1, 1].forEach((sd) => { for (let z = -18; z <= 18; z += 8.5) { const m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 4), glow(1, 0.86, 0.66, lerp(1.4, 2.2, n))); m.position.set(sd * 11.9, 2.2, z); m.rotation.y = -sd * Math.PI / 2; es.add(m); } });
       const rt = pm.fromScene(es, 0.035); pm.dispose(); return rt.texture;
     })();
-    const floorAt = (w, d) => {
-      const t = floorTex.clone(); t.needsUpdate = true; t.repeat.set(w / 2.4, d / 2.4);
-      const m = new THREE.MeshStandardMaterial({ map: t, color: 0xbdb3a4, roughness: 0.28, metalness: 0, envMap, envMapIntensity: 0.5 });
-      colorTex("/textures/mall/dalles.jpg", (tx) => { tx.repeat.set(w / 4.8, d / 4.8); m.map = tx; m.needsUpdate = true; });
-      return m;
-    };
+    // Un seul sol pour toute la galerie : une matière, une texture de dalles (le dessin ci-dessus en attendant), la taille
+    // des dalles (4 par 4,80 m) réglée sur chaque surface par tileUV.
+    const floorM = new THREE.MeshStandardMaterial({ map: floorTex, color: 0xbdb3a4, roughness: 0.28, metalness: 0, envMap, envMapIntensity: 0.5 });
+    colorTex("/textures/mall/dalles.jpg", (tx) => { floorM.map = tx; floorM.needsUpdate = true; floorTex.dispose(); });
+    const floorAt = (w, d) => { const m = flat(scene, w, d, floorM, 0, 0, 0); tileUV(m.geometry, w / 4.8, d / 4.8); return m; };
     const facadeTex = { stone: colorTex("/textures/mall/pierre.jpg"), metal: colorTex("/textures/mall/champagne.jpg"), env: envMap };
     facadeTex.stone.repeat.set(2, 3);
     const ceilM = lam(0xfbfaf6), wallM = lam(0xefe9df), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    flat(scene, 2 * BAR_X, -BAR_Z, floorAt(2 * BAR_X, -BAR_Z), 0, 0, BAR_Z / 2);
-    flat(scene, 2 * STEM_X, STEM_END, floorAt(2 * STEM_X, STEM_END), 0, 0, STEM_END / 2);
+    floorAt(2 * BAR_X, -BAR_Z).position.z = BAR_Z / 2;
+    floorAt(2 * STEM_X, STEM_END).position.z = STEM_END / 2;
     flat(scene, 2 * BAR_X, -BAR_Z, ceilM, 0, CEIL, BAR_Z / 2, false);
     flat(scene, 2 * STEM_X, STEM_END, ceilM, 0, CEIL, STEM_END / 2, false);
     // Incrustations de sol (allée) couleur perle
@@ -966,6 +1050,7 @@ export function startWalk(root, o) {
     if (!ok) { o.onFallback(slugOf(brand)); return; }
     try {
       if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); }
+      memLog(`boutique ${brand}`, SR && SR.renderer);
     } catch { STORE = null; o.onFallback(slugOf(brand)); return; }
     if (brand !== sBrand) lastCat = null;
     sBrand = brand; sFromWalk = fromWalk; sCat = null;
@@ -976,28 +1061,44 @@ export function startWalk(root, o) {
     title();
     const cats = $("#sCats"); cats.textContent = ""; rayons().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     // On arrive directement au centre, devant le choix des rayons (plus de marche depuis la porte).
-    STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
+    STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub"); syncUrl();
+    setTimeout(() => { if (STORE && STORE.brand === brand && !storeEl.hidden) STORE.gallery(); }, 800); // la galerie derrière soi, une fois entré
   }
   /** Durée du fondu à l'entrée et à la sortie d'une boutique (ms). */
   const FADE_MS = 150;
+  /** L'adresse dit où l'on est (11 nov. : Safari iPhone rechargeait la page et renvoyait devant la boutique) :
+   *  /walk/<marque>?dans=1 dans la boutique, ?rayon=<rayon>&article=<article> dans un rayon. replaceState : le bouton
+   *  retour garde ses couches (controllers/history.ts), seule l'adresse affichée change. */
+  function syncUrl(it) {
+    if (dead) return;
+    const u = new URL(location.href);
+    ["dans", "rayon", "article"].forEach((k) => u.searchParams.delete(k));
+    const shop = !storeEl.hidden && sBrand && slugOf(sBrand);
+    if (shop) {
+      u.pathname = `/walk/${shop}`;
+      if (sCat) { u.searchParams.set("rayon", catSlug(sCat)); if (it) u.searchParams.set("article", it.slug); } else u.searchParams.set("dans", "1");
+    }
+    if (u.href !== location.href) try { history.replaceState(history.state, "", u); } catch { /* ignoré */ }
+  }
   function closeStore() {
     if (storeEl.hidden) return;
-    storeEl.hidden = true; storeOpen = false; trapUpdate();
+    storeEl.hidden = true; storeOpen = false; trapUpdate(); syncUrl();
     if (sFromWalk && walkOpen) { $("#veil").style.opacity = 0; if (MALL) MALL.kick(); }
     else if (!walkOpen) openWalk(Math.max(0, SHOP_NAMES.indexOf(sBrand)));
     giveBack(storeFrom, $("#enter"));
   }
   // Rayon : animé = on marche jusqu'au centre ; sinon on remet juste l'état (la boutique se ferme derrière).
   function closeRayon(anim) {
-    sCat = null; STORE.setActive(null); title(); sUI("walk");
-    if (anim) STORE.walk("hub", () => sUI("hub"));
+    sCat = null; STORE.setActive(null); title(); sUI("walk"); syncUrl();
+    if (anim) STORE.walkBack(() => sUI("hub")); // retour là où l'on était dans la boutique (visite libre), sinon au centre
   }
-  function goZone(cat) {
+  function goZone(cat, slug) {
     lastCat = cat;
     gesture("rayon");
+    if (!sCat) STORE.remember();
     openLayer("rayon", closeRayon);
     STORE.setActive(null); sUI("walk");
-    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); title(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
+    STORE.walk(cat, () => { sCat = cat; STORE.setActive(cat); if (slug) STORE.show(slug); title(cat); sUI("rayon"); showInfo(cat, STORE.focus(cat)); });
   }
   // Seuls les rayons qui ont des articles s'affichent (Serge, 4 nov., remplace « mêmes rayons partout » du 19 oct.).
   const rayons = () => CATS.filter(([id]) => id in CAR && products(sBrand, id).length > 0);
@@ -1005,7 +1106,8 @@ export function startWalk(root, o) {
     const it = STORE.item(cat, k);
     $("#iBrand").textContent = `${sBrand} · ${catLabel(cat)}`;
     // Rayon sans article pour cette marque : on le dit simplement, sans boutons d'achat.
-    const empty = !it; $("#sInfo").classList.toggle("empty", empty); $("#sPrev").hidden = $("#sNext").hidden = empty;
+    const empty = !it; $("#sInfo").classList.toggle("empty", empty); $("#sPrev").hidden = $("#sNext").hidden = empty || STORE.count(cat) < 2; // un seul article : pas de flèches (Rhamone, 11 nov.)
+    syncUrl(it);
     if (empty) { $("#iName").textContent = "Rien ici pour l'instant."; renderElse(cat); return; }
     $("#iName").textContent = it.n; $("#iPrice").textContent = o.formatPrice(it.p);
     $("#iCount").textContent = `${k + 1} / ${STORE.count(cat)}`;
@@ -1051,58 +1153,169 @@ export function startWalk(root, o) {
   }
 
   function buildStore(st) {
-    const U = G();
+    const U = G({ free: true }); // boutique : dessins libérés après envoi (voir release)
     if (!SR) {
-      const canvas = $("#sgl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+      const canvas = $("#sgl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: !SMALL, powerPreference: "high-performance" });
       renderer.outputEncoding = THREE.sRGBEncoding; renderer.setClearColor(0xf3efe8);
-      survive(canvas, () => STORE && STORE.resize(), () => { if (!storeEl.hidden) o.onFallback(slugOf(sBrand)); });
+      survive(canvas, () => STORE && STORE.resize(), () => { if (!storeEl.hidden) o.onFallback(slugOf(sBrand)); }, true);
       SR = { canvas, renderer, camera: new THREE.PerspectiveCamera(60, 1, 0.05, 80) };
     }
     const { canvas, renderer, camera } = SR, ac = new AbortController(), sig = { signal: ac.signal };
     life.signal.addEventListener("abort", () => ac.abort());
     const scene = new THREE.Scene(), V = (x, y, z) => new THREE.Vector3(x, y, z);
+    // Par la porte, le mall s'estompe au loin dans un ivoire chaud (profondeur) au lieu d'un fond blanc ; l'intérieur (16 m)
+    // n'est pas touché. Posé dès la création : les matières sont préparées une seule fois (entrer reste immédiat).
+    scene.fog = new THREE.Fog(0xe4ddd1, 22, 70); renderer.setClearColor(0xe4ddd1);
     const basic = (opt) => new THREE.MeshBasicMaterial(opt);
     const lamCache = {}; const lam = (c) => lamCache[c] || (lamCache[c] = new THREE.MeshLambertMaterial({ color: c }));
     const add = (geo, mat, x, y, z, ry = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; scene.add(m); return m; };
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8e8982, 1.0));
-    const dl = new THREE.DirectionalLight(0xffffff, 0.45); dl.position.set(2, 6, 4); scene.add(dl);
-    const pl = new THREE.PointLight(0xffffff, 0.5, 12, 1.5); pl.position.set(0, 3.5, -2); scene.add(pl);
+    let floor = null;
+    // Lumière réglée pour des matières éclairées (sol, murs, îlot) : plus basse que pour les anciens aplats, sinon tout blanchit.
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8e8982, 0.62));
+    const dl = new THREE.DirectionalLight(0xfff6ea, 0.32); dl.position.set(2, 6, 4); scene.add(dl);
+    const pl = new THREE.PointLight(0xfff4e6, 0.22, 10, 1.6); pl.position.set(0, 3.5, -2); scene.add(pl); // douce : pas de tache claire sur le sol poli
 
     // Ambiance selon l'architecture de la boutique : claire, plus froide (verrière) ou chaude (portique).
     const IN = [{ wall: 0xffffff, floor: 0xffffff, ceil: 0xf1efeb }, { wall: 0xe6eaec, floor: 0xc4c9ce, ceil: 0xe9ecee }, { wall: 0xfff2df, floor: 0xe6bd8e, ceil: 0xfaf3e6 }][shopType(Math.max(0, SHOP_NAMES.indexOf(st.name)))];
 
-    /* Surfaces à lumière « cuite » : ombres et reflets peints une fois dans les textures */
-    { const [c, x] = U.cv(512, 256);
-      const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, "#f4f2ee"); g.addColorStop(0.72, "#e2ded8"); g.addColorStop(0.93, "#cdc8c1"); g.addColorStop(1, "#a8a39c");
-      x.fillStyle = g; x.fillRect(0, 0, 512, 256);
-      for (let i = 0; i < 7; i++) { const gx = (i + 0.5) * 512 / 7, r = x.createRadialGradient(gx, 0, 4, gx, 0, 130); r.addColorStop(0, "rgba(255,255,255,.6)"); r.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = r; x.fillRect(gx - 140, 0, 280, 150); }
-      const wallM = basic({ map: U.T(c), color: IN.wall });
+    /* Finitions de l'intérieur (Rhamone, 9 nov. : « retaper le sol et tout », « travail propre ») : mêmes matières que le
+       mall validé (dalles ivoire, pierre claire, champagne), éclairées pour de vrai au lieu d'aplats peints ; les ombres
+       au pied des murs et des meubles restent peintes, sur une couche à part. L'ambiance de chaque architecture est gardée. */
+    const texL = new THREE.TextureLoader();
+    // Une texture par fichier et par répétition, gardée pour toutes les boutiques (avant : 3 copies des dalles en 2048 px).
+    const texCache = SR.tex || (SR.tex = new Map());
+    const colorMap = (url, rx, ry) => { const key = `${url}|${rx}|${ry}`; if (texCache.has(key)) return texCache.get(key); const t = texL.load(texUrl(url), () => kick()); texCache.set(key, t); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; return t; };
+    // Ambiance réfléchie de la boutique (plafond clair, bandeaux et spots) : reflets doux sur le sol poli et le métal.
+    // Calculée une seule fois pour toutes les boutiques (entrer doit rester immédiat).
+    const envMap = SR.env || (SR.env = (() => {
+      const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene();
+      const room = new THREE.Mesh(new THREE.BoxGeometry(12, 4.2, 16), new THREE.MeshBasicMaterial({ color: 0x302e2b, side: THREE.BackSide })); room.position.y = 2.1; es.add(room);
+      [-2, 2].forEach((x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 15), new THREE.MeshBasicMaterial({ color: new THREE.Color(3.5, 3.4, 3.2) })); m.position.set(x, 4.15, 0); es.add(m); });
+      const rt = pm.fromScene(es, 0.04); pm.dispose(); return rt.texture;
+    })());
+    const TINT = [{ floor: 0xb3a999, wall: 0xe9e3d9 }, { floor: 0xadb0b1, wall: 0xdadfe2 }, { floor: 0xb9a68d, wall: 0xeedfcb }][shopType(Math.max(0, SHOP_NAMES.indexOf(st.name)))];
+    { // Murs en pierre claire (grain fin), plinthe sombre au sol, corniche lumineuse sous le plafond.
+      // Une seule sorte de matière à reflets dans la boutique (sol, marbre, champagne) ; le reste en matière simple éclairée :
+      // la carte graphique prépare moins de choses et entrer reste immédiat (test téléphone).
+      const wallM = new THREE.MeshLambertMaterial({ map: colorMap("/textures/mall/pierre.jpg", 6, 2), color: TINT.wall });
       add(new THREE.PlaneGeometry(16, 4.2), wallM, -6, 2.1, -8, Math.PI / 2);
       add(new THREE.PlaneGeometry(16, 4.2), wallM, 6, 2.1, -8, -Math.PI / 2);
       add(new THREE.PlaneGeometry(12, 4.2), wallM, 0, 2.1, -16);
+      const plinth = lam(0x2b2724), cove = basic({ color: 0xfff6e8 });
+      [-1, 1].forEach((sd) => { add(new THREE.BoxGeometry(0.03, 0.09, 16), plinth, sd * 5.985, 0.045, -8); add(new THREE.BoxGeometry(0.06, 0.025, 16), cove, sd * 5.97, 4.12, -8); });
+      add(new THREE.BoxGeometry(12, 0.09, 0.03), plinth, 0, 0.045, -15.985); add(new THREE.BoxGeometry(12, 0.025, 0.06), cove, 0, 4.12, -15.97);
     }
-    { const [c, x] = U.cv(512, 704), X = (v) => (v + 6) / 12 * 512, Y = (z) => (z + 16) / 16 * 704;
-      x.fillStyle = "#a39f98"; x.fillRect(0, 0, 512, 704);
-      for (let i = 0; i < 5000; i++) { x.fillStyle = `rgba(${Math.random() < 0.5 ? "255,255,255" : "0,0,0"},${(Math.random() * 0.05).toFixed(3)})`; x.fillRect(Math.random() * 512, Math.random() * 704, 2, 2); }
-      [-2, 2].forEach((sx) => { const g = x.createLinearGradient(X(sx) - 44, 0, X(sx) + 44, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,.3)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(X(sx) - 44, Y(-15.6), 88, Y(-0.4) - Y(-15.6)); });
-      const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.42)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
-      ao(0, 0, 0, 44, 0, 0, 512, 44); ao(0, 704, 0, 660, 0, 660, 512, 44); ao(0, 0, 44, 0, 0, 0, 44, 704); ao(512, 0, 468, 0, 468, 0, 44, 704);
+    { // Sol : les dalles ivoire du mall (grandes dalles, joints fins), reflet doux de l'éclairage.
+      floor = add(tileUV(new THREE.PlaneGeometry(12, 16), 12 / 4.8, 16 / 4.8), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 1, 1), color: TINT.floor, roughness: 0.36, metalness: 0, envMap, envMapIntensity: 0.4 }), 0, 0, -8);
+      floor.rotation.x = -Math.PI / 2;
+      // Ombres peintes (couche transparente) : pied des murs, sous l'îlot et les mannequins ; reflets des bandeaux.
+      const [c, x] = U.cv(512, 704), X = (v) => (v + 6) / 12 * 512, Y = (z) => (z + 16) / 16 * 704;
+      [-2, 2].forEach((sx) => { const g = x.createLinearGradient(X(sx) - 30, 0, X(sx) + 30, 0); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,.22)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(X(sx) - 30, Y(-15.6), 60, Y(-0.4) - Y(-15.6)); });
+      const ao = (gx0, gy0, gx1, gy1, rx, ry, rw, rh) => { const g = x.createLinearGradient(gx0, gy0, gx1, gy1); g.addColorStop(0, "rgba(24,20,18,.34)"); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(rx, ry, rw, rh); };
+      ao(0, 0, 0, 36, 0, 0, 512, 36); ao(0, 0, 36, 0, 0, 0, 36, 704); ao(512, 0, 476, 0, 476, 0, 36, 704);
       const blob = (bx, bz, r, a) => { const g = x.createRadialGradient(X(bx), Y(bz), 0, X(bx), Y(bz), r); g.addColorStop(0, `rgba(24,20,18,${a})`); g.addColorStop(1, "rgba(24,20,18,0)"); x.fillStyle = g; x.fillRect(X(bx) - r, Y(bz) - r, 2 * r, 2 * r); };
-      blob(0, -8.8, 150, 0.36); [[-3.6, -0.7], [3.6, -0.7], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 30, 0.45));
-      const fl = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), color: IN.floor }), 0, 0, -8); fl.rotation.x = -Math.PI / 2;
+      blob(0, -8.8, 120, 0.32); [[-3.6, -0.7], [4.3, -13.9], [-1.95, -14.6], [1.95, -14.6]].forEach(([bx, bz]) => blob(bx, bz, 26, 0.4));
+      const shade = add(new THREE.PlaneGeometry(12, 16), basic({ map: U.T(c), transparent: true, depthWrite: false }), 0, 0.003, -8); shade.rotation.x = -Math.PI / 2;
     }
-    const ceil = add(new THREE.PlaneGeometry(12, 16), basic({ color: IN.ceil }), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
+    const ceil = add(new THREE.PlaneGeometry(12, 16), lam(IN.ceil), 0, 4.2, -8); ceil.rotation.x = Math.PI / 2;
     const white = basic({ color: 0xffffff });
     [-2, 2].forEach((sx) => add(new THREE.BoxGeometry(0.14, 0.03, 15.2), white, sx, 4.18, -8));
     const spotGeo = new THREE.CircleGeometry(0.07, 16);
     for (let z = -1.2; z > -15.5; z -= 1.6) [-4.6, 4.6].forEach((sx) => { const s = add(spotGeo, white, sx, 4.19, z); s.rotation.x = Math.PI / 2; });
 
     // Façade à la couleur de la marque, sol extérieur, enseigne (nom ou logo)
-    const facadeM = basic({ color: new THREE.Color(st.bg) });
-    add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, -3.8, 2.1, 0); add(new THREE.BoxGeometry(4.4, 4.2, 0.3), facadeM, 3.8, 2.1, 0);
-    add(new THREE.BoxGeometry(3.2, 1.4, 0.3), facadeM, 0, 3.5, 0);
+    // Mur de la porte : couleur de la marque, éclairé de l'intérieur (il tourne le dos aux lampes : sans lueur propre, il
+    // paraissait gris et terne). Porte de 4,80 m comme vue du mall, 3,40 m de haut : un bandeau reste pour le tableau.
+    const DOOR_W = 4.8, DOOR_H = 3.4;
+    const brandC = new THREE.Color(st.bg), facadeM = new THREE.MeshLambertMaterial({ color: brandC, emissive: brandC.clone().multiplyScalar(0.32) });
+    const sideW = (12 - DOOR_W) / 2;
+    [-1, 1].forEach((sd) => add(new THREE.BoxGeometry(sideW, 4.2, 0.3), facadeM, sd * (DOOR_W / 2 + sideW / 2), 2.1, 0));
+    add(new THREE.BoxGeometry(DOOR_W, 4.2 - DOOR_H, 0.3), facadeM, 0, DOOR_H + (4.2 - DOOR_H) / 2, 0);
+    { // encadrement champagne de la porte, côté intérieur
+      const jamb = new THREE.MeshLambertMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0xe8d3a8 });
+      [-1, 1].forEach((sd) => add(new THREE.BoxGeometry(0.06, DOOR_H, 0.32), jamb, sd * (DOOR_W / 2 + 0.03), DOOR_H / 2, 0));
+      add(new THREE.BoxGeometry(DOOR_W + 0.12, 0.06, 0.32), jamb, 0, DOOR_H + 0.03, 0);
+    }
     const ext = add(new THREE.PlaneGeometry(16, 8), basic({ color: 0xebe6dd }), 0, -0.002, 4); ext.rotation.x = -Math.PI / 2;
-    add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.5, 0.16);
+    /* La galerie vue par la porte (Rhamone, 9 nov. : « voir une autre boutique à travers la porte », impression de centre
+       commercial) : le vrai voisinage, tiré du plan du mall (SLOTS), placé dans le repère de cette boutique — sol, plafond
+       et façades des boutiques qui sont réellement en face ou en biais. Aucune boutique inventée ; dessin léger (6 au plus). */
+    // Construite juste après l'entrée (elle est dans le dos du visiteur qui arrive) : entrer reste immédiat.
+    const buildGallery = () => { const k0 = SHOP_NAMES.indexOf(st.name);
+      if (k0 >= 0 && k0 < N) {
+        const s0 = SLOTS[k0], a0 = Math.atan2(s0.nx, s0.nz), ca = Math.cos(a0), sa = Math.sin(a0);
+        const local = (x, z) => { const dx = x - s0.x, dz = z - s0.z; return [dx * ca - dz * sa, dx * sa + dz * ca]; };
+        ext.visible = false; // le sol uni de secours laisse la place aux dalles de la galerie
+        const mallFloor = add(tileUV(new THREE.PlaneGeometry(40, 34), 40 / 4.8, 34 / 4.8), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 1, 1), color: 0xbdb3a4, roughness: 0.3, envMap, envMapIntensity: 0.4 }), 0, -0.003, 17.2); mallFloor.rotation.x = -Math.PI / 2; // les dalles du mall
+        const mallCeil = add(new THREE.PlaneGeometry(40, 34), basic({ color: 0xfbfaf6 }), 0, CEIL, 17.2); mallCeil.rotation.x = Math.PI / 2;
+        [-3.5, 3.5].forEach((x) => add(new THREE.BoxGeometry(0.12, 0.03, 32), basic({ color: 0xffffff }), x, CEIL - 0.02, 17.2));
+        const glow = U.glowTex(true);
+        SLOTS.slice(0, N).map((sl, k) => ({ sl, k, p: local(sl.x, sl.z) }))
+          .filter(({ k, p }) => k !== k0 && p[1] > 3 && p[1] < 34 && Math.abs(p[0]) < 26)
+          // Équilibre (Rhamone, 9 nov.) : la boutique la plus en face de la porte (plus petit angle), et sa voisine qui se voit un peu.
+          .sort((a, b) => Math.abs(a.p[0]) / a.p[1] - Math.abs(b.p[0]) / b.p[1]).slice(0, 2)
+          .forEach(({ sl, k, p }) => {
+            const g = new THREE.Group(); g.position.set(p[0], 0, p[1]); g.rotation.y = Math.atan2(sl.nx, sl.nz) - a0; scene.add(g);
+            const sk = SHOPS[k], big = sk.logo || shopType(k) === 1;
+            const fa = createFacade(THREE, { type: shopType(k), bg: sk.bg, ceil: CEIL, sign: U.wordTex(sk, big ? { w: 1024, h: 200, bg: sk.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: sk.bg, maxW: 430, px: 64 }) });
+            // Éclairées comme dans le mall (les lampes de la boutique ne les atteignent pas) : on les voit bien par la porte.
+            fa.traverse((m) => { if (m.isMesh && m.material.emissive) { m.material = m.material.clone(); m.material.emissive = m.material.color.clone().multiplyScalar(0.45); } });
+            g.add(fa);
+            const pil = new THREE.Mesh(new THREE.BoxGeometry(0.5, CEIL, 0.7), new THREE.MeshLambertMaterial({ color: 0xf3efe7, emissive: 0x5a564f })); pil.position.set(-SLOT / 2 + 0.05, CEIL / 2, 0.35); g.add(pil); // pilier entre deux boutiques
+            const bd = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.1), basic({ map: glow })); bd.position.set(0, 2.05, -0.3); g.add(bd); // intérieur lumineux
+          });
+      }
+    };
+    let galleryDone = false;
+    add(new THREE.PlaneGeometry(2.6, 0.5), basic({ map: U.wordTex(st, { glow: true }), transparent: true }), 0, 3.8, 0.16);
+
+    /* Côté intérieur de la porte (direction validée par Rhamone, 9 nov.) : tableau « Thank you. See you soon. » au-dessus
+       de la sortie, grand écran vertical qui montre les looks de la marque, et la porte qu'on touche pour sortir. */
+    const INSIDE = -0.16, face = (m) => { m.rotation.y = Math.PI; return m; };
+    { const [c, x] = U.cv(800, 210);
+      x.fillStyle = "#FFFEF7"; x.fillRect(0, 0, 800, 210); x.strokeStyle = "#C8A96A"; x.lineWidth = 12; x.strokeRect(6, 6, 788, 198);
+      x.fillStyle = "#680209"; x.textAlign = "center"; x.textBaseline = "middle"; x.font = `500 70px ${o.fonts.serif}`;
+      x.fillText(STORE_EXIT_TEXT.line1, 400, 72); x.fillText(STORE_EXIT_TEXT.line2, 400, 146);
+      face(add(new THREE.PlaneGeometry(1.5, 0.394), basic({ map: U.T(c) }), 0, DOOR_H + (4.2 - DOOR_H) / 2, INSIDE)); // dans le bandeau au-dessus de la porte
+    }
+    const doorHit = face(add(new THREE.PlaneGeometry(DOOR_W, DOOR_H), basic({ visible: false }), 0, DOOR_H / 2, -0.02));
+    doorHit.userData.action = "exit";
+    // Écran : looks dont une pièce est de cette marque (même source que l'accueil). Plusieurs : défilement lent ; un seul :
+    // fixe ; aucun : pas d'écran. Toucher l'écran ouvre le rayon de la pièce du look, cette pièce devant soi.
+    const looks = (o.getLooks ? o.getLooks(st.name) : []).filter((l) => l.items.length);
+    let screen = null;
+    if (looks.length) {
+      // Vrai écran mural : la surface prend exactement les proportions de la photo (personnage entier, sans marge ni
+      // étirement), cadre noir fin et brillant (Rhamone, 9 nov. : le cadre gris épais faisait « boîte »).
+      // Encastré au milieu du pan de mur à gauche de la porte (vu de l'intérieur), affleurant. Plus de halo sur le mur :
+      // il faisait une tache claire autour de l'écran (Rhamone, 11 nov.).
+      // Hauteur de la porte, du sol au haut de la porte (dessin de Rhamone, 9 nov.) ; largeur donnée par la photo.
+      const H = DOOR_H - 0.06, cx = DOOR_W / 2 + sideW / 2, B = 0.022;
+      const bezel = add(new THREE.BoxGeometry(1, 1, 0.02), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0x161616, roughness: 0.25, metalness: 0.5, envMap, envMapIntensity: 0.8 }), cx, 0.03 + H / 2, INSIDE - 0.004);
+      const [c, x] = U.cv(512, 768), tex = U.T(c);
+      screen = face(add(new THREE.PlaneGeometry(1, 1), basic({ map: tex }), cx, 0.03 + H / 2, INSIDE - 0.016));
+      screen.userData = { action: "look", k: 0 };
+      const size = (ar) => { const W = H * ar; screen.scale.set(W, H, 1); bezel.scale.set(W + 2 * B, H + 2 * B, 1); };
+      size(2 / 3);
+      const show = (k) => {
+        const l = looks[k % looks.length]; screen.userData.k = k % looks.length;
+        const im = webImage();
+        im.onload = () => {
+          // Le personnage ne remplit plus tout l'écran (Rhamone, 11 nov.) : 84 % de la hauteur, centré, avec de l'air
+          // autour ; l'écran s'élargit d'autant pour garder la même marge sur les côtés.
+          const ar = clamp(im.width / im.height, 0.4, 0.8), FILL = 0.84, sar = clamp(ar * 1.18, 0.5, 0.95); size(sar);
+          c.width = 512; c.height = Math.round(512 / sar);
+          // Photo détourée (transparente) : fond clair de studio derrière le personnage, jamais de noir.
+          const g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, "#f1efea"); g.addColorStop(1, "#dedad2");
+          x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
+          const ph = c.height * FILL, pw = ph * ar;
+          x.drawImage(im, (c.width - pw) / 2, (c.height - ph) / 2, pw, ph); tex.needsUpdate = true; kick();
+        };
+        im.src = l.photo;
+      };
+      show(0);
+      if (looks.length > 1 && !RM) { const t = setInterval(() => { if (!storeEl.hidden && STORE && STORE.brand === st.name) show(screen.userData.k + 1); }, 7000); ac.signal.addEventListener("abort", () => clearInterval(t)); }
+    }
 
     // Mur du fond : panneau de la marque + étagères à sneakers éclairées.
     // Sur téléphone, la liste des rayons passe devant ce panneau : le nom de la marque descend alors sur l'îlot (Rhamone, 21 oct.).
@@ -1134,17 +1347,26 @@ export function startWalk(root, o) {
     // Mur à casquettes
     add(new THREE.BoxGeometry(0.04, 1.7, 4.6), metalM, 5.97, 1.6, -4.8);
 
-    // Vitrine à accessoires (îlot central)
-    add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
-    add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
+    // Vitrine à accessoires (îlot central) : modèle Blender (corps en pierre sur socle en retrait, plateau en marbre qui
+    // déborde, fins cadres champagne autour du verre), matières du site ; à défaut, les blocs d'avant.
+    if (ILOT) {
+      const metal = new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0xffffff, roughness: 0.3, metalness: 0.6, envMap, envMapIntensity: 1 });
+      const mats = { Pierre: new THREE.MeshLambertMaterial({ map: colorMap("/textures/mall/pierre.jpg", 1, 1), color: 0xf2ece3 }),
+        Marbre: new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 1, 1), color: 0xe4ddd2, roughness: 0.18, envMap, envMapIntensity: 0.8 }), Champagne: metal };
+      const il = ILOT.clone(true); il.traverse((m) => { if (m.isMesh) m.material = mats[m.material.name] || mats.Pierre; }); scene.add(il);
+    } else {
+      add(new THREE.BoxGeometry(2.4, 0.9, 1.6), lam(0xb9b4ad), 0, 0.45, -8.8);
+      add(new THREE.BoxGeometry(2.44, 0.04, 1.64), lam(0x1b1b1d), 0, 0.9, -8.8);
+    }
     const tableSign = add(new THREE.PlaneGeometry(2.3, 0.45), basic({ map: U.wordTex(st, { bg: st.bg }) }), 0, 0.52, -7.99);
     // Cloche en verre assez haute pour que les sacs soient bien dedans, même vus d'en haut
     const glassG = new THREE.BoxGeometry(2.3, 0.62, 1.5);
     add(glassG, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }), 0, 1.23, -8.8);
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges);
+    if (!ILOT) { const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassG), new THREE.LineBasicMaterial({ color: 0x1b1b1d })); edges.position.set(0, 1.23, -8.8); scene.add(edges); }
 
     // Mannequins habillés par le gabarit de la marque
-    [[-3.6, -0.7, 0.45, 0], [3.6, -0.7, -0.45, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
+    // Celui de droite (vu de la porte), près de l'entrée, est dans le coin pour laisser l'écran des looks dégagé (9 nov.).
+    [[-3.6, -0.7, 0.45, 0], [4.3, -13.9, -0.5, 1], [-1.95, -14.6, 0.25, 1], [1.95, -14.6, -0.25, 0]].forEach(([x, z, r, v]) => { const m = U.mannequin(st, v); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); });
 
     // Signalétique
     // Panneaux des rayons, vus du centre. Dans un rayon, son nom passe en haut de l'écran ; sur le mur, il devient un grand
@@ -1196,6 +1418,7 @@ export function startWalk(root, o) {
     let raf = 0, active = null, closeAmt = 0, closeT = 0, yaw = 0, dragging = false;
     const UP = V(0, 1, 0), tmp = V(0, 0, 0), tmp2 = V(0, 0, 0);
     const kick = () => { if (!raf && !dead) raf = requestAnimationFrame(frame); };
+    const ITEM_BIG = 1.3;
     function layout(car, isActive, now) {
       const fi = Math.round(car.f), cfg = car.cfg, side = cfg.side, L = side ? SIDE_VISIBLE : 3.4;
       car.meshes.forEach((m, k) => {
@@ -1206,7 +1429,9 @@ export function startWalk(root, o) {
         const along = side ? d * side + (isActive ? Math.sign(d) * Math.min(ad, 1) * (cfg.sp - side) : 0) : d * cfg.sp;
         const back = side ? Math.min(ad, L) * 0.012 : Math.min(ad, 3) * 0.03;
         m.position.copy(car.o).addScaledVector(car.d, along).addScaledVector(car.out, w * cfg.pull - back).addScaledVector(UP, w * cfg.rise);
-        let s = 1 + 0.12 * w;
+        // Pièces pendues plus grandes (Rhamone, 9 nov. : « agrandir les articles »), toujours accrochées à la tringle.
+        const big = side ? ITEM_BIG : 1; if (big !== 1) m.position.y -= ((big - 1) * cfg.size[1]) / 2;
+        let s = (1 + 0.12 * w) * big;
         if (isF && closeAmt > 0) {
           sharpen(m);
           tmp2.subVectors(cam.look, cam.pos).normalize();
@@ -1214,14 +1439,18 @@ export function startWalk(root, o) {
           m.position.lerp(tmp, closeAmt); s = lerp(s, cfg.close, closeAmt);
         }
         m.scale.setScalar(s);
-        if (isF) m.lookAt(tmp.set(cam.pos.x, m.position.y, cam.pos.z)); else m.lookAt(tmp.copy(m.position).add(car.out));
+        if (isF) m.lookAt(tmp.set(cam.pos.x, m.position.y, cam.pos.z));
+        // Portant de côté : chaque pièce pend tournée à 45° vers le début du portant (Rhamone, 9 nov. : « un peu
+        // inclinés pour qu'on puisse les voir »), et se redresse de face quand elle est choisie.
+        else if (side) { const t = (Math.PI / 4) * (1 - w); m.lookAt(tmp.copy(m.position).addScaledVector(car.out, Math.cos(t)).addScaledVector(car.d, -Math.sin(t))); }
+        else m.lookAt(tmp.copy(m.position).add(car.out));
         if (isF) {
           const age = (now - car.swingT) / 1000;
           if (age < 1.6) m.rotateZ(Math.sin(age * 7) * 0.08 * Math.exp(-age * 2.4));
           if (closeAmt > 0) m.rotateY(yaw * closeAmt);
         }
         const op = (1 - smooth(L - (side ? 1.5 : 0.7), L, ad)) * (isActive && !isF ? 1 - 0.85 * closeAmt : 1);
-        const face = side ? w : 1, sd = m.userData.side; // de côté : le devant n'apparaît que sur la pièce choisie
+        const face = 1, sd = m.userData.side; // la photo se voit toujours (de biais sur le portant), plus de profil
         m.userData.mats.forEach((mt) => (mt.opacity = op * face));
         m.children[0].visible = m.children[1].visible = face > 0.01;
         if (sd) { sd.material.opacity = op * (1 - face); sd.visible = face < 0.99; }
@@ -1272,9 +1501,11 @@ export function startWalk(root, o) {
 
     // Glisser : faire défiler le rayon, ou tourner l'article en gros plan. Toucher : avancer un article / fiche en grand.
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+    ray.params.Line.threshold = 0.01; // les arêtes de la cloche de verre ne bloquent pas le toucher
     let drag = null;
-    canvas.addEventListener("pointerdown", (e) => { if (!active) return; drag = { x: e.clientX, f0: cars[active].f, y0: yaw, moved: 0 }; try { canvas.setPointerCapture(e.pointerId); } catch { /* ignoré */ } }, sig);
+    canvas.addEventListener("pointerdown", (e) => { if (!active) { exploreDown(e); return; } drag = { x: e.clientX, f0: cars[active].f, y0: yaw, moved: 0 }; try { canvas.setPointerCapture(e.pointerId); } catch { /* ignoré */ } }, sig);
     canvas.addEventListener("pointermove", (e) => {
+      if (!active) { exploreMove(e); return; }
       if (!drag) return; const dx = e.clientX - drag.x; drag.moved = Math.max(drag.moved, Math.abs(dx));
       if (drag.moved > 6) {
         dragging = true;
@@ -1284,6 +1515,7 @@ export function startWalk(root, o) {
       }
     }, sig);
     const endDrag = (e) => {
+      if (!active) { exploreUp(e); return; }
       if (!drag) return; const c = cars[active];
       if (drag.moved <= 6 && e.type === "pointerup") {
         const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
@@ -1296,6 +1528,109 @@ export function startWalk(root, o) {
     canvas.addEventListener("pointerup", endDrag, sig);
     canvas.addEventListener("pointercancel", endDrag, sig);
 
+    /* Visite libre à 360° (plan #109, Rhamone 9 nov. : « une expérience en 360 qui te fait tourner la tête dans une
+       boutique », « aller où tu veux avec les doigts ou la souris et cliquer sur les articles sans forcément passer par
+       Rayons »). Hors d'un rayon : glisser tourne le regard (jamais de fiche après avoir tourné), toucher le sol y
+       emmène en contournant l'îlot, toucher un article ouvre son rayon (l'article devant soi), toucher le panneau d'un rayon l'ouvre.
+       Au clavier : ← → tournent, ↑ ↓ avancent et reculent. « Rayons » reste un raccourci. */
+    // Surface praticable : loin des portants (articles tirés vers soi), des étagères du fond, de l'îlot et des mannequins.
+    const FREE = { x: 4.4, zFront: -0.7, zBack: -14.2 }, ISLE = { x0: -2.3, x1: 2.3, z0: -10.6, z1: -7.0 };
+    const DUMMIES = [[-3.6, -0.7], [4.3, -13.9], [-1.95, -14.6], [1.95, -14.6]];
+    function walkable(x, z) {
+      x = clamp(x, -FREE.x, FREE.x); z = clamp(z, FREE.zBack, FREE.zFront);
+      if (x > ISLE.x0 && x < ISLE.x1 && z > ISLE.z0 && z < ISLE.z1) { // sortir de l'îlot par le bord le plus proche
+        const d = [[x - ISLE.x0, ISLE.x0, z], [ISLE.x1 - x, ISLE.x1, z], [z - ISLE.z0, x, ISLE.z0], [ISLE.z1 - z, x, ISLE.z1]].sort((a, b) => a[0] - b[0])[0];
+        x = d[1]; z = d[2];
+      }
+      DUMMIES.forEach(([mx, mz]) => { const dx = x - mx, dz = z - mz, d = Math.hypot(dx, dz); if (d < 0.9) { const k = 0.9 / Math.max(d, 0.01); x = mx + dx * k; z = mz + dz * k; } });
+      return [clamp(x, -FREE.x, FREE.x), clamp(z, FREE.zBack, FREE.zFront)];
+    }
+    // Repère de destination : un anneau discret au sol, qui s'efface à l'arrivée.
+    const marker = add(new THREE.RingGeometry(0.16, 0.2, 32), basic({ color: new THREE.Color(st.bg), transparent: true, opacity: 0.85, depthWrite: false }), 0, 0.01, 0);
+    marker.rotation.x = -Math.PI / 2; marker.visible = false;
+    const dirOf = () => tmp2.subVectors(cam.look, cam.pos).normalize();
+    function aim(yawA, pitchA) { // regard horizontal libre, un peu vers le haut ou le bas, jamais retourné
+      const p = clamp(pitchA, -0.65, 0.5);
+      cam.look.set(cam.pos.x + Math.sin(yawA) * Math.cos(p) * 8, cam.pos.y + Math.sin(p) * 8, cam.pos.z - Math.cos(yawA) * Math.cos(p) * 8);
+      kick();
+    }
+    const angles = () => { const d = dirOf(); return { yaw: Math.atan2(d.x, -d.z), pitch: Math.asin(clamp(d.y, -1, 1)) }; };
+    let saved = null; // endroit et regard d'où l'on est parti vers un rayon : on y revient en sortant du rayon
+    function walkTo(x, z, toLook, cb) {
+      const [tx, tz] = walkable(x, z), a = [cam.pos.x, cam.pos.z];
+      const d = dirOf(), look = toLook || V(tx + d.x * 8, 1.5, tz + d.z * 8);
+      marker.position.set(tx, 0.01, tz); marker.visible = !toLook;
+      if (RM || dist2(a, [tx, tz]) < 0.05) { cam.walk = null; cam.pos.set(tx, 1.6, tz); cam.look.copy(look); marker.visible = false; kick(); if (cb) cb(); return; }
+      const curve = new THREE.CatmullRomCurve3(route(a, [tx, tz]).map(([px, pz]) => V(px, 1.65, pz)), false, "centripetal"), len = curve.getLength();
+      cam.walk = { curve, len, t0: performance.now(), dur: clamp(len / 3.2, 0.35, 1.4) * 1000, fromLook: cam.look.clone(), toLook: look, cb: () => { marker.visible = false; if (cb) cb(); } };
+      kick();
+    }
+    let ex = null;
+    const pointers = new Set();
+    function exploreDown(e) {
+      pointers.add(e.pointerId);
+      if (pointers.size > 1) { if (ex) ex.multi = true; return; } // deux doigts : ni tour ni toucher
+      ex = { x: e.clientX, y: e.clientY, moved: 0, ...angles(), multi: false };
+      try { canvas.setPointerCapture(e.pointerId); } catch { /* ignoré */ }
+    }
+    function exploreMove(e) {
+      if (!ex || ex.multi || cam.walk) return;
+      const dx = e.clientX - ex.x, dy = e.clientY - ex.y; ex.moved = Math.max(ex.moved, Math.hypot(dx, dy));
+      if (ex.moved > 6) { dragging = true; aim(ex.yaw - dx * 0.0055, ex.pitch + dy * 0.0045); gesture("look"); }
+    }
+    function exploreUp(e) {
+      pointers.delete(e.pointerId);
+      const t = ex; if (pointers.size === 0) { ex = null; dragging = false; }
+      storeEl.dataset.pick = !t ? "sans-appui" : t.multi ? "deux-doigts" : t.moved > 6 ? "glisse" : cam.walk ? "en-marche" : "";
+      if (!t || t.multi || t.moved > 6 || e.type !== "pointerup" || cam.walk) return; // après avoir tourné : jamais de fiche
+      const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      // Premier objet vraiment touché : on ne clique pas à travers un mur, un meuble ou le verre de l'îlot.
+      const all = ray.intersectObjects(scene.children, true);
+      const hit = all.find((h) => {
+        const o = h.object;
+        // Un article : touché sur toute sa largeur de face, même quand on le voit de profil sur le portant (bande fine).
+        if (o.parent && o.parent.userData.it) return o.parent.visible;
+        if (!o.visible || o === marker) return false;
+        const m = o.material; return !(m && m.transparent && !o.userData.cat && (m.opacity ?? 1) < 0.5);
+      });
+      storeEl.dataset.pick = hit ? (hit.object.parent?.userData.it ? "article" : hit.object.userData.cat ? "panneau" : hit.object === floor || hit.point.y < 0.08 ? "sol" : "autre") : "rien"; // lu par le test téléphone
+      // Porte : sortir devant la même boutique ; écran : le rayon de la pièce du look affiché.
+      const act = hit && hit.object.userData.action;
+      if (act === "exit") { storeEl.dataset.pick = "porte"; closeLayer("store"); return; }
+      if (act === "look") {
+        const l = looks[hit.object.userData.k], [slug, cat] = l.items[0]; storeEl.dataset.pick = "ecran";
+        if (cars[cat]) { api.onPickRayon(cat, slug); return; }
+      }
+      // Vêtement visé à l'écran : un toucher près d'un article le prend (zone généreuse au doigt), s'il n'est pas
+      // derrière un mur ou un meuble (plus loin que ce que le rayon a touché).
+      const tapX = e.clientX - r.left, tapY = e.clientY - r.top, wallD = hit ? hit.distance + 0.3 : Infinity;
+      let best = null;
+      Object.values(cars).forEach((car) => car.meshes.forEach((m) => {
+        if (!m.visible) return;
+        m.getWorldPosition(tmp); const dCam = tmp.distanceTo(camera.position); if (dCam > wallD) return;
+        const h = car.cfg.size[1] * m.scale.y / 2;
+        tmp.project(camera); if (tmp.z > 1) return;
+        const sx = (tmp.x + 1) / 2 * r.width, sy = (1 - tmp.y) / 2 * r.height;
+        m.getWorldPosition(tmp); tmp.y += h; tmp.project(camera);
+        const rad = Math.max(40, Math.abs((1 - tmp.y) / 2 * r.height - sy)), dd = Math.hypot(tapX - sx, tapY - sy);
+        if (dd < rad && (!best || dd / rad < best.q)) best = { q: dd / rad, cat: car.cat, it: m.userData.it };
+      }));
+      if (best) { storeEl.dataset.pick = "article"; gesture("pick"); api.onPickRayon(best.cat, best.it.slug); return; }
+      if (!hit) return;
+      const o = hit.object, it = o.parent && o.parent.userData.it;
+      // Toucher un vêtement ouvre son rayon, ce vêtement devant soi (Rhamone, 9 nov. : « accès au rayon, pas à l'habit »).
+      if (it) { gesture("pick"); api.onPickRayon(o.parent.userData.cat, it.slug); return; }
+      if (o.userData.cat && o.userData.stocked) { api.onPickRayon(o.userData.cat); return; }
+      if (o === floor || hit.point.y < 0.08) { gesture("move"); walkTo(hit.point.x, hit.point.z); }
+    }
+    window.addEventListener("keydown", (e) => {
+      if (storeEl.hidden || active || cam.walk || e.target.closest?.("input, textarea, [role=dialog] .f-body")) return;
+      const k = e.key, a = angles();
+      if (k === "ArrowLeft" || k === "ArrowRight") { e.preventDefault(); aim(a.yaw + (k === "ArrowLeft" ? -0.35 : 0.35), a.pitch); }
+      else if (k === "ArrowUp" || k === "ArrowDown") { e.preventDefault(); const d = dirOf(), s = k === "ArrowUp" ? 1.5 : -1.5; walkTo(cam.pos.x + d.x * s, cam.pos.z + d.z * s); }
+    }, sig);
+
     function resize() {
       const w = storeEl.clientWidth || innerWidth, h = storeEl.clientHeight || innerHeight, a = w / h;
       renderer.setPixelRatio(pixelRatio(w, h)); renderer.setSize(w, h, false); camera.aspect = a; camera.fov = a < 1 ? 72 : 56; camera.updateProjectionMatrix();
@@ -1306,6 +1641,14 @@ export function startWalk(root, o) {
 
     const api = {
       brand: st.name, place, walk, resize,
+      /** Construit la galerie vue par la porte, une fois, juste après l'entrée. */
+      gallery() { if (galleryDone || dead) return; galleryDone = true; buildGallery(); kick(); },
+      /** Retient l'endroit et le regard actuels (avant d'aller à un rayon). */
+      remember() { saved = { x: cam.pos.x, z: cam.pos.z, look: cam.look.clone() }; },
+      /** Revient à l'endroit retenu (en sortant d'un rayon), sinon au centre. */
+      walkBack(cb) { if (saved) { const s = saved; saved = null; walkTo(s.x, s.z, s.look, cb); } else walk("hub", cb); },
+      /** Toucher un vêtement ou le panneau d'un rayon dans la visite libre : ce rayon, ce vêtement devant soi. */
+      onPickRayon: (cat, slug) => goZone(cat, slug),
       /** Prépare l'affichage (shaders) en coulisse, pour que la première image soit immédiate à l'entrée. */
       warm() { try { place("hub"); renderer.compile(scene, camera); } catch { /* ignoré */ } },
       setActive(cat) { if (closeT && api.onZoom) api.onZoom(false); active = cat; watermark(cat); if (cat) cars[cat].last = null; closeT = closeAmt = 0; yaw = 0; $("#iClose").textContent = "Tourner"; kick(); },
@@ -1347,6 +1690,11 @@ export function startWalk(root, o) {
     const i = SHOP_NAMES.indexOf(back.brand);
     if (i >= 0) openWalk(i);
     openStore(back.brand, { fromWalk: i >= 0 }).then(() => { if (back.cat && !storeEl.hidden) goZone(back.cat); });
+  } else if (o.startInside) {
+    // Adresse avec ?dans / ?rayon : on rouvre la boutique (et le rayon, l'article) au lieu de la façade.
+    const brand = o.startStore || SHOP_NAMES[o.startShop], i = SHOP_NAMES.indexOf(brand);
+    if (i >= 0) openWalk(i);
+    openStore(brand, { fromWalk: i >= 0 }).then(() => { if (o.startRayon && !storeEl.hidden && rayons().some(([id]) => id === o.startRayon.cat)) goZone(o.startRayon.cat, o.startRayon.slug); });
   } else if (o.startStore) openStore(o.startStore, { fromWalk: false });
   else openWalk(typeof o.startShop === "number" ? o.startShop : resumeShop()); // revenir : pas besoin de refaire le tour
 
