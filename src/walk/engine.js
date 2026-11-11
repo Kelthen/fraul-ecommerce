@@ -1246,26 +1246,29 @@ export function startWalk(root, o) {
     if (looks.length) {
       // Vrai écran mural : la surface prend exactement les proportions de la photo (personnage entier, sans marge ni
       // étirement), cadre noir fin et brillant (Rhamone, 9 nov. : le cadre gris épais faisait « boîte »).
-      // Encastré au milieu du pan de mur à gauche de la porte (vu de l'intérieur), affleurant, avec un halo de lumière sur le mur.
+      // Encastré au milieu du pan de mur à gauche de la porte (vu de l'intérieur), affleurant. Plus de halo sur le mur :
+      // il faisait une tache claire autour de l'écran (Rhamone, 11 nov.).
       // Hauteur de la porte, du sol au haut de la porte (dessin de Rhamone, 9 nov.) ; largeur donnée par la photo.
       const H = DOOR_H - 0.06, cx = DOOR_W / 2 + sideW / 2, B = 0.022;
-      const halo = face(add(new THREE.PlaneGeometry(1, 1), basic({ map: U.glowTex(true), transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }), cx, 0.03 + H / 2, INSIDE - 0.002));
       const bezel = add(new THREE.BoxGeometry(1, 1, 0.02), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/champagne.jpg", 1, 1), color: 0x161616, roughness: 0.25, metalness: 0.5, envMap, envMapIntensity: 0.8 }), cx, 0.03 + H / 2, INSIDE - 0.004);
       const [c, x] = U.cv(512, 768), tex = U.T(c);
       screen = face(add(new THREE.PlaneGeometry(1, 1), basic({ map: tex }), cx, 0.03 + H / 2, INSIDE - 0.016));
       screen.userData = { action: "look", k: 0 };
-      const size = (ar) => { const W = H * ar; screen.scale.set(W, H, 1); bezel.scale.set(W + 2 * B, H + 2 * B, 1); halo.scale.set(W * 1.9, H * 1.35, 1); };
+      const size = (ar) => { const W = H * ar; screen.scale.set(W, H, 1); bezel.scale.set(W + 2 * B, H + 2 * B, 1); };
       size(2 / 3);
       const show = (k) => {
         const l = looks[k % looks.length]; screen.userData.k = k % looks.length;
         const im = webImage();
         im.onload = () => {
-          const ar = clamp(im.width / im.height, 0.4, 0.8); size(ar);
-          c.width = 512; c.height = Math.round(512 / ar);
+          // Le personnage ne remplit plus tout l'écran (Rhamone, 11 nov.) : 84 % de la hauteur, centré, avec de l'air
+          // autour ; l'écran s'élargit d'autant pour garder la même marge sur les côtés.
+          const ar = clamp(im.width / im.height, 0.4, 0.8), FILL = 0.84, sar = clamp(ar * 1.18, 0.5, 0.95); size(sar);
+          c.width = 512; c.height = Math.round(512 / sar);
           // Photo détourée (transparente) : fond clair de studio derrière le personnage, jamais de noir.
           const g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, "#f1efea"); g.addColorStop(1, "#dedad2");
           x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
-          x.drawImage(im, 0, 0, c.width, c.height); tex.needsUpdate = true; kick();
+          const ph = c.height * FILL, pw = ph * ar;
+          x.drawImage(im, (c.width - pw) / 2, (c.height - ph) / 2, pw, ph); tex.needsUpdate = true; kick();
         };
         im.src = l.photo;
       };
