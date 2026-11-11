@@ -44,6 +44,7 @@ let REFLECTOR = null;
  * @param {HTMLElement} root
  * @param {object} o  options : shops, allBrands, categories, getItems, formatPrice, fonts,
  *                    onAdd, onExit, onFallback, onFiche, onConcierge, startShop, startStore,
+ *                    startInside (entrer tout de suite dans la boutique), startRayon ({ cat, slug } : rayon et article à rouvrir),
  *                    mode (forme du mall, src/walk/modes ; « t » par défaut),
  *                    hour (heure décimale pour la lumière ; par défaut l'heure locale du visiteur),
  *                    reflet (false : sol sans reflet du mall, pour comparer sur la preview avec ?reflet=0)
@@ -98,6 +99,7 @@ export function startWalk(root, o) {
   const slugOf = (name) => (o.allBrands.find((b) => b.name === name) || {}).slug;
 
   const CATS = o.categories.map((c) => [c.id, c.label]);
+  const catSlug = (id) => (o.categories.find((c) => c.id === id) || {}).slug || id;
   const catLabel = (c) => CATS.find((x) => x[0] === c)[1];
   const pcache = {};
   const products = (brand, cat) => pcache[brand + "|" + cat] || (pcache[brand + "|" + cat] = o.getItems(brand, cat));
@@ -1051,21 +1053,35 @@ export function startWalk(root, o) {
     title();
     const cats = $("#sCats"); cats.textContent = ""; rayons().forEach(([id, l]) => cats.append(btn("s-cat", l, { cat: id })));
     // On arrive directement au centre, devant le choix des rayons (plus de marche depuis la porte).
-    STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub");
+    STORE.resize(); STORE.setActive(null); STORE.place("hub"); sUI("hub"); syncUrl();
     setTimeout(() => { if (STORE && STORE.brand === brand && !storeEl.hidden) STORE.gallery(); }, 800); // la galerie derrière soi, une fois entré
   }
   /** Durée du fondu à l'entrée et à la sortie d'une boutique (ms). */
   const FADE_MS = 150;
+  /** L'adresse dit où l'on est (11 nov. : Safari iPhone rechargeait la page et renvoyait devant la boutique) :
+   *  /walk/<marque>?dans=1 dans la boutique, ?rayon=<rayon>&article=<article> dans un rayon. replaceState : le bouton
+   *  retour garde ses couches (controllers/history.ts), seule l'adresse affichée change. */
+  function syncUrl(it) {
+    if (dead) return;
+    const u = new URL(location.href);
+    ["dans", "rayon", "article"].forEach((k) => u.searchParams.delete(k));
+    const shop = !storeEl.hidden && sBrand && slugOf(sBrand);
+    if (shop) {
+      u.pathname = `/walk/${shop}`;
+      if (sCat) { u.searchParams.set("rayon", catSlug(sCat)); if (it) u.searchParams.set("article", it.slug); } else u.searchParams.set("dans", "1");
+    }
+    if (u.href !== location.href) try { history.replaceState(history.state, "", u); } catch { /* ignoré */ }
+  }
   function closeStore() {
     if (storeEl.hidden) return;
-    storeEl.hidden = true; storeOpen = false; trapUpdate();
+    storeEl.hidden = true; storeOpen = false; trapUpdate(); syncUrl();
     if (sFromWalk && walkOpen) { $("#veil").style.opacity = 0; if (MALL) MALL.kick(); }
     else if (!walkOpen) openWalk(Math.max(0, SHOP_NAMES.indexOf(sBrand)));
     giveBack(storeFrom, $("#enter"));
   }
   // Rayon : animé = on marche jusqu'au centre ; sinon on remet juste l'état (la boutique se ferme derrière).
   function closeRayon(anim) {
-    sCat = null; STORE.setActive(null); title(); sUI("walk");
+    sCat = null; STORE.setActive(null); title(); sUI("walk"); syncUrl();
     if (anim) STORE.walkBack(() => sUI("hub")); // retour là où l'on était dans la boutique (visite libre), sinon au centre
   }
   function goZone(cat, slug) {
@@ -1083,6 +1099,7 @@ export function startWalk(root, o) {
     $("#iBrand").textContent = `${sBrand} · ${catLabel(cat)}`;
     // Rayon sans article pour cette marque : on le dit simplement, sans boutons d'achat.
     const empty = !it; $("#sInfo").classList.toggle("empty", empty); $("#sPrev").hidden = $("#sNext").hidden = empty;
+    syncUrl(it);
     if (empty) { $("#iName").textContent = "Rien ici pour l'instant."; renderElse(cat); return; }
     $("#iName").textContent = it.n; $("#iPrice").textContent = o.formatPrice(it.p);
     $("#iCount").textContent = `${k + 1} / ${STORE.count(cat)}`;
@@ -1665,6 +1682,11 @@ export function startWalk(root, o) {
     const i = SHOP_NAMES.indexOf(back.brand);
     if (i >= 0) openWalk(i);
     openStore(back.brand, { fromWalk: i >= 0 }).then(() => { if (back.cat && !storeEl.hidden) goZone(back.cat); });
+  } else if (o.startInside) {
+    // Adresse avec ?dans / ?rayon : on rouvre la boutique (et le rayon, l'article) au lieu de la façade.
+    const brand = o.startStore || SHOP_NAMES[o.startShop], i = SHOP_NAMES.indexOf(brand);
+    if (i >= 0) openWalk(i);
+    openStore(brand, { fromWalk: i >= 0 }).then(() => { if (o.startRayon && !storeEl.hidden && rayons().some(([id]) => id === o.startRayon.cat)) goZone(o.startRayon.cat, o.startRayon.slug); });
   } else if (o.startStore) openStore(o.startStore, { fromWalk: false });
   else openWalk(typeof o.startShop === "number" ? o.startShop : resumeShop()); // revenir : pas besoin de refaire le tour
 

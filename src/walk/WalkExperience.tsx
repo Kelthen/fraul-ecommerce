@@ -19,7 +19,7 @@ export type WalkItem = [string, string, PriceTable, string, string[], FicheItem[
 export type WalkData = {
   shops: { name: string; slug: string; style: BrandStyle }[];
   allBrands: { name: string; slug: string; style: BrandStyle }[];
-  categories: Pick<Category, "id" | "label" | "sizes">[];
+  categories: Pick<Category, "id" | "slug" | "label" | "sizes">[];
   /** Articles par marque puis par rayon. */
   items: Record<string, Partial<Record<CategoryId, WalkItem[]>>>;
   /** Looks de l'accueil par boutique : photo, titre, pièces de cette marque [slug, rayon]. */
@@ -85,6 +85,11 @@ export function WalkExperience({ data, startBrand }: Props) {
     const hour = hq !== null && Number(hq) >= 0 && Number(hq) < 24 ? Number(hq) : undefined;
     // ?reflet=0 : sol sans reflet du mall (comparaison sur la preview, plan #109 lot 1).
     const reflet = new URLSearchParams(location.search).get("reflet") !== "0";
+    // ?dans=1, ?rayon=t-shirts&article=… : l'endroit écrit dans l'adresse par le moteur (rechargement, lien partagé).
+    const q = new URLSearchParams(location.search);
+    const rayonCat = data.categories.find((c) => c.slug === q.get("rayon"))?.id;
+    const startRayon = startBrand && rayonCat ? { cat: rayonCat, slug: q.get("article") || undefined } : undefined;
+    const startInside = Boolean(startBrand && (startRayon || q.get("dans") === "1"));
 
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -110,6 +115,8 @@ export function WalkExperience({ data, startBrand }: Props) {
       reflet,
       startShop: shopIndex >= 0 ? shopIndex : undefined,
       startStore: shopIndex < 0 ? startName : undefined,
+      startInside,
+      startRayon,
     }));
 
     return () => {

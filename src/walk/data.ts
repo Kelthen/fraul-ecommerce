@@ -30,7 +30,7 @@ export async function getWalkData(): Promise<WalkData> {
   return {
     shops: shops.map(pick),
     allBrands: brands.map(pick),
-    categories: CATEGORIES.filter((c) => inStore(c.id)).map(({ id, label, sizes }) => ({ id, label, sizes })),
+    categories: CATEGORIES.filter((c) => inStore(c.id)).map(({ id, slug, label, sizes }) => ({ id, slug, label, sizes })),
     items,
     looks,
   };
