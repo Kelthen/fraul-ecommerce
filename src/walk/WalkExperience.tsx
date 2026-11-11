@@ -22,6 +22,8 @@ export type WalkData = {
   categories: Pick<Category, "id" | "label" | "sizes">[];
   /** Articles par marque puis par rayon. */
   items: Record<string, Partial<Record<CategoryId, WalkItem[]>>>;
+  /** Looks de l'accueil par boutique : photo, titre, pièces de cette marque [slug, rayon]. */
+  looks?: Record<string, { photo: string; title: string; items: [string, CategoryId][] }[]>;
 };
 
 type Props = { data: WalkData; startBrand?: string };
@@ -97,6 +99,7 @@ export function WalkExperience({ data, startBrand }: Props) {
         const b = brandOf(brandName);
         return (b ? data.items[b.slug]?.[cat] ?? [] : []).map((r) => toItem(data, brandName, cat, r));
       },
+      getLooks: (brandName: string) => { const b = brandOf(brandName); return b ? data.looks?.[b.slug] ?? [] : []; },
       onAdd: (it: { slug: string; n: string; p: PriceTable; c: string; a: string; brand: string; cat: string; sizes: string[]; photos: FicheItem["photos"] }, size?: string) =>
         addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }),
       onExit: () => router.push("/"),
@@ -239,6 +242,8 @@ export function WalkExperience({ data, startBrand }: Props) {
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
           </button>
         </div>
+        {/* Visite libre (#109) : disparaît dès qu'on a tourné le regard une fois. */}
+        <p className="look-hint">Glisse pour regarder autour · touche le sol pour avancer · touche un vêtement pour son rayon</p>
         <div className="s-bottom" id="sBottom" hidden>
           {/* Rayons en liste verticale sur le décor, façon menu de jeu (Rhamone, 21 oct.) ; aussi dans chaque rayon,
               dans un coin (22 oct.) : en bas à gauche sur PC, repliée derrière « Rayons » sur téléphone. */}
