@@ -189,3 +189,11 @@
 .fw .c-lines li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fw .c-lines i { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(10, 10, 12, .2); }
 .fw .c-lines .more { color: var(--muted); }
+
+/* La carte graphique a décroché (mémoire, veille) : fond ivoire et loader le temps qu'elle revienne, jamais d'écran gris.
+   Un seul pseudo-élément : l'anneau qui tourne, et son ombre géante qui couvre la scène. */
+.fw .gl-wait::before { content: ""; position: absolute; z-index: 6; left: 50%; top: 50%; width: 36px; height: 36px; margin: -18px 0 0 -18px;
+  border-radius: 50%; border: 2px solid rgba(66, 10, 13, 0.18); border-top-color: var(--bordeaux, #680209);
+  box-shadow: 0 0 0 200vmax var(--ivory, #fffef7); animation: gl-spin 0.9s linear infinite; pointer-events: none; }
+@keyframes gl-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fw .gl-wait::before { animation-duration: 3s; } }

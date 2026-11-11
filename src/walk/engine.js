@@ -51,6 +51,12 @@ let REFLECTOR = null;
  */
 export function startWalk(root, o) {
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* Mémoire 3D (11 nov., Safari iPhone rechargeait la page dans un rayon : mémoire graphique saturée).
+     Téléphone : dalles en 1024 px au lieu de 2048 (4 fois moins de mémoire). Une matière chargée une seule fois et
+     partagée : la taille des dalles se règle sur la géométrie (tileUV), pas sur une copie de la texture. */
+  const SMALL = Math.min(screen.width, screen.height) < 700;
+  const texUrl = (u) => (SMALL ? u.replace("/dalles.jpg", "/dalles-1024.jpg") : u);
+  const tileUV = (geo, sx, sy) => { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * sx, uv.getY(i) * sy); uv.needsUpdate = true; return geo; };
   const $ = (s) => root.querySelector(s);
   const life = new AbortController();
   const on = (el, ev, fn, opts = {}) => el.addEventListener(ev, fn, { ...opts, signal: life.signal });
@@ -65,9 +71,14 @@ export function startWalk(root, o) {
    */
   function survive(canvas, redraw, giveUp) {
     let t = 0;
-    canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); clearTimeout(t); t = setTimeout(giveUp, 4000); }, { signal: life.signal });
-    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); redraw(); }, { signal: life.signal });
+    // Pendant l'attente : un fond et un loader au lieu d'un écran gris (11 nov.).
+    const wait = (on) => canvas.parentElement && canvas.parentElement.classList.toggle("gl-wait", on);
+    canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); wait(true); clearTimeout(t); t = setTimeout(() => { wait(false); giveUp(); }, 4000); }, { signal: life.signal });
+    canvas.addEventListener("webglcontextrestored", () => { clearTimeout(t); wait(false); redraw(); }, { signal: life.signal });
   }
+  /** Mémoire graphique, lue à chaque changement de vue avec ?debug3d dans l'adresse : elle ne doit pas grimper. */
+  const DEBUG3D = /[?&]debug3d\b/.test(location.search);
+  const memLog = (label, r) => { if (DEBUG3D && r) console.info(`[3d] ${label}`, JSON.stringify(r.info.memory)); };
   let dead = false;
 
   /* ===== Gabarit de marque (polices du site passées en options) ===== */
@@ -305,6 +316,9 @@ export function startWalk(root, o) {
         if ((hang || clip) && clean) hanger(x, px0, py0, w, h, clip);
         tex.needsUpdate = true; onLoad();
       };
+      // Réseau du téléphone qui flanche : on réessaie une fois au lieu de laisser le portant vide.
+      let retried = false;
+      img.onerror = () => { if (retried) return; retried = true; setTimeout(() => { img.src = src + (src.includes("?") ? "&" : "?") + "r=1"; }, 1500); };
       img.src = src;
       return tex;
     }
@@ -647,7 +661,7 @@ export function startWalk(root, o) {
 
   function initMall() {
     const U = G(), canvas = $("#gl"), stage = $("#stage");
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: !SMALL, powerPreference: "high-performance" });
     renderer.outputEncoding = THREE.sRGBEncoding;
     survive(canvas, () => resize(), () => { walkEl.classList.add("nogl"); });
     // Lumière selon l'heure locale du visiteur (src/walk/models/daylight.ts) : jour, soir plus sombre et éclairé, jamais noir
@@ -670,14 +684,14 @@ export function startWalk(root, o) {
     const floorTex = (() => {
       const [c, x] = U.cv(1024, 1024), t = U.T(c);
       x.fillStyle = "#e3d9c9"; x.fillRect(0, 0, 1024, 1024);
-      x.strokeStyle = "rgba(140,122,98,0.45)"; x.lineWidth = 2; [0, 512, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
+      x.strokeStyle = "rgba(140,122,98,0.45)"; x.lineWidth = 2; [0, 256, 512, 768, 1024].forEach((v) => { x.beginPath(); x.moveTo(v, 0); x.lineTo(v, 1024); x.moveTo(0, v); x.lineTo(1024, v); x.stroke(); });
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
     })();
     // Matières faites dans Blender (assets-src/blender/textures-mall.py) : dalles, pierre claire, champagne brossé.
     // Ce sont des couleurs (sRGB) : sans ce réglage, three.js les lit trop claires et le sol paraît délavé (#109, lot 1).
     // Le dessin ci-dessus reste affiché tant que la photo de la matière n'est pas chargée.
     const loader = new THREE.TextureLoader();
-    const colorTex = (url, then) => { const t = loader.load(url, (tx) => { then?.(tx); kick(); }); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t; };
+    const colorTex = (url, then) => { const t = loader.load(texUrl(url), (tx) => { then?.(tx); kick(); }); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t; };
     // Ambiance réfléchie (sol, métal, verre) : un petit mall lumineux flouté, calculé une fois. Bandeaux du plafond et vitrines
     // chaudes y brillent ; le soir, le fond s'assombrit mais les lumières restent. Ne reflète pas les boutiques : voir le reflet plus bas.
     const envMap = (() => {
@@ -689,17 +703,16 @@ export function startWalk(root, o) {
       [-1, 1].forEach((sd) => { for (let z = -18; z <= 18; z += 8.5) { const m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 4), glow(1, 0.86, 0.66, lerp(1.4, 2.2, n))); m.position.set(sd * 11.9, 2.2, z); m.rotation.y = -sd * Math.PI / 2; es.add(m); } });
       const rt = pm.fromScene(es, 0.035); pm.dispose(); return rt.texture;
     })();
-    const floorAt = (w, d) => {
-      const t = floorTex.clone(); t.needsUpdate = true; t.repeat.set(w / 2.4, d / 2.4);
-      const m = new THREE.MeshStandardMaterial({ map: t, color: 0xbdb3a4, roughness: 0.28, metalness: 0, envMap, envMapIntensity: 0.5 });
-      colorTex("/textures/mall/dalles.jpg", (tx) => { tx.repeat.set(w / 4.8, d / 4.8); m.map = tx; m.needsUpdate = true; });
-      return m;
-    };
+    // Un seul sol pour toute la galerie : une matière, une texture de dalles (le dessin ci-dessus en attendant), la taille
+    // des dalles (4 par 4,80 m) réglée sur chaque surface par tileUV.
+    const floorM = new THREE.MeshStandardMaterial({ map: floorTex, color: 0xbdb3a4, roughness: 0.28, metalness: 0, envMap, envMapIntensity: 0.5 });
+    colorTex("/textures/mall/dalles.jpg", (tx) => { floorM.map = tx; floorM.needsUpdate = true; floorTex.dispose(); });
+    const floorAt = (w, d) => { const m = flat(scene, w, d, floorM, 0, 0, 0); tileUV(m.geometry, w / 4.8, d / 4.8); return m; };
     const facadeTex = { stone: colorTex("/textures/mall/pierre.jpg"), metal: colorTex("/textures/mall/champagne.jpg"), env: envMap };
     facadeTex.stone.repeat.set(2, 3);
     const ceilM = lam(0xfbfaf6), wallM = lam(0xefe9df), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    flat(scene, 2 * BAR_X, -BAR_Z, floorAt(2 * BAR_X, -BAR_Z), 0, 0, BAR_Z / 2);
-    flat(scene, 2 * STEM_X, STEM_END, floorAt(2 * STEM_X, STEM_END), 0, 0, STEM_END / 2);
+    floorAt(2 * BAR_X, -BAR_Z).position.z = BAR_Z / 2;
+    floorAt(2 * STEM_X, STEM_END).position.z = STEM_END / 2;
     flat(scene, 2 * BAR_X, -BAR_Z, ceilM, 0, CEIL, BAR_Z / 2, false);
     flat(scene, 2 * STEM_X, STEM_END, ceilM, 0, CEIL, STEM_END / 2, false);
     // Incrustations de sol (allée) couleur perle
@@ -1027,6 +1040,7 @@ export function startWalk(root, o) {
     if (!ok) { o.onFallback(slugOf(brand)); return; }
     try {
       if (!STORE || STORE.brand !== brand) { if (STORE) STORE.dispose(); STORE = buildStore(styleOf(brand)); }
+      memLog(`boutique ${brand}`, SR && SR.renderer);
     } catch { STORE = null; o.onFallback(slugOf(brand)); return; }
     if (brand !== sBrand) lastCat = null;
     sBrand = brand; sFromWalk = fromWalk; sCat = null;
@@ -1116,7 +1130,7 @@ export function startWalk(root, o) {
   function buildStore(st) {
     const U = G();
     if (!SR) {
-      const canvas = $("#sgl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+      const canvas = $("#sgl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: !SMALL, powerPreference: "high-performance" });
       renderer.outputEncoding = THREE.sRGBEncoding; renderer.setClearColor(0xf3efe8);
       survive(canvas, () => STORE && STORE.resize(), () => { if (!storeEl.hidden) o.onFallback(slugOf(sBrand)); });
       SR = { canvas, renderer, camera: new THREE.PerspectiveCamera(60, 1, 0.05, 80) };
@@ -1143,7 +1157,9 @@ export function startWalk(root, o) {
        mall validé (dalles ivoire, pierre claire, champagne), éclairées pour de vrai au lieu d'aplats peints ; les ombres
        au pied des murs et des meubles restent peintes, sur une couche à part. L'ambiance de chaque architecture est gardée. */
     const texL = new THREE.TextureLoader();
-    const colorMap = (url, rx, ry) => { const t = texL.load(url, () => kick()); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; return t; };
+    // Une texture par fichier et par répétition, gardée pour toutes les boutiques (avant : 3 copies des dalles en 2048 px).
+    const texCache = SR.tex || (SR.tex = new Map());
+    const colorMap = (url, rx, ry) => { const key = `${url}|${rx}|${ry}`; if (texCache.has(key)) return texCache.get(key); const t = texL.load(texUrl(url), () => kick()); texCache.set(key, t); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; return t; };
     // Ambiance réfléchie de la boutique (plafond clair, bandeaux et spots) : reflets doux sur le sol poli et le métal.
     // Calculée une seule fois pour toutes les boutiques (entrer doit rester immédiat).
     const envMap = SR.env || (SR.env = (() => {
@@ -1165,7 +1181,7 @@ export function startWalk(root, o) {
       add(new THREE.BoxGeometry(12, 0.09, 0.03), plinth, 0, 0.045, -15.985); add(new THREE.BoxGeometry(12, 0.025, 0.06), cove, 0, 4.12, -15.97);
     }
     { // Sol : les dalles ivoire du mall (grandes dalles, joints fins), reflet doux de l'éclairage.
-      floor = add(new THREE.PlaneGeometry(12, 16), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 12 / 4.8, 16 / 4.8), color: TINT.floor, roughness: 0.36, metalness: 0, envMap, envMapIntensity: 0.4 }), 0, 0, -8);
+      floor = add(tileUV(new THREE.PlaneGeometry(12, 16), 12 / 4.8, 16 / 4.8), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 1, 1), color: TINT.floor, roughness: 0.36, metalness: 0, envMap, envMapIntensity: 0.4 }), 0, 0, -8);
       floor.rotation.x = -Math.PI / 2;
       // Ombres peintes (couche transparente) : pied des murs, sous l'îlot et les mannequins ; reflets des bandeaux.
       const [c, x] = U.cv(512, 704), X = (v) => (v + 6) / 12 * 512, Y = (z) => (z + 16) / 16 * 704;
@@ -1205,7 +1221,7 @@ export function startWalk(root, o) {
         const s0 = SLOTS[k0], a0 = Math.atan2(s0.nx, s0.nz), ca = Math.cos(a0), sa = Math.sin(a0);
         const local = (x, z) => { const dx = x - s0.x, dz = z - s0.z; return [dx * ca - dz * sa, dx * sa + dz * ca]; };
         ext.visible = false; // le sol uni de secours laisse la place aux dalles de la galerie
-        const mallFloor = add(new THREE.PlaneGeometry(40, 34), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 40 / 4.8, 34 / 4.8), color: 0xbdb3a4, roughness: 0.3, envMap, envMapIntensity: 0.4 }), 0, -0.003, 17.2); mallFloor.rotation.x = -Math.PI / 2; // les dalles du mall
+        const mallFloor = add(tileUV(new THREE.PlaneGeometry(40, 34), 40 / 4.8, 34 / 4.8), new THREE.MeshStandardMaterial({ map: colorMap("/textures/mall/dalles.jpg", 1, 1), color: 0xbdb3a4, roughness: 0.3, envMap, envMapIntensity: 0.4 }), 0, -0.003, 17.2); mallFloor.rotation.x = -Math.PI / 2; // les dalles du mall
         const mallCeil = add(new THREE.PlaneGeometry(40, 34), basic({ color: 0xfbfaf6 }), 0, CEIL, 17.2); mallCeil.rotation.x = Math.PI / 2;
         [-3.5, 3.5].forEach((x) => add(new THREE.BoxGeometry(0.12, 0.03, 32), basic({ color: 0xffffff }), x, CEIL - 0.02, 17.2));
         const glow = U.glowTex(true);
