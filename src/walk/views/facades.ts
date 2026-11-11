@@ -12,11 +12,11 @@ type Opts = {
   /** Matières faites dans Blender : pierre claire et métal champagne brossé (facultatives). */
   tex?: { stone?: T.Texture; metal?: T.Texture; env?: T.Texture };
   /** Vitrine finie dans Blender (plan #109, lot 2 : assets-src/blender/vitrine-temoin.py) : cadre biseauté et socle en
-   *  pierre. Donnée seulement à la boutique témoin tant que Rhamone n'a pas validé la preview ; sinon les pavés d'avant. */
+   *  pierre. Toutes les boutiques depuis le lot 5 ; sans le fichier (chargement raté), les pavés d'avant. */
   kit?: { cadre: T.Mesh; socle: T.Mesh };
 };
 
-/** Dégradés dessinés une fois (verre et lumière de la vitrine témoin). */
+/** Dégradés dessinés une fois (verre et lumière de la vitrine finie). */
 const CACHE: Record<string, T.Texture> = {};
 function painted(THREE: typeof T, key: string, w: number, h: number, draw: (x: CanvasRenderingContext2D) => void): T.Texture {
   if (CACHE[key]) return CACHE[key];
@@ -105,7 +105,7 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex, kit }
     });
   };
 
-  // Vitrine témoin (lot 2) : mêmes cotes, mais cadre biseauté et socle en pierre de Blender, verre qu'on devine (reflets
+  // Vitrine finie (lot 2, posée partout au lot 5) : mêmes cotes, mais cadre biseauté et socle en pierre de Blender, verre qu'on devine (reflets
   // en biais très légers), lumière chaude qui descend sur le mannequin. Le mannequin et le fond lumineux viennent du moteur.
   const nicheFinie = (frame: T.Material) => {
     const back = new THREE.MeshLambertMaterial({ color: 0xf6eee1 });
