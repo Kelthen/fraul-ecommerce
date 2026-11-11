@@ -8,3 +8,6 @@ export const CONCIERGE_TEXT = { title: "Finds", sub: "Sur demande" };
 
 /** Enseigne du comptoir de la Caisse, dernier arrêt avant la sortie (décision de Rhamone, 18 oct. 2026). */
 export const CAISSE_TEXT = { title: "La Caisse", sub: "Ton sac avant de sortir" };
+
+/** Tableau au-dessus de la porte, côté intérieur d'une boutique (Rhamone, 9 nov. : en anglais, exception validée). */
+export const STORE_EXIT_TEXT = { line1: "Thank you.", line2: "See you soon." };
