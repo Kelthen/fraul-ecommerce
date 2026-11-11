@@ -27,6 +27,33 @@ def source(path):
     return urllib.request.urlopen(path, timeout=60).read()
 
 
+def clean_background(im, cut):
+    """Enlève le fond studio que rembg laisse parfois (ex. le blanc entre les manches sous l'ourlet, pull Stüssy,
+    Rhamone 11 nov.) : les pixels proches de la couleur du fond et reliés au bord de la photo deviennent transparents.
+    Seulement sur un fond clair et uni ; garde-fou : si cela retirait plus de 15 % du vêtement (vêtement blanc sur fond
+    blanc), on garde le résultat de rembg tel quel."""
+    import numpy as np
+    from scipy import ndimage
+    rgb = np.asarray(im, dtype=np.int16)
+    alpha = np.asarray(cut.getchannel("A")).copy()
+    rim = lambda m: np.concatenate([m[0], m[-1], m[:, 0], m[:, -1]])
+    bg = np.median(rim(rgb), axis=0)
+    near = np.abs(rgb - bg).sum(-1) < 36
+    if bg.sum() < 600 or rim(near).mean() < 0.92:
+        return cut  # pas un fond studio clair et uni : rien à corriger
+    labels, _ = ndimage.label(near)
+    edge = np.unique(rim(labels))
+    background = np.isin(labels, edge[edge > 0])
+    kept = alpha > 12
+    removed = background & kept
+    if removed.sum() > 0.15 * max(1, kept.sum()):
+        return cut
+    alpha[removed] = 0
+    from PIL import Image
+    cut.putalpha(Image.fromarray(alpha))
+    return cut
+
+
 def main():
     if not KEY:
         print("SUPABASE_SERVICE_ROLE_KEY absente : rien à faire.")
@@ -44,7 +71,7 @@ def main():
     for row in rows:
         try:
             im = Image.open(io.BytesIO(source(row["path"]))).convert("RGB")
-            cut = remove(im, session=session)
+            cut = clean_background(im, remove(im, session=session))
             box = cut.getchannel("A").point(lambda a: 255 if a > 12 else 0).getbbox()
             if box:
                 cut = cut.crop(box)
