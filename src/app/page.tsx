@@ -27,13 +27,8 @@ export default async function Home() {
       {looks.length > 0 && (
         // Hero de l'accueil : le défilé de looks (Rhamone, 11 nov. : « la partie les looks sera le hero »). Textes décidés par l'équipe, à confirmer.
         <section className="looks-hero wrap" id="looks" aria-labelledby="looks-title">
-          <div className="head">
-            <div>
-              <p className="eyebrow">Portés ensemble</p>
-              <h1 id="looks-title">Les looks</h1>
-            </div>
-            <p className="muted">Touche un look pour voir ses pièces.</p>
-          </div>
+          {/* Plus de bandeau de titre au-dessus des looks : les mannequins montent (Rhamone, 11 nov.). Titre lu seulement par les lecteurs d'écran. */}
+          <h1 id="looks-title" className="sr-only">Les looks TakeUrClothes</h1>
           <LooksStrip looks={looks} />
         </section>
       )}

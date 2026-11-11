@@ -30,6 +30,18 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
   const go = (d: number) => setIdx((i) => (i + d + n) % n);
   const look = looks[idx];
 
+  // Défilement tout seul (Rhamone, 11 nov.) : un look toutes les 5 s tant que personne ne touche ; après un geste,
+  // on attend 10 s. Arrêté quand les pièces sont ouvertes, quand l'onglet est caché ou si l'appareil réduit les animations.
+  const touched = useRef(0);
+  useEffect(() => {
+    if (n < 2 || open || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => {
+      if (document.hidden || Date.now() - touched.current < 10000) return;
+      setIdx((i) => (i + 1) % n);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [n, open]);
+
   // Téléphone : volet par le bas. Ordinateur : la liste reste à côté de la scène (pas de volet).
   useEffect(() => {
     const d = sheet.current;
@@ -58,7 +70,7 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
   );
 
   return (
-    <div className={open ? "looks-wrap is-open" : "looks-wrap"}>
+    <div className={open ? "looks-wrap is-open" : "looks-wrap"} onPointerDown={() => { touched.current = Date.now(); }}>
       <div
         className="looks-scene"
         onPointerDown={(e) => { start.current = e.clientX; swiped.current = false; }}
