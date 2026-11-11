@@ -1106,7 +1106,7 @@ export function startWalk(root, o) {
     const it = STORE.item(cat, k);
     $("#iBrand").textContent = `${sBrand} · ${catLabel(cat)}`;
     // Rayon sans article pour cette marque : on le dit simplement, sans boutons d'achat.
-    const empty = !it; $("#sInfo").classList.toggle("empty", empty); $("#sPrev").hidden = $("#sNext").hidden = empty;
+    const empty = !it; $("#sInfo").classList.toggle("empty", empty); $("#sPrev").hidden = $("#sNext").hidden = empty || STORE.count(cat) < 2; // un seul article : pas de flèches (Rhamone, 11 nov.)
     syncUrl(it);
     if (empty) { $("#iName").textContent = "Rien ici pour l'instant."; renderElse(cat); return; }
     $("#iName").textContent = it.n; $("#iPrice").textContent = o.formatPrice(it.p);
