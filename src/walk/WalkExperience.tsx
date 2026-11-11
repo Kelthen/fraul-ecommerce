@@ -245,9 +245,16 @@ export function WalkExperience({ data, startBrand }: Props) {
           <span className="s-title" id="sTitle">
             Boutique
           </span>
-          <button className="ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-          </button>
+          {/* Le panier aussi dans les boutiques, avec son nombre d'articles (Rhamone, 11 nov.). */}
+          <div className="ic-pair">
+            <button className="ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+            </button>
+            <Link className="ic" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>
+              {count > 0 && <span className="ic-n">{count}</span>}
+            </Link>
+          </div>
         </div>
         {/* Visite libre (#109) : disparaît dès qu'on a tourné le regard une fois. */}
         <p className="look-hint">Glisse pour regarder autour · touche le sol pour avancer · touche un vêtement pour son rayon</p>
