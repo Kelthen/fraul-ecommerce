@@ -30,6 +30,18 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
   const go = (d: number) => setIdx((i) => (i + d + n) % n);
   const look = looks[idx];
 
+  // Défilement tout seul (Rhamone, 11 nov.) : un look toutes les 5 s tant que personne ne touche ; après un geste,
+  // on attend 10 s. Arrêté quand les pièces sont ouvertes, quand l'onglet est caché ou si l'appareil réduit les animations.
+  const touched = useRef(0);
+  useEffect(() => {
+    if (n < 2 || open || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => {
+      if (document.hidden || Date.now() - touched.current < 10000) return;
+      setIdx((i) => (i + 1) % n);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [n, open]);
+
   // Téléphone : volet par le bas. Ordinateur : la liste reste à côté de la scène (pas de volet).
   useEffect(() => {
     const d = sheet.current;
@@ -58,7 +70,7 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
   );
 
   return (
-    <div className={open ? "looks-wrap is-open" : "looks-wrap"}>
+    <div className={open ? "looks-wrap is-open" : "looks-wrap"} onPointerDown={() => { touched.current = Date.now(); }}>
       <div
         className="looks-scene"
         onPointerDown={(e) => { start.current = e.clientX; swiped.current = false; }}
@@ -119,6 +131,18 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
         </div>
         <button type="button" className="looks-arrow" onClick={() => go(1)} aria-label="Look suivant">→</button>
       </div>
+      {/* « Shop the look » : les pièces du look en vignettes, touchables, sans ouvrir le volet (Rhamone, 11 nov.). */}
+      <ul className="looks-mini" aria-label={`Pièces du look ${look.title}`}>
+        {look.items.map((p) => (
+          <li key={p.slug}>
+            <Link href={`/produit/${p.slug}`} aria-label={`${p.brandName}, ${p.name}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- photos du catalogue */}
+              <img src={p.image.cut?.front || p.image.front} alt="" loading="lazy" />
+              <span className="pr"><Price prices={p.prices} /></span>
+            </Link>
+          </li>
+        ))}
+      </ul>
       <div className="looks-dots" aria-hidden="true">
         {looks.map((l, i) => <span key={l.id} className={i === idx ? "on" : undefined} />)}
       </div>
