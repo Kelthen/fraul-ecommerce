@@ -3,6 +3,7 @@
 > **Seul fichier d'état du projet.** Lu au démarrage de chaque session, mis à jour **dans chaque PR**.
 > Écrit pour des humains : phrases courtes, pas de jargon. Une ligne = un élément.
 
+_Dernière mise à jour : 2026-11-11 par rhamon (vitrine finie dans toutes les boutiques, lot 5)_
 _Dernière mise à jour : 2026-11-09 par rhamon (zoom à deux doigts, polices ; mall réaliste lots 1 à 3)_
 _Dernière mise à jour : 2026-11-06 par serge (fiche article qui ne se ferme pas)_
 _Dernière mise à jour : 2026-11-06 par serge (champ Description dans la fiche article)_
@@ -159,7 +160,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
   - **Lot 2, vitrine témoin ERD** (même PR) : cadre champagne d'un seul profil à petits biseaux avec une feuillure en retrait, socle en pierre posé sur un retrait (ligne d'ombre), faits dans Blender (`assets-src/blender/vitrine-temoin.py` → `public/models/vitrine.glb`, 58 Ko) ; verre qu'on devine (deux reflets en biais très légers, ambiance réfléchie) ; faisceau chaud discret sur le mannequin. Mêmes cotes, mannequins entiers, entrée libre. **Seulement chez ERD** (la marque, pas le numéro de boutique) jusqu'à validation de la preview, puis déclinaison aux 3 façades (lot 5). Avant/après : `assets-src/references/mall-realiste/lot2-*.jpg`.
     Vitrine ERD validée par Rhamone sur la preview (« C'est bien », 9 nov.).
   - **Lot 3, Finds — proposition à valider** (même PR) : plus de panneau sur pied qui cachait le « TUC » ; « Finds · Sur demande » en lettres ivoire sur un bandeau bordeaux qui suit la courbe du comptoir (mêmes textes) ; caméra un peu plus loin et regard un peu plus haut (TUC entier, comptoir moins envahissant) ; toucher le TUC ouvre aussi Finds. Retirée si Rhamone ne la valide pas.
-  - Reste : plantes/raccords, déclinaison de la vitrine finie aux 3 façades.
+  - **Lot 5, vitrine finie dans toutes les boutiques** (rhamon, 11 nov.) : la vitrine ERD validée le 9 nov. est posée sur les 3 architectures (enseigne, portique, verrière) ; plus de boutique témoin. Sans le fichier `vitrine.glb` (chargement raté), les vitrines d'avant reviennent toutes seules. À valider sur la preview.
+  - Reste : plantes/raccords.
 
 - **Accueil : taille des personnages du défilé** — retour de Rhamone du 8 novembre : progression du plus petit à gauche au plus grand à droite, plutôt qu'un grand personnage au milieu. Le reste lui convient ; cadre rouge corrigé dans #102. Détail : `docs/ACCUEIL-LOOKS.md` ; nouvelle preview à valider avant merge.
 

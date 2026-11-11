@@ -31,9 +31,7 @@ let CAISSE = null;
 /** Olivier en pot de marbre modélisé dans Blender (assets-src/blender/plante-mall.py → public/models/plante.glb). */
 let PLANTE = null;
 /** Vitrine finie dans Blender (assets-src/blender/vitrine-temoin.py → public/models/vitrine.glb) : cadre et socle. */
-let VITRINE = null;
-/** Boutique témoin du lot 2 (#109) : seule à recevoir la vitrine finie tant que Rhamone n'a pas validé la preview. */
-const TEMOIN = (st) => st.name === "ERD";
+let VITRINE = null; // toutes les boutiques depuis le lot 5 (#109) : vitrine ERD validée par Rhamone le 9 nov.
 /** Reflet du mall dans le sol poli (three/examples Reflector) ; absent = traînées claires sous les bandeaux. */
 let REFLECTOR = null;
 
@@ -800,7 +798,7 @@ export function startWalk(root, o) {
       const st = SHOPS[k], g = new THREE.Group();
       g.position.set(s.x, 0, s.z); g.rotation.y = Math.atan2(s.nx, s.nz); scene.add(g);
       const big = st.logo || shopType(k) === 1; // bandeau de la verrière ou logo : enseigne plus fine
-      g.add(createFacade(THREE, { type: shopType(k), bg: st.bg, ceil: CEIL, tex: facadeTex, kit: TEMOIN(st) && VITRINE ? VITRINE : undefined, sign: U.wordTex(st, big ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) }));
+      g.add(createFacade(THREE, { type: shopType(k), bg: st.bg, ceil: CEIL, tex: facadeTex, kit: VITRINE ?? undefined, sign: U.wordTex(st, big ? { w: 1024, h: 200, bg: st.bg, maxW: 860, px: 128 } : { w: 512, h: 100, bg: st.bg, maxW: 430, px: 64 }) }));
       add(g, new THREE.BoxGeometry(0.5, CEIL, 0.7), pillarM, -SLOT / 2 + 0.05, CEIL / 2, 0.35);
       // Fond lumineux visible par la porte (l'intérieur détaillé vient à l'approche)
       const backdrop = add(g, new THREE.PlaneGeometry(4.6, 4.1), new THREE.MeshBasicMaterial({ map: glow }), 0, 2.05, -0.3);
