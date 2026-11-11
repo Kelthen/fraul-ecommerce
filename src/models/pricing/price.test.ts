@@ -96,3 +96,12 @@ test("table de prix : prix publics par zone, ni coût ni prix de groupe", () => 
   assert.ok(!isPriceTable({ cny: 1, g: 2 }));
   assert.ok(!isPriceTable(null));
 });
+
+test("article d'essai (test-…) : prix payé tel quel, sans arrondi, remise ni plancher", () => {
+  const cost = { cny: 60, g: 300, exact: 0.99 };
+  for (const z of ["us", "ca", "eu", "uk"] as const) {
+    assert.equal(catalogPrice(cost, z), 0.99);
+    assert.equal(customerPrice(cost, z), 0.99);
+    assert.equal(customerPrice(cost, z, "revendeur"), 0.99);
+  }
+});

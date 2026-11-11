@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { SUPABASE_URL } from "@/lib/server/env";
 import { brandStyle } from "./brands";
 import type { Brand, BrandStyle, Category, PricedProduct } from "./types";
+import { TEST_PREFIX } from "@/models/pricing/price";
 
 // Vrais articles lus dans la base (Supabase), avec la clé service : les coûts ne sont plus lisibles avec la clé
 // publique (migration 0012). Mis en cache ; l'admin vide le cache « catalogue » à chaque modification.
@@ -50,7 +51,8 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
     brandName: brand.name,
     category: cat.id,
     name,
-    cost: { cny: r.cost / 100, g: r.weight_g, ...(r.price_usd ? { usd: r.price_usd / 100 } : {}) },
+    // Article d'essai (slug « test-… ») : son prix tapé est payé tel quel (models/pricing/price.ts, TEST_PREFIX).
+    cost: { cny: r.cost / 100, g: r.weight_g, ...(r.price_usd ? (r.slug.startsWith(TEST_PREFIX) ? { exact: r.price_usd / 100 } : { usd: r.price_usd / 100 }) : {}) },
     color: r.colors[0],
     accent: accentFor(r.colors[0]),
     colors: r.colors,

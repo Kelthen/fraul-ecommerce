@@ -4,7 +4,7 @@
 // Types : les 12 du code, plus ceux créés depuis l'admin (base).
 import { loadBrandRows, loadCategoryRows, loadSiteRows, mergeCategories, toBrand, toProduct } from "./db";
 import { BRANDS, CATEGORIES, REAL_SNAPSHOT, accentFor } from "./fallback";
-import { priceTable } from "@/models/pricing/price";
+import { TEST_PREFIX, priceTable } from "@/models/pricing/price";
 import type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
 
 export type { Brand, Category, CategoryId, PricedProduct, Product } from "./types";
@@ -54,7 +54,8 @@ export const catalogIsLive = async () => (await loadSiteRows()) !== null;
 
 /** Ce que les pages reçoivent : les prix, jamais le coût. */
 const toPublic = ({ cost, ...p }: PricedProduct): Product => ({ ...p, prices: priceTable(cost) });
-const allProducts = async () => (await pricedProducts()).map(toPublic);
+/** Les articles d'essai du paiement (« test-… ») ne sont listés nulle part : seulement leur fiche, par lien direct. */
+const allProducts = async () => (await pricedProducts()).filter((p) => !p.slug.startsWith(TEST_PREFIX)).map(toPublic);
 
 /** Article avec son coût, pour le paiement et les commandes. Serveur seulement. */
 export async function getPricedProduct(slug: string): Promise<PricedProduct | undefined> {
@@ -66,7 +67,8 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {
-  return (await allProducts()).find((p) => p.slug === slug);
+  const p = (await pricedProducts()).find((x) => x.slug === slug);
+  return p && toPublic(p);
 }
 
 export async function getProductsByBrand(brandSlug: string): Promise<Product[]> {
