@@ -351,3 +351,7 @@
 ### L-62 — `npm run check` avant chaque push, pas seulement lint, tsc et build
 - **Erreur :** #101 (portant moins serré) a été mergée avec lint, tsc et build au vert, mais un test du Walk échouait : les portants veste et t-shirt se chevauchaient. ChatGPT l'a vu dans #103 (8 nov. 2026).
 - **Règle :** avant de pousser, lancer **`npm run check`** (il contient les tests du Walk et des modèles). Un réglage de mesure du Walk (`store-layout.ts`) se vérifie toujours avec `walk.test.ts`.
+
+### L-63 — Un merge seulement sur un « oui » sans ambiguïté
+- **Erreur :** « Continue mais on merge » a été lu comme « on merge » et #114 a été mergée, alors que Rhamone voulait dire « on ne merge pas » (11 nov. 2026). Il a fallu annuler le merge.
+- **Règle :** avant de merger, si la phrase peut se lire dans les deux sens (négation absente, faute de frappe, message court), poser une question oui/non (« Je merge la PR #N maintenant ? ») et attendre la réponse. Ne jamais merger sur une consigne glissée au milieu d'une autre demande.
