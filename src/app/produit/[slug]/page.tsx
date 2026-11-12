@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { TEST_PREFIX } from "@/models/pricing/price";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductDetail } from "@/components/ProductDetail";
 import { getCategory, getProduct, getProducts } from "@/lib/catalog";
@@ -20,6 +21,8 @@ export async function generateMetadata({ params }: PageProps<"/produit/[slug]">)
     title: `${p.name} ${p.brandName}`,
     description: `${p.name} ${p.brandName} (${cat.label.toLowerCase()}). Tailles ${p.sizes.join(", ")}. Pièce authentique, suivi de commande à chaque étape.`,
     alternates: { canonical: `/produit/${p.slug}` },
+    // Article d'essai du paiement : pas dans les moteurs de recherche.
+    ...(p.slug.startsWith(TEST_PREFIX) ? { robots: { index: false, follow: false } } : {}),
     openGraph: { type: "website", siteName: "TakeUrClothes", locale: "fr_FR", title: `${p.name} ${p.brandName}`, url: `/produit/${p.slug}`, images: [{ url: p.image.front }] },
   };
 }

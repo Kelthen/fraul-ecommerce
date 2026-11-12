@@ -37,7 +37,7 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<PricingCtx>(() => {
     const currency = ZONE_CURRENCY[zone];
     let f = fmtCache.get(currency);
-    if (!f) fmtCache.set(currency, (f = new Intl.NumberFormat("fr-FR", { style: "currency", currency, currencyDisplay: "code", maximumFractionDigits: 0 })));
+    if (!f) fmtCache.set(currency, (f = new Intl.NumberFormat("fr-FR", { style: "currency", currency, currencyDisplay: "code", minimumFractionDigits: 0, maximumFractionDigits: 2 })));
     return {
       zone,
       price: (prices) => prices[zone],
