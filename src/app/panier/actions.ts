@@ -8,6 +8,7 @@ import { allow, clientIp } from "@/lib/server/limits";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { checkoutParams, priceCart, type CartProblem, type PayableProduct } from "@/models/payment/checkout";
 import { DEFAULT_ZONE, ZONES, type ZoneId } from "@/models/pricing/config";
+import { TEST_PREFIX } from "@/models/pricing/price";
 import { TOO_MANY } from "@/models/security/limits";
 
 // « Payer » : le panier (identifiants et quantités seulement) part vers Stripe Checkout.
@@ -30,7 +31,12 @@ async function baseUrl(): Promise<string> {
 }
 
 export async function startCheckout(lines: unknown): Promise<{ url: string } | { error: string }> {
-  if (missingPaymentSettings().length) return { error: "Le paiement n'est pas encore ouvert. Reviens très vite !" };
+  // Caisse fermée (PAYMENTS_OPEN absent en production) : seul un panier fait uniquement d'articles d'essai « test-… »
+  // peut être payé, pour tester un vrai achat sans ouvrir la boutique (Rhamone, 12 nov.). Les autres réglages restent exigés.
+  const missing = missingPaymentSettings();
+  const slugs = Array.isArray(lines) ? lines.map((l) => (l as { slug?: unknown })?.slug) : [];
+  const onlyTests = slugs.length > 0 && slugs.every((x) => typeof x === "string" && x.startsWith(TEST_PREFIX));
+  if (missing.some((k) => k !== "PAYMENTS_OPEN" || !onlyTests)) return { error: "Le paiement n'est pas encore ouvert. Reviens très vite !" };
   if (!(await catalogIsLive())) return { error: "Le paiement ne répond pas. Réessaie dans un instant." }; // jamais d'encaissement sur la copie de secours
   if (!(await allow("checkout", await clientIp()))) return { error: TOO_MANY };
   const z = (await cookies()).get("tuc_zone")?.value;
