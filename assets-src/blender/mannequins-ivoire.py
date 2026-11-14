@@ -15,7 +15,8 @@
 #    homme main droite dans la poche avant, femme main droite posée sur le côté de la hanche.
 # Sorties : sortie.glb (statique, pour le site), sortie-rig.blend (scène de travail : squelette, poids, cibles de
 # pose encore modifiables), sortie-pose.blend (pose figée, comme le GLB).
-# Réglages par variables d'environnement (essais) : MAIN, CIBLE, POCHE, ADD, LEG, SOUDURE, POSE=libre, NOIK, BRUT.
+# Réglages par variables d'environnement (essais) : MAIN, CIBLE, POCHE, FK, IK, RAYON, ADD, LEG, SOUDURE, POSE=libre,
+# NOIK, BRUT.
 import bpy, sys, math
 from mathutils import Vector
 
@@ -197,7 +198,9 @@ SEAMS["trouser"] = (Vector((0, 0, Z(CUTS["trouser"]))), Vector((0, 0, 1)))
 # qui touche), inclinaison avant/arrière réduite de moitié.
 _dg = (CHAIN["G"][1] - CHAIN["G"][0]).normalized()
 _dd = (CHAIN["D"][1] - CHAIN["D"][0]).normalized()
-_avg = Vector(((_dg.x - _dd.x) / 2, (_dg.y + _dd.y) / 4, (_dg.z + _dd.z) / 2)).normalized()
+# Inclinaison sur le côté réduite chez la femme : ses bras pendent presque droits contre le buste.
+_tx = {"homme": 1.0, "femme": float(__import__("os").environ.get("TX", "0.4"))}[KIND]
+_avg = Vector(((_dg.x - _dd.x) / 2 * _tx, (_dg.y + _dd.y) / 4, (_dg.z + _dd.z) / 2)).normalized()
 AXIS = {}
 R_ARM_MID = 0.045 * H / 1.8  # demi-épaisseur du bras sous la manche
 
@@ -210,10 +213,17 @@ def arm_center(zz, sgn):
     return Vector((sgn * (xo - R_ARM_MID), sum(v.y for v in out) / len(out), zz))
 
 
+C0 = {nm: arm_center(Z(CUTS["sleeve"]), 1 if nm == "G" else -1) for nm in CHAIN}
+# Si un bras touche le buste à cette hauteur, son centre est faussé (trop près du buste) : on reprend l'autre bras
+# en miroir, celui qui est le plus détaché.
+if abs(abs(C0["G"].x) - abs(C0["D"].x)) > 0.03:
+    far = max(C0, key=lambda k: abs(C0[k].x))
+    near = "G" if far == "D" else "D"
+    C0[near] = Vector((-C0[far].x, C0[far].y, C0[far].z))
 for nm, (sh, el, wr, hd) in CHAIN.items():
     sgn = 1 if nm == "G" else -1
     d = Vector((_avg.x if nm == "G" else -_avg.x, _avg.y, _avg.z))
-    c0 = arm_center(Z(CUTS["sleeve"]), sgn)  # l'ourlet passe par le centre réel du bras, perpendiculaire à l'axe
+    c0 = C0[nm]  # l'ourlet passe par le centre réel du bras, perpendiculaire à l'axe
     top = c0 - d * ((sh.z - c0.z) / max(0.3, -d.z))
     AXIS[nm] = (top, d, (el - sh).length)
     SEAMS["sleeve_" + nm] = (c0, -d)
@@ -263,6 +273,37 @@ for v in body.data.vertices:
             body.vertex_groups[g.group].add([v.index], g.weight * k, "REPLACE")
     if lost > 0:
         torse.add([v.index], lost, "ADD")
+# Puis poids lissés dans l'espace (pas seulement le long du maillage) : le prototype est fait de morceaux qui se touchent
+# sans être reliés (épaule et col, par exemple). Avec des poids différents, ils se séparaient à la pose et
+# laissaient une déchirure. Chaque sommet du haut du corps prend la moyenne des poids de ses voisins à moins de 5 cm.
+from mathutils import kdtree
+NV = len(body.data.vertices)
+kd = kdtree.KDTree(NV)
+for v in body.data.vertices:
+    kd.insert(v.co, v.index)
+kd.balance()
+gnames = [g.name for g in body.vertex_groups]
+W = [{g.group: g.weight for g in v.groups} for v in body.data.vertices]
+for _ in range(2):
+    W2 = []
+    for v in body.data.vertices:
+        if v.co.z < Z(0.76):  # seulement épaules et col : plus bas, bras et main touchent le buste et la hanche
+            W2.append(W[v.index])
+            continue
+        acc = {}
+        nb = kd.find_range(v.co, float(__import__("os").environ.get("RAYON", "0.05")))
+        for _co, j, _d in nb:
+            for gidx, w in W[j].items():
+                acc[gidx] = acc.get(gidx, 0.0) + w
+        tot = sum(acc.values()) or 1.0
+        W2.append({gidx: w / tot for gidx, w in acc.items() if w / tot > 0.01})
+    W = W2
+for g in body.vertex_groups:
+    g.remove(list(range(NV)))
+for i, ws in enumerate(W):
+    for gidx, w in ws.items():
+        body.vertex_groups[gidx].add([i], w, "REPLACE")
+
 
 # --- Matières par zone (os dominant + hauteur des coutures)
 mats = {}
@@ -323,6 +364,17 @@ def zone(p):
             r = (c - sh - d * t).length
             if r < R_UP and r < math.hypot(c.x, c.y - yc) - TORSO_W:
                 return "Tee_Noir" if above(c, "sleeve_" + nm) else "Mannequin_Blanc_Laque"
+            # Face intérieure du bras collée au buste : elle regarde vers le buste (le flanc du tee, vers l'extérieur).
+            sgn = 1 if nm == "G" else -1
+            if not above(c, "sleeve_" + nm) and ((r < R_UP * 2.2 and p.normal.x * sgn < -0.3)
+                                                  or (r < R_UP * 1.2 and p.normal.x * sgn < 0.2)):
+                return "Mannequin_Blanc_Laque"
+    # Sous l'ourlet de manche, plus loin du centre que le bord intérieur du bras : c'est le bras (peau). Le buste
+    # n'est jamais aussi large à cette hauteur.
+    for nm, c0 in C0.items():
+        sgn = 1 if nm == "G" else -1
+        if c.z > Z(CUTS["hem"]) + 0.05 and not above(c, "sleeve_" + nm) and c.x * sgn > abs(c0.x) - 0.035:
+            return "Mannequin_Blanc_Laque"
     # Mains : tout ce qui est près de l'axe poignet → main est de la peau (la main touchait la hanche au repos).
     for nm, (sh, el, wr, hd) in CHAIN.items():
         if seg(c, wr, hd + (hd - wr) * 0.6)[0] < 0.05 * H / 1.8:
@@ -412,18 +464,25 @@ else:
     E = __import__("os").environ
     hip = [v for v in V if abs(v.z - Z(0.5)) < 0.01 and -0.25 < v.x < 0]
     hx = max(-v.x for v in hip)
-    px, py, pz = (float(v) for v in E.get("POCHE", "0.035,0.015,0.52").split(","))
+    px, py, pz = (float(v) for v in E.get("POCHE", "0.02,0.06,0.52").split(","))
     yfront = min(v.y for v in hip if abs(-v.x - (hx - px)) < 0.015)
     tgt = bpy.data.objects.new("cible", None)
     tgt.location = (-(hx - px), yfront + py, Z(pz))  # poignet à l'entrée de la poche, la main plonge dedans
     pole = bpy.data.objects.new("pole", None)
-    pole.location = (-0.7, yc + 0.35, Z(0.66))  # coude vers l'extérieur et un peu en arrière
+    pole.location = (-0.45, yc + 0.6, Z(0.66))  # coude vers l'arrière : le bras reste le long du flanc
     for o in (tgt, pole):
         bpy.context.scene.collection.objects.link(o)
-    if not E.get("NOIK"):
+    # Pose réglée à la main (bras x, z ; avant-bras x, z) : le haut du bras bouge à peine, le coude plie et la main
+    # glisse dans la poche. Avec l'IK (IK=1), le haut du bras pivotait trop et pliait l'épaule (retour du 14 nov.).
+    fk = None if E.get("IK") else E.get("FK", "6,-10,-25,-30")
+    if fk:
+        bx, bz, ax, az = (float(v) for v in fk.split(","))
+        rot("Bras_D", x=bx, z=bz)
+        rot("AvantBras_D", x=ax, z=az)
+    elif not E.get("NOIK"):
         ik = P["AvantBras_D"].constraints.new("IK")
         ik.target, ik.pole_target, ik.chain_count, ik.pole_angle = tgt, pole, 2, 0.0
-    mx, my, mz = (float(v) for v in E.get("MAIN", "0,0,0").split(","))
+    mx, my, mz = (float(v) for v in E.get("MAIN", "25,0,0").split(","))
     rot("Main_D", x=mx, y=my, z=mz)
     ad = float(E.get("ADD", "8"))
     rot("Bras_G", z=ad)
