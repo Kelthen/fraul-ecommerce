@@ -359,3 +359,7 @@
 ### L-65 — Un fichier local n’est pas un livrable partagé dans Git
 - **Erreur :** des prototypes 3D ont été remis par liens workspace sans préciser qu’ils étaient absents de GitHub ; l’équipe ne savait plus quels mannequins existaient ni où les récupérer. L-64 est réservée dans la PR #128.
 - **Règle :** toute transmission indique la branche/PR, le chemin exact et l’état : photo 2D ou vrai maillage, rig présent ou absent, pose appliquée ou seulement illustrée, intégré au site ou source à valider. Ne pas dire « transmis à Claude » pour un fichier uniquement local.
+
+### Validation en conversation → fichiers dans la PR
+- **Décision de Rhamone, 14 novembre :** « quand je valide ici c’est que tu lui mets ca directement dans les PR ».
+- **Règle :** après validation d'un livrable, déposer les fichiers et références dans la PR concernée, documenter les chemins et prévenir l'équipe dans cette PR. Un lien workspace seul ne suffit pas. Distinguer référence visuelle validée, prototype et version intégrée. Cette autorisation ne vaut pas autorisation de merge.
