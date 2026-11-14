@@ -1,0 +1,181 @@
+{
+ "status": "propositions-pour-validation",
+ "nouveaux": [
+  {
+   "id": 1,
+   "products": [
+    {
+     "slug": "broken-planet-hoodie-grey-broken-planet",
+     "name": "Women hoodie Grey Broken planet"
+    },
+    {
+     "slug": "broken-planet-women-short-grey-broken-planet",
+     "name": "Women short Grey Broken planet"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-01-face-dos.png",
+   "shoe_styling": "Yeezy 700 Wave Runner"
+  },
+  {
+   "id": 2,
+   "products": [
+    {
+     "slug": "acne-studios-longsleeve-sky-blue-acne-studios",
+     "name": "Longsleeve Sky blue Acné studios"
+    },
+    {
+     "slug": "acne-studios-shorts-jeans-acne-studios",
+     "name": "Shorts jeans   acné studios"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-02-face-dos.png",
+   "shoe_styling": "Jordan 3 White Cement"
+  },
+  {
+   "id": 3,
+   "products": [
+    {
+     "slug": "derschutze-black-t-shirt-derschutze",
+     "name": "Black t-shirt Derschutze"
+    },
+    {
+     "slug": "derschutze-shorts-derschutze-white",
+     "name": "Shorts Derschutze White"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-03-face-dos.png",
+   "shoe_styling": "adidas Samba OG"
+  },
+  {
+   "id": 4,
+   "products": [
+    {
+     "slug": "vertabrae-hoodie-vertabrae-rouge-delave",
+     "name": "Hoodie Vertabrae rouge délavé"
+    },
+    {
+     "slug": "vertabrae-jogging-vertabrae-noir-vintage",
+     "name": "Jogging Vertabrae noir vintage"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-04-face-dos.png",
+   "shoe_styling": "New Balance 1906R"
+  },
+  {
+   "id": 5,
+   "products": [
+    {
+     "slug": "trapstar-women-hoodie-rose-trapstar",
+     "name": "Women hoodie  trapstar pink"
+    },
+    {
+     "slug": "trapstar-women-jogging-trapstar-pink",
+     "name": "Women jogging trapstar pink"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-05-face-dos.png",
+   "shoe_styling": "Nike Air Max 95 Neon"
+  },
+  {
+   "id": 6,
+   "products": [
+    {
+     "slug": "stussy-pull-a-manche-stussy-multicolore",
+     "name": "Pull à manche stüssy multicolore"
+    },
+    {
+     "slug": "acne-studios-jeans-acne-studios-streetwear",
+     "name": "Jeans acné studios streetwear"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-06-face-dos.png",
+   "shoe_styling": "Timberland 6 inch wheat"
+  },
+  {
+   "id": 7,
+   "products": [
+    {
+     "slug": "stussy-t-shirt-stussy-beige",
+     "name": "T-shirt stüssy beige"
+    },
+    {
+     "slug": "gallery-dept-gallery-dept-pant-cafe",
+     "name": "Gallery dept pant café"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-07-face-dos.png",
+   "shoe_styling": "Converse Chuck 70"
+  },
+  {
+   "id": 8,
+   "products": [
+    {
+     "slug": "supreme-hoodie-supreme-beige",
+     "name": "Hoodie suprême beige"
+    },
+    {
+     "slug": "supreme-jogging-supreme-beige",
+     "name": "Jogging suprême beige"
+    }
+   ],
+   "proposal": "assets-src/references/looks-face-dos/nouveaux/look-08-face-dos.png",
+   "shoe_styling": "ASICS GEL-NYC"
+  }
+ ],
+ "anciens": [
+  {
+   "id": "corteiz",
+   "products": [
+    "corteiz-hoodie-corteiz-noir",
+    "corteiz-jogging-corteiz-noir"
+   ],
+   "front": "assets-src/looks/look-corteiz.jpg",
+   "back": "assets-src/references/looks-face-dos/anciens/corteiz-dos.png"
+  },
+  {
+   "id": "valley-acne",
+   "products": [
+    "valley-dreams-t-shirt-valley-blanc",
+    "acne-studios-pant-delave-acne-studios"
+   ],
+   "front": "assets-src/looks/look-valley-acne.jpg",
+   "back": "assets-src/references/looks-face-dos/anciens/valley-acne-dos.png"
+  },
+  {
+   "id": "corteiz-denim-tears",
+   "products": [
+    "corteiz-hoodie-corteiz-x-denim-tears",
+    "corteiz-pant-corteiz-x-denim"
+   ],
+   "front": "assets-src/looks/look-corteiz-denim-tears.jpg",
+   "back": "assets-src/references/looks-face-dos/anciens/corteiz-denim-tears-dos.png"
+  },
+  {
+   "id": "acne-kappa",
+   "products": [
+    "acne-studios-veste-acne-studios-x-kappa-noir",
+    "acne-studios-pant-acne-studios-x-kappa-noir"
+   ],
+   "front": "assets-src/looks/look-acne-kappa.jpg",
+   "back": "assets-src/references/looks-face-dos/anciens/acne-kappa-dos.png"
+  },
+  {
+   "id": "gallery-acne",
+   "products": [
+    "gallery-dept-gallery-dept-long-sleeve-pocket-tee",
+    "acne-studios-pant-delave-acne-studios"
+   ],
+   "front": "assets-src/looks/look-gallery-acne.jpg",
+   "back": "assets-src/references/looks-face-dos/anciens/gallery-acne-dos.png"
+  },
+  {
+   "id": "paly-acne",
+   "products": [
+    "paly-wood-t-shirt-paly-blanc",
+    "acne-studios-pant-acne-studios-x-kappa-noir"
+   ],
+   "front": "assets-src/looks/look-paly-acne.jpg",
+   "back": "assets-src/references/looks-face-dos/anciens/paly-acne-dos.png"
+  }
+ ]
+}
