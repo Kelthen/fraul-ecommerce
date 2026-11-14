@@ -167,6 +167,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Sources 3D ivoire — transmission (Rhamone, 14 nov.)** : deux prototypes homme/femme `.blend` + `.glb` disponibles dans `assets-src/models/prototypes-ivoire/`, branche `feat/gpt/sources-mannequins-3d`. Statiques, sans rig, poses finales non appliquées, non intégrés au Walk. Voir `docs/ETAT-MANNEQUINS-3D.md` : distinction avec les modèles posés de #127 et les photos des looks 05/06 de #128.
+
 
 
 
