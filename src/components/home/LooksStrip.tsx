@@ -12,7 +12,7 @@ import { Price } from "../Price";
 
 const WIDE = "(min-width: 900px)";
 
-type ShownLook = { id: string; title: string; photo?: string; items: Product[] };
+type ShownLook = { id: string; title: string; photo?: string; back?: string; items: Product[] };
 
 export function LooksStrip({ looks }: { looks: ShownLook[] }) {
   const [idx, setIdx] = useState(0);
@@ -29,18 +29,21 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
   const n = looks.length;
   const go = (d: number) => setIdx((i) => (i + d + n) % n);
   const look = looks[idx];
+  // Face / dos du look au premier plan (Rhamone, 14 nov.) : revient à la face dès qu'un autre look passe devant.
+  const [dosOf, setDosOf] = useState<string | null>(null);
+  const dos = dosOf === look?.id && !!look?.back;
 
   // Défilement tout seul (Rhamone, 11 nov.) : un look toutes les 5 s tant que personne ne touche ; après un geste,
   // on attend 10 s. Arrêté quand les pièces sont ouvertes, quand l'onglet est caché ou si l'appareil réduit les animations.
   const touched = useRef(0);
   useEffect(() => {
-    if (n < 2 || open || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (n < 2 || open || dos || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const t = setInterval(() => {
       if (document.hidden || Date.now() - touched.current < 10000) return;
       setIdx((i) => (i + 1) % n);
     }, 5000);
     return () => clearInterval(t);
-  }, [n, open]);
+  }, [n, open, dos]);
 
   // Téléphone : volet par le bas. Ordinateur : la liste reste à côté de la scène (pas de volet).
   useEffect(() => {
@@ -117,7 +120,7 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
               tabIndex={far > 1 ? -1 : 0}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- photos des looks, déjà réduites */}
-              <img src={l.photo ?? l.items[0].image.front} alt="" draggable={false} style={{ animationName: idx % 2 ? "look-step-a" : "look-step-b" }} loading={far > 1 ? "lazy" : "eager"} />
+              <img src={(center && dos ? l.back : l.photo) ?? l.items[0].image.front} alt="" draggable={false} style={{ animationName: idx % 2 ? "look-step-a" : "look-step-b" }} loading={far > 1 ? "lazy" : "eager"} />
             </button>
           );
         })}
@@ -128,6 +131,11 @@ export function LooksStrip({ looks }: { looks: ShownLook[] }) {
         <div className="looks-caption">
           <b>{look.title}</b>
           <button type="button" className="looks-see" onClick={() => setOpen(true)}>Voir les {look.items.length} pièces</button>
+          {look.back && (
+            <button type="button" className="looks-turn" aria-pressed={dos} onClick={() => setDosOf(dos ? null : look.id)}>
+              {dos ? "Voir de face" : "Voir de dos"}
+            </button>
+          )}
         </div>
         <button type="button" className="looks-arrow" onClick={() => go(1)} aria-label="Look suivant">→</button>
       </div>

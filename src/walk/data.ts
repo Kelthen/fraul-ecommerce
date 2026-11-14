@@ -23,7 +23,10 @@ export async function getWalkData(): Promise<WalkData> {
   for (const l of resolveLooks(fromAdmin.length ? fromAdmin : TEST_LOOKS, products)) {
     if (!l.photo) continue;
     for (const b of new Set(l.items.map((p) => p.brandSlug))) {
-      (looks[b] ??= []).push({ photo: l.photo, title: l.title, items: l.items.filter((p) => p.brandSlug === b && inStore(p.category)).map((p) => [p.slug, p.category]) });
+      const entry = { title: l.title, items: l.items.filter((p) => p.brandSlug === b && inStore(p.category)).map((p) => [p.slug, p.category] as [string, string]) };
+      // Écran publicitaire de la boutique : le look de face, puis de dos s'il existe (Rhamone, 14 nov.).
+      (looks[b] ??= []).push({ photo: l.photo, ...entry });
+      if (l.back) looks[b].push({ photo: l.back, ...entry });
     }
   }
   const pick = (b: { name: string; slug: string; style: WalkData["shops"][number]["style"] }) => ({ name: b.name, slug: b.slug, style: b.style });
