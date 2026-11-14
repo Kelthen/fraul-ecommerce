@@ -287,7 +287,8 @@ W = [{g.group: g.weight for g in v.groups} for v in body.data.vertices]
 for _ in range(2):
     W2 = []
     for v in body.data.vertices:
-        if v.co.z < Z(0.76):  # seulement épaules et col : plus bas, bras et main touchent le buste et la hanche
+        # Épaules et col, plus le coude du bras posé (loin du buste) : plus bas, bras et main touchent le buste et la hanche.
+        if v.co.z < Z(0.76) and (v.co - CHAIN["D"][1]).length > 0.09:
             W2.append(W[v.index])
             continue
         acc = {}
