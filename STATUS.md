@@ -167,6 +167,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Sources 3D ivoire — transmission (Rhamone, 14 nov.)** : deux prototypes homme/femme `.blend` + `.glb` disponibles dans `assets-src/models/prototypes-ivoire/`, branche `feat/gpt/sources-mannequins-3d`. Statiques, sans rig, poses finales non appliquées, non intégrés au Walk. Voir `docs/ETAT-MANNEQUINS-3D.md` : distinction avec les modèles posés de #127 et les photos des looks 05/06 de #128.
+
 
 
 
@@ -300,3 +302,5 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 | 2026-10-12 | Afrique de l'Ouest retirée du projet : pays servis = USA, Canada, UK, France, Belgique. Plus de mobile money. | Rhamone |
 | 2026-10-12 | Les deux CLAUDE.md (règles d'équipe + contexte client) fusionnés en un seul. | équipe, à confirmer |
 | 2026-10-12 | On ne bloque pas le démarrage sur le client (voyage souvent) ; placeholders marqués et questions regroupées. | équipe |
+
+- **14 novembre — transmission validée :** les validations en conversation autorisent le dépôt immédiat des fichiers dans la PR concernée (pas le merge). #129 contient maintenant la planche de poses A validée ; revue #127 e1d0909 dans `docs/ETAT-MANNEQUINS-3D.md`. #131 intègre 14 looks face/dos ; admin dos et fidélité produit restent à terminer.
