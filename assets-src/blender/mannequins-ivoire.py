@@ -18,7 +18,7 @@ KIND, SRC, OUT = a[0], a[1], a[2]
 SOCLE = a[3] if len(a) > 3 else None
 # Hauteurs des coutures, en fraction de la taille (mesurées sur les rendus de contrôle des prototypes).
 CUTS = {
-    "homme": dict(neck=0.85, sleeve=0.71, hem=0.52, trouser=0.06),
+    "homme": dict(neck=0.85, sleeve=0.70, hem=0.52, trouser=0.06),
     "femme": dict(neck=0.845, sleeve=0.725, hem=0.57, trouser=0.08),
 }[KIND]
 
@@ -39,6 +39,12 @@ import bmesh
 bm = bmesh.new(); bm.from_mesh(body.data)
 bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0008)
 bm.to_mesh(body.data); bm.free()
+# Allègement (≈ 24 000 faces) avant le découpage en matières : les coutures tombent sur les faces finales et
+# restent nettes (allégé après coup, chaque bord de matière se faisait mâcher en dents de scie).
+bpy.context.view_layer.objects.active = body
+dec = body.modifiers.new("allege", "DECIMATE")
+dec.ratio = min(1.0, 24000 / len(body.data.polygons))
+bpy.ops.object.modifier_apply(modifier=dec.name)
 
 plate_top = 0.0
 if SOCLE:  # socle du mannequin actuel : plaque + tige, inchangés
@@ -104,11 +110,25 @@ yc = sum(v.y for v in V if abs(v.z - Z(0.65)) < 0.01 and abs(v.x) < 0.1) / max(1
 bone("Bassin", (0, yc, Z(0.47)), (0, yc, Z(0.58)))
 bone("Dos", (0, yc, Z(0.58)), (0, yc, Z(0.78)), "Bassin")
 bone("Tete", (0, yc, Z(0.78)), (0, yc, Z(1.0)), "Dos")
+CHAIN = {}  # points du bras au repos (épaule, coude, poignet, main), pour classer les faces par la géométrie
+
+
+def limb(f, s):
+    """Centre du bras du côté s à la hauteur f. Si le bras touche le buste à cette hauteur (une seule section),
+    on prend le bord extérieur moins un rayon de bras."""
+    p = side(f, s)
+    if p.x * s < 0.12 * H / 1.8:
+        xs = [v.x for v in V if abs(v.z - Z(f)) < 0.008]
+        p = Vector((max(xs) - 0.035 if s > 0 else min(xs) + 0.035, p.y, Z(f)))
+    return p
+
+
 for s, nm in ((1, "G"), (-1, "D")):
     sh = Vector((0.19 * s * H / 1.8, yc, Z(0.795)))
-    el = side(0.6, s)
-    wr = side(0.48, s)
-    hand = side(0.42, s)
+    el = limb(0.6, s)
+    wr = limb(0.48, s)
+    hand = limb(0.42, s)
+    CHAIN[nm] = (sh.copy(), el.copy(), wr.copy(), hand.copy())
     bone(f"Epaule_{nm}", (0.05 * s, yc, Z(0.79)), sh, "Dos")
     bone(f"Bras_{nm}", sh, el, f"Epaule_{nm}")
     bone(f"AvantBras_{nm}", el, wr, f"Bras_{nm}")
@@ -145,36 +165,36 @@ body.data.materials.clear()
 for m in mats.values():
     body.data.materials.append(m)
 idx = {n: i for i, n in enumerate(mats)}
-# Bras = sections séparées du buste (pose de travail bras écartés), repérées tous les centimètres ; au-dessus de
-# l'aisselle, bras et buste se touchent : c'est la manche, donc le tee.
-band = {}
-for k in range(int(Z(0.0) * 100), int(Z(1.0) * 100) + 1):
-    zz = k / 100
-    xs = sorted(v.x for v in V if abs(v.z - zz) < 0.006)
-    if not xs:
-        continue
-    groups, cur = [], [xs[0], xs[0]]
-    for x in xs[1:]:
-        if x - cur[1] > 0.03:
-            groups.append(cur); cur = [x, x]
-        else:
-            cur[1] = x
-    groups.append(cur)
-    band[k] = groups
-
-
-def is_arm(c):
-    g = band.get(round(c.z * 100))
-    if not g or len(g) < 3 or c.z < Z(0.4):
-        return False
-    return c.x < g[0][1] + 0.005 or c.x > g[-1][0] - 0.005  # premier ou dernier groupe le long de x
-
-
 gname = {g.index: g.name for g in body.vertex_groups}
 dom = []
 for v in body.data.vertices:
     best = max(v.groups, key=lambda g: g.weight, default=None)
     dom.append(gname.get(best.group, "Dos") if best else "Dos")
+
+
+def seg(c, a, b):
+    """Distance de c au segment ab et position le long (0 en a, 1 en b)."""
+    d = b - a
+    t = max(0.0, min(1.0, (c - a).dot(d) / d.length_squared))
+    return (c - (a + d * t)).length, t
+
+
+R_ARM = 0.16 * H / 1.8  # au-delà de cette distance de l'axe du bras, la face est le flanc ou la hanche touchée
+
+
+def arm_axis(c, b):
+    """Pour une face portée par un os du bras : le point de l'axe épaule → main le plus proche, ou None si la face
+    est en fait le flanc ou la hanche que le bras touchait (trop loin de l'axe)."""
+    nm = b[-1]
+    if nm not in CHAIN:
+        return None
+    pts = CHAIN[nm]
+    best = None
+    for a_, b_ in zip(pts, pts[1:]):
+        d, t = seg(c, a_, b_)
+        if best is None or d < best[0]:
+            best = (d, a_ + (b_ - a_) * t)
+    return best[1] if best[0] < R_ARM else None
 
 
 def zone(p):
@@ -183,32 +203,54 @@ def zone(p):
     b = max(set(bones), key=bones.count)
     if c.z < Z(CUTS["trouser"]):
         return "Basket_Blanc"
-    # Os du bras sous la manche : peau si la face est loin de l'axe du corps (le bras pend à côté du buste) ou
-    # plus bas que l'ourlet du tee (mains) ; sinon c'est le flanc du tee que l'avant-bras touchait.
-    if b.startswith(("Bras", "AvantBras", "Main")) and c.z < Z(CUTS["sleeve"]):
-        if abs(c.x) > 0.15 * H / 1.8 or c.z < Z(CUTS["hem"]) or b.startswith("Main"):
-            return "Mannequin_Blanc_Laque"
-    if b.startswith(("Cuisse", "Tibia")) or c.z < Z(CUTS["hem"]):
-        return "Jean_Noir_Delave"
-    if c.z > Z(CUTS["neck"]) or b == "Tete":
+    # Bras : l'ourlet de manche coupe le bras perpendiculairement à son axe (on compare la hauteur du point de
+    # l'axe, pas celle de la face : bord droit tout autour du bras).
+    if b.startswith(("Bras", "AvantBras", "Main")):
+        ax = arm_axis(c, b)
+        if ax is not None:
+            return "Tee_Noir" if ax.z > Z(CUTS["sleeve"]) else "Mannequin_Blanc_Laque"
+    if c.z > Z(CUTS["neck"]):  # encolure : hauteur seule (l'os de la tête débordait en dents de scie)
         return "Mannequin_Blanc_Laque"
+    if c.z < Z(CUTS["hem"]):  # ourlet du tee : hauteur seule
+        return "Jean_Noir_Delave"
     return "Tee_Noir"
 
 
 lab = [zone(p) for p in body.data.polygons]
-# Lissage : une face prend la matière majoritaire de ses voisines (bords nets, plus de taches isolées).
+# Lissage : une face prend la matière majoritaire de ses voisines (bords nets), puis les îlots de moins de
+# ISLAND faces (éclats blancs sur le flanc, taches de jean dans le tee) prennent la matière qui les entoure.
 import bmesh
 bm = bmesh.new(); bm.from_mesh(body.data); bm.faces.ensure_lookup_table()
-for _ in range(3):
-    new = lab[:]
-    for f in bm.faces:
-        nb = [lab[o.index] for e in f.edges for o in e.link_faces if o.index != f.index]
-        if nb:
-            best = max(set(nb), key=nb.count)
-            if nb.count(best) * 2 > len(nb) and best != lab[f.index]:
-                new[f.index] = best
-    lab = new
+NB = [[o.index for e in f.edges for o in e.link_faces if o.index != f.index] for f in bm.faces]
 bm.free()
+for _ in range(6):
+    new = lab[:]
+    for i, nb in enumerate(NB):
+        ls = [lab[j] for j in nb]
+        if ls:
+            best = max(set(ls), key=ls.count)
+            if ls.count(best) * 2 > len(ls) and best != lab[i]:
+                new[i] = best
+    lab = new
+ISLAND = int(len(lab) * 0.012)
+for _ in range(3):
+    seen = [False] * len(lab)
+    for i0 in range(len(lab)):
+        if seen[i0]:
+            continue
+        comp, stack, rim = [], [i0], []
+        seen[i0] = True
+        while stack:
+            i = stack.pop(); comp.append(i)
+            for j in NB[i]:
+                if lab[j] != lab[i0]:
+                    rim.append(lab[j])
+                elif not seen[j]:
+                    seen[j] = True; stack.append(j)
+        if len(comp) < ISLAND and rim and lab[i0] != "Basket_Blanc":
+            best = max(set(rim), key=rim.count)
+            for i in comp:
+                lab[i] = best
 for p, m in zip(body.data.polygons, lab):
     p.material_index = idx[m]
 
@@ -225,7 +267,7 @@ def rot(name, x=0, y=0, z=0):
 if KIND == "femme" and __import__("os").environ.get("POSE") != "libre":
     waist = max(-v.x for v in V if abs(v.z - Z(0.6)) < 0.01 and -0.2 < v.x < 0)
     tgt = bpy.data.objects.new("cible", None)
-    tgt.location = (-(waist + 0.015), yc + 0.01, Z(0.58))
+    tgt.location = (-(waist + 0.015), yc - 0.015, Z(0.58))  # sur le côté de la hanche (pas derrière)
     pole = bpy.data.objects.new("pole", None)
     pole.location = (-0.75, yc + 0.25, Z(0.68))
     for o in (tgt, pole):
@@ -268,14 +310,12 @@ for o in list(bpy.data.objects):
 # Pieds sur la plaque après la pose.
 low = min((body.matrix_world @ v.co).z for v in body.data.vertices)
 body.location.z += plate_top - low
-# Allègement : ≈ 24 000 faces.
-dec = body.modifiers.new("allege", "DECIMATE")
-dec.ratio = min(1.0, 24000 / len(body.data.polygons))
-bpy.ops.object.modifier_apply(modifier=dec.name)
 for p in body.data.polygons:
     p.use_smooth = True
 
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.export_scene.gltf(filepath=OUT, export_format="GLB", export_apply=True, export_yup=True, export_materials="EXPORT", export_normals=True)
 xs = [(body.matrix_world @ v.co).x for v in body.data.vertices]
+# Scène posée gardée à côté du GLB (même nom en .blend) : c'est la source à reprendre dans Blender.
+bpy.ops.wm.save_as_mainfile(filepath=OUT.rsplit(".", 1)[0] + ".blend", compress=True)
 print("LARGEUR", round(max(xs) - min(xs), 3), "HAUTEUR", round(H, 3), "FACES", len(body.data.polygons))
