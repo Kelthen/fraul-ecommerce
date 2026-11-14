@@ -15,6 +15,8 @@ export default async function Home() {
   const fromAdmin = ((await loadLookRows()) ?? []).map((r) => ({ id: r.id, title: r.title, photo: r.cutout!, items: r.items }));
   const looks = resolveLooks(fromAdmin.length ? fromAdmin : TEST_LOOKS, products);
   const featured = walkBrands.slice(0, 8);
+  // Une page = un titre principal : celui des looks s'il y en a, sinon « Le shopping se visite » (test téléphone, 14 nov.).
+  const HeroTitle = looks.length > 0 ? "h2" : "h1";
   // Plus de pièces sur l'accueil (Rhamone, 11 nov. : « la page d'accueil manque de placement de produit ») : les autres
   // pièces en ligne, une marque après l'autre, sans répéter les nouveautés.
   const rest = products.filter((p) => !news.some((n) => n.slug === p.slug));
@@ -54,11 +56,12 @@ export default async function Home() {
         <div className="mall-copy">
           <div className="wrap">
             <p className="eyebrow">Walk · Drop 001</p>
-            <h2 id="hero-title">
+            {/* Titre principal de la page quand il n'y a pas de looks en haut (sinon les looks le portent). */}
+            <HeroTitle id="hero-title">
               Le shopping
               <br />
               <em>se visite.</em>
-            </h2>
+            </HeroTitle>
             <p className="lead">
               Streetwear et luxe 100 % authentiques, une boutique par marque. Passe devant les vitrines, entre et repars
               avec tes pièces.

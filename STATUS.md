@@ -166,6 +166,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
 ## 🔄 En cours
+- **Accueil : toujours un titre principal** (`fix/rhamon/accueil-titre`, 14 nov.) — depuis #121, le seul titre principal (h1) était dans les looks : sans looks (base vide, copie de secours), la page n'en avait plus (accessibilité, référencement, test téléphone « accueil » en échec). « Le shopping se visite » redevient le titre principal quand il n'y a pas de looks. — rhamon
 
 
 
