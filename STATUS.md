@@ -167,6 +167,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Accueil — looks face/dos (Rhamone, 14 nov.)** : dix propositions de nouveaux looks et les six dos des looks historiques transmis pour reprise par Serge, avec photos source et correspondances articles : `docs/LOOKS-FACE-DOS-SERGE.md`. Corriger les écarts produit signalés, puis préparer la preview ; pas encore publiés. Garder le défilé validé. Les mannequins Blender de #127 restent distincts.
+
 
 
 

@@ -355,3 +355,7 @@
 ### L-63 — Un merge seulement sur un « oui » sans ambiguïté
 - **Erreur :** « Continue mais on merge » a été lu comme « on merge » et #114 a été mergée, alors que Rhamone voulait dire « on ne merge pas » (11 nov. 2026). Il a fallu annuler le merge.
 - **Règle :** avant de merger, si la phrase peut se lire dans les deux sens (négation absente, faute de frappe, message court), poser une question oui/non (« Je merge la PR #N maintenant ? ») et attendre la réponse. Ne jamais merger sur une consigne glissée au milieu d'une autre demande.
+
+### L-64 — Composer les looks depuis le catalogue actuel
+- **Erreur :** seulement deux nouveaux looks proposés depuis l’ancienne bibliothèque locale alors que le catalogue public contenait 284 articles ; Rhamone demandait une vraie variété et des vues face/dos.
+- **Règle :** consulter les articles actuels avant le casting, varier vêtements/personnages/chaussures, conserver les références produit avant et arrière. Un look face/dos garde la même personne et la même paire. Signaler les écarts visuels et les chaussures non vendues ; ne jamais inventer le dos d’un vêtement pour le présenter comme fidèle.
