@@ -26,6 +26,10 @@ let MANNEQUIN = null;
  *  Quand le fichier est là, passer WOMAN_READY à true : il prend sa place partout, sans autre changement. */
 const WOMAN_READY = true;
 let MANNEQUIN_F = null;
+/** Mannequins habillés d'un vrai look (prototype, Rhamone 14 nov. ; assets-src/blender/mannequin-habille.py) : dans la
+ *  vitrine de la marque du look, ils remplacent le mannequin de même genre (0 homme, 1 femme). Clé : nom de la marque. */
+const LOOK_MANNEQUINS = { "Stüssy": { file: "mannequin-look-06", variant: 0 }, Trapstar: { file: "mannequin-look-05", variant: 1 } };
+const LOOK_MODELS = {};
 /** Comptoir de la Caisse modélisé dans Blender par Rhamone (public/models/caisse.glb, préparé par scripts/prep-decor.mjs). */
 let CAISSE = null;
 /** Olivier en pot de marbre modélisé dans Blender (assets-src/blender/plante-mall.py → public/models/plante.glb). */
@@ -210,7 +214,7 @@ export function startWalk(root, o) {
       const L = $("#loader"), show = setTimeout(() => { L.hidden = false; }, 200);
       const done = (ok) => Promise.race([Promise.all(CANVAS_FONTS.map((f) => document.fonts.load(f))).catch(() => {}), new Promise((r) => setTimeout(r, 800))])
         .then(() => { clearTimeout(show); L.hidden = true; res(ok); });
-      import("three").then(async (m) => { THREE = m; [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR, VITRINE, ILOT] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null), loadModel("vitrine").then(vitrineKit), loadModel("ilot")]); if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
+      import("three").then(async (m) => { THREE = m; const looksP = Promise.all(Object.values(LOOK_MANNEQUINS).map((l) => loadModel(l.file).then((g) => { if (g) LOOK_MODELS[l.file] = g; }))); [MANNEQUIN, CAISSE, MANNEQUIN_F, PLANTE, REFLECTOR, VITRINE, ILOT] = await Promise.all([loadModel("mannequin"), loadModel("caisse"), WOMAN_READY ? loadModel("mannequin-femme") : null, loadModel("plante"), import("three/examples/jsm/objects/Reflector.js").then((r) => r.Reflector, () => null), loadModel("vitrine").then(vitrineKit), loadModel("ilot")]); await looksP; if (CAISSE) walkMaterials(CAISSE); if (PLANTE) walkMaterials(PLANTE); root.dataset.mannequin = MANNEQUIN ? "blender" : "dessin"; done(true); }).catch(() => { threeP = null; done(false); });
     });
     return threeP;
   }
@@ -492,6 +496,17 @@ export function startWalk(root, o) {
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
+        // Look photographié (texture projetée) : on garde sa photo telle quelle.
+        // La photo est à côté du modèle (public/models/mannequin-look-<n>.jpg), pas dedans : les images internes « blob: »
+        // sont refusées par les règles de sécurité du site.
+        if (n.startsWith("Look_")) {
+          if (!MQ[n]) {
+            const map = new THREE.TextureLoader().load(`/models/mannequin-look-${n.slice(5)}.jpg`, () => dispatchEvent(new Event("tuc-redraw")));
+            map.flipY = false; map.encoding = THREE.sRGBEncoding;
+            MQ[n] = new THREE.MeshLambertMaterial({ map });
+          }
+          ob.material = MQ[n]; return;
+        }
         ob.material = n === "Tee_Noir" ? (MQ[tee] ||= new THREE.MeshLambertMaterial({ color: tee }))
           : n === "Tee_Marque_Texte" ? chestMat(st, tee, ink)
           : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
@@ -505,6 +520,8 @@ export function startWalk(root, o) {
     }
     function joint(g, p, r, mat, sx = 1, sy = 1, sz = 1) { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat); m.position.set(...p); m.scale.set(sx, sy, sz); g.add(m); return m; }
     function mannequin(st, variant) {
+      const look = LOOK_MANNEQUINS[st.name];
+      if (look && look.variant === variant && LOOK_MODELS[look.file]) return blenderMannequin(st, variant, LOOK_MODELS[look.file]);
       if (variant === 1 && MANNEQUIN_F) return blenderMannequin(st, variant, MANNEQUIN_F); // la version 1 devient la femme
       if (MANNEQUIN) return blenderMannequin(st, variant, MANNEQUIN);
       const g = new THREE.Group(), darkSkin = variant === 1, hoodie = variant === 1;
@@ -991,6 +1008,7 @@ export function startWalk(root, o) {
     const cam = { x: ENTRY.p[0], z: ENTRY.p[1] + 6, lx: ENTRY.l[0], ly: ENTRY.l[1], lz: ENTRY.l[2] };
     let raf = 0, entering = false, snapNext = true;
     function kick() { if (!raf && !dead) raf = requestAnimationFrame(frame); }
+    on(window, "tuc-redraw", () => kick()); // une texture arrivée après coup (photo d'un mannequin habillé)
     function frame() {
       raf = 0; if (!walkOpen || storeOpen || dead) return;
       let more = false;
@@ -1418,6 +1436,7 @@ export function startWalk(root, o) {
     let raf = 0, active = null, closeAmt = 0, closeT = 0, yaw = 0, dragging = false;
     const UP = V(0, 1, 0), tmp = V(0, 0, 0), tmp2 = V(0, 0, 0);
     const kick = () => { if (!raf && !dead) raf = requestAnimationFrame(frame); };
+    addEventListener("tuc-redraw", kick, { signal: ac.signal }); // texture arrivée après coup
     const ITEM_BIG = 1.3;
     function layout(car, isActive, now) {
       const fi = Math.round(car.f), cfg = car.cfg, side = cfg.side, L = side ? SIDE_VISIBLE : 3.4;

@@ -222,7 +222,7 @@ def rot(name, x=0, y=0, z=0):
     pb.rotation_euler = (math.radians(x), math.radians(y), math.radians(z))
 
 
-if KIND == "femme":
+if KIND == "femme" and __import__("os").environ.get("POSE") != "libre":
     waist = max(-v.x for v in V if abs(v.z - Z(0.6)) < 0.01 and -0.2 < v.x < 0)
     tgt = bpy.data.objects.new("cible", None)
     tgt.location = (-(waist + 0.015), yc + 0.01, Z(0.58))
