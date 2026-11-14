@@ -355,3 +355,7 @@
 ### L-63 — Un merge seulement sur un « oui » sans ambiguïté
 - **Erreur :** « Continue mais on merge » a été lu comme « on merge » et #114 a été mergée, alors que Rhamone voulait dire « on ne merge pas » (11 nov. 2026). Il a fallu annuler le merge.
 - **Règle :** avant de merger, si la phrase peut se lire dans les deux sens (négation absente, faute de frappe, message court), poser une question oui/non (« Je merge la PR #N maintenant ? ») et attendre la réponse. Ne jamais merger sur une consigne glissée au milieu d'une autre demande.
+
+### L-67 — Un modèle 3D se juge sur des gros plans, pas sur une vue d'ensemble
+- **Erreur :** les mannequins de #127 ont été annoncés avec des « coupes nettes » à partir de vues d'ensemble ; la revue (14 nov. 2026) a montré des dents au col, un liseré blanc aux manches et une main mal posée.
+- **Règle :** avant d'annoncer un mannequin ou un modèle comme corrigé, rendre les **6 angles plus des gros plans** (col, manches, mains, pieds sur le socle) et les déposer dans la PR. Une limite de matière doit suivre une coupe réelle du maillage, jamais une simple affectation de triangles. Décrire seulement ce que les gros plans montrent.

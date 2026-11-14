@@ -492,7 +492,6 @@ export function startWalk(root, o) {
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
-        // Look photographié (texture projetée) : on garde sa photo telle quelle.
         ob.material = n === "Tee_Noir" ? (MQ[tee] ||= new THREE.MeshLambertMaterial({ color: tee }))
           : n === "Tee_Marque_Texte" ? chestMat(st, tee, ink)
           : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
