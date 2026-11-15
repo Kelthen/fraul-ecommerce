@@ -494,7 +494,12 @@ export function startWalk(root, o) {
       return l > 0.8 ? c.multiplyScalar(0.86) : c;
     }
     function blenderMannequin(st, variant, model) {
-      const g = model.clone(true), [tee, ink] = (variant ? [st.fg, st.bg] : [st.bg, st.fg]).map((c) => `#${new THREE.Color(c).getHexString()}`);
+      // Tee à la couleur principale de la boutique pour les deux mannequins (Rhamone, 15 nov. : « l'habit du mannequin
+      // de femme ne change jamais » — la 2e couleur des marques est presque toujours l'ivoire du texte). Femme : une
+      // nuance du même ton, plus claire (ou plus foncée si la marque est claire), pour ne pas être identique à l'homme.
+      const base = new THREE.Color(st.bg), lum = 0.2126 * base.r + 0.7152 * base.g + 0.0722 * base.b;
+      const teeC = variant ? base.clone().lerp(new THREE.Color(lum > 0.5 ? 0x000000 : 0xffffff), lum > 0.5 ? 0.18 : 0.22) : base;
+      const g = model.clone(true), [tee, ink] = [teeC, new THREE.Color(st.fg)].map((c) => `#${c.getHexString()}`);
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
