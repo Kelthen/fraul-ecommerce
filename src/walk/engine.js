@@ -470,31 +470,47 @@ export function startWalk(root, o) {
     // Mannequin de Blender : on garde ses formes, ses matières passent à l'éclairage simple du Walk (léger sur téléphone).
     // Le tee prend la couleur de la marque et son nom sur la poitrine, comme le mannequin dessiné.
     const MQ = {}, MQ_MAT = {
-      Mannequin_Blanc_Laque: () => new THREE.MeshPhongMaterial({ color: 0xf4f3f0, specular: 0x9a9a9a, shininess: 110 }),
+      // Laque douce : un reflet discret, pas de brillance qui se confond avec un tee clair (revue du 14 nov.).
+      Mannequin_Blanc_Laque: () => new THREE.MeshPhongMaterial({ color: 0xefebe4, specular: 0x5a5a5a, shininess: 55 }),
       Jean_Noir_Delave: () => new THREE.MeshLambertMaterial({ color: 0x2a2b31 }),
       Basket_Blanc: () => new THREE.MeshPhongMaterial({ color: 0xf6f5f2, shininess: 30 }),
       Semelle_Blanc: () => new THREE.MeshPhongMaterial({ color: 0xe9e7e2, shininess: 20 }),
       Socle_Metal_Brosse: () => new THREE.MeshPhongMaterial({ color: 0x9c9ca0, specular: 0x777777, shininess: 60 }),
     };
     // Panneau de poitrine (Tee_Poitrine_Marque) : le nom de la marque, à la couleur inverse du tee.
-    function chestMat(st, tee, ink) {
-      const key = `${st.name}|${tee}`;
+    function chestMat(st, tee, ink, creux = false) {
+      const key = `${st.name}|${tee}|${creux}`;
       if (!MQ[key]) {
         const map = wordTex(st, { w: 512, h: 384, bg: tee, fg: ink, maxW: 480, px: 170, logo: false });
         map.flipY = false; // coordonnées de texture du glTF
         map.encoding = THREE.LinearEncoding; // même rendu de couleur que le tee (couleur simple) : pas de carré plus foncé
-        MQ[key] = new THREE.MeshLambertMaterial({ map });
+        MQ[key] = new THREE.MeshLambertMaterial({ map, vertexColors: creux });
       }
       return MQ[key];
     }
+    // Tee mat ; un tee presque blanc est un peu adouci pour se détacher de la peau laquée.
+    function teeColor(hex) {
+      const c = new THREE.Color(hex), l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+      return l > 0.8 ? c.multiplyScalar(0.86) : c;
+    }
     function blenderMannequin(st, variant, model) {
-      const g = model.clone(true), [tee, ink] = (variant ? [st.fg, st.bg] : [st.bg, st.fg]).map((c) => `#${new THREE.Color(c).getHexString()}`);
+      // Tee à la couleur principale de la boutique pour les deux mannequins (Rhamone, 15 nov. : « l'habit du mannequin
+      // de femme ne change jamais » — la 2e couleur des marques est presque toujours l'ivoire du texte). Femme : une
+      // nuance du même ton, plus claire (ou plus foncée si la marque est claire), pour ne pas être identique à l'homme.
+      const base = new THREE.Color(st.bg), lum = 0.2126 * base.r + 0.7152 * base.g + 0.0722 * base.b;
+      const teeC = variant ? base.clone().lerp(new THREE.Color(lum > 0.5 ? 0x000000 : 0xffffff), lum > 0.5 ? 0.18 : 0.22) : base;
+      const g = model.clone(true), [tee, ink] = [teeC, new THREE.Color(st.fg)].map((c) => `#${c.getHexString()}`);
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
-        ob.material = n === "Tee_Noir" ? (MQ[tee] ||= new THREE.MeshLambertMaterial({ color: tee }))
-          : n === "Tee_Marque_Texte" ? chestMat(st, tee, ink)
-          : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
+        const creux = !!ob.geometry.attributes.color; // ombre des creux inscrite dans le modèle
+        ob.material = n === "Tee_Noir" ? (MQ[tee + (creux ? "|creux" : "")] ||= new THREE.MeshLambertMaterial({ color: teeColor(tee), vertexColors: creux }))
+          : n === "Tee_Marque_Texte" ? chestMat(st, `#${teeColor(tee).getHexString()}`, ink, creux)
+          : n === "Jean_Noir_Delave" && variant // femme : jean bleu clair délavé, pas le jean noir de l'homme (Rhamone, 15 nov.)
+            ? (MQ["jean-femme" + (creux ? "|creux" : "")] ||= new THREE.MeshLambertMaterial({ color: 0x8aa0bd, vertexColors: creux }))
+          : creux && MQ_MAT[n]
+            ? (MQ[n + "|creux"] ||= Object.assign(MQ_MAT[n](), { vertexColors: true }))
+            : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
       });
       return g;
     }
@@ -894,14 +910,32 @@ export function startWalk(root, o) {
       hit.userData.shop = k; hits.push(hit);
       shops.push({ g, st, s, detail: null, backdrop });
     });
+    // Vitrine : le mannequin est « sous le spot » (matière un peu éclairée de l'intérieur) plutôt que d'ajouter une vraie
+    // lampe par vitrine, trop coûteuse au téléphone. Les matières éclairées sont partagées entre toutes les vitrines.
+    const SPOT = new Map();
+    function spot(m) {
+      m.traverse((o) => {
+        if (!o.isMesh || !o.material || !o.material.color) return;
+        let v = SPOT.get(o.material);
+        if (!v) {
+          v = o.material.clone(); v.emissive = o.material.color.clone().multiplyScalar(0.16);
+          if (o.material.map) v.emissiveMap = o.material.map; // poitrine imprimée : la lueur suit l'image, pas un carré blanc
+          SPOT.set(o.material, v);
+        }
+        o.material = v;
+      });
+    }
     function buildDetail(sh, k) {
       const d = new THREE.Group(), st = sh.st; sh.g.add(d); sh.detail = d;
       [-1, 1].forEach((sd) => {
         // Fond lumineux au fond de la vitrine intégrée (facades.ts), le mannequin devant, derrière le verre.
-        add(d, new THREE.PlaneGeometry(1.35, 3.6), new THREE.MeshBasicMaterial({ map: glow, transparent: true, opacity: 0.85 }), sd * 3.25, 2.1, -0.44);
+        // Fond plus discret qu'avant (0,85) : il délavait le mannequin vu de l'allée (revue du 14 nov.).
+        add(d, new THREE.PlaneGeometry(1.35, 3.6), new THREE.MeshBasicMaterial({ map: glow, transparent: true, opacity: 0.18, color: 0xe9dfcf }), sd * 3.25, 2.1, -0.44);
         // Un homme à gauche, une femme à droite ; tant que le modèle femme n'est pas là, l'homme seul.
         if (sd > 0 && !MANNEQUIN_F) return;
-        const m = U.mannequin(st, sd > 0 ? 1 : 0); m.position.set(sd * 3.25, 0.14, -0.05); m.rotation.y = -sd * 0.12; d.add(m);
+        // Avancé près du verre (les montants ne le cachent plus de biais) et un peu plus grand qu'au naturel, comme les
+        // mannequins de vitrine : la baie fait 4,2 m de haut. Seulement en vitrine, pas dans la boutique.
+        const m = U.mannequin(st, sd > 0 ? 1 : 0); m.position.set(sd * 3.25, 0.14, 0.1); m.rotation.y = -sd * 0.12; m.scale.setScalar(1.15); spot(m); d.add(m);
       });
       const fl = add(d, new THREE.PlaneGeometry(8, 6.4), lam(0xdcd0bd), 0, 0.005, -3.4); fl.rotation.x = -Math.PI / 2;
       [-1, 1].forEach((sd) => add(d, new THREE.PlaneGeometry(6.4, CEIL), lam(0xf1ece3), sd * 4, CEIL / 2, -3.4, -sd * Math.PI / 2));
@@ -1542,7 +1576,8 @@ export function startWalk(root, o) {
         const d = [[x - ISLE.x0, ISLE.x0, z], [ISLE.x1 - x, ISLE.x1, z], [z - ISLE.z0, x, ISLE.z0], [ISLE.z1 - z, x, ISLE.z1]].sort((a, b) => a[0] - b[0])[0];
         x = d[1]; z = d[2];
       }
-      DUMMIES.forEach(([mx, mz]) => { const dx = x - mx, dz = z - mz, d = Math.hypot(dx, dz); if (d < 0.9) { const k = 0.9 / Math.max(d, 0.01); x = mx + dx * k; z = mz + dz * k; } });
+      // 1,5 m autour des mannequins : à moins, la tête ou les pieds sortent de l'écran du téléphone (revue du 14 nov.).
+      DUMMIES.forEach(([mx, mz]) => { const dx = x - mx, dz = z - mz, d = Math.hypot(dx, dz); if (d < 1.5) { const k = 1.5 / Math.max(d, 0.01); x = mx + dx * k; z = mz + dz * k; } });
       return [clamp(x, -FREE.x, FREE.x), clamp(z, FREE.zBack, FREE.zFront)];
     }
     // Repère de destination : un anneau discret au sol, qui s'efface à l'arrivée.
