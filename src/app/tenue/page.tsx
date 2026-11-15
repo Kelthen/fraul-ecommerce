@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Crée ta tenue",
   description: "Assemble un haut, un bas et une paire sur le mannequin, puis ajoute la tenue entière au panier.",
   alternates: { canonical: "/tenue" },
+  robots: { index: false, follow: false }, // masqué : plus de lien vers cette page (Rhamone, 4 nov.)
 };
 
 export default async function OutfitPage() {
