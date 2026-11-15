@@ -498,9 +498,12 @@ export function startWalk(root, o) {
       g.traverse((ob) => {
         if (!ob.isMesh) return;
         const n = ob.material.name;
-        ob.material = n === "Tee_Noir" ? (MQ[tee] ||= new THREE.MeshLambertMaterial({ color: teeColor(tee) }))
+        const creux = !!ob.geometry.attributes.color; // ombre des creux inscrite dans le modèle
+        ob.material = n === "Tee_Noir" ? (MQ[tee + (creux ? "|creux" : "")] ||= new THREE.MeshLambertMaterial({ color: teeColor(tee), vertexColors: creux }))
           : n === "Tee_Marque_Texte" ? chestMat(st, tee, ink)
-          : ob.geometry.attributes.color && MQ_MAT[n] // ombre des creux inscrite dans le modèle (mannequins tels quels)
+          : n === "Jean_Noir_Delave" && variant // femme : jean bleu clair délavé, pas le jean noir de l'homme (Rhamone, 15 nov.)
+            ? (MQ["jean-femme" + (creux ? "|creux" : "")] ||= new THREE.MeshLambertMaterial({ color: 0x8aa0bd, vertexColors: creux }))
+          : creux && MQ_MAT[n]
             ? (MQ[n + "|creux"] ||= Object.assign(MQ_MAT[n](), { vertexColors: true }))
             : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
       });

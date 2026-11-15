@@ -439,7 +439,11 @@ def rot(name, x=0, y=0, z=0):
     pb.rotation_euler = (math.radians(x), math.radians(y), math.radians(z))
 
 
-if KIND == "femme" and __import__("os").environ.get("POSE") != "libre":
+# Pose d'origine de ChatGPT par défaut (Rhamone, 15 nov. : « prendre la forme, la pose et tout, mais retaper l'habit,
+# le pantalon et la chaussure ») : aucune rotation, le maillage n'est pas plié. POSE=reference : ancienne pose A.
+if __import__("os").environ.get("POSE", "origine") == "origine":
+    pass
+elif KIND == "femme" and __import__("os").environ.get("POSE") != "libre":
     waist = max(-v.x for v in V if abs(v.z - Z(0.6)) < 0.01 and -0.2 < v.x < 0)
     tgt = bpy.data.objects.new("cible", None)
     ty, tz = (float(v) for v in __import__("os").environ.get("CIBLE", "-0.05,0.6").split(","))
@@ -519,8 +523,25 @@ body.location.z += plate_top - low
 for p in body.data.polygons:
     p.use_smooth = True
 
+# Ombre des creux inscrite dans les sommets (plis du tee, poches, muscles) : lisible sous l'éclairage plat du mall.
+bm = bmesh.new(); bm.from_mesh(body.data); bm.verts.ensure_lookup_table(); bm.normal_update()
+cav = []
+for v in bm.verts:
+    nb = [e.other_vert(v) for e in v.link_edges]
+    cav.append(max(0.0, sum(((w.co - v.co).normalized().dot(v.normal) for w in nb), 0.0) / len(nb)) if nb else 0.0)
+for _ in range(3):
+    cav = [(cav[v.index] + sum(cav[e.other_vert(v).index] for e in v.link_edges)) / (1 + len(v.link_edges)) for v in bm.verts]
+top = sorted(cav)[int(len(cav) * 0.98)] or 1.0
+bm.free()
+col = body.data.color_attributes.new("Creux", "BYTE_COLOR", "POINT")
+for i, c in enumerate(cav):
+    s_ = 1.0 - 0.45 * min(1.0, c / top)
+    col.data[i].color = (s_, s_, s_, 1.0)
+body.data.color_attributes.active_color = col
+
 bpy.ops.object.select_all(action="SELECT")
-bpy.ops.export_scene.gltf(filepath=OUT, export_format="GLB", export_apply=True, export_yup=True, export_materials="EXPORT", export_normals=True)
+bpy.ops.export_scene.gltf(filepath=OUT, export_format="GLB", export_apply=True, export_yup=True, export_materials="EXPORT", export_normals=True,
+                          export_vertex_color="ACTIVE")
 xs = [(body.matrix_world @ v.co).x for v in body.data.vertices]
 # Pose figée (maillage seul, comme le GLB du site), à côté de la scène de travail « -rig ».
 bpy.ops.wm.save_as_mainfile(filepath=STEM + "-pose.blend", compress=True)
