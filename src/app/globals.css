@@ -651,3 +651,7 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .how-card .how-t { margin: 0; }
 .how-card p { margin: 0; font-size: 13px; color: var(--muted); }
 @media (min-width: 900px) { .how-row { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; padding: 0; overflow: visible; } .how-card { width: auto; } }
+
+/* Bouton face / dos du look au premier plan (14 nov.) : discret, sous la légende. */
+.looks-turn { justify-self: center; border: 1px solid var(--line); border-radius: 999px; background: none; padding: 4px 12px; margin-top: 2px; font: 600 10px/1.4 var(--body); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); cursor: pointer; }
+.looks-turn[aria-pressed="true"] { background: var(--ink); color: var(--ivory); border-color: var(--ink); }

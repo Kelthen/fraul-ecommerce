@@ -356,6 +356,10 @@
 - **Erreur :** « Continue mais on merge » a été lu comme « on merge » et #114 a été mergée, alors que Rhamone voulait dire « on ne merge pas » (11 nov. 2026). Il a fallu annuler le merge.
 - **Règle :** avant de merger, si la phrase peut se lire dans les deux sens (négation absente, faute de frappe, message court), poser une question oui/non (« Je merge la PR #N maintenant ? ») et attendre la réponse. Ne jamais merger sur une consigne glissée au milieu d'une autre demande.
 
+### L-66 — Ne jamais rogner une photo de look sans regarder où sont les étiquettes
+- **Erreur :** pour retirer les étiquettes FACE/DOS des planches verticales, 6 % ont été coupés en haut et en bas ; les étiquettes n'étaient qu'en bas, et le haut des têtes est parti (Rhamone, 15 nov. : « des têtes coupées »).
+- **Règle :** avant de rogner une planche, regarder le haut et le bas ; ne couper que la bande qui contient le texte, et vérifier sur une planche contact que chaque tête et chaque semelle sont entières.
+
 ### L-67 — Un modèle 3D se juge sur des gros plans, pas sur une vue d'ensemble
 - **Erreur :** les mannequins de #127 ont été annoncés avec des « coupes nettes » à partir de vues d'ensemble ; la revue (14 nov. 2026) a montré des dents au col, un liseré blanc aux manches et une main mal posée.
 - **Règle :** avant d'annoncer un mannequin ou un modèle comme corrigé, rendre les **6 angles plus des gros plans** (col, manches, mains, pieds sur le socle) et les déposer dans la PR. Une limite de matière doit suivre une coupe réelle du maillage, jamais une simple affectation de triangles. Décrire seulement ce que les gros plans montrent.
