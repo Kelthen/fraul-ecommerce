@@ -309,7 +309,8 @@ for i, ws in enumerate(W):
 # --- Matières par zone (os dominant + hauteur des coutures)
 mats = {}
 for name, rgb in (("Mannequin_Blanc_Laque", (0.95, 0.94, 0.92)), ("Tee_Noir", (0.05, 0.05, 0.05)),
-                  ("Jean_Noir_Delave", (0.16, 0.17, 0.2)), ("Basket_Blanc", (0.96, 0.96, 0.94))):
+                  ("Jean_Noir_Delave", (0.16, 0.17, 0.2)), ("Basket_Blanc", (0.96, 0.96, 0.94)),
+                  ("Tee_Marque_Texte", (0.06, 0.06, 0.06))):
     old = bpy.data.materials.get(name)  # matière du même nom venue avec le socle importé : on la libère
     if old:
         old.name = name + "_import"
@@ -428,6 +429,23 @@ for _ in range(0 if __import__("os").environ.get("BRUT") else 3):
                 lab[i] = best
 for p, m in zip(body.data.polygons, lab):
     p.material_index = idx[m]
+
+# Nom de la boutique sur la poitrine (Rhamone, 15 nov.) : un rectangle du devant du tee prend la matière
+# « Tee_Marque_Texte », où le Walk peint le nom de la marque sur le fond de la couleur du tee (bords invisibles).
+# Coordonnées de texture projetées de face : u de gauche à droite, v de bas en haut (rapport 4:3 de l'image du moteur).
+CW = 0.105 * H / 1.8  # demi-largeur
+CZ0 = Z({"homme": 0.70, "femme": 0.705}[KIND])
+CZ1 = CZ0 + 2 * CW * 0.75
+uvl = body.data.uv_layers.active or body.data.uv_layers.new(name="UVMap")
+for p in body.data.polygons:
+    if lab[p.index] != "Tee_Noir" or p.normal.y > -0.35:
+        continue
+    c = sum((V[i] for i in p.vertices), Vector()) / len(p.vertices)
+    if abs(c.x) < CW and CZ0 < c.z < CZ1:
+        p.material_index = idx["Tee_Marque_Texte"]
+        for li in p.loop_indices:
+            co = V[body.data.loops[li].vertex_index]
+            uvl.data[li].uv = ((co.x + CW) / (2 * CW), (co.z - CZ0) / (CZ1 - CZ0))
 
 # --- Pose
 P = arm.pose.bones

@@ -478,13 +478,13 @@ export function startWalk(root, o) {
       Socle_Metal_Brosse: () => new THREE.MeshPhongMaterial({ color: 0x9c9ca0, specular: 0x777777, shininess: 60 }),
     };
     // Panneau de poitrine (Tee_Poitrine_Marque) : le nom de la marque, à la couleur inverse du tee.
-    function chestMat(st, tee, ink) {
-      const key = `${st.name}|${tee}`;
+    function chestMat(st, tee, ink, creux = false) {
+      const key = `${st.name}|${tee}|${creux}`;
       if (!MQ[key]) {
         const map = wordTex(st, { w: 512, h: 384, bg: tee, fg: ink, maxW: 480, px: 170, logo: false });
         map.flipY = false; // coordonnées de texture du glTF
         map.encoding = THREE.LinearEncoding; // même rendu de couleur que le tee (couleur simple) : pas de carré plus foncé
-        MQ[key] = new THREE.MeshLambertMaterial({ map });
+        MQ[key] = new THREE.MeshLambertMaterial({ map, vertexColors: creux });
       }
       return MQ[key];
     }
@@ -505,7 +505,7 @@ export function startWalk(root, o) {
         const n = ob.material.name;
         const creux = !!ob.geometry.attributes.color; // ombre des creux inscrite dans le modèle
         ob.material = n === "Tee_Noir" ? (MQ[tee + (creux ? "|creux" : "")] ||= new THREE.MeshLambertMaterial({ color: teeColor(tee), vertexColors: creux }))
-          : n === "Tee_Marque_Texte" ? chestMat(st, tee, ink)
+          : n === "Tee_Marque_Texte" ? chestMat(st, `#${teeColor(tee).getHexString()}`, ink, creux)
           : n === "Jean_Noir_Delave" && variant // femme : jean bleu clair délavé, pas le jean noir de l'homme (Rhamone, 15 nov.)
             ? (MQ["jean-femme" + (creux ? "|creux" : "")] ||= new THREE.MeshLambertMaterial({ color: 0x8aa0bd, vertexColors: creux }))
           : creux && MQ_MAT[n]
@@ -917,7 +917,11 @@ export function startWalk(root, o) {
       m.traverse((o) => {
         if (!o.isMesh || !o.material || !o.material.color) return;
         let v = SPOT.get(o.material);
-        if (!v) { v = o.material.clone(); v.emissive = o.material.color.clone().multiplyScalar(0.16); SPOT.set(o.material, v); }
+        if (!v) {
+          v = o.material.clone(); v.emissive = o.material.color.clone().multiplyScalar(0.16);
+          if (o.material.map) v.emissiveMap = o.material.map; // poitrine imprimée : la lueur suit l'image, pas un carré blanc
+          SPOT.set(o.material, v);
+        }
         o.material = v;
       });
     }

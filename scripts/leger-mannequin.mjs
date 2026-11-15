@@ -4,6 +4,10 @@ const { NodeIO } = req("@gltf-transform/core"); const { ALL_EXTENSIONS } = req("
 const [src, out] = process.argv.slice(2);
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 const doc = await io.read(src);
-await doc.transform(weld(), dedup(), prune(), quantize());
+// Coordonnées de texture : seulement sur la poitrine (Tee_Marque_Texte, où le Walk peint le nom de la boutique).
+for (const mesh of doc.getRoot().listMeshes())
+  for (const prim of mesh.listPrimitives())
+    if (prim.getMaterial()?.getName() !== "Tee_Marque_Texte") prim.setAttribute("TEXCOORD_0", null);
+await doc.transform(weld(), dedup(), prune({ keepAttributes: true }), quantize());
 await io.write(out, doc);
 console.log(out, "ok");
