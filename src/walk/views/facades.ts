@@ -80,10 +80,11 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex, kit }
     });
   const niche = (frame: T.Material) => {
     if (kit) return nicheFinie(frame);
-    const back = new THREE.MeshLambertMaterial({ color: 0xf4ede2 });
+    // Fond de niche taupe : les mannequins ivoire s'en détachent, comme en vraie vitrine (revue du 14 nov., choix du 15).
+    const back = new THREE.MeshLambertMaterial({ color: 0x7d7368 });
     const socle = std(0xece6dc, 0.35);
     // Verre : reflet doux de l'ambiance du mall (lot 1), toujours transparent pour voir le mannequin.
-    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.12, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 0.6 });
+    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.05, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 0.3 });
     [-1, 1].forEach((s) => {
       const cx = s * 3.25;
       box(OPEN, TOP, 0.04, back, cx, TOP / 2, -0.47); // fond
@@ -108,11 +109,12 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex, kit }
   // Vitrine témoin (lot 2) : mêmes cotes, mais cadre biseauté et socle en pierre de Blender, verre qu'on devine (reflets
   // en biais très légers), lumière chaude qui descend sur le mannequin. Le mannequin et le fond lumineux viennent du moteur.
   const nicheFinie = (frame: T.Material) => {
-    const back = new THREE.MeshLambertMaterial({ color: 0xf6eee1 });
+    const back = new THREE.MeshLambertMaterial({ color: 0x7d7368 }); // taupe : les mannequins ivoire s'en détachent
     const pierre = new THREE.MeshStandardMaterial({ color: tex?.stone ? 0xfbf6ee : 0xece6dc, map: tex?.stone ?? null, roughness: 0.42, envMap: tex?.env ?? null, envMapIntensity: 0.5 });
     const warm = new THREE.MeshBasicMaterial({ color: 0xffe6c2 });
-    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.04, metalness: 0.4, transparent: true, opacity: 0.1, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 1 });
-    const streaks = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.22,
+    // Verre plus discret (revue du 14 nov. : il voilait le mannequin vu de l'allée) : on le devine aux reflets en biais.
+    const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.04, metalness: 0.4, transparent: true, opacity: 0.04, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 0.35 });
+    const streaks = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.12,
       map: painted(THREE, "reflets", 256, 512, (x) => {
         x.fillStyle = "#000"; x.fillRect(0, 0, 256, 512);
         x.translate(128, 256); x.rotate(-0.5); // deux traînées en biais, comme le reflet d'un bandeau du plafond
@@ -122,7 +124,7 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex, kit }
           x.fillStyle = g; x.fillRect(cx - w, -400, 2 * w, 800);
         });
       }) });
-    const cone = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.13,
+    const cone = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.07,
       map: painted(THREE, "faisceau", 128, 256, (x) => { // faisceau chaud : étroit en haut, large et fondu en bas
         const g = x.createLinearGradient(0, 0, 0, 256);
         g.addColorStop(0, "rgba(255,214,160,0.3)"); g.addColorStop(0.75, "rgba(255,214,160,0.06)"); g.addColorStop(1, "rgba(255,214,160,0)");

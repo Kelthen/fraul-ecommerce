@@ -356,6 +356,18 @@
 - **Erreur :** « Continue mais on merge » a été lu comme « on merge » et #114 a été mergée, alors que Rhamone voulait dire « on ne merge pas » (11 nov. 2026). Il a fallu annuler le merge.
 - **Règle :** avant de merger, si la phrase peut se lire dans les deux sens (négation absente, faute de frappe, message court), poser une question oui/non (« Je merge la PR #N maintenant ? ») et attendre la réponse. Ne jamais merger sur une consigne glissée au milieu d'une autre demande.
 
+### L-66 — Ne jamais rogner une photo de look sans regarder où sont les étiquettes
+- **Erreur :** pour retirer les étiquettes FACE/DOS des planches verticales, 6 % ont été coupés en haut et en bas ; les étiquettes n'étaient qu'en bas, et le haut des têtes est parti (Rhamone, 15 nov. : « des têtes coupées »).
+- **Règle :** avant de rogner une planche, regarder le haut et le bas ; ne couper que la bande qui contient le texte, et vérifier sur une planche contact que chaque tête et chaque semelle sont entières.
+
+### L-67 — Un modèle 3D se juge sur des gros plans, pas sur une vue d'ensemble
+- **Erreur :** les mannequins de #127 ont été annoncés avec des « coupes nettes » à partir de vues d'ensemble ; la revue (14 nov. 2026) a montré des dents au col, un liseré blanc aux manches et une main mal posée.
+- **Règle :** avant d'annoncer un mannequin ou un modèle comme corrigé, rendre les **6 angles plus des gros plans** (col, manches, mains, pieds sur le socle) et les déposer dans la PR. Une limite de matière doit suivre une coupe réelle du maillage, jamais une simple affectation de triangles. Décrire seulement ce que les gros plans montrent.
+
 ### L-68 — « Défiler » veut dire que ça bouge tout seul
 - **Erreur :** le 11 nov., Rhamone a demandé que les pièces « défilent horizontalement » ; la rangée des nouveautés a seulement été rendue glissable au doigt. Le 15 nov. : « il faut que ça défile aussi les nouveautés », comme le bandeau des noms de marques.
 - **Règle :** quand Rhamone dit « défiler », c'est un mouvement automatique et continu (comme `.marquee`), qui s'arrête quand on touche et reprend ensuite. Si c'est ambigu, montrer les deux et demander (L-07).
+
+### L-69 — PR terminée : fermer la PR de consignes de ChatGPT
+- **Erreur :** #127 et #131 réalisaient les consignes de ChatGPT (#129, #128), mais ces PR de consignes restaient ouvertes ; Rhamone l'avait déjà demandé (15 nov. 2026 : « je t'avais dit… je vois des PR de consignes ouvertes »).
+- **Règle :** dès qu'une PR de réalisation est mergée, fermer (sans merger) la PR de consignes `feat/gpt/…` qu'elle réalise, et le dire dans le résumé. Si la réalisation n'est pas encore mergée, la PR de consignes reste ouverte.
