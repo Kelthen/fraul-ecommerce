@@ -166,6 +166,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
 ## 🔄 En cours
+- **Looks : 8 nouveaux et vue de dos** (`feat/rhamon/looks-face-dos`, Rhamone, 14 nov. : « ajouter d'autres looks, faire le lien avec les magasins, écrans pub ») — les planches face/dos de ChatGPT (`feat/gpt/looks-face-dos`, `docs/LOOKS-FACE-DOS-SERGE.md`) détourées ici : **8 nouveaux looks** (01 à 08, pièces en ligne vérifiées le 14 nov.) et **le dos des 6 looks existants** → 14 looks, chacun face et dos (`public/images/looks/`, WebP transparent, ≈ 1,8 Mo en tout, chargés au besoin). Accueil : bouton « Voir de dos / Voir de face » sous le look au premier plan (le défilement s'arrête pendant qu'on regarde le dos). Walk : l'écran publicitaire de chaque boutique montre les looks de la marque, de face puis de dos. Looks 09 et 10 laissés de côté (pièces de l'ancienne bibliothèque, pas dans le catalogue). Écarts produit signalés par ChatGPT à corriger avant mise en ligne (col du Supreme, poches arrière…). Titres décidés par l'équipe, à confirmer. — rhamon ⚠️ zone de Serge (intégration prévue pour lui dans le document de ChatGPT)
 
 
 
