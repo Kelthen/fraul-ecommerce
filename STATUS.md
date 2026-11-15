@@ -168,6 +168,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
 ## 🔄 En cours
+- **Accueil : animations au défilement, sur iPhone aussi** (`feat/rhamon/accueil-animations`, Rhamone, 15 nov. : « le site faut que ce soit vivant », les 7 propositions validées) — chaque bloc s'anime une fois en entrant à l'écran : texte de l'entrée du mall ligne par ligne ; titres avec trait bordeaux qui se dessine ; engagements avec rebond ; nouveautés une par une depuis la droite ; « À ne pas manquer » depuis la gauche, le bas ou la droite selon la colonne ; marques qui se retournent ; étapes 01 → 04 avec numéros qui comptent ; façades de l'entrée du mall qui avancent au défilement. Remplace l'animation CSS « au défilement » que Safari iPhone ne gérait pas (`src/components/home/HomeMotion.tsx`). Rien ne bouge si le téléphone demande moins d'animations ; tout reste visible si le script ne charge pas. — rhamon
 
 
 
