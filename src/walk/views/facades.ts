@@ -80,8 +80,8 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex, kit }
     });
   const niche = (frame: T.Material) => {
     if (kit) return nicheFinie(frame);
-    // Fond de niche un ton plus soutenu que le mannequin laqué : tête et bras se détachent (revue du 14 nov.).
-    const back = new THREE.MeshLambertMaterial({ color: 0xc9bca8 });
+    // Fond de niche taupe : les mannequins ivoire s'en détachent, comme en vraie vitrine (revue du 14 nov., choix du 15).
+    const back = new THREE.MeshLambertMaterial({ color: 0x7d7368 });
     const socle = std(0xece6dc, 0.35);
     // Verre : reflet doux de l'ambiance du mall (lot 1), toujours transparent pour voir le mannequin.
     const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.05, depthWrite: false, envMap: tex?.env ?? null, envMapIntensity: 0.3 });
@@ -109,7 +109,7 @@ export function createFacade(THREE: typeof T, { type, bg, ceil, sign, tex, kit }
   // Vitrine témoin (lot 2) : mêmes cotes, mais cadre biseauté et socle en pierre de Blender, verre qu'on devine (reflets
   // en biais très légers), lumière chaude qui descend sur le mannequin. Le mannequin et le fond lumineux viennent du moteur.
   const nicheFinie = (frame: T.Material) => {
-    const back = new THREE.MeshLambertMaterial({ color: 0xc9bca8 }); // un ton plus soutenu que le mannequin laqué
+    const back = new THREE.MeshLambertMaterial({ color: 0x7d7368 }); // taupe : les mannequins ivoire s'en détachent
     const pierre = new THREE.MeshStandardMaterial({ color: tex?.stone ? 0xfbf6ee : 0xece6dc, map: tex?.stone ?? null, roughness: 0.42, envMap: tex?.env ?? null, envMapIntensity: 0.5 });
     const warm = new THREE.MeshBasicMaterial({ color: 0xffe6c2 });
     // Verre plus discret (revue du 14 nov. : il voilait le mannequin vu de l'allée) : on le devine aux reflets en biais.

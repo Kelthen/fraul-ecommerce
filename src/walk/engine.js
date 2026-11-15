@@ -471,7 +471,7 @@ export function startWalk(root, o) {
     // Le tee prend la couleur de la marque et son nom sur la poitrine, comme le mannequin dessiné.
     const MQ = {}, MQ_MAT = {
       // Laque douce : un reflet discret, pas de brillance qui se confond avec un tee clair (revue du 14 nov.).
-      Mannequin_Blanc_Laque: () => new THREE.MeshPhongMaterial({ color: 0xefebe4, specular: 0x4a4a4a, shininess: 40 }),
+      Mannequin_Blanc_Laque: () => new THREE.MeshPhongMaterial({ color: 0xefebe4, specular: 0x5a5a5a, shininess: 55 }),
       Jean_Noir_Delave: () => new THREE.MeshLambertMaterial({ color: 0x2a2b31 }),
       Basket_Blanc: () => new THREE.MeshPhongMaterial({ color: 0xf6f5f2, shininess: 30 }),
       Semelle_Blanc: () => new THREE.MeshPhongMaterial({ color: 0xe9e7e2, shininess: 20 }),
@@ -500,7 +500,9 @@ export function startWalk(root, o) {
         const n = ob.material.name;
         ob.material = n === "Tee_Noir" ? (MQ[tee] ||= new THREE.MeshLambertMaterial({ color: teeColor(tee) }))
           : n === "Tee_Marque_Texte" ? chestMat(st, tee, ink)
-          : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
+          : ob.geometry.attributes.color && MQ_MAT[n] // ombre des creux inscrite dans le modèle (mannequins tels quels)
+            ? (MQ[n + "|creux"] ||= Object.assign(MQ_MAT[n](), { vertexColors: true }))
+            : (MQ[n] ||= MQ_MAT[n] ? MQ_MAT[n]() : new THREE.MeshLambertMaterial({ color: ob.material.color }));
       });
       return g;
     }
@@ -907,7 +909,7 @@ export function startWalk(root, o) {
       m.traverse((o) => {
         if (!o.isMesh || !o.material || !o.material.color) return;
         let v = SPOT.get(o.material);
-        if (!v) { v = o.material.clone(); v.emissive = o.material.color.clone().multiplyScalar(0.3); SPOT.set(o.material, v); }
+        if (!v) { v = o.material.clone(); v.emissive = o.material.color.clone().multiplyScalar(0.16); SPOT.set(o.material, v); }
         o.material = v;
       });
     }
