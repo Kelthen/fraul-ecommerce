@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { LooksStrip } from "@/components/home/LooksStrip";
 import { getBrands, getNewArrivals, getProducts, getWalkBrands } from "@/lib/catalog";
 import { loadLookRows } from "@/lib/catalog/db";
+import AutoRow from "@/components/home/AutoRow";
 import { TEST_LOOKS, resolveLooks } from "@/models/home/looks";
 import { signCss, signWord } from "@/lib/catalog/brands";
 
@@ -96,11 +97,11 @@ export default async function Home() {
             Tout voir
           </Link>
         </div>
-        <div className="row">
+        <AutoRow>
           {news.map((p) => (
             <ProductCard key={p.slug} product={p} />
           ))}
-        </div>
+        </AutoRow>
       </section>
 
       {picks.length > 0 && (

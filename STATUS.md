@@ -168,6 +168,7 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 - Admin : double vérification coupée jusqu'au lancement (`ADMIN_2FA=true` le jour J), le premier code ouvre l'admin — serge
 
 ## 🔄 En cours
+- **Accueil : les nouveautés défilent toutes seules** (`feat/rhamon/nouveautes-defilement`, Rhamone, 15 nov. : « il faut que ça défile aussi les nouveautés », comme le bandeau des noms de marques) — la rangée avance seule vers la gauche, sans fin (`src/components/home/AutoRow.tsx`) ; on peut toujours la glisser au doigt : elle s'arrête pendant le geste et reprend 4 s après ; à la souris, elle s'arrête au survol ; pas de mouvement si le téléphone demande moins d'animations. — rhamon
 
 
 

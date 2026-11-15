@@ -138,6 +138,9 @@ p { margin: 0; }
 /* Cartes produit */
 .row { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 16px 18px; margin-inline: -16px; scroll-padding-inline: 16px; scrollbar-width: none; }
 .row::-webkit-scrollbar { display: none; }
+/* Nouveautés : défilement automatique sans fin (AutoRow) ; pas d'aimantation, elle bloquerait le mouvement continu. */
+.auto-row { scroll-snap-type: none; }
+.auto-row-copy { display: contents; }
 .looks-wrap { display: grid; gap: 10px; }
 .looks-scene { position: relative; height: min(58svh, 620px); min-height: 360px; margin-inline: -16px; overflow: hidden; touch-action: pan-y; user-select: none; perspective: 1200px; }
 .looker { position: absolute; left: 50%; bottom: 14px; height: calc(100% - 36px); aspect-ratio: 1 / 2.2; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 100%; transition: transform 0.95s cubic-bezier(.34,1.32,.5,1), opacity 0.6s ease, filter 0.95s ease; }
