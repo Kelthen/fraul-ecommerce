@@ -13,6 +13,7 @@ export type AdminBoutique = {
   name: string;
   logo: string | null;
   color: string;
+  textColor: string;
   visible: boolean;
   /** Place dans le mall, à partir de 1. */
   place: number;
@@ -38,6 +39,7 @@ const toBoutique = (r: Row, i: number): AdminBoutique => ({
   name: r.name,
   logo: r.logo_url,
   color: r.style?.bg ?? brandStyle(r.name).bg,
+  textColor: r.style?.fg ?? brandStyle(r.name).fg,
   visible: r.active,
   place: i + 1,
   articles: r.products[0]?.count ?? 0,
@@ -75,7 +77,7 @@ export async function saveBoutique(b: BoutiqueInput): Promise<string> {
   const fields = {
     name,
     // Police et espacement gardés, ou choisis d'après le nom ; couleur choisie par Jean Paul.
-    style: { ...brandStyle(name), ...old?.style, name, bg: b.color.toUpperCase(), fg: textOn(b.color) },
+    style: { ...brandStyle(name), ...old?.style, name, bg: b.color.toUpperCase(), fg: (b.textColor ?? textOn(b.color)).toUpperCase() },
     logo_url: b.logo || null,
     active: b.visible,
     in_walk: true,

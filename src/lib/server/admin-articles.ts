@@ -5,7 +5,7 @@ import { db, eq } from "./db";
 import { SUPABASE_URL, serviceKey } from "./env";
 
 // Articles du site dans la base, vus et modifiés depuis l'admin (clé service, après vérification de la session).
-// Retirer un article = le masquer (on_site = false) : jamais effacé, les commandes passées gardent leur fiche.
+// Masquer (on_site = false) le retire du site. Supprimer l'efface pour de bon, sauf s'il a déjà été commandé.
 
 export type AdminArticle = {
   slug: string;
@@ -19,7 +19,7 @@ export type AdminArticle = {
   sizes: string[] | null;
   supplierRef: string | null;
   onSite: boolean;
-  photos: { front?: string; back?: string; details: string[] };
+  photos: { front?: string; back?: string; details: string[]; byColor?: Record<string, { front: string; back?: string }> };
 };
 
 type Row = {
@@ -35,14 +35,22 @@ type Row = {
   on_site: boolean;
   brands: { slug: string };
   categories: { code: string };
-  product_images: { view: "front" | "back" | "detail"; path: string; position: number }[];
+  product_images: { view: "front" | "back" | "detail"; path: string; position: number; color: string | null }[];
 };
 
 const SELECT =
-  "select=id,slug,title,price_usd,cost,weight_g,colors,sizes,supplier_ref,on_site,brands(slug),categories(code),product_images(view,path,position)";
+  "select=id,slug,title,price_usd,cost,weight_g,colors,sizes,supplier_ref,on_site,brands(slug),categories(code),product_images(view,path,position,color)";
 
 const toArticle = (r: Row): AdminArticle => {
-  const imgs = [...r.product_images].sort((a, b) => a.position - b.position);
+  const sorted = [...r.product_images].sort((a, b) => a.position - b.position);
+  const imgs = sorted.filter((i) => !i.color);
+  const byColor: Record<string, { front: string; back?: string }> = {};
+  for (const i of sorted) {
+    if (!i.color || i.view === "detail") continue;
+    const c = (byColor[i.color] ??= { front: "" });
+    if (i.view === "front") c.front = i.path;
+    else c.back = i.path;
+  }
   return {
     slug: r.slug,
     name: r.title.fr ?? r.slug,
@@ -59,6 +67,7 @@ const toArticle = (r: Row): AdminArticle => {
       front: imgs.find((i) => i.view === "front")?.path,
       back: imgs.find((i) => i.view === "back")?.path,
       details: imgs.filter((i) => i.view === "detail").map((i) => i.path),
+      ...(Object.keys(byColor).length ? { byColor } : {}),
     },
   };
 };
@@ -105,17 +114,45 @@ export async function saveArticle(a: ArticleInput & { slug: string }, isNew: boo
     if (!rows.length) throw new Error("Article introuvable");
     id = rows[0].id;
   }
+  // Les photos déjà détourées le restent : on garde leur version détourée d'après leur adresse.
+  const before = await db.select<{ path: string; cutout: string | null }>("product_images", `select=path,cutout&product_id=${eq(id)}`);
+  const cut = (path: string) => before.find((b) => b.path === path)?.cutout ?? null;
   await db.remove("product_images", `product_id=${eq(id)}`);
   const views: ["front" | "back" | "detail", string][] = [
     ["front", a.photos.front],
     ...(a.photos.back ? ([["back", a.photos.back]] as ["back", string][]) : []),
     ...a.photos.details.map((d) => ["detail", d] as ["detail", string]),
   ];
-  await db.insert("product_images", views.map(([view, path], position) => ({ product_id: id, view, path, position })));
+  const colored = Object.entries(a.photos.byColor ?? {}).flatMap(([color, v]) => [
+    { view: "front", path: v.front, color },
+    ...(v.back ? [{ view: "back", path: v.back, color }] : []),
+  ]);
+  await db.insert("product_images", [
+    ...views.map(([view, path], position) => ({ product_id: id, view, path, position, color: null, cutout: cut(path) })),
+    ...colored.map((c, k) => ({ product_id: id, ...c, position: views.length + k, cutout: cut(c.path) })),
+  ]);
 }
 
 export async function setOnSite(slug: string, onSite: boolean): Promise<void> {
   await db.update("products", `slug=${eq(slug)}`, { on_site: onSite });
+}
+
+/**
+ * Supprime l'article pour de bon (photos, tailles et offres fournisseur partent avec lui).
+ * Refusé s'il figure dans une commande : on le masque alors, pour garder l'historique.
+ */
+export async function deleteArticle(slug: string): Promise<"deleted" | "ordered" | "missing"> {
+  const p = await db.one<{ id: string }>("products", `select=id&slug=${eq(slug)}`);
+  if (!p) return "missing";
+  const variants = await db.select<{ id: string }>("product_variants", `select=id&product_id=${eq(p.id)}`);
+  if (variants.length) {
+    const ids = `in.(${variants.map((v) => v.id).join(",")})`;
+    if (await db.one("order_items", `select=id&variant_id=${ids}`)) return "ordered";
+    await db.remove("cart_items", `variant_id=${ids}`); // paniers en cours : la ligne disparaît
+    await db.remove("outfit_items", `variant_id=${ids}`);
+  }
+  await db.remove("products", `id=${eq(p.id)}`);
+  return "deleted";
 }
 
 const MAX_PHOTO = 2 * 1024 * 1024; // même limite que le dossier « produits » (migration 0011)
@@ -135,4 +172,10 @@ export async function uploadPhoto(file: File): Promise<string> {
   });
   if (!res.ok) throw new Error(`Stockage (${res.status}) : ${(await res.text()).slice(0, 200)}`);
   return `${SUPABASE_URL}/storage/v1/object/public/produits/${path}`;
+}
+
+/** Nouveau type de vêtement (créé depuis la fiche article), placé après les autres. */
+export async function createCategory(c: { slug: string; label: string; slot: string; sizes: string[]; weightG: number }): Promise<void> {
+  const [last] = await db.select<{ position: number }>("categories", "select=position&order=position.desc&limit=1");
+  await db.insert("categories", { code: c.slug, slug: c.slug, name: { fr: c.label.trim() }, slot: c.slot, sizes: c.sizes, weight_g: Math.round(c.weightG), position: (last?.position ?? 0) + 1 });
 }

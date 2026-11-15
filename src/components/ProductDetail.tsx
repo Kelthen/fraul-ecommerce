@@ -10,6 +10,7 @@ import { Price, PriceNote } from "./Price";
 import { useCart } from "./CartProvider";
 import { ProductGallery, photoViews } from "./product/ProductGallery";
 import { EnvieButton } from "./EnvieButton";
+import { QtyStepper } from "./QtyStepper";
 
 
 type Props = { product: Product; categoryLabel: string };
@@ -18,14 +19,18 @@ export function ProductDetail({ product, categoryLabel }: Props) {
   const { add } = useCart();
   const router = useRouter();
   const [color, setColor] = useState(product.colors[0]);
+  const [qty, setQty] = useState(1);
   const [size, setSize] = useState(product.sizes[Math.min(2, product.sizes.length - 1)]);
   const accent = accentFor(color);
   const colorName = COLOR_NAMES[color] ?? "Couleur";
-  const line = { slug: product.slug, name: product.name, brandName: product.brandName, category: product.category, color, accent, prices: product.prices, photo: product.image.front, size, sizes: product.sizes };
+  // Photos de la couleur choisie si Jean Paul les a mises, sinon les photos principales.
+  const shown = product.imageByColor?.[color];
+  const image = shown ? { front: shown.front, back: shown.back } : product.image;
+  const line = { slug: product.slug, name: product.name, brandName: product.brandName, category: product.category, color, accent, prices: product.prices, photo: image.front, size, sizes: product.sizes };
 
   return (
     <div className="pdp">
-      <ProductGallery name={product.name} views={photoViews(product.image)} />
+      <ProductGallery key={color} name={product.name} views={photoViews(image)} />
 
       <div className="pdp-info">
         <p className="eyebrow">{product.brandName} · {categoryLabel}</p>
@@ -73,14 +78,15 @@ export function ProductDetail({ product, categoryLabel }: Props) {
         </div>
 
         <div className="buy">
-          <button className="pill line" type="button" onClick={() => add(line)}>
+          <QtyStepper value={qty} onChange={setQty} />
+          <button className="pill line" type="button" onClick={() => add(line, qty)}>
             Au panier
           </button>
           <button
             className="pill solid"
             type="button"
             onClick={() => {
-              add(line);
+              add(line, qty);
               router.push("/panier");
             }}
           >
@@ -90,7 +96,7 @@ export function ProductDetail({ product, categoryLabel }: Props) {
 
         <EnvieButton
           className="pdp-envie"
-          item={{ slug: product.slug, name: product.name, brand: product.brandName, category: product.category, prices: product.prices, color, accent, photo: product.image?.front }}
+          item={{ slug: product.slug, name: product.name, brand: product.brandName, category: product.category, prices: product.prices, color, accent, photo: image.front }}
         />
 
         <Link className="pdp-walk" href={`/walk/${product.brandSlug}`}>

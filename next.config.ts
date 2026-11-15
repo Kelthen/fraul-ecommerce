@@ -34,6 +34,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_LIVE_SITE: process.env.VERCEL_ENV === "production" ? "1" : "" },
   cacheComponents: true,
+  // Photos des articles et logos envoyés depuis l'admin : réduites sur le téléphone (< 900 Ko), marge de sécurité ici.
+  // Le dossier de photos Supabase refuse de toute façon plus de 2 Mo (migration 0011).
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   partialPrefetching: true,
   poweredByHeader: false,
   async redirects() {

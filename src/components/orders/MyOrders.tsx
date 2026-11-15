@@ -8,8 +8,8 @@ import { demoOrders } from "@/models/orders/demo";
 import { STAGES, trackingView, type Order } from "@/models/orders/tracking";
 import { useAccount } from "../AccountProvider";
 
-/** « Mes commandes » dans Mon compte : étape, fourchette, lien vers le suivi. Sans Supabase : commandes d'exemple. */
-export function MyOrders() {
+/** Commandes du client connecté : null pendant le chargement. Sans Supabase : commandes d'exemple. */
+export function useMyOrders() {
   const { token } = useAccount();
   const [orders, setOrders] = useState<Order[] | "error" | null>(null);
   useEffect(() => {
@@ -24,6 +24,12 @@ export function MyOrders() {
       .then((r) => { if (live) setOrders(r ?? "error"); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- une fois à l'ouverture de la page
+  return orders;
+}
+
+/** « Mes commandes » : étape, fourchette, lien vers le suivi. */
+export function MyOrders() {
+  const orders = useMyOrders();
   if (orders === null) return null;
   if (orders === "error") return <p className="muted">Tes commandes ne se chargent pas pour l&apos;instant. Réessaie dans un instant.</p>;
   if (!orders.length) return <p className="muted">Aucune commande avec cette adresse pour l&apos;instant.</p>;

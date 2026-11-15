@@ -1,5 +1,6 @@
 // Prépare les décors exportés de Blender pour le Walk : node scripts/prep-decor.mjs
-// Entrée : assets-src/models/fraul_caisse.glb (export Blender de Rhamone, 25 oct. 2026).
+// Entrées : assets-src/models/fraul_caisse.glb (export Blender de Rhamone, 25 oct. 2026) ;
+// assets-src/models/plante_mall.glb (assets-src/blender/plante-mall.py, 8 nov. 2026).
 // Sortie : public/models/caisse.glb, sans Draco (pas de décodeur à charger), géométrie quantifiée.
 // Les repères (« Repere_… ») et les coordonnées de texture sont gardés. À relancer après chaque nouvel export ;
 // ne jamais retoucher les fichiers de sortie à la main.
@@ -8,7 +9,7 @@ import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { dedup, prune, quantize, weld } from "@gltf-transform/functions";
 import draco3d from "draco3dgltf";
 
-const FILES = { caisse: "fraul_caisse" };
+const FILES = { caisse: "fraul_caisse", plante: "plante_mall" };
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ "draco3d.decoder": await draco3d.createDecoderModule() });
 
 for (const [out, src] of Object.entries(FILES)) {

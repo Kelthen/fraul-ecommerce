@@ -19,9 +19,11 @@ export type WalkItem = [string, string, PriceTable, string, string[], FicheItem[
 export type WalkData = {
   shops: { name: string; slug: string; style: BrandStyle }[];
   allBrands: { name: string; slug: string; style: BrandStyle }[];
-  categories: Pick<Category, "id" | "label" | "sizes">[];
+  categories: Pick<Category, "id" | "slug" | "label" | "sizes">[];
   /** Articles par marque puis par rayon. */
   items: Record<string, Partial<Record<CategoryId, WalkItem[]>>>;
+  /** Looks de l'accueil par boutique : photo, titre, pièces de cette marque [slug, rayon]. */
+  looks?: Record<string, { photo: string; title: string; items: [string, CategoryId][] }[]>;
 };
 
 type Props = { data: WalkData; startBrand?: string };
@@ -34,7 +36,8 @@ function toItem(data: WalkData, brand: string, cat: CategoryId, [slug, n, p, c, 
     slug, n, p, c, a: ACCENT_DARK.includes(c) ? "#EAE0C8" : "#420A0D", vars, sizes: data.categories.find((x) => x.id === cat)?.sizes ?? [], brand, cat,
     photos: photos ?? null,
     // Moteur 3D : photo de face et de dos du portant (le dos reprend la face s'il manque).
-    img: photos ? [photos.front, photos.back ?? photos.front] : null,
+    // Version détourée quand elle existe (détourage automatique) : le vêtement pend au crochet sans carte.
+    img: photos ? [photos.cut?.front ?? photos.front, photos.cut?.back ?? photos.back ?? photos.cut?.front ?? photos.front] : null,
   };
 }
 
@@ -49,12 +52,12 @@ export function WalkExperience({ data, startBrand }: Props) {
   const [concierge, setConcierge] = useState<{ brand: string } | null>(null);
   // Tous les articles du mall, pour les propositions sous la fiche en grand.
   const allItems = useMemo(
-    () => data.allBrands.flatMap((b) => Object.entries(data.items[b.slug] ?? {}).flatMap(([cat, rows]) => rows.map((r) => toItem(data, b.name, cat as CategoryId, r)))),
+    () => data.allBrands.flatMap((b) => Object.entries(data.items[b.slug] ?? {}).flatMap(([cat, rows]) => (rows ?? []).map((r) => toItem(data, b.name, cat as CategoryId, r)))),
     [data],
   );
   const catLabel = useCallback((cat: CategoryId) => data.categories.find((c) => c.id === cat)?.label ?? cat, [data]);
   const addItem = useCallback(
-    (it: FicheItem, size?: string) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }),
+    (it: FicheItem, size?: string, qty = 1) => add({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }, qty),
     [add],
   );
   // La fiche vient de s'ouvrir ou de se fermer : le moteur remet le fond inerte et le focus à jour.
@@ -80,6 +83,13 @@ export function WalkExperience({ data, startBrand }: Props) {
     // ?heure=19 : voir le mall à une autre heure (essai sur la preview) ; sinon l'heure locale du visiteur.
     const hq = new URLSearchParams(location.search).get("heure");
     const hour = hq !== null && Number(hq) >= 0 && Number(hq) < 24 ? Number(hq) : undefined;
+    // ?reflet=0 : sol sans reflet du mall (comparaison sur la preview, plan #109 lot 1).
+    const reflet = new URLSearchParams(location.search).get("reflet") !== "0";
+    // ?dans=1, ?rayon=t-shirts&article=… : l'endroit écrit dans l'adresse par le moteur (rechargement, lien partagé).
+    const q = new URLSearchParams(location.search);
+    const rayonCat = data.categories.find((c) => c.slug === q.get("rayon"))?.id;
+    const startRayon = startBrand && rayonCat ? { cat: rayonCat, slug: q.get("article") || undefined } : undefined;
+    const startInside = Boolean(startBrand && (startRayon || q.get("dans") === "1"));
 
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -94,6 +104,7 @@ export function WalkExperience({ data, startBrand }: Props) {
         const b = brandOf(brandName);
         return (b ? data.items[b.slug]?.[cat] ?? [] : []).map((r) => toItem(data, brandName, cat, r));
       },
+      getLooks: (brandName: string) => { const b = brandOf(brandName); return b ? data.looks?.[b.slug] ?? [] : []; },
       onAdd: (it: { slug: string; n: string; p: PriceTable; c: string; a: string; brand: string; cat: string; sizes: string[]; photos: FicheItem["photos"] }, size?: string) =>
         addRef.current({ slug: it.slug, name: it.n, brandName: it.brand, category: it.cat, color: it.c, accent: it.a, prices: it.p, photo: it.photos?.front, size, sizes: it.sizes }),
       onExit: () => router.push("/"),
@@ -101,8 +112,11 @@ export function WalkExperience({ data, startBrand }: Props) {
       onFiche: (it: FicheItem | null) => setFiche(it ? { ...it } : null),
       onConcierge: (c: { brand: string } | null) => setConcierge(c),
       hour,
+      reflet,
       startShop: shopIndex >= 0 ? shopIndex : undefined,
       startStore: shopIndex < 0 ? startName : undefined,
+      startInside,
+      startRayon,
     }));
 
     return () => {
@@ -231,10 +245,19 @@ export function WalkExperience({ data, startBrand }: Props) {
           <span className="s-title" id="sTitle">
             Boutique
           </span>
-          <button className="ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-          </button>
+          {/* Le panier aussi dans les boutiques, avec son nombre d'articles (Rhamone, 11 nov.). */}
+          <div className="ic-pair">
+            <button className="ic" id="sSearch" type="button" aria-label="Chercher une marque ou une pièce">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+            </button>
+            <Link className="ic" href="/panier" aria-label={`Panier, ${count} article${count > 1 ? "s" : ""}`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 10.9a1.8 1.8 0 0 1-1.8 1.6H7.9a1.8 1.8 0 0 1-1.8-1.6z" /><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>
+              {count > 0 && <span className="ic-n">{count}</span>}
+            </Link>
+          </div>
         </div>
+        {/* Visite libre (#109) : disparaît dès qu'on a tourné le regard une fois. */}
+        <p className="look-hint">Glisse pour regarder autour · touche le sol pour avancer · touche un vêtement pour son rayon</p>
         <div className="s-bottom" id="sBottom" hidden>
           {/* Rayons en liste verticale sur le décor, façon menu de jeu (Rhamone, 21 oct.) ; aussi dans chaque rayon,
               dans un coin (22 oct.) : en bas à gauche sur PC, repliée derrière « Rayons » sur téléphone. */}

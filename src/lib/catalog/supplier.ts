@@ -1,13 +1,13 @@
 // FICHIER GÉNÉRÉ par scripts/import-catalogue.mjs — ne pas modifier à la main, relancer le script.
 // Copie de secours des vrais articles, utilisée seulement si la base ne répond pas (le paiement est alors refusé).
 // Coûts estimés d'après la catégorie : ils ne servent qu'à cette copie.
-import type { CategoryId } from "./types";
+import type { KnownCategoryId } from "./types";
 import type { ImageId } from "../images";
 
 export type SupplierProduct = {
   slug: string;
   brand: string;
-  category: CategoryId;
+  category: KnownCategoryId;
   name: string;
   /** Couleur dominante de la photo de face (sert au dessin de repli et aux pastilles). */
   color: string;

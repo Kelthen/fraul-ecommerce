@@ -478,7 +478,7 @@ export async function createTestOrder(baseUrl: string): Promise<string> {
   for (const d of DEMO_PRODUCTS) {
     const p = await getPricedProduct(d.slug);
     if (!p) throw new Error(`Produit de démo introuvable : ${d.slug}`);
-    const cat = getCategory(p.category);
+    const cat = await getCategory(p.category);
     const [brand] = await db.insert<{ id: string }>("brands", { slug: p.brandSlug, name: p.brandName }, "slug");
     const [category] = await db.insert<{ id: string }>(
       "categories",

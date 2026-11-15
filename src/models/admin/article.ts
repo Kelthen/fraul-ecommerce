@@ -15,7 +15,8 @@ export type ArticleInput = {
   colors: string[];
   sizes: string[];
   supplierRef?: string;
-  photos: { front: string; back?: string; details: string[] };
+  /** byColor : photos d'une autre couleur que la première (clé #RRGGBB), face obligatoire, dos facultatif. */
+  photos: { front: string; back?: string; details: string[]; byColor?: Record<string, { front: string; back?: string }> };
   onSite: boolean;
 };
 
@@ -24,19 +25,30 @@ export const MARGIN_ALERT_PCT = 10;
 const HEX = /^#[0-9A-F]{6}$/i;
 const PHOTO = /^(\/images\/library\/[a-z0-9-]+\.(jpg|jpeg|png|webp)|https:\/\/[a-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/produits\/[A-Za-z0-9/_.-]+)$/;
 
+/** Adresse de photo remise d'aplomb : sans espaces ni retours à la ligne, sans « // » en trop après le domaine. */
+export const cleanPhotoUrl = (u: string) => u.replace(/\s+/g, "").replace(/([^:])\/{2,}/g, "$1/");
+
+/** La fiche avec ses adresses de photos nettoyées (à appeler avant articleProblems et l'enregistrement). */
+export const cleanArticle = (a: ArticleInput): ArticleInput => ({
+  ...a,
+  photos: { front: cleanPhotoUrl(a.photos.front), back: a.photos.back ? cleanPhotoUrl(a.photos.back) : undefined, details: a.photos.details.map(cleanPhotoUrl), byColor: cleanByColor(a.photos.byColor) },
+});
+
 /** Problèmes de la fiche, en clair, prêts à afficher. Tableau vide = fiche correcte. */
 export function articleProblems(a: ArticleInput, known: { brands: string[]; categories: string[] }): string[] {
   const p: string[] = [];
   if (!known.brands.includes(a.brand)) p.push("Choisis une marque.");
   if (!known.categories.includes(a.category)) p.push("Choisis une catégorie.");
-  if (a.name.trim().length < 3 || a.name.length > 120) p.push("Le nom doit faire entre 3 et 120 caractères.");
+  if (a.name.trim().length < 3 || a.name.length > 120) p.push("La description doit faire entre 3 et 120 caractères.");
   if (!(a.priceUsd >= 1 && a.priceUsd <= 20000)) p.push("Prix en dollars : entre 1 et 20 000.");
   if (!(a.costCny > 0 && a.costCny <= 100000)) p.push("Coût en ¥ obligatoire (il protège du prix trop bas).");
   if (!(a.weightG >= 10 && a.weightG <= 30000)) p.push("Poids : entre 10 g et 30 kg.");
-  if (!a.colors.length || a.colors.length > 6 || !a.colors.every((c) => HEX.test(c))) p.push("Choisis 1 à 6 couleurs.");
+  if (!a.colors.length || a.colors.length > 6 || !a.colors.every((c) => HEX.test(c))) p.push("Couleur : touche au moins une pastille de couleur (6 au plus).");
   if (!a.sizes.length || a.sizes.length > 15 || a.sizes.some((s) => !s.trim() || s.length > 12)) p.push("Tailles : 1 à 15, séparées par des virgules.");
   if (a.supplierRef && a.supplierRef.length > 80) p.push("Référence fournisseur trop longue.");
-  const all = [a.photos.front, ...(a.photos.back ? [a.photos.back] : []), ...a.photos.details];
+  const extra = Object.entries(a.photos.byColor ?? {});
+  const all = [a.photos.front, ...(a.photos.back ? [a.photos.back] : []), ...a.photos.details, ...extra.flatMap(([, v]) => [v.front, ...(v.back ? [v.back] : [])])];
+  if (extra.some(([hex]) => !a.colors.slice(1).includes(hex))) p.push("Photos d'une couleur qui n'est plus cochée : retire-les.");
   if (!a.photos.front) p.push("Ajoute au moins la photo de face.");
   else if (!all.every((u) => PHOTO.test(u))) p.push("Une photo n'a pas été envoyée correctement : remets-la.");
   if (a.photos.details.length > 6) p.push("6 photos de détail au plus.");
@@ -68,4 +80,44 @@ export function articleSlug(brandSlug: string, name: string, taken: (s: string) 
     .slice(0, 80);
   if (!taken(base)) return base;
   for (let i = 2; ; i++) if (!taken(`${base}-${i}`)) return `${base}-${i}`;
+}
+
+const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/**
+ * Liste de l'admin : recherche (« nike pantalon » = tous les mots, sans accents, dans le nom, la marque ou le type),
+ * filtres marque et type, puis classée par marque. L'ordre d'origine est gardé dans chaque marque.
+ */
+export function filterArticles<T extends { name: string; brand: string; category: string }>(
+  list: T[],
+  f: { q?: string; brand?: string; type?: string },
+  label: { brand: (slug: string) => string; type: (id: string) => string },
+): T[] {
+  const words = fold(f.q ?? "").split(/\s+/).filter(Boolean);
+  return list
+    .filter((a) => (!f.brand || a.brand === f.brand) && (!f.type || a.category === f.type))
+    .filter((a) => {
+      const text = fold(`${a.name} ${label.brand(a.brand)} ${a.brand} ${label.type(a.category)}`);
+      return words.every((w) => text.includes(w));
+    })
+    .map((a, i) => ({ a, i }))
+    .sort((x, y) => label.brand(x.a.brand).localeCompare(label.brand(y.a.brand), "fr") || x.i - y.i)
+    .map((x) => x.a);
+}
+
+/** Doublon : même marque et même nom (sans majuscules, accents ni espaces en trop). Renvoie l'article déjà là. */
+export function findDuplicate<T extends { slug: string; brand: string; name: string }>(list: T[], a: { slug?: string; brand: string; name: string }): T | null {
+  const key = (n: string) => fold(n).replace(/[^a-z0-9]+/g, " ").trim();
+  return list.find((x) => x.slug !== a.slug && x.brand === a.brand && key(x.name) === key(a.name)) ?? null;
+}
+
+/** Photos par couleur, nettoyées ; les couleurs sans photo de face sont ignorées. */
+function cleanByColor(b: Record<string, { front: string; back?: string }> | undefined) {
+  if (!b) return undefined;
+  const out: Record<string, { front: string; back?: string }> = {};
+  for (const [hex, v] of Object.entries(b).slice(0, 6)) {
+    const front = v?.front ? cleanPhotoUrl(v.front) : "";
+    if (front) out[hex] = { front, ...(v.back ? { back: cleanPhotoUrl(v.back) } : {}) };
+  }
+  return Object.keys(out).length ? out : undefined;
 }

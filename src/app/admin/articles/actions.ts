@@ -2,12 +2,13 @@
 
 import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { CATEGORIES } from "@/lib/catalog/fallback";
+import { getCategories } from "@/lib/catalog";
 import { CATALOGUE_TAG } from "@/lib/catalog/db";
 import { isAdmin } from "@/lib/server/admin-session";
-import { getArticle, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
+import { createCategory, deleteArticle, getArticle, listArticles, saveArticle, setOnSite, slugTaken, uploadPhoto } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";
-import { articleProblems, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
+import { categoryProblems, categorySlug, type CategoryInput } from "@/models/admin/category";
+import { articleProblems, cleanArticle, findDuplicate, articleSlug, marginsByZone, type ArticleInput, type ZoneMargin } from "@/models/admin/article";
 
 // Actions de l'admin des articles. Une action serveur est une adresse publique : chacune revérifie la session.
 
@@ -29,23 +30,28 @@ export async function uploadPhotoAction(form: FormData): Promise<{ url: string }
   }
 }
 
-export async function saveArticleAction(input: ArticleInput): Promise<{ slug: string } | { errors: string[] }> {
+/** Enregistre, puis renvoie à la liste. La redirection se fait ici, côté serveur : un router.push du téléphone après
+ *  l'enregistrement restait parfois sans effet et la fiche ne se fermait pas (retour de Serge, 6 nov.). */
+export async function saveArticleAction(raw: ArticleInput): Promise<{ errors: string[] }> {
+  const input = cleanArticle(raw);
   if (!(await isAdmin())) return { errors: ["Session expirée : reconnecte-toi."] };
-  const known = { brands: (await listBoutiques()).map((b) => b.slug), categories: CATEGORIES.map((c) => c.id) };
+  const known = { brands: (await listBoutiques()).map((b) => b.slug), categories: (await getCategories()).map((c) => c.id) };
   const errors = articleProblems(input, known);
   if (errors.length) return { errors };
   const isNew = !input.slug;
   if (!isNew && !(await getArticle(input.slug!))) return { errors: ["Article introuvable."] };
+  const twin = findDuplicate(await listArticles(), input);
+  if (twin)
+    return { errors: [`« ${twin.name} » existe déjà pour cette marque${twin.onSite ? "" : " (masqué)"}. Ouvre-le dans la liste pour le modifier, ou change la description (ajoute la couleur, par exemple).`] };
   try {
     const slug = input.slug || articleSlug(input.brand, input.name, () => false);
-    const free = isNew ? await uniqueSlug(slug) : slug;
-    await saveArticle({ ...input, slug: free }, isNew);
-    updateTag(CATALOGUE_TAG); // le site montre le changement tout de suite
-    return { slug: free };
+    await saveArticle({ ...input, slug: isNew ? await uniqueSlug(slug) : slug }, isNew);
   } catch (e) {
     console.error("[admin articles] enregistrement", e);
     return { errors: ["L'enregistrement a échoué. Réessaie dans un instant."] };
   }
+  updateTag(CATALOGUE_TAG); // le site montre le changement tout de suite
+  redirect(`/admin/articles?msg=${encodeURIComponent(isNew ? "Article ajouté." : "Article modifié.")}`);
 }
 
 async function uniqueSlug(base: string): Promise<string> {
@@ -61,4 +67,47 @@ export async function toggleOnSiteAction(form: FormData): Promise<void> {
   await setOnSite(slug, show);
   updateTag(CATALOGUE_TAG);
   redirect(`/admin/articles?msg=${encodeURIComponent(show ? "Article remis sur le site." : "Article masqué : il n'est plus visible sur le site.")}`);
+}
+
+export async function deleteArticleAction(form: FormData): Promise<void> {
+  if (!(await isAdmin())) redirect("/admin/commandes");
+  const slug = String(form.get("slug") ?? "");
+  let msg: string;
+  try {
+    const r = await deleteArticle(slug);
+    if (r === "ordered") {
+      await setOnSite(slug, false);
+      msg = "Cet article a déjà été commandé : il est masqué (pas supprimé) pour garder l'historique des commandes.";
+    } else msg = r === "deleted" ? "Article supprimé." : "Article introuvable.";
+    updateTag(CATALOGUE_TAG);
+  } catch (e) {
+    console.error("[admin articles] suppression", e);
+    msg = "La suppression a échoué. Réessaie dans un instant.";
+  }
+  redirect(`/admin/articles?msg=${encodeURIComponent(msg)}`);
+}
+
+export type NewType = { id: string; label: string; sizes: string[]; weight: number };
+
+/** « + Nouveau type » de la fiche article : le type est créé et choisi pour l'article. */
+export async function createTypeAction(raw: CategoryInput): Promise<{ type: NewType } | { errors: string[] }> {
+  if (!(await isAdmin())) return { errors: ["Session expirée : reconnecte-toi."] };
+  const input: CategoryInput = {
+    label: String(raw.label ?? "").trim().slice(0, 60),
+    sizes: (Array.isArray(raw.sizes) ? raw.sizes : []).map((s) => String(s).trim()).filter(Boolean),
+    weightG: Number(raw.weightG),
+    slot: raw.slot,
+  };
+  const all = await getCategories();
+  const errors = categoryProblems(input, all.flatMap((c) => [c.slug, c.id, c.label.toLowerCase()]));
+  if (errors.length) return { errors };
+  const slug = categorySlug(input.label);
+  try {
+    await createCategory({ slug, label: input.label, slot: input.slot, sizes: input.sizes, weightG: input.weightG });
+    updateTag(CATALOGUE_TAG);
+    return { type: { id: slug, label: input.label, sizes: input.sizes, weight: input.weightG } };
+  } catch (e) {
+    console.error("[admin articles] nouveau type", e);
+    return { errors: ["La création a échoué. Réessaie dans un instant."] };
+  }
 }

@@ -1,8 +1,9 @@
 // Tests des modèles du Walk : node --test src/walk/models/walk.test.ts
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createLayerStack } from "./layers.ts";
-import { route } from "./store-layout.ts";
+import { RACKS, SIDE_VISIBLE, STORE_ZONES, route } from "./store-layout.ts";
 import { AT_CAISSE, AT_CONCIERGE, AT_ENTRY, AT_EXIT, pathAt, progressForCaisse, progressForConcierge, progressForShop, stopProgress } from "./walk-path.ts";
 import { layoutT } from "../modes/t.ts";
 import { shopType, type Slot } from "./mall-layout.ts";
@@ -45,7 +46,7 @@ test("Finds : un arrêt vers la 10e boutique, face au comptoir, entre deux bouti
   const { after, slot } = MALL.concierge;
   const pt = pathAt(progressForConcierge(N, MALL), N, 10, MALL);
   assert.equal(pt.shop, AT_CONCIERGE);
-  assert.ok(Math.abs(pt.x - (slot.x + slot.nx * 7)) < 1e-9 && Math.abs(pt.z - (slot.z + slot.nz * 7)) < 1e-9);
+  assert.ok(Math.abs(pt.x - (slot.x + slot.nx * 8.5)) < 1e-9 && Math.abs(pt.z - (slot.z + slot.nz * 8.5)) < 1e-9); // recul du lot 3 (#109)
   assert.equal(pathAt(progressForShop(after - 1, N, MALL), N, 10, MALL).shop, after - 1);
   assert.equal(pathAt(progressForShop(after, N, MALL), N, 10, MALL).shop, after);
   assert.ok(after >= 9 && after <= 11, `arrêt après ${after} boutiques`);
@@ -124,4 +125,30 @@ test("petit mall (8 boutiques ou moins) : le tronc seul, Finds entre la montée 
 test("3 architectures de boutique : toutes présentes dès 3 boutiques, jamais deux fois la même côte à côte", () => {
   assert.equal(new Set([0, 1, 2].map(shopType)).size, 3);
   for (let k = 1; k < 40; k++) assert.notEqual(shopType(k), shopType(k - 1), `boutiques ${k - 1} et ${k}`);
+});
+
+test("chaque rayon a sa place : portant et arrêt de caméra, dans les murs, le chemin évite l'îlot", () => {
+  for (const cat of ["tee", "hoodie", "jacket", "pants", "shorts", "socks", "sneaker", "cap", "glasses", "watch", "jewelry", "bag"]) {
+    const r = RACKS[cat], z = STORE_ZONES[cat];
+    assert.ok(r && z, cat);
+    const reach = r.side ? SIDE_VISIBLE * r.side : 3.4 * r.sp; // jusqu'où vont les pièces de chaque côté de la pièce choisie
+    for (const sign of [-1, 1]) {
+      const x = r.o[0] + sign * reach * r.d[0], k = r.o[2] + sign * reach * r.d[2];
+      assert.ok(Math.abs(x) <= 6 && k <= 0.45 && k >= -16, `${cat} sort des murs : ${x}, ${k}`);
+    }
+    assert.ok(route(STORE_ZONES.hub.p, z.p).length >= 2);
+  }
+});
+
+test("les portants d'un même mur ne se chevauchent pas", () => {
+  const span = (c: string) => { const r = RACKS[c], reach = r.side ? SIDE_VISIBLE * r.side : 3.4 * r.sp; return [r.o[2] - reach, r.o[2] + reach]; };
+  for (const [a, b] of [["jacket", "tee"], ["tee", "hoodie"], ["shorts", "cap"]]) {
+    assert.ok(span(a)[0] >= span(b)[1] - 0.01, `${a} et ${b}`);
+  }
+});
+
+test("toute photo du mall se charge en crossOrigin, sinon les photos envoyées s'affichent en noir", () => {
+  const engine = readFileSync(new URL("../engine.js", import.meta.url), "utf8");
+  assert.equal(engine.match(/new Image\(\)/g)?.length, 1);
+  assert.match(engine, /const webImage = \(\) => \{ const im = new Image\(\); im\.crossOrigin = "anonymous"/);
 });

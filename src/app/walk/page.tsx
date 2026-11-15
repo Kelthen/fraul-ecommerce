@@ -5,6 +5,7 @@ import { getWalkData } from "@/walk/data";
 export const metadata: Metadata = {
   title: "Walk — le mall",
   description: "Promène-toi devant les vitrines, entre dans la boutique d'une marque et regarde les pièces sortir du rayon.",
+  alternates: { canonical: "/walk" },
 };
 
 export default async function WalkPage() {

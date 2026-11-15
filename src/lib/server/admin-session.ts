@@ -5,9 +5,8 @@ import { connection } from "next/server";
 import { adminChatId, sessionKey } from "./env";
 import { sendMessage } from "./telegram";
 
-// Connexion de démo au tableau de bord : un code à 8 chiffres envoyé dans la conversation du bot
-// (le compte de Jean Paul, ou le groupe de l'équipe). Pas de mot de passe à retenir, pas de variable de plus.
-// ⚠️ Provisoire : la vraie connexion (Supabase Auth + double vérification, ARCHITECTURE §4) remplacera ceci.
+// Session du tableau de bord, et code Telegram : 8 chiffres envoyés dans la conversation du bot
+// (le compte de Jean Paul, ou le groupe de l'équipe). Seul, il ouvre la session tant que la double vérification est coupée : voir login-actions.ts.
 
 const PENDING = "tuc_admin_code";
 const SESSION = "tuc_admin";
@@ -31,19 +30,19 @@ export async function checkLoginCode(code: string): Promise<boolean> {
   const clean = code.replace(/\D/g, "");
   if (!exp || !mac || Number(exp) < Date.now() || !same(mac, sign(`code|${clean}|${exp}`))) return false;
   jar.delete(PENDING);
-  const sessionExp = Date.now() + SESSION_HOURS * 3_600_000;
-  jar.set(SESSION, `${sessionExp}.${sign(`session|${sessionExp}`)}`, { ...cookieOpts, maxAge: SESSION_HOURS * 3600 });
   return true;
+}
+
+/** Ouvre la session de l'admin, seulement après les deux vérifications (login-actions.ts). */
+export async function startAdminSession(): Promise<void> {
+  const exp = Date.now() + SESSION_HOURS * 3_600_000;
+  (await cookies()).set(SESSION, `${exp}.${sign(`session|${exp}`)}`, { ...cookieOpts, maxAge: SESSION_HOURS * 3600 });
 }
 
 export async function isAdmin(): Promise<boolean> {
   await connection(); // lu à chaque requête : l'heure ci-dessous n'est jamais figée au rendu statique
   const [exp, mac] = ((await cookies()).get(SESSION)?.value ?? "").split(".");
   return !!exp && !!mac && Number(exp) > Date.now() && same(mac, sign(`session|${exp}`));
-}
-
-export async function hasPendingCode(): Promise<boolean> {
-  return !!(await cookies()).get(PENDING);
 }
 
 export async function logout(): Promise<void> {

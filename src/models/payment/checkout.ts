@@ -22,8 +22,8 @@ export type CheckoutLine = {
   unitLanded: number;
 };
 
-export const MAX_LINES = 20;
-export const MAX_QTY = 10;
+export { MAX_LINES, MAX_QTY } from "../cart/limits.ts";
+import { MAX_LINES, MAX_QTY } from "../cart/limits.ts";
 /** Taille enregistrée pour un article sans taille (casquette, sac…). */
 export const ONE_SIZE = "TU";
 

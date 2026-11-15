@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_QTY } from "@/models/cart/limits";
 import Link from "next/link";
 import { useState } from "react";
 import { startCheckout } from "@/app/panier/actions";
@@ -49,7 +50,7 @@ export function CartView() {
                 <span className="qty">
                   <button type="button" aria-label="Retirer un" onClick={() => setQty(i, l.qty - 1)}>−</button>
                   <span aria-live="polite">{l.qty}</span>
-                  <button type="button" aria-label="Ajouter un" onClick={() => setQty(i, l.qty + 1)}>+</button>
+                  <button type="button" aria-label="Ajouter un" disabled={l.qty >= MAX_QTY} onClick={() => setQty(i, l.qty + 1)}>+</button>
                 </span>
               </div>
             </div>

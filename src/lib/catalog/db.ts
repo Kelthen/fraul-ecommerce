@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { SUPABASE_URL } from "@/lib/server/env";
 import { brandStyle } from "./brands";
 import type { Brand, BrandStyle, Category, PricedProduct } from "./types";
+import { TEST_PREFIX } from "@/models/pricing/price";
 
 // Vrais articles lus dans la base (Supabase), avec la clé service : les coûts ne sont plus lisibles avec la clé
 // publique (migration 0012). Mis en cache ; l'admin vide le cache « catalogue » à chaque modification.
@@ -20,10 +21,10 @@ export type Row = {
   sizes: string[] | null;
   brands: { slug: string } | null;
   categories: { code: string } | null;
-  product_images: { view: "front" | "back" | "detail"; path: string; position: number }[];
+  product_images: { view: "front" | "back" | "detail"; path: string; position: number; color?: string | null; cutout?: string | null }[];
 };
 
-const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position)";
+const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(slug),categories(code),product_images(view,path,position,color,cutout)";
 
 /** Transforme une ligne de la base en article du site ; null si elle est incomplète (marque ou catégorie inconnue). */
 export function toProduct(r: Row, brands: Brand[], categories: Category[], accentFor: (c: string) => string): PricedProduct | null {
@@ -31,7 +32,17 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
   const cat = categories.find((c) => c.id === r.categories?.code);
   const name = r.title?.fr;
   if (!brand || !cat || !name || r.cost == null || !r.weight_g || !r.colors.length) return null;
-  const imgs = [...r.product_images].sort((a, b) => a.position - b.position);
+  const sorted = [...r.product_images].sort((a, b) => a.position - b.position);
+  const imgs = sorted.filter((i) => !i.color);
+  // Photos par couleur (migration 0018) : seulement pour les couleurs proposées, face obligatoire.
+  const byColor: Record<string, { front: string; back?: string }> = {};
+  for (const i of sorted) {
+    if (!i.color || i.view === "detail" || !r.colors.includes(i.color)) continue;
+    const c = (byColor[i.color] ??= { front: "" });
+    if (i.view === "front") c.front = i.path;
+    else c.back = i.path;
+  }
+  for (const k of Object.keys(byColor)) if (!byColor[k].front) delete byColor[k];
   const front = imgs.find((i) => i.view === "front")?.path;
   if (!front) return null;
   return {
@@ -40,12 +51,19 @@ export function toProduct(r: Row, brands: Brand[], categories: Category[], accen
     brandName: brand.name,
     category: cat.id,
     name,
-    cost: { cny: r.cost / 100, g: r.weight_g, ...(r.price_usd ? { usd: r.price_usd / 100 } : {}) },
+    // Article d'essai (slug « test-… ») : son prix tapé est payé tel quel (models/pricing/price.ts, TEST_PREFIX).
+    cost: { cny: r.cost / 100, g: r.weight_g, ...(r.price_usd ? (r.slug.startsWith(TEST_PREFIX) ? { exact: r.price_usd / 100 } : { usd: r.price_usd / 100 }) : {}) },
     color: r.colors[0],
     accent: accentFor(r.colors[0]),
     colors: r.colors,
     sizes: r.sizes?.length ? r.sizes : cat.sizes,
-    image: { front, back: imgs.find((i) => i.view === "back")?.path, details: imgs.filter((i) => i.view === "detail").map((i) => i.path) },
+    image: {
+      front,
+      back: imgs.find((i) => i.view === "back")?.path,
+      details: imgs.filter((i) => i.view === "detail").map((i) => i.path),
+      ...cutOf(imgs),
+    },
+    ...(Object.keys(byColor).length ? { imageByColor: byColor } : {}),
   };
 }
 
@@ -66,6 +84,24 @@ export async function loadSiteRows(): Promise<Row[] | null> {
 }
 
 /** Boutiques visibles, dans l'ordre du mall ; null si la base ne répond pas. */
+export type CategoryRow = { code: string; slug: string; name: { fr?: string }; slot: Category["slot"]; sizes: string[]; weight_g: number | null };
+
+/** Types de vêtement de la base (ceux du code, plus ceux créés depuis l'admin). */
+export async function loadCategoryRows(): Promise<CategoryRow[] | null> {
+  "use cache";
+  cacheTag(CATALOGUE_TAG);
+  return read<CategoryRow>("categories?select=code,slug,name,slot,sizes,weight_g&order=position.asc");
+}
+
+export type LookRow = { id: string; title: string; cutout: string | null; items: string[] };
+
+/** Looks de l'accueil ajoutés dans l'admin, visibles et déjà détourés (sinon on attend le détourage). */
+export async function loadLookRows(): Promise<LookRow[] | null> {
+  "use cache";
+  cacheTag(CATALOGUE_TAG);
+  return read<LookRow>("looks?select=id,title,cutout,items&on_site=is.true&cutout=not.is.null&cutout=neq.&order=position.asc,created_at.desc");
+}
+
 export async function loadBrandRows(): Promise<BrandRow[] | null> {
   "use cache";
   cacheTag(CATALOGUE_TAG);
@@ -93,4 +129,19 @@ async function read<T>(path: string): Promise<T[] | null> {
     console.error("[catalogue] base injoignable, copie de secours utilisée :", e);
     return null;
   }
+}
+
+/** Liste des types : ceux du code d'abord (dessins du Walk), puis ceux créés depuis l'admin. */
+export function mergeCategories(code: Category[], rows: CategoryRow[] | null): Category[] {
+  const extra = (rows ?? [])
+    .filter((r) => !code.some((c) => c.id === r.code))
+    .map((r): Category => ({ id: r.code, slug: r.slug, label: r.name.fr ?? r.code, slot: r.slot, sizes: r.sizes, ...(r.weight_g ? { weight: r.weight_g } : {}) }));
+  return [...code, ...extra];
+}
+
+/** Versions détourées de la face et du dos (rangées par le détourage automatique), s'il y en a. */
+function cutOf(imgs: Row["product_images"]): { cut?: { front?: string; back?: string } } {
+  const front = imgs.find((i) => i.view === "front")?.cutout || undefined;
+  const back = imgs.find((i) => i.view === "back")?.cutout || undefined;
+  return front || back ? { cut: { ...(front ? { front } : {}), ...(back ? { back } : {}) } } : {};
 }

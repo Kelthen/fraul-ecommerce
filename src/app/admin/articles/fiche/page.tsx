@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CATEGORIES, COLORS, WEIGHT_G } from "@/lib/catalog/fallback";
+import { getCategories } from "@/lib/catalog";
+import { COLORS, WEIGHT_G } from "@/lib/catalog/fallback";
+import type { KnownCategoryId } from "@/lib/catalog/types";
 import { COLOR_NAMES } from "@/lib/catalog/palette";
 import { isAdmin } from "@/lib/server/admin-session";
 import { getArticle } from "@/lib/server/admin-articles";
 import { listBoutiques } from "@/lib/server/admin-boutiques";
 import { ArticleForm } from "@/components/admin/ArticleForm";
+import { deleteArticleAction } from "../actions";
 
 // Fiche d'un article : nouvelle (sans ?slug) ou à modifier (?slug=…).
 export const metadata: Metadata = { title: "Fiche article", robots: { index: false, follow: false } };
@@ -28,14 +31,14 @@ async function Sheet({ searchParams }: { searchParams: PageProps<"/admin/article
   if (!(await isAdmin()))
     return (
       <p className="muted">
-        Accès réservé. <Link className="link" href="/admin/commandes">Connecte-toi</Link>, puis reviens ici.
+        Accès réservé. <Link className="link" href="/admin">Connecte-toi</Link>, puis reviens ici.
       </p>
     );
   const sp = await searchParams;
   const slug = typeof sp.slug === "string" ? sp.slug : null;
   const article = slug ? await getArticle(slug).catch(() => null) : null;
   if (slug && !article) return <p className="todo">Article introuvable.</p>;
-  const boutiques = await listBoutiques().catch(() => null);
+  const [boutiques, categories] = await Promise.all([listBoutiques().catch(() => null), getCategories()]);
   if (!boutiques) return <p className="todo">La base ne répond pas. Réessaie dans un instant.</p>;
   return (
     <>
@@ -43,9 +46,20 @@ async function Sheet({ searchParams }: { searchParams: PageProps<"/admin/article
       <ArticleForm
         article={article}
         brands={boutiques.map((b) => ({ slug: b.slug, name: b.name }))}
-        categories={CATEGORIES.map((c) => ({ id: c.id, label: c.label, sizes: c.sizes, weight: WEIGHT_G[c.id] }))}
+        categories={categories.map((c) => ({ id: c.id, label: c.label, sizes: c.sizes, weight: c.weight ?? WEIGHT_G[c.id as KnownCategoryId] ?? 500 }))}
         colors={COLORS.map((hex) => ({ hex, name: COLOR_NAMES[hex] ?? hex }))}
       />
+      {article && (
+        // Deux gestes pour supprimer : ouvrir, puis confirmer. Pas dans la grille, pour éviter un toucher par erreur.
+        <details className="admin-delete">
+          <summary>Supprimer l&apos;article</summary>
+          <p className="muted">Il disparaît pour de bon. Pour le retirer un moment, décoche plutôt « Visible sur le site ».</p>
+          <form action={deleteArticleAction}>
+            <input type="hidden" name="slug" value={article.slug} />
+            <button className="admin-danger">Oui, supprimer définitivement</button>
+          </form>
+        </details>
+      )}
     </>
   );
 }

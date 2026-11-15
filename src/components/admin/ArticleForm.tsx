@@ -1,10 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { marginsAction, saveArticleAction, uploadPhotoAction } from "@/app/admin/articles/actions";
 import type { AdminArticle } from "@/lib/server/admin-articles";
 import type { ZoneMargin } from "@/models/admin/article";
+import { NewBrandPanel } from "./NewBrandPanel";
+import { NewTypePanel } from "./NewTypePanel";
 
 // Formulaire d'article de l'admin, pensé pour le téléphone de Jean Paul : photos prises ou choisies,
 // réduites ici (1600 px, JPEG) avant l'envoi, prix en dollars, marge visible dans chaque devise avant d'enregistrer.
@@ -16,19 +17,36 @@ type Props = {
   colors: { hex: string; name: string }[];
 };
 
-/** Réduit une photo du téléphone (souvent 4 à 12 Mo) à 1600 px de large au plus, en JPEG. */
-async function shrink(file: File): Promise<Blob> {
+/**
+ * Réduit une photo du téléphone (souvent 4 à 12 Mo) à 1400 px au plus, en JPEG, puis baisse la qualité
+ * jusqu'à passer sous 900 Ko : l'envoi au serveur est limité (next.config.ts, serverActions.bodySizeLimit).
+ */
+export async function shrink(file: File): Promise<Blob> {
   const img = await createImageBitmap(file);
-  const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const scale = Math.min(1, 1400 / Math.max(img.width, img.height));
   const c = document.createElement("canvas");
   c.width = Math.round(img.width * scale);
   c.height = Math.round(img.height * scale);
   c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
-  return new Promise((ok, ko) => c.toBlob((b) => (b ? ok(b) : ko(new Error("photo illisible"))), "image/jpeg", 0.85));
+  const encode = (q: number) => new Promise<Blob>((ok, ko) => c.toBlob((b) => (b ? ok(b) : ko(new Error("photo illisible"))), "image/jpeg", q));
+  let blob = await encode(0.82);
+  for (const q of [0.7, 0.6, 0.5]) {
+    if (blob.size <= 900_000) break;
+    blob = await encode(q);
+  }
+  return blob;
 }
 
-export function ArticleForm({ article, brands, categories, colors }: Props) {
-  const router = useRouter();
+const NEW_BRAND = "__nouvelle";
+const NEW_TYPE = "__nouveau-type";
+
+const isRedirect = (e: unknown) => String((e as { digest?: unknown } | null)?.digest ?? "").startsWith("NEXT_REDIRECT");
+
+export function ArticleForm({ article, brands: initialBrands, categories: initialCategories, colors }: Props) {
+  const [categories, setCategories] = useState(initialCategories);
+  const [addingType, setAddingType] = useState(false);
+  const [brands, setBrands] = useState(initialBrands);
+  const [addingBrand, setAddingBrand] = useState(false);
   const [brand, setBrand] = useState(article?.brand ?? "");
   const [category, setCategory] = useState(article?.category ?? "");
   const [name, setName] = useState(article?.name ?? "");
@@ -42,6 +60,9 @@ export function ArticleForm({ article, brands, categories, colors }: Props) {
   const [front, setFront] = useState(article?.photos.front ?? "");
   const [back, setBack] = useState(article?.photos.back ?? "");
   const [details, setDetails] = useState<string[]>(article?.photos.details ?? []);
+  const [byColor, setByColor] = useState<Record<string, { front: string; back?: string }>>(article?.photos.byColor ?? {});
+  const putColor = (hex: string, view: "front" | "back", url: string) =>
+    setByColor((m) => ({ ...m, [hex]: { ...(m[hex] ?? { front: "" }), [view]: url } }));
   const [busy, setBusy] = useState<string | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -99,11 +120,14 @@ export function ArticleForm({ article, brands, categories, colors }: Props) {
       colors: picked,
       sizes: sizes.split(",").map((s) => s.trim()).filter(Boolean),
       supplierRef,
-      photos: { front, back: back || undefined, details },
+      // Photos des autres couleurs cochées (la première couleur garde les photos principales).
+      photos: { front, back: back || undefined, details, byColor: Object.fromEntries(picked.slice(1).filter((h) => byColor[h]?.front).map((h) => [h, { front: byColor[h].front, ...(byColor[h].back ? { back: byColor[h].back } : {}) }])) },
       onSite,
-    }).catch(() => ({ errors: ["La connexion a coupé. Réessaie."] }));
-    if ("slug" in r) router.push(`/admin/articles?msg=${encodeURIComponent(article ? "Article modifié." : "Article ajouté.")}`);
-    else {
+    }).catch((e: unknown) =>
+      // Réussi : le serveur renvoie à la liste, et Next le signale en rejetant la promesse. Ce n'est pas une panne.
+      isRedirect(e) ? null : { errors: ["La connexion a coupé. Réessaie."] },
+    );
+    if (r?.errors.length) {
       setErrors(r.errors);
       setBusy(null);
     }
@@ -121,20 +145,44 @@ export function ArticleForm({ article, brands, categories, colors }: Props) {
     <form className="admin-form" onSubmit={(e) => (e.preventDefault(), save())}>
       <label>
         Marque
-        <select value={brand} onChange={(e) => setBrand(e.target.value)} required>
+        <select value={brand} onChange={(e) => (e.target.value === NEW_BRAND ? setAddingBrand(true) : setBrand(e.target.value))} required>
           <option value="" disabled>Choisir…</option>
           {brands.map((b) => <option key={b.slug} value={b.slug}>{b.name}</option>)}
+          <option value={NEW_BRAND}>+ Nouvelle marque…</option>
         </select>
       </label>
+      {addingBrand && (
+        <NewBrandPanel
+          onCancel={() => setAddingBrand(false)}
+          onCreated={(b) => {
+            setBrands((list) => [...list, b]);
+            setBrand(b.slug);
+            setAddingBrand(false);
+          }}
+        />
+      )}
       <label>
         Catégorie
-        <select value={category} onChange={(e) => onCategory(e.target.value)} required>
+        <select value={category} onChange={(e) => (e.target.value === NEW_TYPE ? setAddingType(true) : onCategory(e.target.value))} required>
           <option value="" disabled>Choisir…</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+          <option value={NEW_TYPE}>+ Nouveau type…</option>
         </select>
       </label>
+      {addingType && (
+        <NewTypePanel
+          onCancel={() => setAddingType(false)}
+          onCreated={(t) => {
+            setCategories((list) => [...list, t]);
+            setCategory(t.id);
+            setSizes(t.sizes.join(", "));
+            if (!weightG) setWeightG(String(t.weight));
+            setAddingType(false);
+          }}
+        />
+      )}
       <label>
-        Nom
+        Description
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Hoodie noir, logo rouge" maxLength={120} required />
       </label>
       <label>
@@ -203,6 +251,25 @@ export function ArticleForm({ article, brands, categories, colors }: Props) {
         <div className="admin-thumbs">{details.map((d) => photo(d, () => setDetails((x) => x.filter((y) => y !== d))))}</div>
         {details.length < 6 && <input type="file" accept="image/*" multiple onChange={(e) => send(e.target.files, (u) => setDetails((x) => [...x, u].slice(0, 6)))} />}
       </fieldset>
+
+      {picked.length > 1 && (
+        // Une couleur sans photo garde les photos principales sur le site.
+        <fieldset>
+          <legend>Photos des autres couleurs (facultatif)</legend>
+          {picked.slice(1).map((hex) => {
+            const p = byColor[hex];
+            const name = colors.find((c) => c.hex === hex)?.name ?? hex;
+            return (
+              <div key={hex} className="admin-color-photos">
+                <p className="muted"><span className="admin-dot" style={{ background: hex }} /> {name} · face</p>
+                {p?.front ? photo(p.front, () => putColor(hex, "front", "")) : <input type="file" accept="image/*" onChange={(e) => send(e.target.files, (u) => putColor(hex, "front", u))} />}
+                <p className="muted">{name} · dos</p>
+                {p?.back ? photo(p.back, () => putColor(hex, "back", "")) : <input type="file" accept="image/*" onChange={(e) => send(e.target.files, (u) => putColor(hex, "back", u))} />}
+              </div>
+            );
+          })}
+        </fieldset>
+      )}
 
       <label className="admin-check">
         <input type="checkbox" checked={onSite} onChange={(e) => setOnSite(e.target.checked)} />

@@ -6,7 +6,11 @@ import type { PriceTable } from "./public.ts";
 
 /** Ce que coûte un article chez le fournisseur : prix en yuans et poids en grammes.
  *  `usd` : prix de vente tapé par Jean Paul (droits et livraison compris) ; sans lui, le prix est calculé depuis le coût. */
-export type Cost = { cny: number; g: number; usd?: number };
+export type Cost = { cny: number; g: number; usd?: number; exact?: number };
+
+/** Article d'essai du paiement (slug « test-… », Rhamone, 11 nov.) : `exact` est payé tel quel dans chaque zone, sans
+ *  arrondi ni plancher, pour un achat réel à moins de 1 (minimum Stripe : 0,50). Jamais pour un vrai article. */
+export const TEST_PREFIX = "test-";
 
 export const zoneOf = (country?: string | null): ZoneId => (country && COUNTRY_ZONE[country.toUpperCase()]) || DEFAULT_ZONE;
 
@@ -31,7 +35,9 @@ export const MAX_DISCOUNT_DRIFT = 3;
 
 /** Prix catalogue de la zone (avant toute remise). */
 export const catalogPrice = (cost: Cost, zoneId: ZoneId): number =>
-  cost.usd != null
+  cost.exact != null
+    ? cost.exact
+    : cost.usd != null
     ? roundNice(cost.usd * ZONES[zoneId].perUsd) // prix tapé en dollars, converti au taux fixe de la zone
     : roundNice(landedCost(cost, zoneId) * (1 + ZONES[zoneId].marginPct / 100));
 
@@ -45,6 +51,7 @@ export const floorPrice = (cost: Cost, zoneId: ZoneId): number => Math.ceil(land
  */
 export function customerPrice(cost: Cost, zoneId: ZoneId, groupId: GroupId = "public"): number {
   const catalog = catalogPrice(cost, zoneId);
+  if (cost.exact != null) return cost.exact; // article d'essai : ni remise, ni plancher
   const pct = GROUPS[groupId].discountPct;
   if (!pct) return Math.max(catalog, floorPrice(cost, zoneId)); // un prix tapé trop bas ne passe jamais sous le plancher
   const raw = catalog * (1 - pct / 100);

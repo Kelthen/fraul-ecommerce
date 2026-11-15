@@ -335,3 +335,31 @@
 ### L-58 — Les photos d'abord, des petits boutons
 - **Erreur :** dans `/admin/articles`, chaque article avait deux gros boutons (« Modifier », « Masquer ») et trois lignes de texte : on voyait à peine les photos (Rhamone : « moins de boutons, plus de photos »).
 - **Règle :** une liste d'articles est une **grille de photos** ; toucher la photo ouvre l'article ; au plus **une petite action** discrète par carte ; texte réduit au nom (une ligne) et au prix. Les gros boutons pleine largeur sont réservés à l'action principale d'une page.
+
+### L-59 — Tester le mall avec une photo envoyée, pas seulement avec celles du site
+- **Erreur :** une photo envoyée depuis l'admin s'affichait comme un rectangle noir dans le mall. Elle vient d'un autre domaine (Supabase) et le chargement n'avait pas `crossOrigin` ; les 23 articles de départ, servis par le site lui-même, cachaient le problème et le test téléphone passait.
+- **Règle :** dans `src/walk/engine.js`, toute image passe par `webImage()`. Une fonction qui touche aux photos se teste aussi avec une photo venue de Supabase.
+
+### L-60 — Après une action serveur qui enregistre, rediriger depuis le serveur
+- **Erreur :** la fiche article ne se fermait pas après « Enregistrer » sur le téléphone de l'équipe : le `router.push` du navigateur, lancé après l'action, restait sans effet. Pas reproduit en local, où tout répond tout de suite.
+- **Règle :** une action serveur qui enregistre puis change de page appelle `redirect()` elle-même, comme le recommande la doc de Next (« Redirect after a mutation »). Côté client, la promesse est alors rejetée avec un `digest` `NEXT_REDIRECT` : ne pas l'afficher comme une erreur.
+
+### L-61 — Des personnes mises en scène, pas des photos dans des cadres
+- **Erreur :** le défilé de looks montrait les mannequins dans des cartes à coins arrondis (corps rognés), puis sur un fond gris : Rhamone voyait le cadre des images et un fond qui ne se fondait pas dans le site (8 nov. 2026).
+- **Règle :** pour une scène de personnages (looks, Walk), **détourer** les photos (fond transparent, `rembg`, modèle `isnet-general-use`, puis WebP) et les poser sur le fond du site, sans cadre ni bord visible, avec une ombre au sol. Profondeur : ceux des côtés nettement plus petits, un peu flous. Vérifier en capture téléphone **et** ordinateur avant de pousser.
+
+### L-62 — `npm run check` avant chaque push, pas seulement lint, tsc et build
+- **Erreur :** #101 (portant moins serré) a été mergée avec lint, tsc et build au vert, mais un test du Walk échouait : les portants veste et t-shirt se chevauchaient. ChatGPT l'a vu dans #103 (8 nov. 2026).
+- **Règle :** avant de pousser, lancer **`npm run check`** (il contient les tests du Walk et des modèles). Un réglage de mesure du Walk (`store-layout.ts`) se vérifie toujours avec `walk.test.ts`.
+
+### L-63 — Un merge seulement sur un « oui » sans ambiguïté
+- **Erreur :** « Continue mais on merge » a été lu comme « on merge » et #114 a été mergée, alors que Rhamone voulait dire « on ne merge pas » (11 nov. 2026). Il a fallu annuler le merge.
+- **Règle :** avant de merger, si la phrase peut se lire dans les deux sens (négation absente, faute de frappe, message court), poser une question oui/non (« Je merge la PR #N maintenant ? ») et attendre la réponse. Ne jamais merger sur une consigne glissée au milieu d'une autre demande.
+
+### L-66 — Ne jamais rogner une photo de look sans regarder où sont les étiquettes
+- **Erreur :** pour retirer les étiquettes FACE/DOS des planches verticales, 6 % ont été coupés en haut et en bas ; les étiquettes n'étaient qu'en bas, et le haut des têtes est parti (Rhamone, 15 nov. : « des têtes coupées »).
+- **Règle :** avant de rogner une planche, regarder le haut et le bas ; ne couper que la bande qui contient le texte, et vérifier sur une planche contact que chaque tête et chaque semelle sont entières.
+
+### L-67 — Un modèle 3D se juge sur des gros plans, pas sur une vue d'ensemble
+- **Erreur :** les mannequins de #127 ont été annoncés avec des « coupes nettes » à partir de vues d'ensemble ; la revue (14 nov. 2026) a montré des dents au col, un liseré blanc aux manches et une main mal posée.
+- **Règle :** avant d'annoncer un mannequin ou un modèle comme corrigé, rendre les **6 angles plus des gros plans** (col, manches, mains, pieds sur le socle) et les déposer dans la PR. Une limite de matière doit suivre une coupe réelle du maillage, jamais une simple affectation de triangles. Décrire seulement ce que les gros plans montrent.

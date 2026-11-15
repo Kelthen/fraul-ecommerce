@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { checkLoginCode, isAdmin, logout, sendLoginCode } from "@/lib/server/admin-session";
+import { isAdmin, logout } from "@/lib/server/admin-session";
 import { webhookSecret } from "@/lib/server/env";
 import { createTestOrder, deleteTestOrders, relayOrder } from "@/lib/server/relay";
 import { tg } from "@/lib/server/telegram";
@@ -34,18 +34,6 @@ async function attempt(fn: () => Promise<string>): Promise<never> {
     msg = `⚠️ ${e instanceof Error ? e.message : "Erreur"}`;
   }
   return done(msg);
-}
-
-export async function requestCode() {
-  await attempt(async () => {
-    await sendLoginCode();
-    return "Code envoyé sur Telegram.";
-  });
-}
-
-export async function verifyCode(form: FormData) {
-  const ok = await checkLoginCode(String(form.get("code") ?? ""));
-  done(ok ? "Connecté." : "Code incorrect ou expiré.");
 }
 
 export async function signOut() {

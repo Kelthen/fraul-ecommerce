@@ -30,6 +30,7 @@ export function AuthForm() {
   const [err, setErr] = useState<Record<string, string>>({});
   const [tries, setTries] = useState<Tries>(noTries);
   const [busy, setBusy] = useState(false);
+  const [news, setNews] = useState(false); // nouveautés et drops : jamais cochée d'avance (consentement libre, RGPD)
   const [captcha, setCaptcha] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
   const [session, setSession] = useState<Session | null>(null);
@@ -37,7 +38,7 @@ export function AuthForm() {
 
   const go = (m: Mode) => { setMode(m); setStep("form"); setErr({}); setCaptchaKey((k) => k + 1); };
   const done = () => { signIn(normalizeEmail(email)); router.push("/compte"); };
-  const finish = async (s: Session, acceptedTerms: boolean) => { await adopt(s, acceptedTerms); router.push("/compte"); };
+  const finish = async (s: Session, acceptedTerms: boolean, wantsNews = false) => { await adopt(s, acceptedTerms, wantsNews); router.push("/compte"); };
 
   /** Appel à Supabase : une seule requête à la fois, erreur affichée sur le formulaire. Un jeton de captcha ne sert qu'une fois. */
   async function run(field: string, work: () => Promise<void>) {
@@ -113,7 +114,7 @@ export function AuthForm() {
       try {
         const s = await verifyCode(mode === "oubli" ? "recovery" : "signup", normalizeEmail(email), cleanCode(c));
         if (mode === "oubli") { setSession(s); setStep("nouveau"); }
-        else await finish(s, true);
+        else await finish(s, true, news);
       } catch (x) {
         if (x instanceof AuthError && x.problem === "bad-code") { wrong(); return; }
         throw x;
@@ -153,6 +154,12 @@ export function AuthForm() {
                 maxLength: 128,
                 placeholder: mode === "inscription" ? "10 caractères ou plus" : undefined,
               })}
+            {mode === "inscription" && (
+              <label className="acc-check">
+                <input type="checkbox" checked={news} onChange={(e) => setNews(e.target.checked)} />
+                <span>Recevoir les nouveautés et les drops</span>
+              </label>
+            )}
             <Captcha key={captchaKey} onToken={onCaptcha} />
             {err.form && <span className="af-err" role="alert">{err.form}</span>}
             <button className="pill solid" type="submit" disabled={busy}>

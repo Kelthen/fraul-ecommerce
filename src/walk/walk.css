@@ -71,6 +71,14 @@
 .fw .store[data-mode="rayon"] .s-bottom:not(.open) .s-cats { display: none; }
 .fw .store[data-mode="rayon"] .s-bottom.open .s-cats { margin-top: 6px; }
 .fw .store[data-mode="rayon"] .s-cats .s-cat { width: min(220px, 60vw); height: 38px; }
+/* Visite libre au téléphone : la liste des rayons est repliée derrière « Rayons » aussi au centre de la boutique, pour
+   laisser voir la scène (retour de Rhamone, 9 nov. : menu trop présent). Elle reste à un toucher. */
+@media (max-width: 760px) {
+  .fw .store[data-mode="hub"] .s-label { display: none; }
+  .fw .store[data-mode="hub"] .s-tog { display: inline-flex; align-self: flex-start; }
+  .fw .store[data-mode="hub"] .s-bottom:not(.open) .s-cats { display: none; }
+  .fw .store[data-mode="hub"] .s-bottom.open .s-cats { margin-top: 6px; }
+}
 @media (min-width: 1260px) { /* assez de place à gauche de la fiche (760 px au centre) */
   .fw .store[data-mode="rayon"] .s-bottom { top: auto; bottom: 24px; z-index: 3; }
   .fw .store[data-mode="rayon"] .s-tog { display: none; }
@@ -169,6 +177,9 @@
 /* Recherche en haut du mall (marque ou pièce) */
 /* Moins de texte : une aide disparaît dès que le geste a été fait une fois (engine.js, gesture()) */
 .fw.seen-scroll .scroll-hint, .fw.seen-tap .tap-hint { display: none; }
+/* Aide de la visite libre en boutique (#109) : au centre, seulement hors d'un rayon, jusqu'au premier tour du regard. */
+.fw .look-hint { position: absolute; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); margin: 0; padding: 7px 12px; border-radius: 999px; background: rgba(255, 254, 247, 0.88); font: 700 9px/1.3 var(--body); letter-spacing: .18em; text-transform: uppercase; color: var(--bordeaux); text-align: center; pointer-events: none; width: max-content; max-width: calc(100% - 32px); }
+.fw .store:not([data-mode="hub"]) .look-hint, .fw.seen-look .look-hint { display: none; }
 
 /* La Caisse : dernier arrêt du mall avant la sortie, si le sac n'est pas vide */
 .fw .caisse .c-sum { font-size: 15px; }
@@ -178,3 +189,11 @@
 .fw .c-lines li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fw .c-lines i { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(10, 10, 12, .2); }
 .fw .c-lines .more { color: var(--muted); }
+
+/* La carte graphique a décroché (mémoire, veille) : fond ivoire et loader le temps qu'elle revienne, jamais d'écran gris.
+   Un seul pseudo-élément : l'anneau qui tourne, et son ombre géante qui couvre la scène. */
+.fw .gl-wait::before { content: ""; position: absolute; z-index: 6; left: 50%; top: 50%; width: 36px; height: 36px; margin: -18px 0 0 -18px;
+  border-radius: 50%; border: 2px solid rgba(66, 10, 13, 0.18); border-top-color: var(--bordeaux, #680209);
+  box-shadow: 0 0 0 200vmax var(--ivory, #fffef7); animation: gl-spin 0.9s linear infinite; pointer-events: none; }
+@keyframes gl-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fw .gl-wait::before { animation-duration: 3s; } }
