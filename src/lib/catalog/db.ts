@@ -30,7 +30,7 @@ const SELECT = "slug,title,cost,price_usd,weight_g,colors,sizes,position,brands(
 export function toProduct(r: Row, brands: Brand[], categories: Category[], accentFor: (c: string) => string): PricedProduct | null {
   const brand = brands.find((b) => b.slug === r.brands?.slug);
   const cat = categories.find((c) => c.id === r.categories?.code);
-  const name = r.title?.fr;
+  const name = r.title?.fr?.replace(/\s+/g, " ").trim(); // espaces en trop saisis dans l'admin (scan du 22 nov.)
   if (!brand || !cat || !name || r.cost == null || !r.weight_g || !r.colors.length) return null;
   const sorted = [...r.product_images].sort((a, b) => a.position - b.position);
   const imgs = sorted.filter((i) => !i.color);

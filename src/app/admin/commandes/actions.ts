@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { baseUrl } from "@/lib/server/base-url";
 import { redirect } from "next/navigation";
 import { isAdmin, logout } from "@/lib/server/admin-session";
 import { webhookSecret } from "@/lib/server/env";
@@ -12,12 +12,6 @@ import { tg } from "@/lib/server/telegram";
 
 const PAGE = "/admin/commandes";
 
-async function baseUrl(): Promise<string> {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 const done = (msg: string): never => redirect(`${PAGE}?msg=${encodeURIComponent(msg)}`);
 

@@ -17,13 +17,15 @@ export async function generateMetadata({ params }: PageProps<"/produit/[slug]">)
   const p = await getProduct((await params).slug);
   if (!p) return {};
   const cat = await getCategory(p.category);
+  // La marque une seule fois : la plupart des noms la contiennent déjà (« Hoodie rose bleu BAPE », scan du 22 nov.).
+  const full = p.name.toLowerCase().includes(p.brandName.toLowerCase()) ? p.name : `${p.name} ${p.brandName}`;
   return {
-    title: `${p.name} ${p.brandName}`,
-    description: `${p.name} ${p.brandName} (${cat.label.toLowerCase()}). Tailles ${p.sizes.join(", ")}. Pièce authentique, suivi de commande à chaque étape.`,
+    title: full,
+    description: `${full} (${cat.label.toLowerCase()}). Tailles ${p.sizes.join(", ")}. Pièce authentique, suivi de commande à chaque étape.`,
     alternates: { canonical: `/produit/${p.slug}` },
     // Article d'essai du paiement : pas dans les moteurs de recherche.
     ...(p.slug.startsWith(TEST_PREFIX) ? { robots: { index: false, follow: false } } : {}),
-    openGraph: { type: "website", siteName: "TakeUrClothes", locale: "fr_FR", title: `${p.name} ${p.brandName}`, url: `/produit/${p.slug}`, images: [{ url: p.image.front }] },
+    openGraph: { type: "website", siteName: "TakeUrClothes", locale: "fr_FR", title: full, url: `/produit/${p.slug}`, images: [{ url: p.image.front }] },
   };
 }
 

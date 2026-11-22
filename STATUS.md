@@ -169,6 +169,8 @@ _Dernière mise à jour : 2026-11-06 par serge (double vérification coupée jus
 
 ## 🔄 En cours
 
+- **Scan complet du 22 nov.** (PR à valider) : Next.js 16.4.2 → **16.4.6** (correctifs de sécurité, `npm audit` : 0 faille) ; le plan du site (`sitemap.xml`) se met à jour tout seul avec les articles ajoutés depuis l'admin (avant : figé au dernier déploiement, ~309 articles sur 408, 6 marques manquantes) et ne liste plus « Crée ta tenue » ; titre d'onglet des fiches sans la marque en double (« Hoodie rose bleu BAPE », pas « … BAPE BAPE ») et sans espaces en trop ; les liens fabriqués par le serveur (retour Stripe, liens Telegram, fiche expéditeur) ne prennent plus l'adresse envoyée par le navigateur si elle n'est pas la nôtre — rhamon
+
 
 
 

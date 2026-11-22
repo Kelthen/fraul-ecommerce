@@ -1,7 +1,8 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
+import { baseUrl } from "@/lib/server/base-url";
 import { catalogIsLive, getPricedProduct } from "@/lib/catalog";
 import { missingPaymentSettings } from "@/lib/server/env";
 import { allow, clientIp } from "@/lib/server/limits";
@@ -23,12 +24,6 @@ const PROBLEMS: Record<CartProblem, string> = {
   "bad-qty": "Quantité impossible pour un article.",
 };
 
-async function baseUrl(): Promise<string> {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 export async function startCheckout(lines: unknown): Promise<{ url: string } | { error: string }> {
   // Caisse fermée (PAYMENTS_OPEN absent en production) : seul un panier fait uniquement d'articles d'essai « test-… »
