@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { LooksStrip } from "@/components/home/LooksStrip";
 import { getBrands, getNewArrivals, getProducts, getWalkBrands } from "@/lib/catalog";
 import { loadLookRows } from "@/lib/catalog/db";
+import HomeMotion from "@/components/home/HomeMotion";
 import { TEST_LOOKS, resolveLooks } from "@/models/home/looks";
 import { signCss, signWord } from "@/lib/catalog/brands";
 
@@ -24,6 +25,7 @@ export default async function Home() {
 
   return (
     <>
+      <HomeMotion />
       {looks.length > 0 && (
         // Hero de l'accueil : le défilé de looks (Rhamone, 11 nov. : « la partie les looks sera le hero »). Textes décidés par l'équipe, à confirmer.
         <section className="looks-hero wrap" id="looks" aria-labelledby="looks-title">

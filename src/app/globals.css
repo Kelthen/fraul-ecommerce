@@ -625,15 +625,37 @@ footer.foot { border-top: 1px solid var(--line); margin-top: 72px; padding-block
 .row .card .nm { font-size: 13px; line-height: 1.3; }
 .row .card .pr { font-size: 14px; }
 
-/* Animations douces au défilement (Rhamone, 11 nov. : « il manque des animations ») : chaque section monte et apparaît
-   en entrant à l'écran. Sans prise en charge du navigateur, ou si l'appareil réduit les animations : rien ne bouge. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .sec, .mall-hero .mall-copy, .marquee { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
-    .grid > .card-box { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
-  }
+/* Animations de l'accueil au défilement (Rhamone, 15 nov. : « le site faut que ce soit vivant »), déclenchées par
+   src/components/home/HomeMotion.tsx : la classe `mo` n'existe que si le script tourne et que l'appareil accepte les
+   animations ; sans elle, tout est visible et immobile. Seulement opacité et déplacements : fluide au téléphone.
+   `--i` : rang de l'élément (cascade) ; `.mo-done` rend aux éléments leurs propres transitions après l'arrivée. */
+.mo [data-mo]:not(.mo-done) > *, .mo [data-mo="head"]:not(.mo-done) h2 {
+  transition: opacity .6s ease, transform .8s cubic-bezier(.16, 1, .3, 1);
+  transition-delay: calc(var(--i, 0) * 80ms);
 }
-@keyframes rise-in { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+/* Entrée du mall : le texte monte ligne par ligne. */
+.mo [data-mo="rise"]:not(.mo-in) > * { opacity: 0; transform: translateY(26px); }
+/* Titres : le petit texte au-dessus porte un trait bordeaux qui se dessine, le titre monte. */
+.mo [data-mo="head"] .eyebrow::after { content: ""; display: block; width: 28px; height: 2px; margin-top: 8px; background: var(--bordeaux); transform: scaleX(0); transform-origin: left; transition: transform .7s .15s cubic-bezier(.16, 1, .3, 1); }
+.mo [data-mo="head"].mo-in .eyebrow::after { transform: none; }
+.mo [data-mo="head"]:not(.mo-in) h2 { opacity: 0; transform: translateY(22px); }
+/* Engagements : une icône après l'autre, avec un petit rebond. */
+.mo [data-mo="pop"]:not(.mo-done) > * { transition: opacity .5s ease, transform .6s cubic-bezier(.34, 1.56, .64, 1); transition-delay: calc(var(--i, 0) * 110ms); }
+.mo [data-mo="pop"]:not(.mo-in) > * { opacity: 0; transform: scale(.7) translateY(10px); }
+/* Nouveautés : une pièce après l'autre, depuis la droite. */
+.mo [data-mo="cascade"]:not(.mo-in) > * { opacity: 0; transform: translateX(56px); }
+/* À ne pas manquer : colonne de gauche depuis la gauche, de droite depuis la droite, du milieu depuis le bas. */
+.mo [data-mo="grid"]:not(.mo-done) > * { transition-delay: calc(var(--i, 0) * 60ms); }
+.mo [data-mo="grid"]:not(.mo-in) > * { opacity: 0; transform: translate(var(--dx, 0), var(--dy, 40px)); }
+/* Marques : les tuiles se retournent comme des cartes, l'une après l'autre. */
+.mo [data-mo="flip"] { perspective: 900px; }
+.mo [data-mo="flip"]:not(.mo-done) > * { transition: opacity .5s ease, transform .9s cubic-bezier(.16, 1, .3, 1); transition-delay: calc(var(--i, 0) * 90ms); }
+.mo [data-mo="flip"]:not(.mo-in) > * { opacity: 0; transform: rotateY(75deg); }
+/* Comment ça marche : les étapes arrivent dans l'ordre (les numéros comptent, dans le script). */
+.mo [data-mo="steps"]:not(.mo-done) > * { transition-delay: calc(var(--i, 0) * 140ms); }
+.mo [data-mo="steps"]:not(.mo-in) > * { opacity: 0; transform: translateY(40px); }
+/* Entrée du mall : la rangée de façades avance un peu pendant le défilement (transformée par le script). */
+.mo .mall-scene { will-change: transform; transform-origin: 50% 70%; }
 
 /* « Shop the look » sous le look affiché : vignettes des pièces avec leur prix. */
 .looks-mini { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 8px; }
